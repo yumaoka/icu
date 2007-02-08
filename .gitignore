@@ -45,7 +45,9 @@ source/config/Makefile.inc
 source/config/icu-config
 source/config/icu-config.1
 source/data/*.plg
+source/data/Debug
 source/data/Makefile
+source/data/Release
 source/data/icupkg.inc
 source/data/in
 source/data/makedata.vcproj.*.*.user
@@ -299,6 +301,15 @@ source/test/perf/ubrkperf/debug
 source/test/perf/ubrkperf/release
 source/test/perf/ubrkperf/ubrkperf
 source/test/perf/ubrkperf/ubrkperf.vcproj.*.*.user
+source/test/perf/unisetperf/*.d
+source/test/perf/unisetperf/*.o
+source/test/perf/unisetperf/Debug
+source/test/perf/unisetperf/Makefile
+source/test/perf/unisetperf/Release
+source/test/perf/unisetperf/debug
+source/test/perf/unisetperf/release
+source/test/perf/unisetperf/unisetperf
+source/test/perf/unisetperf/unisetperf.vcproj.*.*.user
 source/test/perf/usetperf/*.d
 source/test/perf/usetperf/*.o
 source/test/perf/usetperf/Debug
