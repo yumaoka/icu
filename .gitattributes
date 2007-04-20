@@ -80,14 +80,26 @@ source/data/mappings/ibm-950_P110_P100-1999.ucm -text
 source/data/mappings/ibm-954_P101_P101-2000.ucm -text
 source/data/mappings/ibm-964_P110_P100-1999.ucm -text
 source/data/mappings/ibm-970_P110_P110-2006.ucm -text
+source/i18n/persncal.cpp -text
+source/i18n/persncal.h -text
+source/i18n/reldtfmt.cpp -text
+source/i18n/reldtfmt.h -text
 source/samples/layout/cgnomelayout.c -text
 source/samples/layout/gnomeglue.cpp -text
 source/samples/layout/gnomeglue.h -text
 source/samples/ucnv/data02.bin -text
+source/test/perf/charperf/CharPerf_r.pl -text
+source/test/perf/convperf/ConvPerf_r.pl -text
+source/test/perf/normperf/NormPerf_r.pl -text
+source/test/perf/ubrkperf/UBrkPerf_r.pl -text
+source/test/perf/ustrperf/StringPerf_r.pl -text
 source/test/testdata/icu26_testtypes.res -text
 source/test/testdata/icu26e_testtypes.res -text
 source/test/testdata/importtest.bin -text
 source/test/testdata/uni-text.bin -text
+source/tools/tzcode/icuzdump.cpp -text
+source/tools/tzcode/icuzdump.vcproj -text
+source/tools/tzcode/zdump.c -text
 
 # The following file types are stored in Git-LFS.
 *.jar filter=lfs diff=lfs merge=lfs -text
