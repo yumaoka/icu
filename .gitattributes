@@ -48,6 +48,9 @@ README text !eol
 *.spp -text
 *.tri2 -text
 
+source/data/coll/dz.txt -text
+source/data/coll/km.txt -text
+source/data/coll/sa.txt -text
 source/data/coll/sr_ME.txt -text
 source/data/coll/zh_Hans.txt -text
 source/data/coll/zh_Hans_CN.txt -text
