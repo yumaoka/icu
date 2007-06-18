@@ -77,6 +77,8 @@ source/data/locales/en_NA.txt -text
 source/data/locales/en_TT.txt -text
 source/data/locales/en_UM.txt -text
 source/data/locales/fr_MC.txt -text
+source/data/locales/gl.txt -text
+source/data/locales/gl_ES.txt -text
 source/data/locales/ig.txt -text
 source/data/locales/ig_NG.txt -text
 source/data/locales/ka.txt -text
