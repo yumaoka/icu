@@ -51,6 +51,10 @@ README text !eol
 source/data/coll/dz.txt -text
 source/data/coll/km.txt -text
 source/data/coll/sa.txt -text
+source/data/coll/sr_Latn.txt -text
+source/data/coll/sr_Latn_BA.txt -text
+source/data/coll/sr_Latn_ME.txt -text
+source/data/coll/sr_Latn_RS.txt -text
 source/data/coll/sr_ME.txt -text
 source/data/coll/zh_Hans.txt -text
 source/data/coll/zh_Hans_CN.txt -text
