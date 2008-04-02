@@ -72,6 +72,10 @@ source/test/intltest/dadrfmt.cpp -text
 source/test/intltest/dadrfmt.h -text
 source/test/intltest/fldset.cpp -text
 source/test/intltest/fldset.h -text
+source/test/perf/collationperf/CollPerf.pl -text
+source/test/perf/collationperf/Makefile.in -text
+source/test/perf/collationperf/collperf.cpp -text
+source/test/perf/collationperf/readme.html -text
 source/test/perf/convperf/Makefile.in -text
 source/test/testdata/TestFont1.otf -text
 source/test/testdata/icu26_testtypes.res -text
