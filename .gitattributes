@@ -73,6 +73,7 @@ source/test/intltest/dadrfmt.h -text
 source/test/intltest/fldset.cpp -text
 source/test/intltest/fldset.h -text
 source/test/perf/Makefile.in -text
+source/test/perf/README -text
 source/test/perf/collationperf/CollPerf.pl -text
 source/test/perf/collationperf/Makefile.in -text
 source/test/perf/collationperf/collperf.cpp -text
