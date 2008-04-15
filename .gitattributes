@@ -77,6 +77,7 @@ source/test/perf/collationperf/CollPerf.pl -text
 source/test/perf/collationperf/Makefile.in -text
 source/test/perf/collationperf/collperf.cpp -text
 source/test/perf/collationperf/readme.html -text
+source/test/perf/collperf/CollPerf_r.pl -text
 source/test/perf/convperf/Makefile.in -text
 source/test/perf/perldriver/Common.pl -text
 source/test/testdata/TestFont1.otf -text
