@@ -81,6 +81,9 @@ source/test/perf/collationperf/readme.html -text
 source/test/perf/collperf/CollPerf_r.pl -text
 source/test/perf/convperf/Makefile.in -text
 source/test/perf/perldriver/Common.pl -text
+source/test/perf/strsrchperf/Makefile.in -text
+source/test/perf/strsrchperf/strsrchperf.cpp -text
+source/test/perf/strsrchperf/strsrchperf.h -text
 source/test/testdata/TestFont1.otf -text
 source/test/testdata/icu26_testtypes.res -text
 source/test/testdata/icu26e_testtypes.res -text
