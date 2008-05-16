@@ -49,7 +49,6 @@ README text !eol
 *.tri2 -text
 
 source/common/mutex.cpp -text
-source/data/misc/metazoneInfo.txt -text
 source/samples/layout/cgnomelayout.c -text
 source/samples/ucnv/data02.bin -text
 source/test/compat/tzone.pl -text
