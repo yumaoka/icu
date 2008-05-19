@@ -39,7 +39,6 @@ source/common/icucfg.h
 source/common/libicu*.*
 source/common/release
 source/common/svchook.mk
-source/common/unicode/platform.h
 source/config.cache
 source/config.log
 source/config.status
