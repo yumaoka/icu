@@ -98,6 +98,7 @@ source/i18n/unicode/dtitvfmt.h -text
 source/i18n/unicode/dtitvinf.h -text
 source/i18n/unicode/tmunit.h -text
 source/i18n/unicode/tmutamt.h -text
+source/i18n/unicode/tmutfmt.h -text
 source/samples/layout/cgnomelayout.c -text
 source/samples/ucnv/data02.bin -text
 source/test/compat/tzone.pl -text
