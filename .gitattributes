@@ -94,6 +94,9 @@ source/data/xml/main/zu.xml -text
 source/i18n/dtitv_impl.h -text
 source/i18n/dtitvfmt.cpp -text
 source/i18n/dtitvinf.cpp -text
+source/i18n/tmunit.cpp -text
+source/i18n/tmutamt.cpp -text
+source/i18n/tmutfmt.cpp -text
 source/i18n/unicode/dtitvfmt.h -text
 source/i18n/unicode/dtitvinf.h -text
 source/i18n/unicode/tmunit.h -text
@@ -104,6 +107,8 @@ source/samples/ucnv/data02.bin -text
 source/test/compat/tzone.pl -text
 source/test/intltest/dtifmtts.cpp -text
 source/test/intltest/dtifmtts.h -text
+source/test/intltest/tufmtts.cpp -text
+source/test/intltest/tufmtts.h -text
 source/test/perf/Makefile.in -text
 source/test/perf/README -text
 source/test/perf/strsrchperf/Makefile.in -text
