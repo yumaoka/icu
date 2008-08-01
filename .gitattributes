@@ -108,6 +108,7 @@ source/test/perf/strsrchperf/StrSrchPerf_r.pl -text
 source/test/perf/strsrchperf/strsrchperf.cpp -text
 source/test/perf/strsrchperf/strsrchperf.h -text
 source/test/perf/strsrchperf/strsrchperf.vcproj -text
+source/test/testdata/ConverterSelectorTestUTF16.txt -text
 source/test/testdata/TestFont1.otf -text
 source/test/testdata/icu26_testtypes.res -text
 source/test/testdata/icu26e_testtypes.res -text
