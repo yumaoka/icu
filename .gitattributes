@@ -303,6 +303,7 @@ trunk/src/com/ibm/icu/impl/duration/impl/data/pfd_zh_Hans.xml -text
 trunk/src/com/ibm/icu/impl/duration/impl/data/pfd_zh_Hans_SG.xml -text
 trunk/src/com/ibm/icu/impl/duration/impl/data/pfd_zh_Hant.xml -text
 trunk/src/com/ibm/icu/impl/duration/impl/data/pfd_zh_Hant_HK.xml -text
+trunk/src/com/ibm/icu/text/CurrencyPluralInfo.java -text
 trunk/src/com/ibm/richtext/textapps/resources/unicode.arabic.red -text
 trunk/src/com/ibm/richtext/textapps/resources/unicode.hebrew.red -text
 
