@@ -1,0 +1,5 @@
+trunk/*.jar
+trunk/.clover
+trunk/classes
+trunk/classes.wrapper
+trunk/doc
