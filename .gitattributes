@@ -81,6 +81,7 @@ source/data/locales/zh_Hans_HK.txt -text
 source/data/locales/zh_Hans_MO.txt -text
 source/data/misc/likelySubtags.txt -text
 source/data/misc/plurals.txt -text
+source/data/pkgdataMakefile.in -text
 source/data/xml/collation/bn_IN.xml -text
 source/data/xml/collation/ur.xml -text
 source/data/xml/main/ha.xml -text
@@ -92,6 +93,7 @@ source/data/xml/main/pa_Arab.xml -text
 source/data/xml/main/pa_PK.xml -text
 source/data/xml/main/si.xml -text
 source/data/xml/main/zu.xml -text
+source/extra/uconv/pkgdataMakefile.in -text
 source/i18n/dtitv_impl.h -text
 source/i18n/dtitvfmt.cpp -text
 source/i18n/dtitvinf.cpp -text
@@ -124,7 +126,15 @@ source/test/testdata/TestFont1.otf -text
 source/test/testdata/icu26_testtypes.res -text
 source/test/testdata/icu26e_testtypes.res -text
 source/test/testdata/importtest.bin -text
+source/test/testdata/pkgdataMakefile.in -text
 source/test/testdata/uni-text.bin -text
+source/tools/pkgdata/pkgdata.cpp -text
+source/tools/toolutil/pkg_genc.c -text
+source/tools/toolutil/pkg_genc.h -text
+source/tools/toolutil/pkg_gencmn.c -text
+source/tools/toolutil/pkg_gencmn.h -text
+source/tools/toolutil/pkg_icu.cpp -text
+source/tools/toolutil/pkg_icu.h -text
 
 # The following file types are stored in Git-LFS.
 *.jar filter=lfs diff=lfs merge=lfs -text
