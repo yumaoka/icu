@@ -72,6 +72,7 @@ localespi/src/META-INF/services/java.util.spi.TimeZoneNameProvider -text
 localespi/src/com/ibm/icu/impl/javaspi/ICULocaleServiceProviderConfig.properties -text
 /preprocessor.txt -text
 src/com/ibm/icu/ICUConfig.properties -text
+src/com/ibm/icu/charset/CharsetSelector.java -text
 src/com/ibm/icu/dev/data/rbbi/english.dict -text
 src/com/ibm/icu/dev/data/testdata.jar -text
 src/com/ibm/icu/dev/data/thai6.ucs -text
