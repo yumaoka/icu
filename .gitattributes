@@ -51,6 +51,7 @@ README text !eol
 source/common/dtintrv.cpp -text
 source/common/mutex.cpp -text
 source/common/unicode/dtintrv.h -text
+source/config/pkgdataMakefile.in -text
 source/data/coll/bn_IN.txt -text
 source/data/coll/pa_Arab.txt -text
 source/data/coll/pa_Arab_PK.txt -text
