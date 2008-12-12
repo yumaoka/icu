@@ -287,7 +287,6 @@ src/com/ibm/icu/dev/tool/tzu/runicutzuenv.bat -text
 src/com/ibm/icu/dev/tool/tzu/runicutzuenv.cmd -text
 src/com/ibm/icu/dev/tool/tzu/runicutzuenv.sh -text
 src/com/ibm/icu/impl/PVecToTrieCompactHandler.java -text
-src/com/ibm/icu/impl/PVecToTrieCompactor.java -text
 src/com/ibm/icu/impl/data/icudata.jar -text
 src/com/ibm/icu/impl/duration/impl/data/index.txt -text
 src/com/ibm/icu/impl/duration/impl/data/pfd_ar_EG.xml -text
