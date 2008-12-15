@@ -121,6 +121,7 @@ src/com/ibm/icu/dev/eclipse/plugins/com.ibm.icu/.settings/org.eclipse.jdt.ui.pre
 src/com/ibm/icu/dev/eclipse/plugins/com.ibm.icu/META-INF/MANIFEST.MF -text
 src/com/ibm/icu/dev/eclipse/plugins/com.ibm.icu/build.properties -text
 src/com/ibm/icu/dev/eclipse/plugins/com.ibm.icu/plugin.properties -text
+src/com/ibm/icu/dev/test/charset/TestSelection.java -text
 src/com/ibm/icu/dev/test/collator/CollationCreationMethodTest.java -text
 src/com/ibm/icu/dev/test/perf/data/collation/TestNames_Asian.txt -text
 src/com/ibm/icu/dev/test/perf/data/collation/TestNames_Chinese.txt -text
