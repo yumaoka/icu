@@ -81,6 +81,7 @@ source/data/locales/si_LK.txt -text
 source/data/locales/zh_Hans_HK.txt -text
 source/data/locales/zh_Hans_MO.txt -text
 source/data/misc/likelySubtags.txt -text
+source/data/misc/numberingSystems.txt -text
 source/data/misc/plurals.txt -text
 source/data/pkgdataMakefile.in -text
 source/data/rbnf/af.txt -text
