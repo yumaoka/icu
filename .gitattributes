@@ -92,12 +92,14 @@ trunk/source/data/xml/main/pa_Arab.xml -text
 trunk/source/data/xml/main/pa_PK.xml -text
 trunk/source/data/xml/main/si.xml -text
 trunk/source/data/xml/main/zu.xml -text
+trunk/source/i18n/currpinf.cpp -text
 trunk/source/i18n/dtitv_impl.h -text
 trunk/source/i18n/dtitvfmt.cpp -text
 trunk/source/i18n/dtitvinf.cpp -text
 trunk/source/i18n/tmunit.cpp -text
 trunk/source/i18n/tmutamt.cpp -text
 trunk/source/i18n/tmutfmt.cpp -text
+trunk/source/i18n/unicode/currpinf.h -text
 trunk/source/i18n/unicode/dtitvfmt.h -text
 trunk/source/i18n/unicode/dtitvinf.h -text
 trunk/source/i18n/unicode/tmunit.h -text
