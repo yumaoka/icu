@@ -1,0 +1,195 @@
+* text=auto !eol
+
+*.c text !eol
+*.cc text !eol
+*.classpath text !eol
+*.cpp text !eol
+*.css text !eol
+*.dsp text !eol
+*.dsw text !eol
+*.filters text !eol
+*.h text !eol
+*.htm text !eol
+*.html text !eol
+*.in text !eol
+*.java text !eol
+*.launch text !eol
+*.mak text !eol
+*.md text !eol
+*.MF text !eol
+*.mk text !eol
+*.pl text !eol
+*.pm text !eol
+*.project text !eol
+*.properties text !eol
+*.py text !eol
+*.rc text !eol
+*.sh text eol=lf
+*.sln text !eol
+*.stub text !eol
+*.txt text !eol
+*.ucm text !eol
+*.vcproj text !eol
+*.vcxproj text !eol
+*.xml text !eol
+*.xsl text !eol
+*.xslt text !eol
+Makefile text !eol
+configure text !eol
+LICENSE text !eol
+README text !eol
+
+*.bin -text
+*.brk -text
+*.cnv -text
+*.icu -text
+*.res -text
+*.nrm -text
+*.spp -text
+*.tri2 -text
+
+common/dtintrv.cpp -text
+common/mutex.cpp -text
+common/unicode/dtintrv.h -text
+config/gmakever.mk -text
+config/pkgdataMakefile.in -text
+data/coll/af.txt -text
+data/coll/af_NA.txt -text
+data/coll/af_ZA.txt -text
+data/coll/az.txt -text
+data/coll/az_Latn.txt -text
+data/coll/az_Latn_AZ.txt -text
+data/coll/bn_IN.txt -text
+data/coll/pa_Arab.txt -text
+data/coll/pa_Arab_PK.txt -text
+data/coll/pa_Guru.txt -text
+data/coll/pa_Guru_IN.txt -text
+data/coll/si.txt -text
+data/coll/si_LK.txt -text
+data/coll/ur.txt -text
+data/coll/ur_IN.txt -text
+data/coll/ur_PK.txt -text
+data/icu4j-readme.txt -text
+data/locales/fr_SN.txt -text
+data/locales/ha.txt -text
+data/locales/ha_Latn.txt -text
+data/locales/ha_Latn_NG.txt -text
+data/locales/ha_NG.txt -text
+data/locales/ii.txt -text
+data/locales/ii_CN.txt -text
+data/locales/kk_Cyrl.txt -text
+data/locales/kk_Cyrl_KZ.txt -text
+data/locales/ne.txt -text
+data/locales/ne_IN.txt -text
+data/locales/ne_NP.txt -text
+data/locales/pa_Arab.txt -text
+data/locales/pa_Arab_PK.txt -text
+data/locales/pa_PK.txt -text
+data/locales/si.txt -text
+data/locales/si_LK.txt -text
+data/locales/zh_Hans_HK.txt -text
+data/locales/zh_Hans_MO.txt -text
+data/misc/likelySubtags.txt -text
+data/misc/numberingSystems.txt -text
+data/misc/plurals.txt -text
+data/pkgdataMakefile.in -text
+data/rbnf/af.txt -text
+data/rbnf/ca.txt -text
+data/rbnf/cs.txt -text
+data/rbnf/et.txt -text
+data/rbnf/fi.txt -text
+data/rbnf/fo.txt -text
+data/rbnf/hu.txt -text
+data/rbnf/hy.txt -text
+data/rbnf/is.txt -text
+data/rbnf/ka.txt -text
+data/rbnf/kl.txt -text
+data/rbnf/ko.txt -text
+data/rbnf/lt.txt -text
+data/rbnf/lv.txt -text
+data/rbnf/nb.txt -text
+data/rbnf/nn.txt -text
+data/rbnf/pt_PT.txt -text
+data/rbnf/ro.txt -text
+data/rbnf/sk.txt -text
+data/rbnf/sq.txt -text
+data/rbnf/tr.txt -text
+data/rbnf/vi.txt -text
+data/rbnf/zh.txt -text
+data/rbnf/zh_Hant.txt -text
+data/xml/collation/af.xml -text
+data/xml/collation/az.xml -text
+data/xml/collation/bn_IN.xml -text
+data/xml/collation/si.xml -text
+data/xml/collation/ur.xml -text
+data/xml/main/ha.xml -text
+data/xml/main/ha_Latn.xml -text
+data/xml/main/in.xml -text
+data/xml/main/kk_Cyrl.xml -text
+data/xml/main/ne.xml -text
+data/xml/main/pa_Arab.xml -text
+data/xml/main/pa_PK.xml -text
+data/xml/main/si.xml -text
+data/xml/main/zu.xml -text
+data/xml/rbnf/de.xml -text
+data/xml/rbnf/en.xml -text
+data/xml/rbnf/fr.xml -text
+data/xml/rbnf/ga.xml -text
+data/xml/rbnf/mt.xml -text
+data/xml/rbnf/root.xml -text
+extra/uconv/pkgdataMakefile.in -text
+extra/uconv/samples/ibm-37-test.txt -text
+i18n/currpinf.cpp -text
+i18n/dtitv_impl.h -text
+i18n/dtitvfmt.cpp -text
+i18n/dtitvinf.cpp -text
+i18n/numsys.cpp -text
+i18n/tmunit.cpp -text
+i18n/tmutamt.cpp -text
+i18n/tmutfmt.cpp -text
+i18n/unicode/currpinf.h -text
+i18n/unicode/dtitvfmt.h -text
+i18n/unicode/dtitvinf.h -text
+i18n/unicode/numsys.h -text
+i18n/unicode/tmunit.h -text
+i18n/unicode/tmutamt.h -text
+i18n/unicode/tmutfmt.h -text
+i18n/wintzimpl.cpp -text
+i18n/wintzimpl.h -text
+samples/layout/cgnomelayout.c -text
+samples/ucnv/data02.bin -text
+test/compat/tzone.pl -text
+test/intltest/dtifmtts.cpp -text
+test/intltest/dtifmtts.h -text
+test/intltest/tufmtts.cpp -text
+test/intltest/tufmtts.h -text
+test/perf/Makefile.in -text
+test/perf/README -text
+test/perf/strsrchperf/Makefile.in -text
+test/perf/strsrchperf/StrSrchPerf_r.pl -text
+test/perf/strsrchperf/strsrchperf.cpp -text
+test/perf/strsrchperf/strsrchperf.h -text
+test/perf/strsrchperf/strsrchperf.vcproj -text
+test/testdata/ConverterSelectorTestUTF16.txt -text
+test/testdata/TestFont1.otf -text
+test/testdata/icu26_testtypes.res -text
+test/testdata/icu26e_testtypes.res -text
+test/testdata/importtest.bin -text
+test/testdata/pkgdataMakefile.in -text
+test/testdata/uni-text.bin -text
+tools/pkgdata/pkgdata.cpp -text
+tools/toolutil/pkg_genc.c -text
+tools/toolutil/pkg_genc.h -text
+tools/toolutil/pkg_gencmn.c -text
+tools/toolutil/pkg_gencmn.h -text
+tools/toolutil/pkg_icu.cpp -text
+tools/toolutil/pkg_icu.h -text
+
+# The following file types are stored in Git-LFS.
+*.jar filter=lfs diff=lfs merge=lfs -text
+*.dat filter=lfs diff=lfs merge=lfs -text
+*.zip filter=lfs diff=lfs merge=lfs -text
+*.gz filter=lfs diff=lfs merge=lfs -text
+*.bz2 filter=lfs diff=lfs merge=lfs -text
+*.gif filter=lfs diff=lfs merge=lfs -text
+
