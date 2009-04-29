@@ -262,6 +262,8 @@ source/data/xml/rbnf/zh_Hant.xml -text
 source/extra/uconv/pkgdataMakefile.in -text
 source/extra/uconv/samples/ibm-37-test.txt -text
 source/i18n/currpinf.cpp -text
+source/i18n/decfmtst.cpp -text
+source/i18n/decfmtst.h -text
 source/i18n/dtitv_impl.h -text
 source/i18n/dtitvfmt.cpp -text
 source/i18n/dtitvinf.cpp -text
