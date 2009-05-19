@@ -266,6 +266,8 @@ source/i18n/dtitv_impl.h -text
 source/i18n/dtitvfmt.cpp -text
 source/i18n/dtitvinf.cpp -text
 source/i18n/numsys.cpp -text
+source/i18n/smpdtfst.cpp -text
+source/i18n/smpdtfst.h -text
 source/i18n/tmunit.cpp -text
 source/i18n/tmutamt.cpp -text
 source/i18n/tmutfmt.cpp -text
