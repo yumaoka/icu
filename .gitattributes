@@ -100,6 +100,7 @@ source/data/locales/ne_NP.txt -text
 source/data/locales/pa_Arab.txt -text
 source/data/locales/pa_Arab_PK.txt -text
 source/data/locales/pa_PK.txt -text
+source/data/locales/pool.res -text
 source/data/locales/ro_MD.txt -text
 source/data/locales/si.txt -text
 source/data/locales/si_LK.txt -text
