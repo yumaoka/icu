@@ -48,6 +48,7 @@ README text !eol
 *.spp -text
 *.tri2 -text
 
+/LDML2ICUConverter.java.patch -text
 samples/ucnv/data02.bin -text
 test/perf/README -text
 test/testdata/TestFont1.otf -text
