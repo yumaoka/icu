@@ -55,6 +55,7 @@ main/classes/charset/.classpath -text
 main/classes/charset/.project -text
 main/classes/charset/.settings/org.eclipse.jdt.core.prefs -text
 main/classes/charset/manifest.stub -text
+main/classes/collate/collate-build.launch -text
 main/classes/core/.classpath -text
 main/classes/core/.project -text
 main/classes/core/.settings/org.eclipse.jdt.core.prefs -text
