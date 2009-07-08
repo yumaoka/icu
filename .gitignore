@@ -1,0 +1,15 @@
+/*.jar
+demos/out
+/doc
+main/classes/charset/out
+main/classes/collate/out
+main/classes/core/out
+main/classes/localespi/out
+main/tests/charset/out
+main/tests/collate/out
+main/tests/core/out
+main/tests/framework/out
+main/tests/localespi/out
+/out
+tools/build/out
+tools/misc/out
