@@ -78,6 +78,9 @@ main/classes/localespi/src/META-INF/services/java.util.spi.CurrencyNameProvider 
 main/classes/localespi/src/META-INF/services/java.util.spi.LocaleNameProvider -text
 main/classes/localespi/src/META-INF/services/java.util.spi.TimeZoneNameProvider -text
 main/classes/localespi/src/com/ibm/icu/impl/javaspi/ICULocaleServiceProviderConfig.properties -text
+main/classes/translit/.externalToolBuilders/copy-data-translit.launch -text
+main/classes/translit/.settings/org.eclipse.jdt.core.prefs -text
+main/classes/translit/.settings/org.eclipse.jdt.ui.prefs -text
 main/classes/translit/translit-build.launch -text
 main/shared/.project -text
 main/shared/data/icudata.jar -text
