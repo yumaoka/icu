@@ -232,6 +232,22 @@ main/tests/framework/manifest.stub -text
 main/tests/localespi/.classpath -text
 main/tests/localespi/.project -text
 main/tests/localespi/manifest.stub -text
+tools/build/icu4j28.api.gz -text
+tools/build/icu4j30.api.gz -text
+tools/build/icu4j32.api.gz -text
+tools/build/icu4j34.api.gz -text
+tools/build/icu4j341.api.gz -text
+tools/build/icu4j342.api.gz -text
+tools/build/icu4j343.api.gz -text
+tools/build/icu4j36.api.gz -text
+tools/build/icu4j38.api.gz -text
+tools/build/icu4j381.api.gz -text
+tools/build/icu4j400.api.gz -text
+tools/build/icu4j401.api.gz -text
+tools/build/icu4j42.api.gz -text
+tools/build/icu4j421.api.gz -text
+tools/build/manifest.stub -text
+tools/misc/manifest.stub -text
 
 # The following file types are stored in Git-LFS.
 *.jar filter=lfs diff=lfs merge=lfs -text

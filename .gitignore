@@ -7,3 +7,5 @@ main/tests/collate/out
 main/tests/core/out
 main/tests/framework/out
 main/tests/localespi/out
+tools/build/out
+tools/misc/out
