@@ -48,6 +48,7 @@ README text !eol
 *.spp -text
 *.tri2 -text
 
+/build.properties -text
 main/classes/charset/.classpath -text
 main/classes/charset/.project -text
 main/classes/charset/.settings/org.eclipse.jdt.core.prefs -text
