@@ -78,6 +78,7 @@ main/classes/localespi/src/META-INF/services/java.util.spi.CurrencyNameProvider 
 main/classes/localespi/src/META-INF/services/java.util.spi.LocaleNameProvider -text
 main/classes/localespi/src/META-INF/services/java.util.spi.TimeZoneNameProvider -text
 main/classes/localespi/src/com/ibm/icu/impl/javaspi/ICULocaleServiceProviderConfig.properties -text
+main/classes/translit/translit-build.launch -text
 main/shared/.project -text
 main/shared/data/icudata.jar -text
 main/shared/data/testdata.jar -text
@@ -235,6 +236,7 @@ main/tests/framework/manifest.stub -text
 main/tests/localespi/.classpath -text
 main/tests/localespi/.project -text
 main/tests/localespi/manifest.stub -text
+main/tests/translit/translit-tests-build.launch -text
 tools/build/icu4j28.api.gz -text
 tools/build/icu4j30.api.gz -text
 tools/build/icu4j32.api.gz -text
