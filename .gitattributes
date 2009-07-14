@@ -49,6 +49,7 @@ README text !eol
 *.tri2 -text
 
 /icu4c.css -text
+source/data/locales/pool.res -text
 source/samples/ucnv/data02.bin -text
 source/test/perf/README -text
 source/test/testdata/TestFont1.otf -text
