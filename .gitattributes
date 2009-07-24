@@ -51,6 +51,8 @@ README text !eol
 /build.properties -text
 demos/manifest.stub -text
 icu-eclipse/misc/ICUConfig.properties -text
+main/.classpath -text
+main/.project -text
 main/classes/charset/.classpath -text
 main/classes/charset/.project -text
 main/classes/charset/.settings/org.eclipse.jdt.core.prefs -text
