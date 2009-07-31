@@ -64,6 +64,15 @@ main/classes/core/.classpath -text
 main/classes/core/.project -text
 main/classes/core/.settings/org.eclipse.jdt.core.prefs -text
 main/classes/core/manifest.stub -text
+main/classes/core/src/com/ibm/icu/impl/DefaultLocaleFormatter.java -text
+main/classes/core/src/com/ibm/icu/impl/ICULocaleFormatter.java -text
+main/classes/core/src/com/ibm/icu/impl/ICULocaleFormatterService.java -text
+main/classes/core/src/com/ibm/icu/impl/ICUResourceTableAccess.java -text
+main/classes/core/src/com/ibm/icu/impl/ICUServiceProvider.java -text
+main/classes/core/src/com/ibm/icu/impl/LocaleIDParser.java -text
+main/classes/core/src/com/ibm/icu/impl/LocaleIDs.java -text
+main/classes/core/src/com/ibm/icu/text/LocaleFormatter.java -text
+main/classes/core/src/com/ibm/icu/text/LocaleFormatterService.java -text
 main/classes/localespi/.classpath -text
 main/classes/localespi/.project -text
 main/classes/localespi/.settings/org.eclipse.jdt.core.prefs -text
