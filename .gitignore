@@ -1,0 +1,11 @@
+classes/charset/out
+classes/collate/out
+classes/core/out
+classes/localespi/out
+classes/translit/out
+tests/charset/out
+tests/collate/out
+tests/core/out
+tests/framework/out
+tests/localespi/out
+tests/translit/out
