@@ -49,6 +49,7 @@ README text !eol
 *.tri2 -text
 
 data/locales/pool.res -text
+i18n/unicode/selfmt.h -text
 samples/ucnv/data02.bin -text
 test/perf/README -text
 test/testdata/TestFont1.otf -text
