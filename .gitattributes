@@ -53,6 +53,8 @@ i18n/selfmt.cpp -text
 i18n/selfmtimpl.h -text
 i18n/unicode/selfmt.h -text
 samples/ucnv/data02.bin -text
+test/intltest/selfmts.cpp -text
+test/intltest/selfmts.h -text
 test/perf/README -text
 test/testdata/TestFont1.otf -text
 test/testdata/icu26_testtypes.res -text
