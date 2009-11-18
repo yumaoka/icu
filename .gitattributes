@@ -61,6 +61,7 @@ classes/core/.classpath -text
 classes/core/.project -text
 classes/core/.settings/org.eclipse.jdt.core.prefs -text
 classes/core/manifest.stub -text
+classes/core/src/com/ibm/icu/text/SelectFormat.java -text
 classes/localespi/.classpath -text
 classes/localespi/.project -text
 classes/localespi/.settings/org.eclipse.jdt.core.prefs -text
