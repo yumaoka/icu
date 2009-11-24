@@ -64,7 +64,8 @@ main/classes/core/.classpath -text
 main/classes/core/.project -text
 main/classes/core/.settings/org.eclipse.jdt.core.prefs -text
 main/classes/core/manifest.stub -text
-main/classes/core/src/com/ibm/icu/text/UnicodeSetStringSpan.java -text
+main/classes/core/src/com/ibm/icu/impl/BMPSet.java -text
+main/classes/core/src/com/ibm/icu/impl/UnicodeSetStringSpan.java -text
 main/classes/localespi/.classpath -text
 main/classes/localespi/.project -text
 main/classes/localespi/.settings/org.eclipse.jdt.core.prefs -text
