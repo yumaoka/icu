@@ -317,6 +317,10 @@ main/tests/framework/manifest.stub -text
 main/tests/localespi/.classpath -text
 main/tests/localespi/.project -text
 main/tests/localespi/manifest.stub -text
+main/tests/packaging/.externalToolBuilders/copy-test-data.launch -text
+main/tests/packaging/.settings/org.eclipse.jdt.core.prefs -text
+main/tests/packaging/.settings/org.eclipse.jdt.ui.prefs -text
+main/tests/packaging/packaging-tests-build.launch -text
 main/tests/translit/.externalToolBuilders/copy-translit-test-data.launch -text
 main/tests/translit/.settings/org.eclipse.jdt.core.prefs -text
 main/tests/translit/.settings/org.eclipse.jdt.ui.prefs -text
