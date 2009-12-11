@@ -65,6 +65,10 @@ main/classes/core/.project -text
 main/classes/core/.settings/org.eclipse.jdt.core.prefs -text
 main/classes/core/manifest.stub -text
 main/classes/core/src/com/ibm/icu/text/SelectFormat.java -text
+main/classes/currdata/.externalToolBuilders/copy-data-langdata.launch -text
+main/classes/currdata/.settings/org.eclipse.jdt.core.prefs -text
+main/classes/currdata/.settings/org.eclipse.jdt.ui.prefs -text
+main/classes/currdata/currdata-build.launch -text
 main/classes/langdata/.externalToolBuilders/copy-data-langdata.launch -text
 main/classes/langdata/.settings/org.eclipse.jdt.core.prefs -text
 main/classes/langdata/.settings/org.eclipse.jdt.ui.prefs -text
