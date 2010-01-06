@@ -99,6 +99,7 @@ tests/core/.settings/org.eclipse.jdt.core.prefs -text
 tests/core/manifest.stub -text
 tests/core/src/com/ibm/icu/dev/data/rbbi/english.dict -text
 tests/core/src/com/ibm/icu/dev/data/thai6.ucs -text
+tests/core/src/com/ibm/icu/dev/test/format/SelectFormatTest.java -text
 tests/core/src/com/ibm/icu/dev/test/serializable/data/ICU_3.6/com.ibm.icu.impl.OlsonTimeZone.dat -text
 tests/core/src/com/ibm/icu/dev/test/serializable/data/ICU_3.6/com.ibm.icu.impl.TimeZoneAdapter.dat -text
 tests/core/src/com/ibm/icu/dev/test/serializable/data/ICU_3.6/com.ibm.icu.math.BigDecimal.dat -text
