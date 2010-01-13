@@ -62,6 +62,14 @@ classes/core/.project -text
 classes/core/.settings/org.eclipse.jdt.core.prefs -text
 classes/core/manifest.stub -text
 classes/core/src/com/ibm/icu/text/SelectFormat.java -text
+classes/currdata/.externalToolBuilders/copy-data-currdata.launch -text
+classes/currdata/.settings/org.eclipse.jdt.core.prefs -text
+classes/currdata/.settings/org.eclipse.jdt.ui.prefs -text
+classes/currdata/currdata-build.launch -text
+classes/langdata/.externalToolBuilders/copy-data-langdata.launch -text
+classes/langdata/.settings/org.eclipse.jdt.core.prefs -text
+classes/langdata/.settings/org.eclipse.jdt.ui.prefs -text
+classes/langdata/langdata-build.launch -text
 classes/localespi/.classpath -text
 classes/localespi/.project -text
 classes/localespi/.settings/org.eclipse.jdt.core.prefs -text
@@ -76,6 +84,10 @@ classes/localespi/src/META-INF/services/java.util.spi.CurrencyNameProvider -text
 classes/localespi/src/META-INF/services/java.util.spi.LocaleNameProvider -text
 classes/localespi/src/META-INF/services/java.util.spi.TimeZoneNameProvider -text
 classes/localespi/src/com/ibm/icu/impl/javaspi/ICULocaleServiceProviderConfig.properties -text
+classes/regiondata/.externalToolBuilders/copy-data-regiondata.launch -text
+classes/regiondata/.settings/org.eclipse.jdt.core.prefs -text
+classes/regiondata/.settings/org.eclipse.jdt.ui.prefs -text
+classes/regiondata/regiondata-build.launch -text
 classes/translit/.externalToolBuilders/copy-data-translit.launch -text
 classes/translit/.settings/org.eclipse.jdt.core.prefs -text
 classes/translit/.settings/org.eclipse.jdt.ui.prefs -text
@@ -308,6 +320,10 @@ tests/framework/manifest.stub -text
 tests/localespi/.classpath -text
 tests/localespi/.project -text
 tests/localespi/manifest.stub -text
+tests/packaging/.externalToolBuilders/copy-test-data.launch -text
+tests/packaging/.settings/org.eclipse.jdt.core.prefs -text
+tests/packaging/.settings/org.eclipse.jdt.ui.prefs -text
+tests/packaging/packaging-tests-build.launch -text
 tests/translit/.externalToolBuilders/copy-translit-test-data.launch -text
 tests/translit/.settings/org.eclipse.jdt.core.prefs -text
 tests/translit/.settings/org.eclipse.jdt.ui.prefs -text
