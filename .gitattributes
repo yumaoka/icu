@@ -61,7 +61,8 @@ classes/core/.classpath -text
 classes/core/.project -text
 classes/core/.settings/org.eclipse.jdt.core.prefs -text
 classes/core/manifest.stub -text
-classes/core/src/com/ibm/icu/text/SelectFormat.java -text
+classes/core/src/com/ibm/icu/impl/BMPSet.java -text
+classes/core/src/com/ibm/icu/impl/UnicodeSetStringSpan.java -text
 classes/currdata/.externalToolBuilders/copy-data-currdata.launch -text
 classes/currdata/.settings/org.eclipse.jdt.core.prefs -text
 classes/currdata/.settings/org.eclipse.jdt.ui.prefs -text
@@ -111,8 +112,7 @@ tests/core/.settings/org.eclipse.jdt.core.prefs -text
 tests/core/manifest.stub -text
 tests/core/src/com/ibm/icu/dev/data/rbbi/english.dict -text
 tests/core/src/com/ibm/icu/dev/data/thai6.ucs -text
-tests/core/src/com/ibm/icu/dev/test/format/SelectFormatAPITest.java -text
-tests/core/src/com/ibm/icu/dev/test/format/SelectFormatUnitTest.java -text
+tests/core/src/com/ibm/icu/dev/test/lang/UnicodeSetStringSpanTest.java -text
 tests/core/src/com/ibm/icu/dev/test/serializable/data/ICU_3.6/com.ibm.icu.impl.OlsonTimeZone.dat -text
 tests/core/src/com/ibm/icu/dev/test/serializable/data/ICU_3.6/com.ibm.icu.impl.TimeZoneAdapter.dat -text
 tests/core/src/com/ibm/icu/dev/test/serializable/data/ICU_3.6/com.ibm.icu.math.BigDecimal.dat -text
