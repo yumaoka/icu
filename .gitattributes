@@ -54,6 +54,8 @@ source/data/in/nfkc.nrm -text
 source/data/in/nfkc_cf.nrm -text
 source/data/in/unorm.icu -text
 source/data/locales/pool.res -text
+source/i18n/regextxt.cpp -text
+source/i18n/regextxt.h -text
 source/samples/ucnv/data02.bin -text
 source/test/perf/README -text
 source/test/testdata/TestFont1.otf -text
