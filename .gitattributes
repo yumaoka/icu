@@ -63,6 +63,8 @@ source/i18n/decfmtst.cpp -text
 source/i18n/decfmtst.h -text
 source/i18n/regextxt.cpp -text
 source/i18n/regextxt.h -text
+source/i18n/smpdtfst.cpp -text
+source/i18n/smpdtfst.h -text
 source/samples/ucnv/data02.bin -text
 source/test/perf/README -text
 source/test/testdata/TestFont1.otf -text
