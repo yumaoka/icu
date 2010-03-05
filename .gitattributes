@@ -65,6 +65,7 @@ main/classes/core/.settings/org.eclipse.jdt.core.prefs -text
 main/classes/core/manifest.stub -text
 main/classes/core/src/com/ibm/icu/impl/BMPSet.java -text
 main/classes/core/src/com/ibm/icu/impl/UnicodeSetStringSpan.java -text
+main/classes/core/src/com/ibm/icu/text/SpoofChecker.java -text
 main/classes/currdata/.externalToolBuilders/copy-data-currdata.launch -text
 main/classes/currdata/.settings/org.eclipse.jdt.core.prefs -text
 main/classes/currdata/.settings/org.eclipse.jdt.ui.prefs -text
@@ -114,6 +115,8 @@ main/tests/core/.settings/org.eclipse.jdt.core.prefs -text
 main/tests/core/manifest.stub -text
 main/tests/core/src/com/ibm/icu/dev/data/rbbi/english.dict -text
 main/tests/core/src/com/ibm/icu/dev/data/thai6.ucs -text
+main/tests/core/src/com/ibm/icu/dev/data/unicode/confusables.txt -text
+main/tests/core/src/com/ibm/icu/dev/data/unicode/confusablesWholeScript.txt -text
 main/tests/core/src/com/ibm/icu/dev/test/lang/UnicodeSetStringSpanTest.java -text
 main/tests/core/src/com/ibm/icu/dev/test/serializable/data/ICU_3.6/com.ibm.icu.impl.OlsonTimeZone.dat -text
 main/tests/core/src/com/ibm/icu/dev/test/serializable/data/ICU_3.6/com.ibm.icu.impl.TimeZoneAdapter.dat -text
@@ -305,6 +308,8 @@ main/tests/core/src/com/ibm/icu/dev/test/serializable/data/ICU_4.2.1/com.ibm.icu
 main/tests/core/src/com/ibm/icu/dev/test/serializable/data/ICU_4.2.1/com.ibm.icu.util.ULocale.dat -text
 main/tests/core/src/com/ibm/icu/dev/test/serializable/data/ICU_4.2.1/com.ibm.icu.util.UResourceTypeMismatchException.dat -text
 main/tests/core/src/com/ibm/icu/dev/test/serializable/data/ICU_4.2.1/com.ibm.icu.util.VTimeZone.dat -text
+main/tests/core/src/com/ibm/icu/dev/test/text/SpoofCheckerTest.java -text
+main/tests/core/src/com/ibm/icu/dev/test/text/TestAll.java -text
 main/tests/core/src/com/ibm/icu/dev/test/util/Trie2Test.setRanges1.16.tri2 -text
 main/tests/core/src/com/ibm/icu/dev/test/util/Trie2Test.setRanges1.32.tri2 -text
 main/tests/core/src/com/ibm/icu/dev/test/util/Trie2Test.setRanges2.16.tri2 -text
