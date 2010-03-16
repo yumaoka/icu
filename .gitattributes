@@ -49,8 +49,6 @@ README text !eol
 *.tri2 -text
 
 /icu4c.css -text
-source/common/uvectr64.cpp -text
-source/common/uvectr64.h -text
 source/data/curr/pool.res -text
 source/data/in/nfc.nrm -text
 source/data/in/nfkc.nrm -text
@@ -61,8 +59,6 @@ source/data/region/pool.res -text
 source/data/zone/pool.res -text
 source/i18n/decfmtst.cpp -text
 source/i18n/decfmtst.h -text
-source/i18n/regextxt.cpp -text
-source/i18n/regextxt.h -text
 source/i18n/smpdtfst.cpp -text
 source/i18n/smpdtfst.h -text
 source/samples/ucnv/data02.bin -text
