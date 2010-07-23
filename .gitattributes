@@ -64,7 +64,6 @@ source/data/in/uts46.nrm -text
 source/data/lang/pool.res -text
 source/data/locales/pool.res -text
 source/data/region/pool.res -text
-source/data/unidata/ScriptExtensions.txt -text
 source/data/zone/pool.res -text
 source/samples/ucnv/data02.bin -text
 source/test/perf/README -text
