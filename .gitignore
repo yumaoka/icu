@@ -1,0 +1,15 @@
+classes/charset/out
+classes/collate/out
+classes/core/out
+classes/currdata/out
+classes/langdata/out
+classes/localespi/out
+classes/regiondata/out
+classes/translit/out
+tests/charset/out
+tests/collate/out
+tests/core/out
+tests/framework/out
+tests/localespi/out
+tests/packaging/out
+tests/translit/out
