@@ -17,6 +17,7 @@ source/allinone/*.opensdf
 source/allinone/*.opt
 source/allinone/*.sdf
 source/allinone/*.suo
+source/allinone/ipch
 source/autom4te.cache
 source/bin
 source/common/*.ao
@@ -503,6 +504,7 @@ source/test/perf/convperf/debug
 source/test/perf/convperf/release
 source/test/perf/convperf/x64
 source/test/perf/convperf/x86
+source/test/perf/ipch
 source/test/perf/normperf/*.d
 source/test/perf/normperf/*.o
 source/test/perf/normperf/*.vcxproj.user
