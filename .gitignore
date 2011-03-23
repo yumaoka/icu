@@ -10,6 +10,7 @@ main/classes/langdata/out
 main/classes/localespi/out
 main/classes/regiondata/out
 main/classes/translit/out
+main/classes/tznamedata/out
 main/tests/charset/out
 main/tests/collate/out
 main/tests/core/out
