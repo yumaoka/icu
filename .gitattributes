@@ -75,6 +75,8 @@ source/extra/uconv/uconv.vcxproj -text
 source/extra/uconv/uconv.vcxproj.filters -text
 source/i18n/i18n.vcxproj -text
 source/i18n/i18n.vcxproj.filters -text
+source/i18n/tznames.cpp -text
+source/i18n/tznames.h -text
 source/io/io.vcxproj -text
 source/io/io.vcxproj.filters -text
 source/layout/layout.vcxproj -text
