@@ -79,6 +79,10 @@ source/i18n/i18n.vcxproj -text
 source/i18n/i18n.vcxproj.filters -text
 source/i18n/smpdtfst.cpp -text
 source/i18n/smpdtfst.h -text
+source/i18n/udateintervalformat.cpp -text
+source/i18n/unicode/udateintervalformat.h -text
+source/i18n/unicode/upluralrules.h -text
+source/i18n/upluralrules.cpp -text
 source/io/io.vcxproj -text
 source/io/io.vcxproj.filters -text
 source/layout/layout.vcxproj -text
@@ -136,8 +140,10 @@ source/samples/ustring/ustring.vcxproj -text
 source/samples/ustring/ustring.vcxproj.filters -text
 source/stubdata/stubdata.vcxproj -text
 source/stubdata/stubdata.vcxproj.filters -text
+source/test/cintltst/cdateintervalformattest.c -text
 source/test/cintltst/cintltst.vcxproj -text
 source/test/cintltst/cintltst.vcxproj.filters -text
+source/test/cintltst/cpluralrulestest.c -text
 source/test/intltest/intltest.vcxproj -text
 source/test/intltest/intltest.vcxproj.filters -text
 source/test/iotest/iotest.vcxproj -text
