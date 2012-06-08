@@ -191,6 +191,9 @@ source/tools/gencnval/gencnval.vcxproj -text
 source/tools/gencnval/gencnval.vcxproj.filters -text
 source/tools/genctd/genctd.vcxproj -text
 source/tools/genctd/genctd.vcxproj.filters -text
+source/tools/gendict/Makefile.in -text
+source/tools/gendict/gendict.1.in -text
+source/tools/gendict/gendict.cpp -text
 source/tools/gennorm2/gennorm2.vcxproj -text
 source/tools/genrb/derb.vcxproj -text
 source/tools/genrb/derb.vcxproj.filters -text
