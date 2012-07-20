@@ -52,6 +52,7 @@ README text !eol
 source/allinone/icucheck.bat -text
 source/common/common.vcxproj -text
 source/common/common.vcxproj.filters -text
+source/common/utypeinfo.h -text
 source/data/brkitr/char_th.txt -text
 source/data/brkitr/cjdict.txt -text
 source/data/brkitr/th.txt -text
