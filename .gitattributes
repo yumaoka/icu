@@ -190,8 +190,6 @@ source/tools/gencmn/gencmn.vcxproj -text
 source/tools/gencmn/gencmn.vcxproj.filters -text
 source/tools/gencnval/gencnval.vcxproj -text
 source/tools/gencnval/gencnval.vcxproj.filters -text
-source/tools/genctd/genctd.vcxproj -text
-source/tools/genctd/genctd.vcxproj.filters -text
 source/tools/gendict/Makefile.in -text
 source/tools/gendict/gendict.1.in -text
 source/tools/gendict/gendict.cpp -text
