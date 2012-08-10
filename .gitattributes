@@ -607,6 +607,9 @@ main/tests/translit/.settings/org.eclipse.jdt.core.prefs -text
 main/tests/translit/.settings/org.eclipse.jdt.ui.prefs -text
 main/tests/translit/translit-tests-build.launch -text
 /manifest.stub -text
+perf-tests/README.txt -text
+perf-tests/data/icuperf2report.xsl -text
+perf-tests/perftests.pl -text
 samples/build.properties -text
 samples/manifest.stub -text
 tools/build/.settings/org.eclipse.core.resources.prefs -text
