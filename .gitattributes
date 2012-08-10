@@ -193,6 +193,8 @@ source/tools/gencnval/gencnval.vcxproj.filters -text
 source/tools/gendict/Makefile.in -text
 source/tools/gendict/gendict.1.in -text
 source/tools/gendict/gendict.cpp -text
+source/tools/gendict/gendict.vcxproj -text
+source/tools/gendict/gendict.vcxproj.filters -text
 source/tools/gennorm2/gennorm2.vcxproj -text
 source/tools/genrb/derb.vcxproj -text
 source/tools/genrb/derb.vcxproj.filters -text
