@@ -669,6 +669,7 @@ source/tools/gencfu/Makefile
 source/tools/gencfu/Release
 source/tools/gencfu/debug
 source/tools/gencfu/gencfu
+source/tools/gencfu/gencfu.1
 source/tools/gencfu/gencfu.exe
 source/tools/gencfu/gencfu.vcproj.*.*.user
 source/tools/gencfu/release
