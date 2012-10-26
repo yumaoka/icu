@@ -52,7 +52,6 @@ README text !eol
 source/allinone/icucheck.bat -text
 source/common/common.vcxproj -text
 source/common/common.vcxproj.filters -text
-source/config/mh-haiku -text
 source/data/curr/pool.res -text
 source/data/in/coll/invuca.icu -text
 source/data/in/coll/ucadata.icu -text
@@ -153,7 +152,6 @@ source/test/perf/collperf/collperf.vcxproj -text
 source/test/perf/collperf/collperf.vcxproj.filters -text
 source/test/perf/convperf/convperf.vcxproj -text
 source/test/perf/convperf/convperf.vcxproj.filters -text
-source/test/perf/howExpensiveIs/Makefile.in -text
 source/test/perf/icuperf2report.xsl -text
 source/test/perf/normperf/normperf.vcxproj -text
 source/test/perf/normperf/normperf.vcxproj.filters -text
@@ -188,8 +186,8 @@ source/tools/gencmn/gencmn.vcxproj -text
 source/tools/gencmn/gencmn.vcxproj.filters -text
 source/tools/gencnval/gencnval.vcxproj -text
 source/tools/gencnval/gencnval.vcxproj.filters -text
-source/tools/genctd/genctd.vcxproj -text
-source/tools/genctd/genctd.vcxproj.filters -text
+source/tools/gendict/gendict.vcxproj -text
+source/tools/gendict/gendict.vcxproj.filters -text
 source/tools/gennorm2/gennorm2.vcxproj -text
 source/tools/genrb/derb.vcxproj -text
 source/tools/genrb/derb.vcxproj.filters -text
