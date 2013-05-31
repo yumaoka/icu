@@ -99,6 +99,8 @@ samples/datefmt/datefmt.vcxproj -text
 samples/datefmt/datefmt.vcxproj.filters -text
 samples/dtitvfmtsample/dtitvfmtsample.vcxproj -text
 samples/dtitvfmtsample/dtitvfmtsample.vcxproj.filters -text
+samples/dtptngsample/dtptngsample.vcxproj -text
+samples/dtptngsample/dtptngsample.vcxproj.filters -text
 samples/layout/layout.vcxproj -text
 samples/layout/layout.vcxproj.filters -text
 samples/legacy/legacy.vcxproj -text
