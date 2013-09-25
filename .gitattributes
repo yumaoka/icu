@@ -49,6 +49,7 @@ README text !eol
 *.tri2 -text
 
 /icu4c.css -text
+source/aclocal.m4 -text
 source/allinone/icucheck.bat -text
 source/common/common.vcxproj -text
 source/common/common.vcxproj.filters -text
@@ -97,6 +98,10 @@ source/samples/date/date.vcxproj -text
 source/samples/date/date.vcxproj.filters -text
 source/samples/datefmt/datefmt.vcxproj -text
 source/samples/datefmt/datefmt.vcxproj.filters -text
+source/samples/dtitvfmtsample/dtitvfmtsample.vcxproj -text
+source/samples/dtitvfmtsample/dtitvfmtsample.vcxproj.filters -text
+source/samples/dtptngsample/dtptngsample.vcxproj -text
+source/samples/dtptngsample/dtptngsample.vcxproj.filters -text
 source/samples/layout/layout.vcxproj -text
 source/samples/layout/layout.vcxproj.filters -text
 source/samples/legacy/legacy.vcxproj -text
@@ -105,6 +110,8 @@ source/samples/msgfmt/msgfmt.vcxproj -text
 source/samples/msgfmt/msgfmt.vcxproj.filters -text
 source/samples/numfmt/numfmt.vcxproj -text
 source/samples/numfmt/numfmt.vcxproj.filters -text
+source/samples/plurfmtsample/plurfmtsample.vcxproj -text
+source/samples/plurfmtsample/plurfmtsample.vcxproj.filters -text
 source/samples/props/props.vcxproj -text
 source/samples/props/props.vcxproj.filters -text
 source/samples/strsrch/strsrch.vcxproj -text
