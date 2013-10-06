@@ -54,9 +54,7 @@ source/allinone/icucheck.bat -text
 source/common/common.vcxproj -text
 source/common/common.vcxproj.filters -text
 source/data/curr/pool.res -text
-source/data/in/coll/invuca.icu -text
 source/data/in/coll/ucadata.icu -text
-source/data/in/coll/ucadata2.icu -text
 source/data/in/nfc.nrm -text
 source/data/in/nfkc.nrm -text
 source/data/in/nfkc_cf.nrm -text
