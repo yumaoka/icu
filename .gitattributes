@@ -73,6 +73,8 @@ source/data/region/pool.res -text
 source/data/zone/pool.res -text
 source/extra/uconv/uconv.vcxproj -text
 source/extra/uconv/uconv.vcxproj.filters -text
+source/i18n/decimalformatpattern.cpp -text
+source/i18n/decimalformatpattern.h -text
 source/i18n/i18n.vcxproj -text
 source/i18n/i18n.vcxproj.filters -text
 source/io/io.vcxproj -text
