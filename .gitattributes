@@ -159,6 +159,7 @@ source/test/perf/charperf/charperf.vcxproj -text
 source/test/perf/charperf/charperf.vcxproj.filters -text
 source/test/perf/collperf/collperf.vcxproj -text
 source/test/perf/collperf/collperf.vcxproj.filters -text
+source/test/perf/collperf2/CollPerf2_r.pl -text
 source/test/perf/collperf2/Makefile.in -text
 source/test/perf/collperf2/collperf2.cpp -text
 source/test/perf/collperf2/collperf2.vcxproj -text
