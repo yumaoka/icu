@@ -625,12 +625,6 @@ source/tools/ctestfw/libsicutest*
 source/tools/ctestfw/release
 source/tools/ctestfw/x64
 source/tools/ctestfw/x86
-source/tools/dumpce/*.css
-source/tools/dumpce/*.d
-source/tools/dumpce/*.html
-source/tools/dumpce/*.o
-source/tools/dumpce/Makefile
-source/tools/dumpce/dumpce
 source/tools/genbrk/*.d
 source/tools/genbrk/*.o
 source/tools/genbrk/*.pdb
