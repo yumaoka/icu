@@ -17,6 +17,7 @@ main/tests/core/out
 main/tests/framework/out
 main/tests/localespi/out
 main/tests/packaging/out
+main/tests/testall/out
 main/tests/translit/out
 /out
 perf-tests/out
