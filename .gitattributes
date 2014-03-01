@@ -147,6 +147,7 @@ main/tests/collate/.settings/org.eclipse.core.resources.prefs -text
 main/tests/collate/.settings/org.eclipse.jdt.core.prefs -text
 main/tests/collate/.settings/org.eclipse.jdt.ui.prefs -text
 main/tests/collate/collate-tests-build.launch -text
+main/tests/collate/src/com/ibm/icu/dev/test/collator/collationtest.txt -text
 main/tests/core/.classpath -text
 main/tests/core/.project -text
 main/tests/core/.settings/org.eclipse.core.resources.prefs -text
