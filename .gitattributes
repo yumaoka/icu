@@ -81,6 +81,10 @@ source/i18n/intformatter.h -text
 source/i18n/measunit.cpp -text
 source/i18n/numberformatter.cpp -text
 source/i18n/numberformatter.h -text
+source/i18n/numberintformatter.cpp -text
+source/i18n/numberintformatter.h -text
+source/i18n/pluralutils.cpp -text
+source/i18n/pluralutils.h -text
 source/i18n/quantityformatter.cpp -text
 source/i18n/quantityformatter.h -text
 source/i18n/sharednumberformat.h -text
