@@ -74,6 +74,7 @@ source/extra/uconv/uconv.vcxproj -text
 source/extra/uconv/uconv.vcxproj.filters -text
 source/i18n/i18n.vcxproj -text
 source/i18n/i18n.vcxproj.filters -text
+source/i18n/quick.cpp -text
 source/i18n/scientificformathelper.cpp -text
 source/i18n/unicode/scientificformathelper.h -text
 source/io/io.vcxproj -text
