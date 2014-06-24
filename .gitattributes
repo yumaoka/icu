@@ -53,6 +53,7 @@ currency/.project -text
 currency/.settings/org.eclipse.core.resources.prefs -text
 currency/.settings/org.eclipse.jdt.core.prefs -text
 currency/.settings/org.eclipse.jdt.ui.prefs -text
+databuild/c/iculslocs/trim_en.json -text
 multi/c/Makefile-c.inc -text
 multi/c/patch/3_0 -text
 multi/c/patch/3_2 -text
