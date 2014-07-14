@@ -70,6 +70,7 @@ source/data/makedata.vcxproj -text
 source/data/makedata.vcxproj.filters -text
 source/data/region/pool.res -text
 source/data/zone/pool.res -text
+source/data/zone/tzdbNames.txt -text
 source/extra/uconv/uconv.vcxproj -text
 source/extra/uconv/uconv.vcxproj.filters -text
 source/i18n/i18n.vcxproj -text
