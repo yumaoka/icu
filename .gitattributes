@@ -53,6 +53,8 @@ source/aclocal.m4 -text
 source/allinone/icucheck.bat -text
 source/common/common.vcxproj -text
 source/common/common.vcxproj.filters -text
+source/common/unifiedcache.cpp -text
+source/common/unifiedcache.h -text
 source/data/curr/pool.res -text
 source/data/in/coll/ucadata-implicithan.icu -text
 source/data/in/coll/ucadata-unihan.icu -text
@@ -145,6 +147,7 @@ source/test/depstest/icu-dependencies-mode.el -text
 source/test/intltest/intltest.vcxproj -text
 source/test/intltest/intltest.vcxproj.filters -text
 source/test/intltest/numfmtspectest.cpp -text
+source/test/intltest/unifiedcachetest.cpp -text
 source/test/iotest/iotest.vcxproj -text
 source/test/iotest/iotest.vcxproj.filters -text
 source/test/letest/cletest.vcxproj -text
