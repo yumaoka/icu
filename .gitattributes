@@ -53,6 +53,7 @@ source/aclocal.m4 -text
 source/allinone/icucheck.bat -text
 source/common/common.vcxproj -text
 source/common/common.vcxproj.filters -text
+source/common/uloc_keytype.cpp -text
 source/common/unifiedcache.cpp -text
 source/common/unifiedcache.h -text
 source/data/curr/pool.res -text
