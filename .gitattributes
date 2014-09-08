@@ -94,6 +94,7 @@ main/classes/core/.settings/org.eclipse.core.resources.prefs -text
 main/classes/core/.settings/org.eclipse.jdt.core.prefs -text
 main/classes/core/manifest.stub -text
 main/classes/core/src/com/ibm/icu/impl/TZDBTimeZoneNames.java -text
+main/classes/core/src/com/ibm/icu/impl/locale/KeyTypeData.java -text
 main/classes/core/src/com/ibm/icu/text/FilteredBreakIteratorBuilder.java -text
 main/classes/core/src/com/ibm/icu/text/SimpleFilteredBreakIteratorBuilder.java -text
 main/classes/currdata/.externalToolBuilders/copy-data-currdata.launch -text
