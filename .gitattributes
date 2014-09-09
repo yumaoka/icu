@@ -188,7 +188,7 @@ source/data/region/smn.txt -text
 source/data/region/ur_IN.txt -text
 source/data/region/wae.txt -text
 source/data/region/yi.txt -text
-source/data/units/pool.res -text
+source/data/unit/pool.res -text
 source/data/xml/collation/dsb.xml -text
 source/data/xml/collation/hsb.xml -text
 source/data/xml/collation/lb.xml -text
