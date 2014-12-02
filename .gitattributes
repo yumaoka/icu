@@ -173,7 +173,6 @@ source/test/CMakeLists.txt -text
 source/test/cintltst/CMakeLists.txt -text
 source/test/cintltst/cintltst.vcxproj -text
 source/test/cintltst/cintltst.vcxproj.filters -text
-source/test/depstest/gencmake.py -text
 source/test/depstest/icu-dependencies-mode.el -text
 source/test/intltest/CMakeLists.txt -text
 source/test/intltest/intltest.vcxproj -text
