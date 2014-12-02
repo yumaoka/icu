@@ -82,6 +82,10 @@ source/extra/uconv/uconv.vcxproj.filters -text
 source/i18n/CMakeLists.txt -text
 source/i18n/i18n.vcxproj -text
 source/i18n/i18n.vcxproj.filters -text
+source/i18n/scientificnumberformatter.cpp -text
+source/i18n/shareddatefmt.h -text
+source/i18n/shareddatetimepatterngenerator.h -text
+source/i18n/unicode/scientificnumberformatter.h -text
 source/io/CMakeLists.txt -text
 source/io/io.vcxproj -text
 source/io/io.vcxproj.filters -text
@@ -177,6 +181,7 @@ source/test/intltest/CMakeLists.txt -text
 source/test/intltest/intltest.vcxproj -text
 source/test/intltest/intltest.vcxproj.filters -text
 source/test/intltest/quantityformattertest.cpp -text
+source/test/intltest/scientificnumberformattertest.cpp -text
 source/test/iotest/CMakeLists.txt -text
 source/test/iotest/iotest.vcxproj -text
 source/test/iotest/iotest.vcxproj.filters -text
