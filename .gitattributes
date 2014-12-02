@@ -54,7 +54,6 @@ source/aclocal.m4 -text
 source/allinone/icucheck.bat -text
 source/cmake-modules/Configure.cmake -text
 source/cmake-modules/IcuLibrary.cmake -text
-source/cmake-modules/IcuPaths.cmake -text
 source/common/CMakeLists.txt -text
 source/common/common.vcxproj -text
 source/common/common.vcxproj.filters -text
