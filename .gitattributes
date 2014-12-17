@@ -144,6 +144,8 @@ source/test/cintltst/cintltst.vcxproj.filters -text
 source/test/depstest/icu-dependencies-mode.el -text
 source/test/intltest/intltest.vcxproj -text
 source/test/intltest/intltest.vcxproj.filters -text
+source/test/intltest/numberformattesttuple.cpp -text
+source/test/intltest/numberformattesttuple.h -text
 source/test/iotest/iotest.vcxproj -text
 source/test/iotest/iotest.vcxproj.filters -text
 source/test/letest/cletest.vcxproj -text
@@ -184,6 +186,7 @@ source/test/perf/utrie2perf/utrie2perf.vcxproj -text
 source/test/testdata/TestFont1.otf -text
 source/test/testdata/importtest.bin -text
 source/test/testdata/iscii.bin -text
+source/test/testdata/numberformattestspecification.txt -text
 source/test/testdata/old_e_testtypes.res -text
 source/test/testdata/old_l_testtypes.res -text
 source/test/testdata/uni-text.bin -text
