@@ -150,9 +150,12 @@ main/tests/core/.project -text
 main/tests/core/.settings/org.eclipse.core.resources.prefs -text
 main/tests/core/.settings/org.eclipse.jdt.core.prefs -text
 main/tests/core/manifest.stub -text
+main/tests/core/src/com/ibm/icu/dev/data/numberformattestspecification.txt -text
 main/tests/core/src/com/ibm/icu/dev/data/rbbi/english.dict -text
 main/tests/core/src/com/ibm/icu/dev/data/resources/testmessages.properties -text
 main/tests/core/src/com/ibm/icu/dev/data/thai6.ucs -text
+main/tests/core/src/com/ibm/icu/dev/test/format/Maybe.java -text
+main/tests/core/src/com/ibm/icu/dev/test/format/NumberFormatTestTuple.java -text
 main/tests/core/src/com/ibm/icu/dev/test/serializable/data/ICU_3.6/com.ibm.icu.impl.OlsonTimeZone.dat -text
 main/tests/core/src/com/ibm/icu/dev/test/serializable/data/ICU_3.6/com.ibm.icu.impl.TimeZoneAdapter.dat -text
 main/tests/core/src/com/ibm/icu/dev/test/serializable/data/ICU_3.6/com.ibm.icu.math.BigDecimal.dat -text
