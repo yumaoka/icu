@@ -84,8 +84,6 @@ source/i18n/digitgrouping.cpp -text
 source/i18n/digitgrouping.h -text
 source/i18n/digitinterval.cpp -text
 source/i18n/digitinterval.h -text
-source/i18n/formattedvalue.cpp -text
-source/i18n/formattedvalue.h -text
 source/i18n/i18n.vcxproj -text
 source/i18n/i18n.vcxproj.filters -text
 source/i18n/pluralaffix.cpp -text
