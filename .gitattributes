@@ -88,6 +88,7 @@ source/i18n/i18n.vcxproj -text
 source/i18n/i18n.vcxproj.filters -text
 source/i18n/pluralaffix.cpp -text
 source/i18n/pluralaffix.h -text
+source/i18n/significantdigitinterval.h -text
 source/i18n/valueformatter.cpp -text
 source/i18n/valueformatter.h -text
 source/io/io.vcxproj -text
