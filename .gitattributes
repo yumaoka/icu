@@ -74,6 +74,8 @@ source/data/unit/pool.res -text
 source/data/zone/pool.res -text
 source/extra/uconv/uconv.vcxproj -text
 source/extra/uconv/uconv.vcxproj.filters -text
+source/i18n/affixpatternparser.cpp -text
+source/i18n/affixpatternparser.h -text
 source/i18n/digitaffix.cpp -text
 source/i18n/digitaffix.h -text
 source/i18n/digitaffixesandpadding.cpp -text
