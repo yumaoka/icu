@@ -96,6 +96,7 @@ main/classes/core/manifest.stub -text
 main/classes/core/src/com/ibm/icu/impl/DigitInterval.java -text
 main/classes/core/src/com/ibm/icu/impl/FixedPrecision.java -text
 main/classes/core/src/com/ibm/icu/impl/ScientificPrecision.java -text
+main/classes/core/src/com/ibm/icu/impl/ScientificPrecisionDriver.java -text
 main/classes/core/src/com/ibm/icu/impl/SignificantDigitInterval.java -text
 main/classes/core/src/com/ibm/icu/impl/ValueObject.java -text
 main/classes/currdata/.externalToolBuilders/copy-data-currdata.launch -text
