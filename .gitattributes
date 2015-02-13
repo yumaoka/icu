@@ -172,6 +172,7 @@ source/test/intltest/intltest.vcxproj.filters -text
 source/test/intltest/numberformat2test.cpp -text
 source/test/intltest/numberformattesttuple.cpp -text
 source/test/intltest/numberformattesttuple.h -text
+source/test/intltest/pluralmaptest.cpp -text
 source/test/iotest/iotest.vcxproj -text
 source/test/iotest/iotest.vcxproj.filters -text
 source/test/letest/cletest.vcxproj -text
