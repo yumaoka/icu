@@ -97,6 +97,8 @@ source/i18n/precision.h -text
 source/i18n/sciformatter.cpp -text
 source/i18n/sciformatter.h -text
 source/i18n/significantdigitinterval.h -text
+source/i18n/smallintformatter.cpp -text
+source/i18n/smallintformatter.h -text
 source/i18n/valueformatter.cpp -text
 source/i18n/valueformatter.h -text
 source/io/io.vcxproj -text
