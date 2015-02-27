@@ -55,6 +55,7 @@ source/common/common.vcxproj -text
 source/common/common.vcxproj.filters -text
 source/common/pluralmap.cpp -text
 source/common/pluralmap.h -text
+source/common/unistrappender.h -text
 source/data/curr/pool.res -text
 source/data/in/coll/ucadata-implicithan.icu -text
 source/data/in/coll/ucadata-unihan.icu -text
