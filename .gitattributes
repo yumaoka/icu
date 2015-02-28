@@ -154,6 +154,7 @@ main/tests/core/.classpath -text
 main/tests/core/.project -text
 main/tests/core/.settings/org.eclipse.core.resources.prefs -text
 main/tests/core/.settings/org.eclipse.jdt.core.prefs -text
+main/tests/core/TestLinkifier.txt -text
 main/tests/core/manifest.stub -text
 main/tests/core/src/com/ibm/icu/dev/data/rbbi/english.dict -text
 main/tests/core/src/com/ibm/icu/dev/data/resources/testmessages.properties -text
