@@ -97,6 +97,7 @@ main/classes/core/src/com/ibm/icu/text/DecimalFormat2.java -text
 main/classes/core/src/com/ibm/icu/text/DigitBuilder.java -text
 main/classes/core/src/com/ibm/icu/text/DigitFormatter.java -text
 main/classes/core/src/com/ibm/icu/text/DigitList2.java -text
+main/classes/core/src/com/ibm/icu/text/Linkifier.java -text
 main/classes/currdata/.externalToolBuilders/copy-data-currdata.launch -text
 main/classes/currdata/.settings/org.eclipse.core.resources.prefs -text
 main/classes/currdata/.settings/org.eclipse.jdt.core.prefs -text
@@ -465,6 +466,7 @@ main/tests/core/src/com/ibm/icu/dev/test/serializable/data/ICU_54.1/com.ibm.icu.
 main/tests/core/src/com/ibm/icu/dev/test/serializable/data/ICU_54.1/com.ibm.icu.util.ULocale.dat -text
 main/tests/core/src/com/ibm/icu/dev/test/serializable/data/ICU_54.1/com.ibm.icu.util.UResourceTypeMismatchException.dat -text
 main/tests/core/src/com/ibm/icu/dev/test/serializable/data/ICU_54.1/com.ibm.icu.util.VTimeZone.dat -text
+main/tests/core/src/com/ibm/icu/dev/test/stringprep/TestLinkifier.java -text
 main/tests/core/src/com/ibm/icu/dev/test/util/Trie2Test.setRanges1.16.tri2 -text
 main/tests/core/src/com/ibm/icu/dev/test/util/Trie2Test.setRanges1.32.tri2 -text
 main/tests/core/src/com/ibm/icu/dev/test/util/Trie2Test.setRanges2.16.tri2 -text
