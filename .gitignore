@@ -42,6 +42,7 @@ source/config/icu-config
 source/config/icu-config.1
 source/config/icu.pc
 source/config/icu.pc.out
+source/config/icucross.inc
 source/config/icucross.mk
 source/config/icuinfo.xml
 source/config/pkgdata.inc
