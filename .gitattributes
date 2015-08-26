@@ -89,6 +89,8 @@ source/data/region/pool.res -text
 source/data/unit/pool.res -text
 source/data/zone/pool.res -text
 source/extra/uconv/uconv.vcxproj -text
+source/i18n/visibledigits.cpp -text
+source/i18n/visibledigits.h -text
 source/samples/break/break.vcxproj -text
 source/samples/case/case.vcxproj -text
 source/samples/citer/citer.vcxproj -text
