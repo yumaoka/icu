@@ -715,6 +715,9 @@ source/tools/gencnval/gencnval.vcproj.*.*.user
 source/tools/gencnval/release
 source/tools/gencnval/x64
 source/tools/gencnval/x86
+source/tools/gencolusb/Makefile.local
+source/tools/gencolusb/extract_unsafe_backwards
+source/tools/gencolusb/verify_uset
 source/tools/gendict/*.1
 source/tools/gendict/*.d
 source/tools/gendict/*.o
