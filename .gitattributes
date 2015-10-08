@@ -80,6 +80,7 @@ multi/proj/provider/Makefile.local-sample -text
 multi/proj/provider/icu-config.sed -text
 multi/proj/provider/readme.txt -text
 release/c/bomfix.py -text
+release/c/icu4c-data-npm/README.md -text
 release/c/icu4c-data-npm/dist/README.md -text
 release/c/icu4c-data-npm/package-dist-template.json -text
 release/c/icu4c-data-npm/package.json -text
