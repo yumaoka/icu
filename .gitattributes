@@ -87,6 +87,7 @@ release/c/icu4c-data-npm/full-icu/README.md -text
 release/c/icu4c-data-npm/full-icu/full-icu.js -text
 release/c/icu4c-data-npm/full-icu/install-npm.js -text
 release/c/icu4c-data-npm/full-icu/install-spawn.js -text
+release/c/icu4c-data-npm/full-icu/node-icu-data.js -text
 release/c/icu4c-data-npm/full-icu/package.json -text
 release/c/icu4c-data-npm/full-icu/postinstall.js -text
 release/c/icu4c-data-npm/package-dist-template.json -text
