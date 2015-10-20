@@ -14,6 +14,9 @@ multi/tmp
 release/c/icu4c-data-npm/*.dat
 release/c/icu4c-data-npm/dist/icu*.dat
 release/c/icu4c-data-npm/dist/package.json
+release/c/icu4c-data-npm/full-icu/*.dat
+release/c/icu4c-data-npm/full-icu/.git
+release/c/icu4c-data-npm/full-icu/node_modules
 release/c/icu4c-data-npm/node_modules
 release/c/uconfigtest
 release/c/uconfigtest.local
