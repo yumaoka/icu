@@ -54,6 +54,13 @@ main/shared/data/icutzdata.jar -text
 main/shared/data/testdata.jar -text
 main/tests/core/src/com/ibm/icu/dev/data/rbbi/english.dict -text
 main/tests/core/src/com/ibm/icu/dev/data/thai6.ucs -text
+main/tests/core/src/com/ibm/icu/dev/test/bidi/BidiFmwk.java -text
+main/tests/core/src/com/ibm/icu/dev/test/calendar/CalendarTestFmwk.java -text
+main/tests/core/src/com/ibm/icu/dev/test/format/DataDrivenNumberFormatTestUtility.java -text
+main/tests/core/src/com/ibm/icu/dev/test/serializable/CalendarHandler.java -text
+main/tests/core/src/com/ibm/icu/dev/test/serializable/ExceptionHandler.java -text
+main/tests/core/src/com/ibm/icu/dev/test/serializable/FormatHandler.java -text
+main/tests/core/src/com/ibm/icu/dev/test/serializable/SerializableTestUtility.java -text
 main/tests/core/src/com/ibm/icu/dev/test/serializable/data/ICU_3.6/com.ibm.icu.impl.OlsonTimeZone.dat -text
 main/tests/core/src/com/ibm/icu/dev/test/serializable/data/ICU_3.6/com.ibm.icu.impl.TimeZoneAdapter.dat -text
 main/tests/core/src/com/ibm/icu/dev/test/serializable/data/ICU_3.6/com.ibm.icu.math.BigDecimal.dat -text
@@ -382,6 +389,8 @@ main/tests/core/src/com/ibm/icu/dev/test/util/Trie2Test.setRangesEmpty.16.tri2 -
 main/tests/core/src/com/ibm/icu/dev/test/util/Trie2Test.setRangesEmpty.32.tri2 -text
 main/tests/core/src/com/ibm/icu/dev/test/util/Trie2Test.setRangesSingleValue.16.tri2 -text
 main/tests/core/src/com/ibm/icu/dev/test/util/Trie2Test.setRangesSingleValue.32.tri2 -text
+main/tests/translit/src/com/ibm/icu/dev/test/util/DumpBNF.java -text
+main/tests/translit/src/com/ibm/icu/dev/test/util/DumpBagFormatter.java -text
 samples/src/com/ibm/icu/samples/iuc/data/popmsg/en.res -text
 samples/src/com/ibm/icu/samples/iuc/data/popmsg/es.res -text
 samples/src/com/ibm/icu/samples/iuc/data/popmsg/res_index.res -text
