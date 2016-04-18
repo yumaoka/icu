@@ -51,8 +51,6 @@ README text !eol
 main/shared/data/icudata.jar -text
 main/shared/data/icutzdata.jar -text
 main/shared/data/testdata.jar -text
-main/tests/core/src/com/ibm/icu/dev/data/rbbi/english.dict -text
-main/tests/core/src/com/ibm/icu/dev/data/thai6.ucs -text
 main/tests/core/src/com/ibm/icu/dev/test/serializable/data/ICU_3.6/com.ibm.icu.impl.OlsonTimeZone.dat -text
 main/tests/core/src/com/ibm/icu/dev/test/serializable/data/ICU_3.6/com.ibm.icu.impl.TimeZoneAdapter.dat -text
 main/tests/core/src/com/ibm/icu/dev/test/serializable/data/ICU_3.6/com.ibm.icu.math.BigDecimal.dat -text
