@@ -49,6 +49,7 @@ README text !eol
 *.tri2 -text
 
 /ivy.xml -text
+lib/.project -text
 main/shared/data/icudata.jar -text
 main/shared/data/icutzdata.jar -text
 main/shared/data/testdata.jar -text
