@@ -48,18 +48,20 @@ README text !eol
 *.spp -text
 *.tri2 -text
 
+demos/src/com/ibm/icu/dev/demo/translit/IntDiffer.java -text
 /ivy.xml -text
 lib/.project -text
+main/classes/core/src/com/ibm/icu/impl/CacheValue.java -text
 main/shared/data/icudata.jar -text
 main/shared/data/icutzdata.jar -text
 main/shared/data/testdata.jar -text
-main/tests/core/src/com/ibm/icu/dev/data/rbbi/english.dict -text
 main/tests/core/src/com/ibm/icu/dev/data/thai6.ucs -text
 main/tests/core/src/com/ibm/icu/dev/test/bidi/BidiFmwk.java -text
 main/tests/core/src/com/ibm/icu/dev/test/calendar/CalendarTestFmwk.java -text
 main/tests/core/src/com/ibm/icu/dev/test/duration/LanguageTestFmwk.java -text
 main/tests/core/src/com/ibm/icu/dev/test/format/DataDrivenNumberFormatTestUtility.java -text
 main/tests/core/src/com/ibm/icu/dev/test/format/NumberFormatTestData.java -text
+main/tests/core/src/com/ibm/icu/dev/test/impl/CacheTest.java -text
 main/tests/core/src/com/ibm/icu/dev/test/serializable/CalendarHandler.java -text
 main/tests/core/src/com/ibm/icu/dev/test/serializable/ExceptionHandler.java -text
 main/tests/core/src/com/ibm/icu/dev/test/serializable/FormatHandler.java -text
@@ -392,7 +394,9 @@ main/tests/core/src/com/ibm/icu/dev/test/util/Trie2Test.setRangesEmpty.16.tri2 -
 main/tests/core/src/com/ibm/icu/dev/test/util/Trie2Test.setRangesEmpty.32.tri2 -text
 main/tests/core/src/com/ibm/icu/dev/test/util/Trie2Test.setRangesSingleValue.16.tri2 -text
 main/tests/core/src/com/ibm/icu/dev/test/util/Trie2Test.setRangesSingleValue.32.tri2 -text
-main/tests/translit/src/com/ibm/icu/dev/test/util/DumpBNF.java -text
+main/tests/translit/src/com/ibm/icu/dev/test/translit/StringBoilerplateTest.java -text
+main/tests/translit/src/com/ibm/icu/dev/test/translit/UnicodeMapBoilerplateTest.java -text
+main/tests/translit/src/com/ibm/icu/dev/test/translit/UnicodeSetBoilerplateTest.java -text
 samples/src/com/ibm/icu/samples/iuc/data/popmsg/en.res -text
 samples/src/com/ibm/icu/samples/iuc/data/popmsg/es.res -text
 samples/src/com/ibm/icu/samples/iuc/data/popmsg/res_index.res -text
