@@ -393,7 +393,6 @@ main/tests/core/src/com/ibm/icu/dev/test/util/Trie2Test.setRangesEmpty.32.tri2 -
 main/tests/core/src/com/ibm/icu/dev/test/util/Trie2Test.setRangesSingleValue.16.tri2 -text
 main/tests/core/src/com/ibm/icu/dev/test/util/Trie2Test.setRangesSingleValue.32.tri2 -text
 main/tests/translit/src/com/ibm/icu/dev/test/util/DumpBNF.java -text
-main/tests/translit/src/com/ibm/icu/dev/test/util/DumpBagFormatter.java -text
 samples/src/com/ibm/icu/samples/iuc/data/popmsg/en.res -text
 samples/src/com/ibm/icu/samples/iuc/data/popmsg/es.res -text
 samples/src/com/ibm/icu/samples/iuc/data/popmsg/res_index.res -text
