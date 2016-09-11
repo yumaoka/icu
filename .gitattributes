@@ -50,10 +50,12 @@ README text !eol
 
 /ivy.xml -text
 lib/.project -text
+main/classes/core/src/com/ibm/icu/text/BidiTransform.java -text
 main/shared/data/icudata.jar -text
 main/shared/data/icutzdata.jar -text
 main/shared/data/testdata.jar -text
 main/tests/core/src/com/ibm/icu/dev/test/bidi/BidiFmwk.java -text
+main/tests/core/src/com/ibm/icu/dev/test/bidi/TestBidiTransform.java -text
 main/tests/core/src/com/ibm/icu/dev/test/calendar/CalendarTestFmwk.java -text
 main/tests/core/src/com/ibm/icu/dev/test/duration/LanguageTestFmwk.java -text
 main/tests/core/src/com/ibm/icu/dev/test/format/DataDrivenNumberFormatTestUtility.java -text
