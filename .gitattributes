@@ -58,6 +58,7 @@ main/tests/core/src/com/ibm/icu/dev/test/calendar/CalendarTestFmwk.java -text
 main/tests/core/src/com/ibm/icu/dev/test/duration/LanguageTestFmwk.java -text
 main/tests/core/src/com/ibm/icu/dev/test/format/DataDrivenNumberFormatTestUtility.java -text
 main/tests/core/src/com/ibm/icu/dev/test/format/NumberFormatTestData.java -text
+main/tests/core/src/com/ibm/icu/dev/test/rbbi/AbstractBreakIteratorTests.java -text
 main/tests/core/src/com/ibm/icu/dev/test/serializable/CalendarHandler.java -text
 main/tests/core/src/com/ibm/icu/dev/test/serializable/ExceptionHandler.java -text
 main/tests/core/src/com/ibm/icu/dev/test/serializable/FormatHandler.java -text
