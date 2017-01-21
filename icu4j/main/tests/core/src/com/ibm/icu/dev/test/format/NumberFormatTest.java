@@ -112,7 +112,7 @@ public class NumberFormatTest extends TestFmwk {
                     Number actual = fmt.parse(tuple.parse, ppos);
                     if (ppos.getIndex() == 0) {
                         if (!tuple.output.equals("fail")) {
-                            return "Parse error expected.";
+                            return "Got parse error, but expected " + tuple.output;
                         }
                         return null;
                     }
@@ -317,7 +317,7 @@ public class NumberFormatTest extends TestFmwk {
                     Number actual = fmt.parse(tuple.parse, ppos);
                     if (ppos.getIndex() == 0) {
                         if (!tuple.output.equals("fail")) {
-                            return "Parse error expected.";
+                            return "Got parse error, but expected " + tuple.output;
                         }
                         return null;
                     }
@@ -4429,19 +4429,21 @@ public class NumberFormatTest extends TestFmwk {
 
     }
 
-
-    //TODO(junit): investigate
     @Test
     public void TestDataDrivenICU() {
         DataDrivenNumberFormatTestUtility.runSuite(
                 "numberformattestspecification.txt", ICU);
     }
 
-    //TODO(junit): investigate
     @Test
     public void TestDataDrivenJDK() {
         DataDrivenNumberFormatTestUtility.runSuite(
                 "numberformattestspecification.txt", JDK);
+    }
+
+    @Test
+    public void TestDataDrivenShane() {
+        ShanesDataDrivenTester.run();
     }
 
 
@@ -4918,13 +4920,13 @@ public class NumberFormatTest extends TestFmwk {
     @Test
     public void TestArabicCurrencyPatternInfo() {
         ULocale arLocale = new ULocale("ar");
- 
+
         DecimalFormatSymbols symbols = new DecimalFormatSymbols(arLocale);
         String currSpacingPatn = symbols.getPatternForCurrencySpacing(DecimalFormatSymbols.CURRENCY_SPC_CURRENCY_MATCH, true);
         if (currSpacingPatn==null || currSpacingPatn.length() == 0) {
             errln("locale ar, getPatternForCurrencySpacing returns null or 0-length string");
         }
-        
+
         DecimalFormat currAcctFormat = (DecimalFormat)NumberFormat.getInstance(arLocale, NumberFormat.ACCOUNTINGCURRENCYSTYLE);
         String currAcctPatn = currAcctFormat.toPattern();
         if (currAcctPatn==null || currAcctPatn.length() == 0) {

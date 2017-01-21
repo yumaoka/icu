@@ -232,8 +232,11 @@ public class DecimalFormatSymbols implements Cloneable, Serializable {
      * Returns the array of strings used as digits, in order from 0 through 9
      * Package private method - doesn't create a defensively copy.
      * @return the array of digit strings
+     * @internal
+     * @deprecated This API is ICU internal only.
      */
-    String[] getDigitStringsLocal() {
+    @Deprecated
+    public String[] getDigitStringsLocal() {
         return digitStrings;
     }
 
