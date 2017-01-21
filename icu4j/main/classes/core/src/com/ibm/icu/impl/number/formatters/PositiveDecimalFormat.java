@@ -12,7 +12,7 @@ public class PositiveDecimalFormat implements Format.TargetFormat {
 
   public static interface IProperties {
 
-    static int DEFAULT_FIRST_GROUPING_SIZE = Integer.MAX_VALUE;
+    static int DEFAULT_GROUPING_SIZE = Integer.MAX_VALUE;
 
     /** @see #setGroupingSize */
     public int getGroupingSize();
@@ -27,7 +27,7 @@ public class PositiveDecimalFormat implements Format.TargetFormat {
      */
     public IProperties setGroupingSize(int groupingSize);
 
-    static int DEFAULT_GROUPING_SIZE = Integer.MAX_VALUE;
+    static int DEFAULT_SECONDARY_GROUPING_SIZE = Integer.MAX_VALUE;
 
     /** @see #setSecondaryGroupingSize */
     public int getSecondaryGroupingSize();
@@ -76,6 +76,11 @@ public class PositiveDecimalFormat implements Format.TargetFormat {
      * @return The property bag, for chaining.
      */
     public IProperties setMinimumGroupingDigits(int minimumGroupingDigits);
+  }
+
+  public static boolean useGrouping(Properties properties) {
+    return properties.getGroupingSize() != IProperties.DEFAULT_GROUPING_SIZE
+        || properties.getSecondaryGroupingSize() != IProperties.DEFAULT_SECONDARY_GROUPING_SIZE;
   }
 
   // Properties

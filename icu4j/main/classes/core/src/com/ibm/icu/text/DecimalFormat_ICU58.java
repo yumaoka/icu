@@ -608,7 +608,7 @@ import com.ibm.icu.util.ULocale.Category;
  * @author       Alan Liu
  * @stable ICU 2.0
  */
-public class DecimalFormat extends NumberFormat {
+public class DecimalFormat_ICU58 extends NumberFormat {
 
     /**
      * Creates a DecimalFormat using the default pattern and symbols for the default
@@ -626,7 +626,7 @@ public class DecimalFormat extends NumberFormat {
      * @see Category#FORMAT
      * @stable ICU 2.0
      */
-    public DecimalFormat() {
+    public DecimalFormat_ICU58() {
         ULocale def = ULocale.getDefault(Category.FORMAT);
         String pattern = getPattern(def, 0);
         // Always applyPattern after the symbols are set
@@ -660,7 +660,7 @@ public class DecimalFormat extends NumberFormat {
      * @see Category#FORMAT
      * @stable ICU 2.0
      */
-    public DecimalFormat(String pattern) {
+    public DecimalFormat_ICU58(String pattern) {
         // Always applyPattern after the symbols are set
         ULocale def = ULocale.getDefault(Category.FORMAT);
         this.symbols = new DecimalFormatSymbols(def);
@@ -692,7 +692,7 @@ public class DecimalFormat extends NumberFormat {
      * @see DecimalFormatSymbols
      * @stable ICU 2.0
      */
-    public DecimalFormat(String pattern, DecimalFormatSymbols symbols) {
+    public DecimalFormat_ICU58(String pattern, DecimalFormatSymbols symbols) {
         createFromPatternAndSymbols(pattern, symbols);
     }
 
@@ -738,7 +738,7 @@ public class DecimalFormat extends NumberFormat {
      * NumberFormat.ISOCURRENCYSTYLE; NumberFormat.PLURALCURRENCYSTYLE;
      * @stable ICU 4.2
      */
-    public DecimalFormat(String pattern, DecimalFormatSymbols symbols, CurrencyPluralInfo infoInput,
+    public DecimalFormat_ICU58(String pattern, DecimalFormatSymbols symbols, CurrencyPluralInfo infoInput,
                          int style) {
         CurrencyPluralInfo info = infoInput;
         if (style == NumberFormat.PLURALCURRENCYSTYLE) {
@@ -772,7 +772,7 @@ public class DecimalFormat extends NumberFormat {
      * Creates a DecimalFormat for currency plural format from the given pattern, symbols,
      * and style.
      */
-    DecimalFormat(String pattern, DecimalFormatSymbols inputSymbols, int style) {
+    DecimalFormat_ICU58(String pattern, DecimalFormatSymbols inputSymbols, int style) {
         CurrencyPluralInfo info = null;
         if (style == NumberFormat.PLURALCURRENCYSTYLE) {
             info = new CurrencyPluralInfo(inputSymbols.getULocale());
@@ -921,7 +921,7 @@ public class DecimalFormat extends NumberFormat {
                roundingInc =
                        BigDecimal.ONE.movePointRight(log10RoundingIncr).doubleValue();
            }
-           number = DecimalFormat.round(number, roundingInc, roundingIncReciprocal, roundingMode, isNegative);
+           number = DecimalFormat_ICU58.round(number, roundingInc, roundingIncReciprocal, roundingMode, isNegative);
         }
         // End fix for ticket:10542
 
@@ -3972,7 +3972,7 @@ public class DecimalFormat extends NumberFormat {
     @Override
     public Object clone() {
         try {
-            DecimalFormat other = (DecimalFormat) super.clone();
+            DecimalFormat_ICU58 other = (DecimalFormat_ICU58) super.clone();
             other.symbols = (DecimalFormatSymbols) symbols.clone();
             other.digitList = new DigitList(); // fix for JB#5358
             if (currencyPluralInfo != null) {
@@ -4001,7 +4001,7 @@ public class DecimalFormat extends NumberFormat {
         if (!super.equals(obj))
             return false; // super does class check
 
-        DecimalFormat other = (DecimalFormat) obj;
+        DecimalFormat_ICU58 other = (DecimalFormat_ICU58) obj;
         // Add the comparison of the four new added fields ,they are posPrefixPattern,
         // posSuffixPattern, negPrefixPattern, negSuffixPattern. [Richard/GCL]
         // following are added to accomodate changes for currency plural format.

@@ -20,20 +20,14 @@ import java.text.AttributedCharacterIterator;
 import java.text.CharacterIterator;
 import java.text.FieldPosition;
 import java.text.ParsePosition;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.Locale;
-import java.util.Map;
 
 import org.junit.Test;
 
 import com.ibm.icu.dev.test.TestFmwk;
 import com.ibm.icu.text.CompactDecimalFormat;
 import com.ibm.icu.text.CompactDecimalFormat.CompactStyle;
-import com.ibm.icu.text.DecimalFormatSymbols;
 import com.ibm.icu.text.NumberFormat;
-import com.ibm.icu.text.PluralRules;
 import com.ibm.icu.util.Currency;
 import com.ibm.icu.util.CurrencyAmount;
 import com.ibm.icu.util.ULocale;
@@ -249,68 +243,70 @@ public class CompactDecimalFormatTest extends TestFmwk {
             {2000, "2Ks$s"},
     };
 
-    @Test
-    public void TestACoreCompactFormat() {
-        Map<String,String[][]> affixes = new HashMap();
-        affixes.put("one", new String[][] {
-                {"","",}, {"","",}, {"","",},
-                {"","K"}, {"","K"}, {"","K"},
-                {"","M"}, {"","M"}, {"","M"},
-                {"","B"}, {"","B"}, {"","B"},
-                {"","T"}, {"","T"}, {"","T"},
-        });
-        affixes.put("other", new String[][] {
-                {"","",}, {"","",}, {"","",},
-                {"","Ks"}, {"","Ks"}, {"","Ks"},
-                {"","Ms"}, {"","Ms"}, {"","Ms"},
-                {"","Bs"}, {"","Bs"}, {"","Bs"},
-                {"","Ts"}, {"","Ts"}, {"","Ts"},
-        });
+    // TODO(sffc): Re-write these tests for the new CompactDecimalFormat pipeline
 
-        Map<String,String[]> currencyAffixes = new HashMap();
-        currencyAffixes.put("one", new String[] {"", "$"});
-        currencyAffixes.put("other", new String[] {"", "$s"});
+//    @Test
+//    public void TestACoreCompactFormat() {
+//        Map<String,String[][]> affixes = new HashMap();
+//        affixes.put("one", new String[][] {
+//                {"","",}, {"","",}, {"","",},
+//                {"","K"}, {"","K"}, {"","K"},
+//                {"","M"}, {"","M"}, {"","M"},
+//                {"","B"}, {"","B"}, {"","B"},
+//                {"","T"}, {"","T"}, {"","T"},
+//        });
+//        affixes.put("other", new String[][] {
+//                {"","",}, {"","",}, {"","",},
+//                {"","Ks"}, {"","Ks"}, {"","Ks"},
+//                {"","Ms"}, {"","Ms"}, {"","Ms"},
+//                {"","Bs"}, {"","Bs"}, {"","Bs"},
+//                {"","Ts"}, {"","Ts"}, {"","Ts"},
+//        });
+//
+//        Map<String,String[]> currencyAffixes = new HashMap();
+//        currencyAffixes.put("one", new String[] {"", "$"});
+//        currencyAffixes.put("other", new String[] {"", "$s"});
+//
+//        long[] divisors = new long[] {
+//                0,0,0,
+//                1000, 1000, 1000,
+//                1000000, 1000000, 1000000,
+//                1000000000L, 1000000000L, 1000000000L,
+//                1000000000000L, 1000000000000L, 1000000000000L};
+//        long[] divisors_err = new long[] {
+//                0,0,0,
+//                13, 13, 13,
+//                1000000, 1000000, 1000000,
+//                1000000000L, 1000000000L, 1000000000L,
+//                1000000000000L, 1000000000000L, 1000000000000L};
+//        checkCore(affixes, null, divisors, TestACoreCompactFormatList);
+//        checkCore(affixes, currencyAffixes, divisors, TestACoreCompactFormatListCurrency);
+//        try {
+//            checkCore(affixes, null, divisors_err, TestACoreCompactFormatList);
+//        } catch(AssertionError e) {
+//            // Exception expected, thus return.
+//            return;
+//        }
+//        fail("Error expected but passed");
+//    }
 
-        long[] divisors = new long[] {
-                0,0,0,
-                1000, 1000, 1000,
-                1000000, 1000000, 1000000,
-                1000000000L, 1000000000L, 1000000000L,
-                1000000000000L, 1000000000000L, 1000000000000L};
-        long[] divisors_err = new long[] {
-                0,0,0,
-                13, 13, 13,
-                1000000, 1000000, 1000000,
-                1000000000L, 1000000000L, 1000000000L,
-                1000000000000L, 1000000000000L, 1000000000000L};
-        checkCore(affixes, null, divisors, TestACoreCompactFormatList);
-        checkCore(affixes, currencyAffixes, divisors, TestACoreCompactFormatListCurrency);
-        try {
-            checkCore(affixes, null, divisors_err, TestACoreCompactFormatList);
-        } catch(AssertionError e) {
-            // Exception expected, thus return.
-            return;
-        }
-        fail("Error expected but passed");
-    }
-
-    private void checkCore(Map<String, String[][]> affixes, Map<String, String[]> currencyAffixes, long[] divisors, Object[][] testItems) {
-        Collection<String> debugCreationErrors = new LinkedHashSet();
-        CompactDecimalFormat cdf = new CompactDecimalFormat(
-                "#,###.00",
-                DecimalFormatSymbols.getInstance(new ULocale("fr")),
-                CompactStyle.SHORT, PluralRules.createRules("one: j is 1 or f is 1"),
-                divisors, affixes, currencyAffixes,
-                debugCreationErrors
-                );
-        if (debugCreationErrors.size() != 0) {
-            for (String s : debugCreationErrors) {
-                errln("Creation error: " + s);
-            }
-        } else {
-            checkCdf("special cdf ", cdf, testItems);
-        }
-    }
+//    private void checkCore(Map<String, String[][]> affixes, Map<String, String[]> currencyAffixes, long[] divisors, Object[][] testItems) {
+//        Collection<String> debugCreationErrors = new LinkedHashSet();
+//        CompactDecimalFormat cdf = new CompactDecimalFormat(
+//                "#,###.00",
+//                DecimalFormatSymbols.getInstance(new ULocale("fr")),
+//                CompactStyle.SHORT, PluralRules.createRules("one: j is 1 or f is 1"),
+//                divisors, affixes, currencyAffixes,
+//                debugCreationErrors
+//                );
+//        if (debugCreationErrors.size() != 0) {
+//            for (String s : debugCreationErrors) {
+//                errln("Creation error: " + s);
+//            }
+//        } else {
+//            checkCdf("special cdf ", cdf, testItems);
+//        }
+//    }
 
     @Test
     public void TestDefaultSignificantDigits() {

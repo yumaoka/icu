@@ -28,6 +28,21 @@ public class PaddingFormat implements AfterFormat {
           throw new IllegalArgumentException("Don't know how to map " + old);
       }
     }
+
+    public int toOld() {
+      switch (this) {
+        case BEFORE_PREFIX:
+          return com.ibm.icu.text.DecimalFormat.PAD_BEFORE_PREFIX;
+        case AFTER_PREFIX:
+          return com.ibm.icu.text.DecimalFormat.PAD_AFTER_PREFIX;
+        case BEFORE_SUFFIX:
+          return com.ibm.icu.text.DecimalFormat.PAD_BEFORE_SUFFIX;
+        case AFTER_SUFFIX:
+          return com.ibm.icu.text.DecimalFormat.PAD_AFTER_SUFFIX;
+        default:
+          return -1; // silence compiler errors
+      }
+    }
   }
 
   public static interface IProperties {

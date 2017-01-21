@@ -33,9 +33,6 @@ public class demo {
         Parse.parse(
             "dd123",
             ppos,
-            Parse.ParseMode.STRICT,
-            false,
-            false,
             new Properties().setPositivePrefix("dd").setNegativePrefix("ddd"),
             DecimalFormatSymbols.getInstance()));
     System.out.println(ppos);

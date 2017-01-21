@@ -1321,9 +1321,9 @@ public class DecimalFormatSymbols implements Cloneable, Serializable {
         setMonetaryGroupingSeparatorString(numberElements[11]);
         setExponentMultiplicationSign(numberElements[12]);
 
-        digit = DecimalFormat.PATTERN_DIGIT;  // Localized pattern character no longer in CLDR
-        padEscape = DecimalFormat.PATTERN_PAD_ESCAPE;
-        sigDigit  = DecimalFormat.PATTERN_SIGNIFICANT_DIGIT;
+        digit = '#';  // Localized pattern character no longer in CLDR
+        padEscape = '*';
+        sigDigit  = '@';
 
 
         CurrencyDisplayInfo info = CurrencyData.provider.getInstance(locale, true);
@@ -1451,8 +1451,8 @@ public class DecimalFormatSymbols implements Cloneable, Serializable {
             exponential = 'E';
         }
         if (serialVersionOnStream < 2) {
-            padEscape = DecimalFormat.PATTERN_PAD_ESCAPE;
-            plusSign = DecimalFormat.PATTERN_PLUS_SIGN;
+            padEscape = '*';
+            plusSign = '+';
             exponentSeparator = String.valueOf(exponential);
             // Although we read the exponential field on stream to create the
             // exponentSeparator, we don't do the reverse, since scientific

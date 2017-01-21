@@ -108,6 +108,10 @@ public class FormatQuantity2 implements FormatQuantity {
     readBigDecimalToBcd(input);
   }
 
+  public FormatQuantity2(com.ibm.icu.math.BigDecimal input) {
+    readBigDecimalToBcd(input.toBigDecimal());
+  }
+
   public FormatQuantity2(FormatQuantity2 other) {
     copyFrom(other);
   }

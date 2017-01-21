@@ -47,6 +47,7 @@ import com.ibm.icu.text.NumberFormat;
 import com.ibm.icu.text.NumberFormat.NumberFormatFactory;
 import com.ibm.icu.text.NumberFormat.SimpleNumberFormatFactory;
 import com.ibm.icu.text.NumberingSystem;
+import com.ibm.icu.text.DecimalFormat_ICU58;
 import com.ibm.icu.text.RuleBasedNumberFormat;
 import com.ibm.icu.util.Currency;
 import com.ibm.icu.util.CurrencyAmount;
@@ -68,14 +69,14 @@ public class NumberFormatTest extends TestFmwk {
     }
 
 
-    private DataDrivenNumberFormatTestUtility.CodeUnderTest ICU =
+    private DataDrivenNumberFormatTestUtility.CodeUnderTest ICU58 =
             new DataDrivenNumberFormatTestUtility.CodeUnderTest() {
                 @Override
                 public Character Id() { return 'J'; }
 
                 @Override
                 public String format(NumberFormatTestData tuple) {
-                    DecimalFormat fmt = newDecimalFormat(tuple);
+                    DecimalFormat_ICU58 fmt = createDecimalFormat(tuple);
                     String actual = fmt.format(toNumber(tuple.format));
                     String expected = tuple.output;
                     if (!expected.equals(actual)) {
@@ -86,7 +87,7 @@ public class NumberFormatTest extends TestFmwk {
 
                 @Override
                 public String toPattern(NumberFormatTestData tuple) {
-                    DecimalFormat fmt = newDecimalFormat(tuple);
+                    DecimalFormat_ICU58 fmt = createDecimalFormat(tuple);
                     StringBuilder result = new StringBuilder();
                     if (tuple.toPattern != null) {
                         String expected = tuple.toPattern;
@@ -107,7 +108,7 @@ public class NumberFormatTest extends TestFmwk {
 
                 @Override
                 public String parse(NumberFormatTestData tuple) {
-                    DecimalFormat fmt = newDecimalFormat(tuple);
+                    DecimalFormat_ICU58 fmt = createDecimalFormat(tuple);
                     ParsePosition ppos = new ParsePosition(0);
                     Number actual = fmt.parse(tuple.parse, ppos);
                     if (ppos.getIndex() == 0) {
@@ -129,7 +130,7 @@ public class NumberFormatTest extends TestFmwk {
 
                 @Override
                 public String parseCurrency(NumberFormatTestData tuple) {
-                    DecimalFormat fmt = newDecimalFormat(tuple);
+                    DecimalFormat_ICU58 fmt = createDecimalFormat(tuple);
                     ParsePosition ppos = new ParsePosition(0);
                     CurrencyAmount currAmt = fmt.parseCurrency(tuple.parse, ppos);
                     if (ppos.getIndex() == 0) {
@@ -158,9 +159,9 @@ public class NumberFormatTest extends TestFmwk {
                  * @param tuple
                  * @return
                  */
-                private DecimalFormat newDecimalFormat(NumberFormatTestData tuple) {
+                private DecimalFormat_ICU58 createDecimalFormat(NumberFormatTestData tuple) {
 
-                    DecimalFormat fmt = new DecimalFormat(
+                    DecimalFormat_ICU58 fmt = new DecimalFormat_ICU58(
                             tuple.pattern == null ? "0" : tuple.pattern,
                             new DecimalFormatSymbols(tuple.locale == null ? EN : tuple.locale));
                     adjustDecimalFormat(tuple, fmt);
@@ -170,7 +171,7 @@ public class NumberFormatTest extends TestFmwk {
                  * @param tuple
                  * @param fmt
                  */
-                private void adjustDecimalFormat(NumberFormatTestData tuple, DecimalFormat fmt) {
+                private void adjustDecimalFormat(NumberFormatTestData tuple, DecimalFormat_ICU58 fmt) {
                     if (tuple.minIntegerDigits != null) {
                         fmt.setMinimumIntegerDigits(tuple.minIntegerDigits);
                     }
@@ -280,7 +281,7 @@ public class NumberFormatTest extends TestFmwk {
 
                 @Override
                 public String format(NumberFormatTestData tuple) {
-                    java.text.DecimalFormat fmt = newDecimalFormat(tuple);
+                    java.text.DecimalFormat fmt = createDecimalFormat(tuple);
                     String actual = fmt.format(toNumber(tuple.format));
                     String expected = tuple.output;
                     if (!expected.equals(actual)) {
@@ -291,7 +292,7 @@ public class NumberFormatTest extends TestFmwk {
 
                 @Override
                 public String toPattern(NumberFormatTestData tuple) {
-                    java.text.DecimalFormat fmt = newDecimalFormat(tuple);
+                    java.text.DecimalFormat fmt = createDecimalFormat(tuple);
                     StringBuilder result = new StringBuilder();
                     if (tuple.toPattern != null) {
                         String expected = tuple.toPattern;
@@ -312,7 +313,7 @@ public class NumberFormatTest extends TestFmwk {
 
                 @Override
                 public String parse(NumberFormatTestData tuple) {
-                    java.text.DecimalFormat fmt = newDecimalFormat(tuple);
+                    java.text.DecimalFormat fmt = createDecimalFormat(tuple);
                     ParsePosition ppos = new ParsePosition(0);
                     Number actual = fmt.parse(tuple.parse, ppos);
                     if (ppos.getIndex() == 0) {
@@ -338,7 +339,7 @@ public class NumberFormatTest extends TestFmwk {
                  * @param tuple
                  * @return
                  */
-                private java.text.DecimalFormat newDecimalFormat(NumberFormatTestData tuple) {
+                private java.text.DecimalFormat createDecimalFormat(NumberFormatTestData tuple) {
                     java.text.DecimalFormat fmt = new java.text.DecimalFormat(
                             tuple.pattern == null ? "0" : tuple.pattern,
                             new java.text.DecimalFormatSymbols(
@@ -4430,9 +4431,9 @@ public class NumberFormatTest extends TestFmwk {
     }
 
     @Test
-    public void TestDataDrivenICU() {
+    public void TestDataDrivenICU58() {
         DataDrivenNumberFormatTestUtility.runSuite(
-                "numberformattestspecification.txt", ICU);
+                "numberformattestspecification.txt", ICU58);
     }
 
     @Test

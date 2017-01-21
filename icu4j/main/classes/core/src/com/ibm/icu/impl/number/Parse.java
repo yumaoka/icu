@@ -8,6 +8,7 @@ import java.text.ParseException;
 import java.text.ParsePosition;
 import java.util.Arrays;
 
+import com.ibm.icu.impl.number.Parse.ParseMode;
 import com.ibm.icu.impl.number.formatters.PaddingFormat;
 import com.ibm.icu.impl.number.formatters.PositiveNegativeAffixFormat;
 import com.ibm.icu.lang.UCharacter;
@@ -44,7 +45,51 @@ public class Parse {
 
   /** The set of properties required for {@link Parse}. Accepts a {@link Properties} object. */
   public static interface IProperties
-      extends PositiveNegativeAffixFormat.IProperties, PaddingFormat.IProperties {}
+      extends PositiveNegativeAffixFormat.IProperties, PaddingFormat.IProperties {
+
+    boolean DEFAULT_PARSE_INTEGER_ONLY = false;
+
+    /** @see #setParseIntegerOnly */
+    public boolean getParseIntegerOnly();
+
+    /**
+     * Whether to ignore the fractional part of numbers. For example, parses "123.4" to "123"
+     * instead of "123.4".
+     *
+     * @param parseIntegerOnly true to parse integers only; false to parse integers with their
+     *     fraction parts
+     * @return The property bag, for chaining.
+     */
+    public IProperties setParseIntegerOnly(boolean parseIntegerOnly);
+
+    boolean DEFAULT_PARSE_IGNORE_EXPONENT = false;
+
+    /** @see #setParseIgnoreExponent */
+    public boolean getParseIgnoreExponent();
+
+    /**
+     * Whether to ignore the exponential part of numbers. For example, parses "123E4" to "123"
+     * instead of "1230000".
+     *
+     * @param parseIgnoreExponent true to ignore exponents; false to parse them.
+     * @return The property bag, for chaining.
+     */
+    public IProperties setParseIgnoreExponent(boolean parseIgnoreExponent);
+
+    ParseMode DEFAULT_PARSE_MODE = ParseMode.LENIENT;
+
+    /** @see #setParseMode */
+    public ParseMode getParseMode();
+
+    /**
+     * Controls certain rules for how strict this parser is when reading strings. See {@link
+     * ParseMode#LENIENT} and {@link ParseMode#STRICT}.
+     *
+     * @param parseMode Either {@link ParseMode#LENIENT} or {@link ParseMode#STRICT}.
+     * @return The property bag, for chaining.
+     */
+    public IProperties setParseMode(ParseMode parseMode);
+  }
 
   /**
    * @see #parse(String, ParsePosition, ParseMode, boolean, boolean, IProperties,
@@ -267,6 +312,10 @@ public class Parse {
     CharSequence ns;
     int[] digitCps = new int[10];
 
+    ParseMode mode;
+    boolean integerOnly;
+    boolean ignoreExponent;
+
     ParserState() {
       for (int i = 0; i < items.length; i++) {
         items[i] = new ParserStateItem();
@@ -290,6 +339,10 @@ public class Parse {
       np = null;
       ps = null;
       ns = null;
+      Arrays.fill(digitCps, -1);
+      mode = null;
+      integerOnly = false;
+      ignoreExponent = false;
       return this;
     }
 
@@ -359,22 +412,36 @@ public class Parse {
   // TODO: Include characters like U+200D ZERO-WIDTH JOINER in the whitespace set?
   // TODO: Re-generate these sets from the database. They probably haven't been updated in a while.
   private static final UnicodeSet UNISET_WHITESPACE = new UnicodeSet("[[:whitespace:]]").freeze();
+
   private static final UnicodeSet UNISET_GROUPING =
       new UnicodeSet(
               0x0020, 0x0020, 0x002C, 0x002C, 0x060C, 0x060C, 0x066B, 0x066B, 0x3001, 0x3001,
               0xFE10, 0xFE11, 0xFE50, 0xFE51, 0xFF0C, 0xFF0C, 0xFF64, 0xFF64)
           .freeze();
+
   private static final UnicodeSet UNISET_DECIMAL =
       new UnicodeSet(
               0x002E, 0x002E, 0x2024, 0x2024, 0x3002, 0x3002, 0xFE12, 0xFE12, 0xFE52, 0xFE52,
               0xFF0E, 0xFF0E, 0xFF61, 0xFF61)
           .freeze();
-  static final UnicodeSet UNISET_PLUS =
+
+  /**
+   * @internal
+   * @deprecated This API is ICU internal only.
+   */
+  @Deprecated
+  public static final UnicodeSet UNISET_PLUS =
       new UnicodeSet(
               0x002B, 0x002B, 0x207A, 0x207A, 0x208A, 0x208A, 0x2795, 0x2795, 0xFB29, 0xFB29,
               0xFE62, 0xFE62, 0xFF0B, 0xFF0B)
           .freeze();
-  static final UnicodeSet UNISET_MINUS =
+
+  /**
+   * @internal
+   * @deprecated This API is ICU internal only.
+   */
+  @Deprecated
+  public static final UnicodeSet UNISET_MINUS =
       new UnicodeSet(
               0x002D, 0x002D, 0x207B, 0x207B, 0x208B, 0x208B, 0x2212, 0x2212, 0x2796, 0x2796,
               0xFE63, 0xFE63, 0xFF0D, 0xFF0D)
@@ -384,7 +451,7 @@ public class Parse {
       throws ParseException {
     ParsePosition ppos = threadLocalParsePosition.get();
     ppos.setIndex(0);
-    return parse(input, ppos, ParseMode.LENIENT, false, false, properties, symbols);
+    return parse(input, ppos, properties, symbols);
   }
 
   /**
@@ -393,15 +460,10 @@ public class Parse {
    * the states coming from the previous code point. The parser stops when it reaches the end of the
    * string or when there are no possible parse paths remaining in the string.
    *
-   * <p>TODO: This API is not fully flushed out.  Right now this is internal-only.
+   * <p>TODO: This API is not fully flushed out. Right now this is internal-only.
    *
    * @param input The string to parse.
    * @param ppos A {@link ParsePosition} to hold the index at which parsing stopped.
-   * @param mode Either {@link ParseMode#LENIENT} or {@link ParseMode#STRICT}.
-   * @param integerOnly Whether to ignore the fractional part of numbers. For example, parses
-   *     "123.4" to "123" instead of "123.4".
-   * @param noExponent Whether to ignore the exponential part of numbers. For example, parses
-   *     "123E4" to "123" instead of "1230000".
    * @param properties A property bag, used only for determining the prefix/suffix strings and the
    *     padding character.
    * @param symbols A {@link DecimalFormatSymbols} object, used for determining locale-specific
@@ -410,13 +472,7 @@ public class Parse {
    * @throws ParseException If an error is encountered during parsing.
    */
   public static Number parse(
-      String input,
-      ParsePosition ppos,
-      ParseMode mode,
-      boolean integerOnly,
-      boolean noExponent,
-      IProperties properties,
-      DecimalFormatSymbols symbols)
+      String input, ParsePosition ppos, IProperties properties, DecimalFormatSymbols symbols)
       throws ParseException {
 
     // Set up the initial state
@@ -442,6 +498,9 @@ public class Parse {
     for (int i = 0; i < 10; i++) {
       state.digitCps[i] = Character.codePointAt(digitStrings[i], 0);
     }
+    state.mode = properties.getParseMode();
+    state.integerOnly = properties.getParseIntegerOnly();
+    state.ignoreExponent = properties.getParseIgnoreExponent();
     ParserStateItem initialHolder = state.getNext().clear();
     initialHolder.name = StateName.BEFORE_PREFIX;
 
@@ -459,14 +518,14 @@ public class Parse {
             // Beginning of string
             acceptWhitespace(cp, StateName.BEFORE_PREFIX, state, item);
             acceptPadding(cp, StateName.BEFORE_PREFIX, state, item);
-            acceptString(cp, StringType.POS_PREFIX, mode, state, item);
-            acceptString(cp, StringType.NEG_PREFIX, mode, state, item);
+            acceptString(cp, StringType.POS_PREFIX, state, item);
+            acceptString(cp, StringType.NEG_PREFIX, state, item);
             acceptMinusSign(cp, DigitType.INTEGER, state, item);
             acceptDigit(cp, DigitType.INTEGER, state, item);
-            if (!integerOnly) {
+            if (!state.integerOnly) {
               acceptDecimalPoint(cp, state, item);
             }
-            if (mode == ParseMode.LENIENT) {
+            if (state.mode == ParseMode.LENIENT) {
               // Accept a plus sign in lenient mode even if it's not in the prefix string
               acceptPlusSign(cp, state, item);
             }
@@ -484,13 +543,13 @@ public class Parse {
 
           case AFTER_PREFIX:
             // Prefix is consumed
-            if (mode == ParseMode.LENIENT) {
+            if (state.mode == ParseMode.LENIENT) {
               // Arbitrary whitespace in the middle of the string is not allowed in strict mode.
               acceptWhitespace(cp, StateName.AFTER_PREFIX, state, item);
             }
             acceptPadding(cp, StateName.AFTER_PREFIX, state, item);
             acceptDigit(cp, DigitType.INTEGER, state, item);
-            if (!integerOnly) {
+            if (!state.integerOnly) {
               acceptDecimalPoint(cp, state, item);
             }
             break;
@@ -499,27 +558,27 @@ public class Parse {
             // Previous character was an integer digit (or grouping/whitespace)
             acceptGrouping(cp, state, item);
             acceptDigit(cp, DigitType.INTEGER, state, item);
-            if (!integerOnly) {
+            if (!state.integerOnly) {
               acceptDecimalPoint(cp, state, item);
             }
-            acceptString(cp, StringType.POS_SUFFIX, mode, state, item);
-            acceptString(cp, StringType.NEG_SUFFIX, mode, state, item);
-            if (!noExponent) {
-              acceptString(cp, StringType.EXPONENT_SEPARATOR, mode, state, item);
+            acceptString(cp, StringType.POS_SUFFIX, state, item);
+            acceptString(cp, StringType.NEG_SUFFIX, state, item);
+            if (!state.ignoreExponent) {
+              acceptString(cp, StringType.EXPONENT_SEPARATOR, state, item);
             }
             break;
 
           case AFTER_FRACTION_DIGIT:
             // We encountered a decimal point
-            if (mode == ParseMode.LENIENT) {
+            if (state.mode == ParseMode.LENIENT) {
               acceptWhitespace(cp, StateName.BEFORE_SUFFIX, state, item);
             }
             acceptPadding(cp, StateName.BEFORE_SUFFIX, state, item);
             acceptDigit(cp, DigitType.FRACTION, state, item);
-            acceptString(cp, StringType.POS_SUFFIX, mode, state, item);
-            acceptString(cp, StringType.NEG_SUFFIX, mode, state, item);
-            if (!noExponent) {
-              acceptString(cp, StringType.EXPONENT_SEPARATOR, mode, state, item);
+            acceptString(cp, StringType.POS_SUFFIX, state, item);
+            acceptString(cp, StringType.NEG_SUFFIX, state, item);
+            if (!state.ignoreExponent) {
+              acceptString(cp, StringType.EXPONENT_SEPARATOR, state, item);
             }
             break;
 
@@ -534,38 +593,38 @@ public class Parse {
             acceptDigit(cp, DigitType.EXPONENT, state, item);
 
           case AFTER_EXPONENT_DIGIT:
-            if (mode == ParseMode.LENIENT) {
+            if (state.mode == ParseMode.LENIENT) {
               acceptWhitespace(cp, StateName.BEFORE_SUFFIX_SEEN_EXPONENT, state, item);
             }
             acceptPadding(cp, StateName.BEFORE_SUFFIX_SEEN_EXPONENT, state, item);
             acceptDigit(cp, DigitType.EXPONENT, state, item);
-            acceptString(cp, StringType.POS_SUFFIX, mode, state, item);
-            acceptString(cp, StringType.NEG_SUFFIX, mode, state, item);
+            acceptString(cp, StringType.POS_SUFFIX, state, item);
+            acceptString(cp, StringType.NEG_SUFFIX, state, item);
             break;
 
           case BEFORE_SUFFIX:
             // Accept whitespace, suffixes, and exponent separators
             // Note: The only way to get here is to read whitespace or padding after a fraction
-            if (mode == ParseMode.LENIENT) {
+            if (state.mode == ParseMode.LENIENT) {
               acceptWhitespace(cp, StateName.BEFORE_SUFFIX, state, item);
             }
             acceptPadding(cp, StateName.BEFORE_SUFFIX, state, item);
-            acceptString(cp, StringType.POS_SUFFIX, mode, state, item);
-            acceptString(cp, StringType.NEG_SUFFIX, mode, state, item);
-            if (!noExponent) {
-              acceptString(cp, StringType.EXPONENT_SEPARATOR, mode, state, item);
+            acceptString(cp, StringType.POS_SUFFIX, state, item);
+            acceptString(cp, StringType.NEG_SUFFIX, state, item);
+            if (!state.ignoreExponent) {
+              acceptString(cp, StringType.EXPONENT_SEPARATOR, state, item);
             }
             break;
 
           case BEFORE_SUFFIX_SEEN_EXPONENT:
             // Accept whitespace and suffixes but not exponent separators
             // Note: The only way to get here is to read whitespace or padding after an exponent
-            if (mode == ParseMode.LENIENT) {
+            if (state.mode == ParseMode.LENIENT) {
               acceptWhitespace(cp, StateName.BEFORE_SUFFIX, state, item);
             }
             acceptPadding(cp, StateName.BEFORE_SUFFIX, state, item);
-            acceptString(cp, StringType.POS_SUFFIX, mode, state, item);
-            acceptString(cp, StringType.NEG_SUFFIX, mode, state, item);
+            acceptString(cp, StringType.POS_SUFFIX, state, item);
+            acceptString(cp, StringType.NEG_SUFFIX, state, item);
             break;
 
           case INSIDE_POS_SUFFIX:
@@ -606,7 +665,7 @@ public class Parse {
         // Check that at least one digit was read.
         if (item.numDigits == 0) continue;
 
-        if (mode == ParseMode.STRICT) {
+        if (state.mode == ParseMode.STRICT) {
           // Perform extra checks for strict mode.  We require that the affixes match.
           // Accept if any of the following checks are true.
           if ((item.positiveAffixStatus == AffixStatus.SAW_SUFFIX)
@@ -686,15 +745,14 @@ public class Parse {
    * @param cp The code point to check.
    * @param type The string type, which corresponds to one of the CharSequences stored inside the
    *     state object. Read the code for details.
-   * @param mode The parse mode, which determines whether a suffix is acceptable.
    * @param state The state object to update.
    * @param item The old state leading into the code point.
    */
   private static void acceptString(
-      int cp, StringType type, ParseMode mode, ParserState state, ParserStateItem item) {
+      int cp, StringType type, ParserState state, ParserStateItem item) {
 
     // For strict mode, don't accept if this string is a suffix that doesn't match the prefix
-    if (mode == ParseMode.STRICT) {
+    if (state.mode == ParseMode.STRICT) {
       if (type == StringType.POS_SUFFIX
           && item.positiveAffixStatus != AffixStatus.SAW_PREFIX
           && !charSeqEmpty(state.pp)) {

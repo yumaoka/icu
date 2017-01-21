@@ -14,6 +14,7 @@ import com.ibm.icu.impl.number.FormatQuantity;
 import com.ibm.icu.impl.number.FormatQuantity1;
 import com.ibm.icu.impl.number.FormatQuantity2;
 import com.ibm.icu.impl.number.Parse;
+import com.ibm.icu.impl.number.Parse.ParseMode;
 import com.ibm.icu.impl.number.PatternString;
 import com.ibm.icu.impl.number.Properties;
 import com.ibm.icu.impl.number.formatters.PaddingFormat.PaddingLocation;
@@ -135,18 +136,11 @@ public class ShanesDataDrivenTester extends CodeUnderTest {
     Number actual;
     try {
       properties = PatternString.parseToProperties(pattern);
-      Parse.ParseMode mode = Parse.ParseMode.LENIENT;
-      if (tuple.lenient != null && tuple.lenient == 0) {
-        mode = Parse.ParseMode.STRICT;
-      }
       propertiesFromTuple(tuple, properties);
       actual =
           Parse.parse(
               tuple.parse,
               ppos,
-              mode,
-              (tuple.parseIntegerOnly != null && tuple.parseIntegerOnly == 1),
-              (tuple.parseNoExponent != null && tuple.parseNoExponent == 1),
               properties,
               DecimalFormatSymbols.getInstance(tuple.locale));
     } catch (ParseException e) {
@@ -278,16 +272,16 @@ public class ShanesDataDrivenTester extends CodeUnderTest {
       // TODO
     }
     if (tuple.lenient != null) {
-      // TODO
+      properties.setParseMode(tuple.lenient == 0 ? ParseMode.STRICT : ParseMode.LENIENT);
     }
     if (tuple.parseIntegerOnly != null) {
-      // TODO
+      properties.setParseIntegerOnly(tuple.parseIntegerOnly != 0);
     }
     if (tuple.decimalPatternMatchRequired != null) {
       // TODO
     }
     if (tuple.parseNoExponent != null) {
-      // TODO
+      properties.setParseIgnoreExponent(tuple.parseNoExponent != 0);
     }
   }
 }

@@ -18,6 +18,7 @@ import java.util.Map;
 
 import com.ibm.icu.impl.Utility;
 import com.ibm.icu.text.PluralRules.FixedDecimal;
+import com.ibm.icu.text.PluralRules.IFixedDecimal;
 import com.ibm.icu.text.PluralRules.PluralType;
 import com.ibm.icu.util.ULocale;
 import com.ibm.icu.util.ULocale.Category;
@@ -618,7 +619,7 @@ public class PluralFormat extends UFormat {
         } else {
             numberString = numberFormat.format(numberMinusOffset);
         }
-        FixedDecimal dec;
+        IFixedDecimal dec;
         if(numberFormat instanceof DecimalFormat) {
             dec = ((DecimalFormat) numberFormat).getFixedDecimal(numberMinusOffset);
         } else {

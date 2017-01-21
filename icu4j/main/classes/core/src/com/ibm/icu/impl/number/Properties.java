@@ -6,6 +6,7 @@ import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
+import com.ibm.icu.impl.number.Parse.ParseMode;
 import com.ibm.icu.impl.number.formatters.BigDecimalMultiplier;
 import com.ibm.icu.impl.number.formatters.CompactDecimalFormat;
 import com.ibm.icu.impl.number.formatters.CurrencyFormat;
@@ -25,8 +26,7 @@ import com.ibm.icu.util.Currency.CurrencyUsage;
 import com.ibm.icu.util.MeasureUnit;
 
 public class Properties
-    implements
-        PositiveDecimalFormat.IProperties,
+    implements PositiveDecimalFormat.IProperties,
         Rounder.IProperties,
         PositiveNegativeAffixFormat.IProperties,
         MagnitudeMultiplier.IProperties,
@@ -67,6 +67,9 @@ public class Properties
   private PaddingLocation paddingLocation;
   private CharSequence paddingString;
   private int paddingWidth;
+  private boolean parseIgnoreExponent;
+  private boolean parseIntegerOnly;
+  private ParseMode parseMode;
   private CharSequence positivePrefix;
   private CharSequence positivePrefixPattern;
   private CharSequence positiveSuffix;
@@ -88,7 +91,7 @@ public class Properties
     currencyUsage = DEFAULT_CURRENCY_USAGE;
     exponentDigits = DEFAULT_EXPONENT_DIGITS;
     exponentShowPlusSign = DEFAULT_EXPONENT_SHOW_PLUS_SIGN;
-    groupingSize = DEFAULT_FIRST_GROUPING_SIZE;
+    groupingSize = DEFAULT_GROUPING_SIZE;
     magnitudeMultiplier = DEFAULT_MAGNITUDE_MULTIPLIER;
     maximumFractionDigits = DEFAULT_MAXIMUM_FRACTION_DIGITS;
     maximumIntegerDigits = DEFAULT_MAXIMUM_INTEGER_DIGITS;
@@ -107,19 +110,20 @@ public class Properties
     paddingLocation = DEFAULT_PADDING_LOCATION;
     paddingString = DEFAULT_PADDING_STRING;
     paddingWidth = DEFAULT_PADDING_WIDTH;
+    parseIgnoreExponent = DEFAULT_PARSE_IGNORE_EXPONENT;
+    parseIntegerOnly = DEFAULT_PARSE_INTEGER_ONLY;
+    parseMode = DEFAULT_PARSE_MODE;
     positivePrefix = DEFAULT_POSITIVE_PREFIX;
     positivePrefixPattern = DEFAULT_POSITIVE_PREFIX_PATTERN;
     positiveSuffix = DEFAULT_POSITIVE_SUFFIX;
     positiveSuffixPattern = DEFAULT_POSITIVE_SUFFIX_PATTERN;
     roundingInterval = DEFAULT_ROUNDING_INTERVAL;
     roundingMode = DEFAULT_ROUNDING_MODE;
-    secondaryGroupingSize = DEFAULT_GROUPING_SIZE;
+    secondaryGroupingSize = DEFAULT_SECONDARY_GROUPING_SIZE;
     return this;
   }
 
-  /**
-   * Creates and returns a shallow copy of the property bag.
-   */
+  /** Creates and returns a shallow copy of the property bag. */
   @Override
   public Properties clone() {
     // There are so many properties that the likelihood of this method becoming stale is high.
@@ -275,6 +279,30 @@ public class Properties
   @Override
   public int getPaddingWidth() {
     return paddingWidth;
+  }
+
+  /* (non-Javadoc)
+   * @see com.ibm.icu.impl.number.Parse.IProperties#getParseIgnoreExponent()
+   */
+  @Override
+  public boolean getParseIgnoreExponent() {
+    return parseIgnoreExponent;
+  }
+
+  /* (non-Javadoc)
+   * @see com.ibm.icu.impl.number.Parse.IProperties#getParseIntegerOnly()
+   */
+  @Override
+  public boolean getParseIntegerOnly() {
+    return parseIntegerOnly;
+  }
+
+  /* (non-Javadoc)
+   * @see com.ibm.icu.impl.number.Parse.IProperties#getParseMode()
+   */
+  @Override
+  public ParseMode getParseMode() {
+    return parseMode;
   }
 
   @Override
@@ -471,6 +499,33 @@ public class Properties
   @Override
   public Properties setPaddingWidth(int paddingWidth) {
     this.paddingWidth = paddingWidth;
+    return this;
+  }
+
+  /* (non-Javadoc)
+   * @see com.ibm.icu.impl.number.Parse.IProperties#setParseIgnoreExponent(boolean)
+   */
+  @Override
+  public Properties setParseIgnoreExponent(boolean parseIgnoreExponent) {
+    this.parseIgnoreExponent = parseIgnoreExponent;
+    return this;
+  }
+
+  /* (non-Javadoc)
+   * @see com.ibm.icu.impl.number.Parse.IProperties#setParseIntegerOnly(boolean)
+   */
+  @Override
+  public Properties setParseIntegerOnly(boolean parseIntegerOnly) {
+    this.parseIntegerOnly = parseIntegerOnly;
+    return this;
+  }
+
+  /* (non-Javadoc)
+   * @see com.ibm.icu.impl.number.Parse.IProperties#setParseMode(com.ibm.icu.impl.number.Parse.ParseMode)
+   */
+  @Override
+  public Properties setParseMode(ParseMode parseMode) {
+    this.parseMode = parseMode;
     return this;
   }
 

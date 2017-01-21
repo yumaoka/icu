@@ -26,6 +26,20 @@ public class PatternString {
   }
 
   /**
+   * Parses a pattern string into an existing property bag. The object will be cleared before any
+   * data is written to it.
+   *
+   * @param pattern The pattern string, like "#,##0.00"
+   * @param properties The property bag object to overwrite.
+   * @throws ParseException If there was a syntax error in the pattern string.
+   */
+  public static void parseToExistingProperties(String pattern, Properties properties)
+      throws ParseException {
+    properties.clear();
+    LdmlDecimalPatternParser.parse(pattern, properties);
+  }
+
+  /**
    * Creates a pattern string from a property bag.
    *
    * <p>Since pattern strings support only a subset of the functionality available in a property
@@ -71,15 +85,15 @@ public class PatternString {
 
     // Figure out the grouping sizes.
     int grouping1, grouping2;
-    if (groupingSize != Math.min(dosMax, Properties.DEFAULT_GROUPING_SIZE)
-        && firstGroupingSize != Math.min(dosMax, Properties.DEFAULT_FIRST_GROUPING_SIZE)
+    if (groupingSize != Math.min(dosMax, Properties.DEFAULT_SECONDARY_GROUPING_SIZE)
+        && firstGroupingSize != Math.min(dosMax, Properties.DEFAULT_GROUPING_SIZE)
         && groupingSize != firstGroupingSize) {
       grouping1 = groupingSize;
       grouping2 = firstGroupingSize;
-    } else if (groupingSize != Math.min(dosMax, Properties.DEFAULT_GROUPING_SIZE)) {
+    } else if (groupingSize != Math.min(dosMax, Properties.DEFAULT_SECONDARY_GROUPING_SIZE)) {
       grouping1 = 0;
       grouping2 = groupingSize;
-    } else if (firstGroupingSize != Math.min(dosMax, Properties.DEFAULT_FIRST_GROUPING_SIZE)) {
+    } else if (firstGroupingSize != Math.min(dosMax, Properties.DEFAULT_GROUPING_SIZE)) {
       grouping1 = 0;
       grouping2 = firstGroupingSize;
     } else {

@@ -1402,7 +1402,7 @@ public abstract class NumberFormat extends UFormat {
             r.setDefaultRuleSet(nsRuleSetName);
             format = r;
         } else {
-            DecimalFormat f = new DecimalFormat(pattern, symbols, choice);
+            DecimalFormat f = new DecimalFormat(pattern, symbols);
             // System.out.println("loc: " + desiredLocale + " choice: " + choice + " pat: " + pattern + " sym: " + symbols + " result: " + format);
 
             /*Bug 4408066

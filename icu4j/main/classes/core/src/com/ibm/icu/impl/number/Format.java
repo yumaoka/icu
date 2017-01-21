@@ -44,7 +44,18 @@ public abstract class Format {
 
   /** A Format that works on only one number. */
   public abstract static class SingularFormat extends Format implements Exportable {
+
     public String format(FormatQuantity input) {
+      DoubleSidedStringBuilder sb = formatToStringBuilder(input);
+      return sb.toString();
+    }
+
+    public void format(FormatQuantity input, StringBuffer output) {
+      DoubleSidedStringBuilder sb = formatToStringBuilder(input);
+      output.append(sb);
+    }
+
+    private DoubleSidedStringBuilder formatToStringBuilder(FormatQuantity input) {
       // Setup
       ModifierHolder modDeque = threadLocalModifierHolder.get().clear();
       DoubleSidedStringBuilder sb = threadLocalStringBuilder.get().clear();
@@ -54,7 +65,7 @@ public abstract class Format {
 
       // Resolve remaining affixes
       length += modDeque.applyAll(sb, 0, length);
-      return sb.toString();
+      return sb;
     }
 
     @Override

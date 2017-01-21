@@ -312,7 +312,11 @@ public abstract class Rounder extends Format.BeforeFormat {
       // control how many digits are to be displayed.
       // Special case: a value of zero bypasses the significant digit format.
       if (input.isZero()) {
-        super.setIntegerAndFractionLength(input);
+        input.setIntegerFractionLength(
+            minimumIntegerDigits,
+            maximumIntegerDigits,
+            Math.max(minimumFractionDigits, minimumSignificantDigits - minimumIntegerDigits),
+            maximumFractionDigits);
       } else {
         input.setIntegerFractionLength(
             minimumIntegerDigits, Integer.MAX_VALUE, minimumFractionDigits, Integer.MAX_VALUE);
@@ -415,7 +419,8 @@ public abstract class Rounder extends Format.BeforeFormat {
    * that can be displayed.
    *
    * @param input The quantity to be rounded.
-   * @param mg The implementation that returns magnitude adjustment based on a given starting magnitude.
+   * @param mg The implementation that returns magnitude adjustment based on a given starting
+   *     magnitude.
    * @return The multiplier that was chosen to best fit the input.
    */
   public int chooseMultiplierAndApply(FormatQuantity input, MultiplierGenerator mg) {
