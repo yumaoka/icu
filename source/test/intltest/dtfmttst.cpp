@@ -1,3 +1,5 @@
+// © 2016 and later: Unicode, Inc. and others.
+// License & terms of use: http://www.unicode.org/copyright.html
 /********************************************************************
  * COPYRIGHT:
  * Copyright (c) 1997-2010, International Business Machines
@@ -961,7 +963,7 @@ DateFormatTest::TestTwoDigitYear()
         return;
     }
     parse2DigitYear(fmt, "5/6/17", date(117, UCAL_JUNE, 5));
-    parse2DigitYear(fmt, "4/6/34", date(34, UCAL_JUNE, 4));
+    parse2DigitYear(fmt, "4/6/50", date(50, UCAL_JUNE, 4)); // fix pivot (time marches on)
 }
 
 // -------------------------------------
