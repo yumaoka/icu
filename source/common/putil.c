@@ -910,6 +910,9 @@ static char* searchForTZFile(const char* path, DefaultTZInfo* tzInfo) {
         if (uprv_strcmp(dirName, SKIP1) != 0 && uprv_strcmp(dirName, SKIP2) != 0) {
             /* Create a newpath with the new entry to test each entry in the directory. */
             char newpath[MAX_PATH_SIZE];
+            if( (uprv_strlen(curpath) + uprv_strlen(dirName)) >= MAX_PATH_SIZE) {
+              continue;
+            }
             uprv_strcpy(newpath, curpath);
             uprv_strcat(newpath, dirName);
 
@@ -985,7 +988,7 @@ uprv_tzname(int n)
         because the tzfile contents is underspecified.
         This isn't guaranteed to work because it may not be a symlink.
         */
-        int32_t ret = (int32_t)readlink(TZDEFAULT, gTimeZoneBuffer, sizeof(gTimeZoneBuffer));
+        int32_t ret = (int32_t)readlink(TZDEFAULT, gTimeZoneBuffer, sizeof(gTimeZoneBuffer)-1);
         if (0 < ret) {
             int32_t tzZoneInfoLen = uprv_strlen(TZZONEINFO);
             gTimeZoneBuffer[ret] = 0;
