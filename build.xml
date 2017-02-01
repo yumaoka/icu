@@ -1,0 +1,39 @@
+<!--
+* © 2016 and later: Unicode, Inc. and others.
+* License & terms of use: http://www.unicode.org/copyright.html#License
+-->
+<project name="icu" default="all" basedir=".">
+  <property file="build-local.properties"/>
+  <property file="build.properties"/>
+
+  <property environment="env"/>
+
+  <target name="build-icu4j-data">
+    <!-- TODO: if windows ……… -->
+    <sequential>
+      <exec executable="sh">
+	<arg value="./build-side-icu.sh" />
+      </exec>
+    </sequential>
+  </target>
+
+  <target name="icu4j" depends="build-icu4j-data">
+    <ant dir="./icu4j" target="jar" />
+  </target>
+  <target name="icu4j-check" depends="icu4j">
+    <ant dir="./icu4j" target="check" />
+  </target>
+  <target name="icu4c" depends="build-icu4j-data">
+  </target>
+  <target name="icu4c-check" depends="icu4c">
+    <exec executable="make">
+      <arg value="-C" />
+      <arg value="tmp" />
+      <arg value="check" />
+    </exec>
+  </target>
+
+  <target name="check" depends="icu4c-check,icu4j-check" />
+  <target name="all" depends="icu4c,icu4j" />
+
+</project>

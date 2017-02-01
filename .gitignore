@@ -906,6 +906,9 @@ icu4j/main/classes/langdata/out
 icu4j/main/classes/localespi/out
 icu4j/main/classes/regiondata/out
 icu4j/main/classes/translit/out
+icu4j/main/shared/data/icudata.jar
+icu4j/main/shared/data/icutzdata.jar
+icu4j/main/shared/data/testdata.jar
 icu4j/main/tests/charset/out
 icu4j/main/tests/collate/out
 icu4j/main/tests/core/out
@@ -919,6 +922,7 @@ icu4j/samples/build-local.properties
 icu4j/samples/out
 icu4j/tools/build/out
 icu4j/tools/misc/out
+/tmp
 tools/multi/c/Makefile.local
 tools/multi/packages/*.jar
 tools/multi/packages/*.tgz

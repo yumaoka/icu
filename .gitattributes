@@ -48,6 +48,8 @@ README text !eol
 *.spp -text
 *.tri2 -text
 
+/build-side-icu.sh -text
+/build.xml -text
 icu4c/icu4c.css -text
 icu4c/source/aclocal.m4 -text
 icu4c/source/allinone/icucheck.bat -text
@@ -140,9 +142,6 @@ icu4c/source/tools/icupkg/icupkg.vcxproj -text
 icu4c/source/tools/pkgdata/pkgdata.vcxproj -text
 icu4c/source/tools/tzcode/icuregions -text
 icu4j/lib/.project -text
-icu4j/main/shared/data/icudata.jar -text
-icu4j/main/shared/data/icutzdata.jar -text
-icu4j/main/shared/data/testdata.jar -text
 icu4j/main/tests/core/src/com/ibm/icu/dev/test/serializable/data/ICU_3.6/com.ibm.icu.impl.OlsonTimeZone.dat -text
 icu4j/main/tests/core/src/com/ibm/icu/dev/test/serializable/data/ICU_3.6/com.ibm.icu.impl.TimeZoneAdapter.dat -text
 icu4j/main/tests/core/src/com/ibm/icu/dev/test/serializable/data/ICU_3.6/com.ibm.icu.math.BigDecimal.dat -text
