@@ -35,12 +35,14 @@ public class DecimalFormat extends NumberFormat {
 
   /** @stable ICU 2.0 */
   public DecimalFormat() {
+    symbols = getDefaultSymbols();
     properties = new Properties();
     refreshFormatter();
   }
 
   /** @stable ICU 2.0 */
   public DecimalFormat(String pattern) {
+    symbols = getDefaultSymbols();
     properties = new Properties();
     setPropertiesFromPattern(pattern);
     refreshFormatter();
@@ -48,9 +50,9 @@ public class DecimalFormat extends NumberFormat {
 
   /** @stable ICU 2.0 */
   public DecimalFormat(String pattern, DecimalFormatSymbols symbols) {
+    this.symbols = (DecimalFormatSymbols) symbols.clone();
     properties = new Properties();
     setPropertiesFromPattern(pattern);
-    this.symbols = (DecimalFormatSymbols) symbols.clone();
     refreshFormatter();
   }
 
@@ -62,9 +64,13 @@ public class DecimalFormat extends NumberFormat {
   }
 
   private DecimalFormat(DecimalFormat other) {
+    symbols = (DecimalFormatSymbols) other.symbols.clone();
     properties = other.properties.clone();
-    symbols = (other.symbols == null) ? null : (DecimalFormatSymbols) other.symbols.clone();
     refreshFormatter();
+  }
+
+  private static DecimalFormatSymbols getDefaultSymbols() {
+    return DecimalFormatSymbols.getInstance();
   }
 
   /** @stable ICU 2.0 */
@@ -638,7 +644,7 @@ public class DecimalFormat extends NumberFormat {
 
   private void refreshFormatter() {
     try {
-      formatter = (SingularFormat) Endpoint.fromBTA(properties);
+      formatter = Endpoint.fromBTA(properties, symbols);
     } catch (ParseException e) {
       // For backwards compatibility, convert from ParseException to IllegalArgumentException
       throw new IllegalArgumentException(e);
@@ -648,7 +654,7 @@ public class DecimalFormat extends NumberFormat {
   private void setPropertiesFromPattern(String pattern) {
     try {
       PatternString.parseToExistingProperties(pattern, properties);
-      formatter = (SingularFormat) Endpoint.fromBTA(properties);
+      formatter = Endpoint.fromBTA(properties, symbols);
     } catch (ParseException e) {
       // For backwards compatibility, convert from ParseException to IllegalArgumentException
       throw new IllegalArgumentException(e);

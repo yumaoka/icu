@@ -46,6 +46,7 @@ public class Properties
   private Currency currency;
   private CurrencyStyle currencyStyle;
   private CurrencyUsage currencyUsage;
+  private boolean decimalPatternMatchRequired;
   private int exponentDigits;
   private boolean exponentShowPlusSign;
   private int groupingSize;
@@ -89,6 +90,7 @@ public class Properties
     currency = DEFAULT_CURRENCY;
     currencyStyle = DEFAULT_CURRENCY_STYLE;
     currencyUsage = DEFAULT_CURRENCY_USAGE;
+    decimalPatternMatchRequired = DEFAULT_DECIMAL_PATTERN_MATCH_REQUIRED;
     exponentDigits = DEFAULT_EXPONENT_DIGITS;
     exponentShowPlusSign = DEFAULT_EXPONENT_SHOW_PLUS_SIGN;
     groupingSize = DEFAULT_GROUPING_SIZE;
@@ -174,6 +176,11 @@ public class Properties
   @Override
   public CurrencyUsage getCurrencyUsage() {
     return currencyUsage;
+  }
+
+  @Override
+  public boolean getDecimalPatternMatchRequired() {
+    return decimalPatternMatchRequired;
   }
 
   @Override
@@ -373,6 +380,13 @@ public class Properties
   @Override
   public Properties setCurrencyUsage(CurrencyUsage currencyUsage) {
     this.currencyUsage = currencyUsage;
+    return this;
+  }
+
+  @Override
+  public Properties setDecimalPatternMatchRequired(
+      boolean decimalPatternMatchRequired) {
+    this.decimalPatternMatchRequired = decimalPatternMatchRequired;
     return this;
   }
 

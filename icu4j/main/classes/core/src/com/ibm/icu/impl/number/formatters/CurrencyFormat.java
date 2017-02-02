@@ -14,7 +14,6 @@ import com.ibm.icu.impl.number.modifiers.GeneralPluralModifier;
 import com.ibm.icu.text.DecimalFormatSymbols;
 import com.ibm.icu.util.Currency;
 import com.ibm.icu.util.Currency.CurrencyUsage;
-import com.ibm.icu.util.ULocale;
 
 public class CurrencyFormat {
 
@@ -82,8 +81,8 @@ public class CurrencyFormat {
       extends ICurrencyProperties, Rounder.IProperties, PositiveNegativeAffixFormat.IProperties {}
 
   /**
-   * Returns true if the currency is set in The property bag or if currency symbols are present
-   * in the prefix/suffix pattern.
+   * Returns true if the currency is set in The property bag or if currency symbols are present in
+   * the prefix/suffix pattern.
    */
   public static boolean useCurrency(IProperties properties) {
     return ((properties.getCurrency() != null)
@@ -93,48 +92,81 @@ public class CurrencyFormat {
         || LiteralString.hasCurrencySymbols(properties.getNegativeSuffixPattern()));
   }
 
-  public static String getPreferredCurrencySymbol(
-      DecimalFormatSymbols symbols, ICurrencyProperties properties) {
-    Currency currency = getCurrencyOrNull(symbols, properties);
-    if (currency == null) {
-      // Use a sensible fallback value
-      return symbols.getCurrencySymbol();
-    }
-
+  /**
+   * Returns the effective currency symbol based on the input.  If {@link ICurrencyProperties#setCurrencyStyle} was
+   * set to {@link CurrencyStyle#ISO_CODE}, the ISO Code will be returned; otherwise, the currency symbol, like "$",
+   * will be returned.
+   *
+   * @param symbols The current {@link DecimalFormatSymbols} instance
+   * @param properties The current property bag
+   * @return The currency symbol string, e.g., to substitute '¤' in a decimal pattern string.
+   */
+  public static String getCurrencySymbol(DecimalFormatSymbols symbols, ICurrencyProperties properties) {
+    // If the user asked for ISO Code, return the ISO Code instead of the symbol
     CurrencyStyle style = properties.getCurrencyStyle();
     if (style == CurrencyStyle.ISO_CODE) {
-      return currency.getCurrencyCode();
+      return getCurrencyIsoCode(symbols, properties);
+    }
+
+    // Get the currency symbol
+    Currency currency = properties.getCurrency();
+    if (currency == null) {
+      return symbols.getCurrencySymbol();
+    }
+    return currency.getName(symbols.getULocale(), Currency.SYMBOL_NAME, null);
+  }
+
+  /**
+   * Returns the currency ISO code based on the input, like "USD".
+   *
+   * @param symbols The current {@link DecimalFormatSymbols} instance
+   * @param properties The current property bag
+   * @return The currency ISO code string, e.g., to substitute '¤¤' in a decimal pattern string.
+   */
+  public static String getCurrencyIsoCode(DecimalFormatSymbols symbols, ICurrencyProperties properties) {
+    Currency currency = properties.getCurrency();
+    if (currency == null) {
+      // If a currency object was not provided, use the string from symbols
+      // Note: symbols.getCurrency().getCurrencyCode() won't work here because
+      // DecimalFormatSymbols#setInternationalCurrencySymbol() does not update the
+      // immutable internal currency instance.
+      return symbols.getInternationalCurrencySymbol();
     } else {
-      return currency.getName(symbols.getULocale(), Currency.SYMBOL_NAME, null);
+      // If a currency object was provided, use it
+      return currency.getCurrencyCode();
     }
   }
 
-  static Currency getCurrencyOrNull(DecimalFormatSymbols symbols, ICurrencyProperties properties) {
+  /**
+   * Returns the currency long name on the input, like "US dollars".
+   *
+   * @param symbols The current {@link DecimalFormatSymbols} instance
+   * @param properties The current property bag
+   * @param plural The plural form
+   * @return The currency long name string, e.g., to substitute '¤¤¤' in a decimal pattern string.
+   */
+  public static String getCurrencyLongName(DecimalFormatSymbols symbols, ICurrencyProperties properties, StandardPlural plural) {
+    // Attempt to get a currency object first from properties then from symbols
     Currency currency = properties.getCurrency();
     if (currency == null) {
       currency = symbols.getCurrency();
     }
-    return currency;
+
+    // If no currency object is available, fall back to the currency symbol
+    if (currency == null) {
+      return getCurrencySymbol(symbols, properties);
+    }
+
+    // Get the long name
+    return currency.getName(symbols.getULocale(), Currency.PLURAL_LONG_NAME, plural.name(), null);
   }
 
   public static Format.BeforeFormat getCurrencyModifier(
       DecimalFormatSymbols symbols, IProperties properties) throws ParseException {
-    Currency currency = getCurrencyOrNull(symbols, properties);
-
-    if (currency == null) {
-      // There is a currency symbol in the pattern, but we have no currency available to use.
-      return PositiveNegativeAffixFormat.getInstance(symbols, properties);
-    }
 
     PNAffixGenerator pnag = PNAffixGenerator.getThreadLocalInstance();
-    ULocale uloc = symbols.getULocale();
-    String symbol = currency.getName(uloc, Currency.SYMBOL_NAME, null);
-    String isoCode = currency.getCurrencyCode();
-
-    // CurrencyStyle is the new API for specifying how you want your currency symbol displayed in
-    // the prefix/suffix.  Occurrences of '¤' will be replaced with that choice.
-    CurrencyStyle style = properties.getCurrencyStyle();
-    String preferredSymbol = (style == CurrencyStyle.ISO_CODE) ? isoCode : symbol;
+    String symbol = getCurrencySymbol(symbols, properties);
+    String isoCode = getCurrencyIsoCode(symbols, properties);
 
     // Previously, the user was also able to specify '¤¤' and '¤¤¤' directly into the prefix or
     // suffix, which is how the user specified whether they wanted the ISO code or long name.
@@ -142,9 +174,9 @@ public class CurrencyFormat {
 
     GeneralPluralModifier mod = new GeneralPluralModifier();
     for (StandardPlural plural : StandardPlural.VALUES) {
-      String longName = currency.getName(uloc, Currency.PLURAL_LONG_NAME, plural.name(), null);
+      String longName = getCurrencyLongName(symbols, properties, plural);
       PNAffixGenerator.Result result =
-          pnag.getModifiers(symbols, preferredSymbol, isoCode, longName, properties);
+          pnag.getModifiers(symbols, symbol, isoCode, longName, properties);
       mod.put(plural, result.positive, result.negative);
     }
 
@@ -152,8 +184,11 @@ public class CurrencyFormat {
   }
 
   public static Rounder getCurrencyRounder(DecimalFormatSymbols symbols, IProperties properties) {
-    Currency currency = getCurrencyOrNull(symbols, properties);
-
+    Currency currency = properties.getCurrency();
+    if (currency == null) {
+      // This is the only time when it is okay to fallback to the DecimalFormatSymbols currency instance.
+      currency = symbols.getCurrency();
+    }
     if (currency == null) {
       // There is a currency symbol in the pattern, but we have no currency available to use.
       return Rounder.getDefaultRounder(properties);

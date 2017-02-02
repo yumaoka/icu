@@ -26,8 +26,10 @@ public class PatternString {
   }
 
   /**
-   * Parses a pattern string into an existing property bag. The object will be cleared before any
-   * data is written to it.
+   * Parses a pattern string into an existing property bag. All properties that can be encoded
+   * into a pattern string will be overwritten with either their default value or with the
+   * value coming from the pattern string. Properties that cannot be encoded into a pattern
+   * string, such as rounding mode, are not modified.
    *
    * @param pattern The pattern string, like "#,##0.00"
    * @param properties The property bag object to overwrite.
@@ -35,7 +37,6 @@ public class PatternString {
    */
   public static void parseToExistingProperties(String pattern, Properties properties)
       throws ParseException {
-    properties.clear();
     LdmlDecimalPatternParser.parse(pattern, properties);
   }
 
@@ -252,33 +253,49 @@ public class PatternString {
         // Grouping settings
         if (positive.groupingSizes[1] != -1) {
           properties.setGroupingSize(positive.groupingSizes[0]);
+        } else {
+          properties.setGroupingSize(Properties.DEFAULT_GROUPING_SIZE);
         }
         if (positive.groupingSizes[2] != -1) {
           properties.setSecondaryGroupingSize(positive.groupingSizes[1]);
+        } else {
+          properties.setSecondaryGroupingSize(Properties.DEFAULT_SECONDARY_GROUPING_SIZE);
         }
 
         // Rounding settings
         if (positive.minimumSignificantDigits > 0) {
+          properties.setMinimumFractionDigits(Properties.DEFAULT_MINIMUM_FRACTION_DIGITS);
+          properties.setMaximumFractionDigits(Properties.DEFAULT_MAXIMUM_FRACTION_DIGITS);
+          properties.setRoundingInterval(Properties.DEFAULT_ROUNDING_INTERVAL);
           properties.setMinimumSignificantDigits(positive.minimumSignificantDigits);
           properties.setMaximumSignificantDigits(positive.maximumSignificantDigits);
+        } else if (!positive.rounding.isEmpty()) {
+          properties.setMinimumFractionDigits(positive.minimumFractionDigits);
+          properties.setMaximumFractionDigits(positive.maximumFractionDigits);
+          properties.setRoundingInterval(positive.rounding.toBigDecimal());
+          properties.setMinimumSignificantDigits(Properties.DEFAULT_MINIMUM_SIGNIFICANT_DIGITS);
+          properties.setMaximumSignificantDigits(Properties.DEFAULT_MAXIMUM_SIGNIFICANT_DIGITS);
         } else {
           properties.setMinimumFractionDigits(positive.minimumFractionDigits);
           properties.setMaximumFractionDigits(positive.maximumFractionDigits);
-          if (!positive.rounding.isEmpty()) {
-            properties.setRoundingInterval(positive.rounding.toBigDecimal());
-          }
+          properties.setRoundingInterval(Properties.DEFAULT_ROUNDING_INTERVAL);
+          properties.setMinimumSignificantDigits(Properties.DEFAULT_MINIMUM_SIGNIFICANT_DIGITS);
+          properties.setMaximumSignificantDigits(Properties.DEFAULT_MAXIMUM_SIGNIFICANT_DIGITS);
         }
-        properties.setMinimumIntegerDigits(positive.minimumIntegerDigits);
+
+        // If the pattern starts with '.' or if it doesn't have '.', minInt can be zero.
+        // Otherwise, for backwards compatibility, maxInt needs to be at least 1.
+        if (!positive.hasDecimal || (positive.hasDecimal && positive.totalIntegerDigits == 0)) {
+          properties.setMinimumIntegerDigits(positive.minimumIntegerDigits);
+        } else {
+          properties.setMinimumIntegerDigits(Math.max(1, positive.minimumIntegerDigits));
+        }
 
         // If the pattern ends with a '.' then force the decimal point.
         if (positive.hasDecimal && positive.maximumFractionDigits == 0) {
           properties.setAlwaysShowDecimal(true);
-        }
-
-        // Currency settings
-        // TODO: Force enable currency support here?
-        if (positive.hasCurrencySign) {
-          // properties.setUseCurrency(true);
+        } else {
+          properties.setAlwaysShowDecimal(false);
         }
 
         // Scientific notation settings
@@ -286,16 +303,24 @@ public class PatternString {
           properties.setExponentShowPlusSign(positive.exponentShowPlusSign);
           properties.setExponentDigits(positive.exponentDigits);
           properties.setMaximumIntegerDigits(positive.totalIntegerDigits);
+        } else {
+          properties.setExponentShowPlusSign(Properties.DEFAULT_EXPONENT_SHOW_PLUS_SIGN);
+          properties.setExponentDigits(Properties.DEFAULT_EXPONENT_DIGITS);
+          properties.setMaximumIntegerDigits(Properties.DEFAULT_MAXIMUM_INTEGER_DIGITS);
         }
 
         // Padding settings
         if (positive.padding.length() > 0) {
           // The width of the positive prefix and suffix templates are included in the padding
-          properties.setPaddingWidth(
-              positive.paddingWidth + positive.prefix.length() + positive.suffix.length());
+          int paddingWidth = positive.paddingWidth + positive.prefix.length() + positive.suffix.length();
+          properties.setPaddingWidth(paddingWidth);
           properties.setPaddingString(positive.padding.toString());
           assert positive.paddingLocation != null;
           properties.setPaddingLocation(positive.paddingLocation);
+        } else {
+          properties.setPaddingWidth(Properties.DEFAULT_PADDING_WIDTH);
+          properties.setPaddingString(Properties.DEFAULT_PADDING_STRING);
+          properties.setPaddingLocation(Properties.DEFAULT_PADDING_LOCATION);
         }
 
         // Set the affixes
@@ -306,6 +331,9 @@ public class PatternString {
         if (negative != null) {
           properties.setNegativePrefixPattern(negative.prefix);
           properties.setNegativeSuffixPattern(negative.suffix);
+        } else {
+          properties.setNegativePrefixPattern(null);
+          properties.setNegativeSuffixPattern(null);
         }
 
         // Set the magnitude multiplier
@@ -313,6 +341,8 @@ public class PatternString {
           properties.setMagnitudeMultiplier(2);
         } else if (positive.hasPerMilleSign) {
           properties.setMagnitudeMultiplier(3);
+        } else {
+          properties.setMagnitudeMultiplier(Properties.DEFAULT_MAGNITUDE_MULTIPLIER);
         }
       }
     }

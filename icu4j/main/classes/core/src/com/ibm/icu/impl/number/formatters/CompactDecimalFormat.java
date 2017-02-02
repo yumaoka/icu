@@ -255,7 +255,7 @@ public class CompactDecimalFormat extends Format.BeforeFormat {
     CompactDecimalFingerprint(DecimalFormatSymbols symbols, IProperties properties) {
       if (properties.getCurrency() != CurrencyFormat.ICurrencyProperties.DEFAULT_CURRENCY) {
         compactType = CompactType.CURRENCY;
-        currencySymbol = CurrencyFormat.getPreferredCurrencySymbol(symbols, properties);
+        currencySymbol = CurrencyFormat.getCurrencySymbol(symbols, properties);
       } else {
         compactType = CompactType.DECIMAL;
         currencySymbol = symbols.getCurrencySymbol(); // fallback; should remain unused
@@ -321,7 +321,7 @@ public class CompactDecimalFormat extends Format.BeforeFormat {
 
       if (properties.getCurrency() != CurrencyFormat.ICurrencyProperties.DEFAULT_CURRENCY) {
         compactType = CompactType.CURRENCY;
-        currencySymbol = CurrencyFormat.getPreferredCurrencySymbol(symbols, properties);
+        currencySymbol = CurrencyFormat.getCurrencySymbol(symbols, properties);
       } else {
         compactType = CompactType.DECIMAL;
         currencySymbol = symbols.getCurrencySymbol(); // fallback; should remain unused

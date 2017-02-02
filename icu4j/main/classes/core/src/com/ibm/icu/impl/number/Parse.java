@@ -76,6 +76,21 @@ public class Parse {
      */
     public IProperties setParseIgnoreExponent(boolean parseIgnoreExponent);
 
+    boolean DEFAULT_DECIMAL_PATTERN_MATCH_REQUIRED = false;
+
+    /** @see #setDecimalPatternMatchRequired */
+    public boolean getDecimalPatternMatchRequired();
+
+    /**
+     * Whether to require that a decimal point be present. If a decimal point is not present, the
+     * parse will not succeed: null will be returned from <code>parse()</code>, and an error index
+     * will be set in the {@link ParsePosition}.
+     *
+     * @param decimalPatternMatchRequired true to set an error if decimal is not present
+     * @return The property bag, for chaining.
+     */
+    public IProperties setDecimalPatternMatchRequired(boolean decimalPatternMatchRequired);
+
     ParseMode DEFAULT_PARSE_MODE = ParseMode.LENIENT;
 
     /** @see #setParseMode */
@@ -135,6 +150,36 @@ public class Parse {
     SAW_SUFFIX
   }
 
+  // TODO: Re-generate these sets from the database. They probably haven't been updated in a while.
+  private static final UnicodeSet UNISET_PERIOD_LIKE =
+      new UnicodeSet("[.\u2024\u3002\uFE12\uFE52\uFF0E\uFF61]").freeze();
+  private static final UnicodeSet UNISET_STRICT_PERIOD_LIKE =
+      new UnicodeSet("[.\u2024\uFE52\uFF0E\uFF61]").freeze();
+  private static final UnicodeSet UNISET_COMMA_LIKE =
+      new UnicodeSet("[,\u060C\u066B\u3001\uFE10\uFE11\uFE50\uFE51\uFF0C\uFF64]").freeze();
+  private static final UnicodeSet UNISET_STRICT_COMMA_LIKE =
+      new UnicodeSet("[,\\u066B\\uFE10\\uFE50\\uFF0C]").freeze();
+  private static final UnicodeSet UNISET_OTHER_GROUPING_SEPARATORS =
+      new UnicodeSet("[\\ '\u00A0\u066C\u2000-\u200A\u2018\u2019\u202F\u205F\u3000\uFF07]")
+          .freeze();
+
+  private enum SeparatorType {
+    COMMA_LIKE,
+    PERIOD_LIKE,
+    OTHER_GROUPING,
+    UNKNOWN;
+
+    static SeparatorType fromCp(int cp, boolean strict) {
+      UnicodeSet commaLike = strict ? UNISET_COMMA_LIKE : UNISET_STRICT_COMMA_LIKE;
+      if (commaLike.contains(cp)) return COMMA_LIKE;
+      UnicodeSet periodLike = strict ? UNISET_PERIOD_LIKE : UNISET_STRICT_PERIOD_LIKE;
+      if (periodLike.contains(cp)) return PERIOD_LIKE;
+      UnicodeSet other = UNISET_OTHER_GROUPING_SEPARATORS;
+      if (other.contains(cp)) return OTHER_GROUPING;
+      return UNKNOWN;
+    }
+  }
+
   /**
    * Holds a snapshot in time of a single parse path. This includes the digits seen so far, the
    * current state name, and other properties like the grouping separator used on this parse path,
@@ -150,6 +195,7 @@ public class Parse {
     int exponent;
     boolean sawNegative;
     boolean sawNegativeExponent;
+    boolean sawDecimal;
     AffixStatus positiveAffixStatus;
     AffixStatus negativeAffixStatus;
     boolean usesLocaleSymbols;
@@ -169,6 +215,7 @@ public class Parse {
       exponent = 0;
       sawNegative = false;
       sawNegativeExponent = false;
+      sawDecimal = false;
       positiveAffixStatus = AffixStatus.NOT_SEEN;
       negativeAffixStatus = AffixStatus.NOT_SEEN;
       usesLocaleSymbols = false;
@@ -193,6 +240,7 @@ public class Parse {
       exponent = other.exponent;
       sawNegative = other.sawNegative;
       sawNegativeExponent = other.sawNegativeExponent;
+      sawDecimal = other.sawDecimal;
       positiveAffixStatus = other.positiveAffixStatus;
       negativeAffixStatus = other.negativeAffixStatus;
       usesLocaleSymbols = other.usesLocaleSymbols;
@@ -276,9 +324,10 @@ public class Parse {
       sb.append(groupingCp == -1 ? new char[] {'?'} : Character.toChars(groupingCp));
       sb.append(" exponent:");
       sb.append(exponent);
-      sb.append(" seenNegative:");
+      sb.append(" seen:");
       sb.append(sawNegative ? 1 : 0);
       sb.append(sawNegativeExponent ? 1 : 0);
+      sb.append(sawDecimal ? 1 : 0);
       sb.append(" affixStatus:");
       sb.append(positiveAffixStatus.ordinal());
       sb.append(negativeAffixStatus.ordinal());
@@ -303,8 +352,14 @@ public class Parse {
     int prevLength;
 
     int paddingCp;
-    int groupingCp;
-    int decimalCp;
+    int groupingCp1;
+    int groupingCp2;
+    int decimalCp1;
+    int decimalCp2;
+    SeparatorType groupingType1;
+    SeparatorType groupingType2;
+    SeparatorType decimalType1;
+    SeparatorType decimalType2;
     CharSequence exponentSeparator;
     CharSequence pp;
     CharSequence np;
@@ -332,8 +387,10 @@ public class Parse {
       length = 0;
       prevLength = 0;
       paddingCp = -1;
-      groupingCp = -1;
-      decimalCp = -1;
+      groupingCp1 = -1;
+      groupingCp2 = -1;
+      decimalCp1 = -1;
+      decimalCp2 = -1;
       exponentSeparator = null;
       pp = null;
       np = null;
@@ -410,24 +467,11 @@ public class Parse {
       };
 
   // TODO: Include characters like U+200D ZERO-WIDTH JOINER in the whitespace set?
-  // TODO: Re-generate these sets from the database. They probably haven't been updated in a while.
   private static final UnicodeSet UNISET_WHITESPACE = new UnicodeSet("[[:whitespace:]]").freeze();
-
-  private static final UnicodeSet UNISET_GROUPING =
-      new UnicodeSet(
-              0x0020, 0x0020, 0x002C, 0x002C, 0x060C, 0x060C, 0x066B, 0x066B, 0x3001, 0x3001,
-              0xFE10, 0xFE11, 0xFE50, 0xFE51, 0xFF0C, 0xFF0C, 0xFF64, 0xFF64)
-          .freeze();
-
-  private static final UnicodeSet UNISET_DECIMAL =
-      new UnicodeSet(
-              0x002E, 0x002E, 0x2024, 0x2024, 0x3002, 0x3002, 0xFE12, 0xFE12, 0xFE52, 0xFE52,
-              0xFF0E, 0xFF0E, 0xFF61, 0xFF61)
-          .freeze();
 
   /**
    * @internal
-   * @deprecated This API is ICU internal only.
+   * @deprecated This API is ICU internal only. TODO: Remove this set from ScientificNumberFormat.
    */
   @Deprecated
   public static final UnicodeSet UNISET_PLUS =
@@ -438,7 +482,7 @@ public class Parse {
 
   /**
    * @internal
-   * @deprecated This API is ICU internal only.
+   * @deprecated This API is ICU internal only. TODO: Remove this set from ScientificNumberFormat.
    */
   @Deprecated
   public static final UnicodeSet UNISET_MINUS =
@@ -475,8 +519,11 @@ public class Parse {
       String input, ParsePosition ppos, IProperties properties, DecimalFormatSymbols symbols)
       throws ParseException {
 
+    if (symbols == null) throw new IllegalArgumentException("symbols must not be null");
+
     // Set up the initial state
     ParserState state = threadLocalParseState.get().clear();
+    state.mode = properties.getParseMode();
     // TODO: Many of these calls use only the first codepoint from a string that could contain
     // multiple codepoints.  Is that OK?
     if (properties.getPaddingString() != null
@@ -484,8 +531,14 @@ public class Parse {
       // TODO: Should we accept treating whitespace like padding here?
       state.paddingCp = Character.codePointAt(properties.getPaddingString(), 0);
     }
-    state.groupingCp = Character.codePointAt(symbols.getGroupingSeparatorString(), 0);
-    state.decimalCp = Character.codePointAt(symbols.getDecimalSeparatorString(), 0);
+    state.groupingCp1 = Character.codePointAt(symbols.getGroupingSeparatorString(), 0);
+    state.groupingCp2 = Character.codePointAt(symbols.getMonetaryGroupingSeparatorString(), 0);
+    state.decimalCp1 = Character.codePointAt(symbols.getDecimalSeparatorString(), 0);
+    state.decimalCp2 = Character.codePointAt(symbols.getMonetaryDecimalSeparatorString(), 0);
+    state.groupingType1 = SeparatorType.fromCp(state.groupingCp1, state.mode == ParseMode.STRICT);
+    state.groupingType2 = SeparatorType.fromCp(state.groupingCp2, state.mode == ParseMode.STRICT);
+    state.decimalType1 = SeparatorType.fromCp(state.decimalCp1, state.mode == ParseMode.STRICT);
+    state.decimalType2 = SeparatorType.fromCp(state.decimalCp2, state.mode == ParseMode.STRICT);
     PNAffixGenerator.Result affixResult =
         PNAffixGenerator.getThreadLocalInstance().getModifiers(symbols, properties);
     state.pp = affixResult.positive.prefix;
@@ -498,7 +551,6 @@ public class Parse {
     for (int i = 0; i < 10; i++) {
       state.digitCps[i] = Character.codePointAt(digitStrings[i], 0);
     }
-    state.mode = properties.getParseMode();
     state.integerOnly = properties.getParseIntegerOnly();
     state.ignoreExponent = properties.getParseIgnoreExponent();
     ParserStateItem initialHolder = state.getNext().clear();
@@ -506,12 +558,13 @@ public class Parse {
 
     // Start walking through the string, one codepoint at a time. Backtracking is not allowed. This
     // is to enforce linear runtime and prevent edge cases that could result in an infinite loop.
-    int offset = 0;
+    int offset = ppos.getIndex();
     for (; offset < input.length(); ) {
       int cp = Character.codePointAt(input, offset);
       state.swap();
       for (int i = 0; i < state.prevLength; i++) {
         ParserStateItem item = state.prevItems[i];
+        // NOTE: Uncomment the following line to view the step-by-step parse process.
         // System.out.println(":" + offset + " " + item);
         switch (item.name) {
           case BEFORE_PREFIX:
@@ -561,6 +614,10 @@ public class Parse {
             if (!state.integerOnly) {
               acceptDecimalPoint(cp, state, item);
             }
+            if (state.mode == ParseMode.LENIENT) {
+              acceptWhitespace(cp, StateName.BEFORE_SUFFIX, state, item);
+            }
+            acceptPadding(cp, StateName.BEFORE_SUFFIX, state, item);
             acceptString(cp, StringType.POS_SUFFIX, state, item);
             acceptString(cp, StringType.NEG_SUFFIX, state, item);
             if (!state.ignoreExponent) {
@@ -570,11 +627,11 @@ public class Parse {
 
           case AFTER_FRACTION_DIGIT:
             // We encountered a decimal point
+            acceptDigit(cp, DigitType.FRACTION, state, item);
             if (state.mode == ParseMode.LENIENT) {
               acceptWhitespace(cp, StateName.BEFORE_SUFFIX, state, item);
             }
             acceptPadding(cp, StateName.BEFORE_SUFFIX, state, item);
-            acceptDigit(cp, DigitType.FRACTION, state, item);
             acceptString(cp, StringType.POS_SUFFIX, state, item);
             acceptString(cp, StringType.NEG_SUFFIX, state, item);
             if (!state.ignoreExponent) {
@@ -591,6 +648,7 @@ public class Parse {
             acceptPlusSign(cp, state, item);
             acceptMinusSign(cp, DigitType.EXPONENT, state, item);
             acceptDigit(cp, DigitType.EXPONENT, state, item);
+            break;
 
           case AFTER_EXPONENT_DIGIT:
             if (state.mode == ParseMode.LENIENT) {
@@ -682,6 +740,11 @@ public class Parse {
           }
         }
 
+        // Optionally require that a decimal point be present.
+        if (properties.getDecimalPatternMatchRequired() && !item.sawDecimal) {
+          continue;
+        }
+
         // If we get here, then this candidate is acceptable.
         // Use the earliest candidate in the list, or the first one that uses locale symbols for
         // decimal point and/or grouping separator.
@@ -696,6 +759,7 @@ public class Parse {
         ppos.setIndex(offset);
         return best.toNumber();
       } else {
+        ppos.setErrorIndex(offset);
         return null;
       }
     }
@@ -979,17 +1043,33 @@ public class Parse {
   private static void acceptGrouping(int cp, ParserState state, ParserStateItem item) {
     // Do not accept mixed grouping separators in the same string.
     if (item.groupingCp == -1) {
-      // First time seeing a grouping separator
-      if (UNISET_GROUPING.contains(cp) || cp == state.groupingCp) {
-        ParserStateItem next = state.getNext().copyFrom(item);
-        next.groupingCp = cp;
+      // First time seeing a grouping separator.
+      SeparatorType cpType = SeparatorType.fromCp(cp, state.mode == ParseMode.STRICT);
 
-        if (cp == state.groupingCp) {
-          next.usesLocaleSymbols = true;
-        }
+      // Accept separators in PLUS_LIKE or MINUS_LIKE according to the locale.
+      // Always accept separators in OTHER_GROUPING (this includes whitespace).
+      // Accept separators in UNKNOWN only if they exactly match the locale.
+      if (cpType != SeparatorType.OTHER_GROUPING
+          && cpType != state.groupingType1
+          && cpType != state.groupingType2) {
+        return;
+      }
+      if (cpType == SeparatorType.UNKNOWN && cp != state.groupingCp1 && cp != state.groupingCp2) {
+        return;
+      }
+
+      // A match was found.
+      ParserStateItem next = state.getNext().copyFrom(item);
+      next.groupingCp = cp;
+
+      // We set the "usesLocaleSymbols" flag if the locale's grouping separator is the same
+      // type as the one we just encountered.  This will give this parse path priority if
+      // there are two parse paths that tie.
+      if (cpType == state.groupingType1 || cpType == state.groupingType2) {
+        next.usesLocaleSymbols = true;
       }
     } else {
-      // Have already seen a grouping separator
+      // Have already seen a grouping separator.
       if (cp == item.groupingCp) {
         state.getNext().copyFrom(item);
       }
@@ -1008,14 +1088,35 @@ public class Parse {
    * @param item The old state leading into the code point.
    */
   private static void acceptDecimalPoint(int cp, ParserState state, ParserStateItem item) {
-    if (UNISET_DECIMAL.contains(cp) || cp == state.decimalCp) {
-      // Code point is a decimal separator
-      ParserStateItem next = state.getNext().copyFrom(item);
-      next.name = StateName.AFTER_FRACTION_DIGIT;
+    if (cp == item.groupingCp) {
+      // Don't accept a decimal point that is the same as the grouping separator
+      return;
+    }
 
-      if (cp == state.decimalCp) {
-        next.usesLocaleSymbols = true;
-      }
+    SeparatorType cpType = SeparatorType.fromCp(cp, state.mode == ParseMode.STRICT);
+
+    // Accept separators in PLUS_LIKE or MINUS_LIKE according to the locale.
+    // Accept separators in OTHER_GROUPING or UNKNOWN only if they exactly match the locale.
+    if (cpType != state.decimalType1 && cpType != state.decimalType2) {
+      // No match.
+      return;
+    }
+    if ((cpType == SeparatorType.OTHER_GROUPING || cpType == SeparatorType.UNKNOWN)
+        && cp != state.decimalCp1
+        && cp != state.decimalCp2) {
+      // No match.
+      return;
+    }
+
+    // A match was found.
+    ParserStateItem next = state.getNext().copyFrom(item);
+    next.name = StateName.AFTER_FRACTION_DIGIT;
+
+    // We set the "usesLocaleSymbols" flag if the locale's grouping separator is the same
+    // type as the one we just encountered.  This will give this parse path priority if
+    // there are two parse paths that tie.
+    if (cpType == state.decimalType1 || cpType == state.decimalType2) {
+      next.usesLocaleSymbols = true;
     }
   }
 

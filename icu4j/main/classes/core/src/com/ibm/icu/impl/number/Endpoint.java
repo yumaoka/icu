@@ -75,6 +75,9 @@ public class Endpoint {
 
   public static SingularFormat fromBTA(Properties properties, DecimalFormatSymbols symbols)
       throws ParseException {
+
+    if (symbols == null) throw new IllegalArgumentException("symbols must not be null");
+
     // TODO: This fast track results in an improvement of about 10ns during formatting.  See if
     // there is a way to implement it more elegantly.
     boolean canUseFastTrack = true;

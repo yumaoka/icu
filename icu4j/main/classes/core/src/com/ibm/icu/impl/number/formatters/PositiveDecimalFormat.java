@@ -10,7 +10,7 @@ import com.ibm.icu.text.DecimalFormatSymbols;
 
 public class PositiveDecimalFormat implements Format.TargetFormat {
 
-  public static interface IProperties {
+  public static interface IProperties extends CurrencyFormat.IProperties {
 
     static int DEFAULT_GROUPING_SIZE = Integer.MAX_VALUE;
 
@@ -111,8 +111,14 @@ public class PositiveDecimalFormat implements Format.TargetFormat {
     alwaysShowDecimal = properties.getAlwaysShowDecimal();
     infinityString = symbols.getInfinity();
     nanString = symbols.getNaN();
-    groupingSeparator = symbols.getGroupingSeparatorString();
-    decimalSeparator = symbols.getDecimalSeparatorString();
+
+    if (CurrencyFormat.useCurrency(properties)) {
+      groupingSeparator = symbols.getMonetaryGroupingSeparatorString();
+      decimalSeparator = symbols.getMonetaryDecimalSeparatorString();
+    } else {
+      groupingSeparator = symbols.getGroupingSeparatorString();
+      decimalSeparator = symbols.getDecimalSeparatorString();
+    }
 
     // Check to see if we can use code points instead of strings (~15% format performance boost)
     int _codePointZero = -1;

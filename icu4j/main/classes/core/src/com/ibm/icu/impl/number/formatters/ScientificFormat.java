@@ -78,9 +78,10 @@ public class ScientificFormat extends Format.BeforeFormat implements Rounder.Mul
       rounder = Rounder.SignificantDigitsRounder.getInstance(properties);
     } else {
       IProperties rprops = new Properties();
-      if (minInt == 0 && minFrac == 0 && maxFrac == 0) {
-        // Pattern such as "#E0" with no significant digits specified
-        rprops.setMinimumSignificantDigits(minInt);
+      rprops.setRoundingMode(properties.getRoundingMode());
+      if (minInt == 0 && maxFrac == 0) {
+        // Special case for the pattern "#E0" with no significant digits specified.
+        rprops.setMinimumSignificantDigits(1);
         rprops.setMaximumSignificantDigits(Integer.MAX_VALUE);
       } else {
         rprops.setMinimumSignificantDigits(minInt + minFrac);

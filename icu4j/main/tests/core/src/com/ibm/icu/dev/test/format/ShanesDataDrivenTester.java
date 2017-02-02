@@ -27,7 +27,7 @@ public class ShanesDataDrivenTester extends CodeUnderTest {
 
   public static void run() {
     CodeUnderTest tester = new ShanesDataDrivenTester();
-    DataDrivenNumberFormatTestUtility.runSuite(dataPath, tester);
+    DataDrivenNumberFormatTestUtility.runFormatSuiteIncludingKnownFailures(dataPath, tester);
   }
 
   @Override
@@ -139,10 +139,7 @@ public class ShanesDataDrivenTester extends CodeUnderTest {
       propertiesFromTuple(tuple, properties);
       actual =
           Parse.parse(
-              tuple.parse,
-              ppos,
-              properties,
-              DecimalFormatSymbols.getInstance(tuple.locale));
+              tuple.parse, ppos, properties, DecimalFormatSymbols.getInstance(tuple.locale));
     } catch (ParseException e) {
       e.printStackTrace();
       return e.getLocalizedMessage();
@@ -278,7 +275,7 @@ public class ShanesDataDrivenTester extends CodeUnderTest {
       properties.setParseIntegerOnly(tuple.parseIntegerOnly != 0);
     }
     if (tuple.decimalPatternMatchRequired != null) {
-      // TODO
+      properties.setDecimalPatternMatchRequired(tuple.decimalPatternMatchRequired != 0);
     }
     if (tuple.parseNoExponent != null) {
       properties.setParseIgnoreExponent(tuple.parseNoExponent != 0);
