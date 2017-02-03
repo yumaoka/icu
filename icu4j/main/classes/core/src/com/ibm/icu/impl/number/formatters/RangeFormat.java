@@ -7,10 +7,10 @@ package com.ibm.icu.impl.number.formatters;
 
 import java.util.Deque;
 
-import com.ibm.icu.impl.number.DoubleSidedStringBuilder;
 import com.ibm.icu.impl.number.Format;
 import com.ibm.icu.impl.number.FormatQuantity;
 import com.ibm.icu.impl.number.ModifierHolder;
+import com.ibm.icu.impl.number.NumberStringBuilder;
 
 public class RangeFormat extends Format {
   // Primary settings
@@ -34,7 +34,7 @@ public class RangeFormat extends Format {
   public int process(
       Deque<FormatQuantity> inputs,
       ModifierHolder mods,
-      DoubleSidedStringBuilder string,
+      NumberStringBuilder string,
       int startIndex) {
     ModifierHolder lMods = new ModifierHolder();
     ModifierHolder rMods = new ModifierHolder();
@@ -51,7 +51,7 @@ public class RangeFormat extends Format {
     lLen += lMods.applyAll(string, startIndex, startIndex + lLen);
     rLen += rMods.applyAll(string, startIndex + lLen, startIndex + lLen + rLen);
 
-    int sLen = string.insert(startIndex + lLen, separator);
+    int sLen = string.insert(startIndex + lLen, separator, null);
 
     return lLen + sLen + rLen;
   }

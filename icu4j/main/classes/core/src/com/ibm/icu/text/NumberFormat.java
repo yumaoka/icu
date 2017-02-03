@@ -1402,7 +1402,7 @@ public abstract class NumberFormat extends UFormat {
             r.setDefaultRuleSet(nsRuleSetName);
             format = r;
         } else {
-            DecimalFormat f = new DecimalFormat(pattern, symbols);
+            DecimalFormat f = new DecimalFormat(pattern, symbols, choice);
             // System.out.println("loc: " + desiredLocale + " choice: " + choice + " pat: " + pattern + " sym: " + symbols + " result: " + format);
 
             /*Bug 4408066
@@ -1415,9 +1415,11 @@ public abstract class NumberFormat extends UFormat {
                 f.setDecimalSeparatorAlwaysShown(false);
                 f.setParseIntegerOnly(true);
             }
-
             if (choice == CASHCURRENCYSTYLE) {
                 f.setCurrencyUsage(CurrencyUsage.CASH);
+            }
+            if (choice == PLURALCURRENCYSTYLE) {
+                f.setCurrencyPluralInfo(CurrencyPluralInfo.getInstance(desiredLocale));
             }
             format = f;
        }
@@ -1460,6 +1462,7 @@ public abstract class NumberFormat extends UFormat {
         switch (choice) {
         case NUMBERSTYLE:
         case INTEGERSTYLE:
+        case PLURALCURRENCYSTYLE:
             patternKey = "decimalFormat";
             break;
         case CURRENCYSTYLE:
@@ -1469,7 +1472,6 @@ public abstract class NumberFormat extends UFormat {
             break;
         case CASHCURRENCYSTYLE:
         case ISOCURRENCYSTYLE:
-        case PLURALCURRENCYSTYLE:
         case STANDARDCURRENCYSTYLE:
             patternKey = "currencyFormat";
             break;

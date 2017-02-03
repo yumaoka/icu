@@ -2,11 +2,12 @@
 // License & terms of use: http://www.unicode.org/copyright.html#License
 package com.ibm.icu.impl.number.formatters;
 
-import com.ibm.icu.impl.number.DoubleSidedStringBuilder;
 import com.ibm.icu.impl.number.Format;
 import com.ibm.icu.impl.number.FormatQuantity;
+import com.ibm.icu.impl.number.NumberStringBuilder;
 import com.ibm.icu.impl.number.Properties;
 import com.ibm.icu.text.DecimalFormatSymbols;
+import com.ibm.icu.text.NumberFormat.Field;
 
 public class PositiveDecimalFormat implements Format.TargetFormat {
 
@@ -146,14 +147,14 @@ public class PositiveDecimalFormat implements Format.TargetFormat {
   }
 
   @Override
-  public int target(FormatQuantity input, DoubleSidedStringBuilder string, int startIndex) {
+  public int target(FormatQuantity input, NumberStringBuilder string, int startIndex) {
     int length = 0;
 
     if (input.isInfinite()) {
-      length += string.insert(startIndex, infinityString);
+      length += string.insert(startIndex, infinityString, Field.INTEGER);
 
     } else if (input.isNaN()) {
-      length += string.insert(startIndex, nanString);
+      length += string.insert(startIndex, nanString, Field.INTEGER);
 
     } else {
       // Add the integer digits
@@ -161,7 +162,7 @@ public class PositiveDecimalFormat implements Format.TargetFormat {
 
       // Add the decimal point
       if (input.fractionCount() > 0 || alwaysShowDecimal) {
-        length += string.insert(startIndex + length, decimalSeparator);
+        length += string.insert(startIndex + length, decimalSeparator, Field.DECIMAL_SEPARATOR);
       }
 
       // Add the fraction digits
@@ -171,42 +172,41 @@ public class PositiveDecimalFormat implements Format.TargetFormat {
     return length;
   }
 
-  private int addIntegerDigits(
-      FormatQuantity input, DoubleSidedStringBuilder string, int startIndex) {
+  private int addIntegerDigits(FormatQuantity input, NumberStringBuilder string, int startIndex) {
     int length = 0;
     int integerCount = input.integerCount();
     for (int i = 0; i < integerCount; i++) {
       // Add grouping separator
       if (i == groupingSize && integerCount - i >= minimumGroupingDigits) {
-        length += string.insert(startIndex, groupingSeparator);
+        length += string.insert(startIndex, groupingSeparator, Field.GROUPING_SEPARATOR);
       } else if (i > groupingSize && (i - groupingSize) % secondaryGroupingSize == 0) {
-        length += string.insert(startIndex, groupingSeparator);
+        length += string.insert(startIndex, groupingSeparator, Field.GROUPING_SEPARATOR);
       }
 
       // Get and append the next digit value
       byte nextDigit = input.getIntegerDigit(i);
-      length += addDigit(nextDigit, string, startIndex);
+      length += addDigit(nextDigit, string, startIndex, Field.INTEGER);
     }
 
     return length;
   }
 
-  private int addFractionDigits(FormatQuantity input, DoubleSidedStringBuilder string, int index) {
+  private int addFractionDigits(FormatQuantity input, NumberStringBuilder string, int index) {
     int length = 0;
     int fractionCount = input.fractionCount();
     for (int i = 0; i < fractionCount; i++) {
       // Get and append the next digit value
       byte nextDigit = input.getFractionDigit(i);
-      length += addDigit(nextDigit, string, index + length);
+      length += addDigit(nextDigit, string, index + length, Field.FRACTION);
     }
     return length;
   }
 
-  private int addDigit(byte digit, DoubleSidedStringBuilder outputString, int index) {
+  private int addDigit(byte digit, NumberStringBuilder outputString, int index, Field field) {
     if (codePointZero != -1) {
-      return outputString.insertCodePoint(index, codePointZero + digit);
+      return outputString.insertCodePoint(index, codePointZero + digit, field);
     } else {
-      return outputString.insert(index, digitStrings[digit]);
+      return outputString.insert(index, digitStrings[digit], field);
     }
   }
 

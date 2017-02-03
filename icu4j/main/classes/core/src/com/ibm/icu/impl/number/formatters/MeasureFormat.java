@@ -66,7 +66,7 @@ public class MeasureFormat {
     for (StandardPlural plural : StandardPlural.VALUES) {
       String formatString = null;
       mf.getPluralFormatter(unit, width, plural.ordinal());
-      mod.put(plural, new SimpleModifier(formatString));
+      mod.put(plural, new SimpleModifier(formatString, null));
     }
     return mod;
   }

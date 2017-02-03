@@ -3,9 +3,9 @@
 package com.ibm.icu.impl.number;
 
 import com.ibm.icu.impl.StandardPlural;
-import com.ibm.icu.impl.number.modifiers.AffixModifier;
 import com.ibm.icu.impl.number.modifiers.ConstantAffixModifier;
 import com.ibm.icu.impl.number.modifiers.GeneralPluralModifier;
+import com.ibm.icu.impl.number.modifiers.PositiveNegativeAffixModifier;
 import com.ibm.icu.impl.number.modifiers.SimpleModifier;
 
 /**
@@ -14,7 +14,7 @@ import com.ibm.icu.impl.number.modifiers.SimpleModifier;
  * applied, but it could contain something else, like a {@link com.ibm.icu.text.SimpleFormatter}
  * pattern.
  *
- * @see AffixModifier
+ * @see PositiveNegativeAffixModifier
  * @see ConstantAffixModifier
  * @see GeneralPluralModifier
  * @see SimpleModifier
@@ -31,7 +31,7 @@ public interface Modifier {
    *     when only one number is being formatted.
    * @return The number of characters (UTF-16 code units) that were added to the string builder.
    */
-  public int apply(DoubleSidedStringBuilder output, int leftIndex, int rightIndex);
+  public int apply(NumberStringBuilder output, int leftIndex, int rightIndex);
 
   /**
    * The number of characters that {@link #apply} would add to the string builder.
@@ -73,6 +73,23 @@ public interface Modifier {
      * @return A Modifier corresponding to the negative sign.
      */
     public Modifier getModifier(StandardPlural plural, boolean isNegative);
+  }
+
+  /** An interface for a modifier that is represented by a prefix string and a suffix string. */
+  public static interface AffixModifier extends Modifier, Exportable {
+    /**
+     * Gets the prefix string contained by this {@link AffixModifier}.
+     *
+     * @return The prefix string. Will not be null.
+     */
+    public String getPrefix();
+
+    /**
+     * Gets the suffix string contained by this {@link AffixModifier}.
+     *
+     * @return The suffix string. Will not be null.
+     */
+    public String getSuffix();
   }
 
   /**

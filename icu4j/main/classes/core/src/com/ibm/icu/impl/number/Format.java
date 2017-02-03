@@ -2,6 +2,7 @@
 // License & terms of use: http://www.unicode.org/copyright.html#License
 package com.ibm.icu.impl.number;
 
+import java.text.FieldPosition;
 import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Deque;
@@ -11,11 +12,11 @@ import com.ibm.icu.text.PluralRules;
 // TODO: Get a better name for this base class.
 public abstract class Format {
 
-  protected static final ThreadLocal<DoubleSidedStringBuilder> threadLocalStringBuilder =
-      new ThreadLocal<DoubleSidedStringBuilder>() {
+  protected static final ThreadLocal<NumberStringBuilder> threadLocalStringBuilder =
+      new ThreadLocal<NumberStringBuilder>() {
         @Override
-        protected DoubleSidedStringBuilder initialValue() {
-          return new DoubleSidedStringBuilder();
+        protected NumberStringBuilder initialValue() {
+          return new NumberStringBuilder();
         }
       };
 
@@ -32,7 +33,7 @@ public abstract class Format {
     Deque<FormatQuantity> inputDeque = new ArrayDeque<FormatQuantity>();
     inputDeque.addAll(Arrays.asList(inputs));
     ModifierHolder modDeque = threadLocalModifierHolder.get().clear();
-    DoubleSidedStringBuilder sb = threadLocalStringBuilder.get().clear();
+    NumberStringBuilder sb = threadLocalStringBuilder.get().clear();
 
     // Primary "recursion" step, calling the implementation's process method
     int length = process(inputDeque, modDeque, sb, 0);
@@ -46,19 +47,31 @@ public abstract class Format {
   public abstract static class SingularFormat extends Format implements Exportable {
 
     public String format(FormatQuantity input) {
-      DoubleSidedStringBuilder sb = formatToStringBuilder(input);
+      NumberStringBuilder sb = formatToStringBuilder(input, false);
       return sb.toString();
     }
 
     public void format(FormatQuantity input, StringBuffer output) {
-      DoubleSidedStringBuilder sb = formatToStringBuilder(input);
+      NumberStringBuilder sb = formatToStringBuilder(input, false);
       output.append(sb);
     }
 
-    private DoubleSidedStringBuilder formatToStringBuilder(FormatQuantity input) {
+    public String format(FormatQuantity input, FieldPosition fp) {
+      NumberStringBuilder sb = formatToStringBuilder(input, true);
+      sb.populateFieldPosition(fp, 0);
+      return sb.toString();
+    }
+
+    public void format(FormatQuantity input, StringBuffer output, FieldPosition fp) {
+      NumberStringBuilder sb = formatToStringBuilder(input, true);
+      sb.populateFieldPosition(fp, output.length());
+      output.append(sb);
+    }
+
+    private NumberStringBuilder formatToStringBuilder(FormatQuantity input, boolean fieldTrackingEnabled) {
       // Setup
       ModifierHolder modDeque = threadLocalModifierHolder.get().clear();
-      DoubleSidedStringBuilder sb = threadLocalStringBuilder.get().clear();
+      NumberStringBuilder sb = threadLocalStringBuilder.get().clear();
 
       // Primary "recursion" step, calling the implementation's process method
       int length = process(input, modDeque, sb, 0);
@@ -72,13 +85,16 @@ public abstract class Format {
     public int process(
         Deque<FormatQuantity> input,
         ModifierHolder mods,
-        DoubleSidedStringBuilder string,
+        NumberStringBuilder string,
         int startIndex) {
       return process(input.removeFirst(), mods, string, startIndex);
     }
 
     public abstract int process(
-        FormatQuantity input, ModifierHolder mods, DoubleSidedStringBuilder string, int startIndex);
+        FormatQuantity input,
+        ModifierHolder mods,
+        NumberStringBuilder string,
+        int startIndex);
   }
 
   public static class BeforeTargetAfterFormat extends SingularFormat {
@@ -127,7 +143,7 @@ public abstract class Format {
     @Override
     public String format(FormatQuantity input) {
       ModifierHolder mods = threadLocalModifierHolder.get().clear();
-      DoubleSidedStringBuilder sb = threadLocalStringBuilder.get().clear();
+      NumberStringBuilder sb = threadLocalStringBuilder.get().clear();
       int length = process(input, mods, sb, 0);
       length += mods.applyAll(sb, 0, length);
       return sb.toString();
@@ -137,7 +153,7 @@ public abstract class Format {
     public int process(
         FormatQuantity input,
         ModifierHolder mods,
-        DoubleSidedStringBuilder string,
+        NumberStringBuilder string,
         int startIndex) {
       // Special case: modifiers are skipped for NaN
       int length = 0;
@@ -203,7 +219,7 @@ public abstract class Format {
 
     @Override
     public String format(FormatQuantity input) {
-      DoubleSidedStringBuilder sb = threadLocalStringBuilder.get().clear();
+      NumberStringBuilder sb = threadLocalStringBuilder.get().clear();
       process(input, null, sb, 0);
       return sb.toString();
     }
@@ -212,7 +228,7 @@ public abstract class Format {
     public int process(
         FormatQuantity input,
         ModifierHolder mods,
-        DoubleSidedStringBuilder string,
+        NumberStringBuilder string,
         int startIndex) {
       // Special case: modifiers are skipped for NaN
       Modifier mod = null;
@@ -246,12 +262,12 @@ public abstract class Format {
 
   public static interface TargetFormat extends Exportable {
     public abstract int target(
-        FormatQuantity input, DoubleSidedStringBuilder string, int startIndex);
+        FormatQuantity input, NumberStringBuilder string, int startIndex);
   }
 
   public static interface AfterFormat extends Exportable {
     public abstract int after(
-        ModifierHolder mods, DoubleSidedStringBuilder string, int leftIndex, int rightIndex);
+        ModifierHolder mods, NumberStringBuilder string, int leftIndex, int rightIndex);
   }
 
   // Instead of Dequeue<BigDecimal>, it could be Deque<Quantity> where
@@ -259,6 +275,6 @@ public abstract class Format {
   public abstract int process(
       Deque<FormatQuantity> inputs,
       ModifierHolder outputMods,
-      DoubleSidedStringBuilder outputString,
+      NumberStringBuilder outputString,
       int startIndex);
 }

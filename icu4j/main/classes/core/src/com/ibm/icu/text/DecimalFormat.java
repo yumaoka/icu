@@ -69,6 +69,20 @@ public class DecimalFormat extends NumberFormat {
     refreshFormatter();
   }
 
+  /** Package-private constructor used by NumberFormat. */
+  DecimalFormat(String pattern, DecimalFormatSymbols symbols, int choice) {
+    this.symbols = (DecimalFormatSymbols) symbols.clone();
+    properties = new Properties();
+    setPropertiesFromPattern(pattern);
+    // FIXME: Deal with choice
+//    switch (choice) {
+//      case NumberFormat.PLURALCURRENCYSTYLE:
+//        properties.setCurrencyStyle(CurrencyStyle.PLURAL);
+//        break;
+//    }
+    refreshFormatter();
+  }
+
   private static DecimalFormatSymbols getDefaultSymbols() {
     return DecimalFormatSymbols.getInstance();
   }
@@ -93,24 +107,21 @@ public class DecimalFormat extends NumberFormat {
    */
   @Override
   public StringBuffer format(double number, StringBuffer result, FieldPosition fieldPosition) {
-    // TODO(sffc): Implement fieldPosition
-    formatter.format(new FormatQuantity2(number), result);
+    formatter.format(new FormatQuantity2(number), result, fieldPosition);
     return result;
   }
 
   /** @stable ICU 2.0 */
   @Override
   public StringBuffer format(long number, StringBuffer result, FieldPosition fieldPosition) {
-    // TODO(sffc): Implement fieldPosition
-    formatter.format(new FormatQuantity2(number), result);
+    formatter.format(new FormatQuantity2(number), result, fieldPosition);
     return result;
   }
 
   /** @stable ICU 2.0 */
   @Override
   public StringBuffer format(BigInteger number, StringBuffer result, FieldPosition fieldPosition) {
-    // TODO(sffc): Implement fieldPosition
-    formatter.format(new FormatQuantity2(number), result);
+    formatter.format(new FormatQuantity2(number), result, fieldPosition);
     return result;
   }
 
@@ -118,16 +129,14 @@ public class DecimalFormat extends NumberFormat {
   @Override
   public StringBuffer format(
       java.math.BigDecimal number, StringBuffer result, FieldPosition fieldPosition) {
-    // TODO(sffc): Implement fieldPosition
-    formatter.format(new FormatQuantity2(number), result);
+    formatter.format(new FormatQuantity2(number), result, fieldPosition);
     return result;
   }
 
   /** @stable ICU 2.0 */
   @Override
   public StringBuffer format(BigDecimal number, StringBuffer result, FieldPosition fieldPosition) {
-    // TODO(sffc): Implement fieldPosition
-    formatter.format(new FormatQuantity2(number), result);
+    formatter.format(new FormatQuantity2(number), result, fieldPosition);
     return result;
   }
 
@@ -392,17 +401,13 @@ public class DecimalFormat extends NumberFormat {
     refreshFormatter();
   }
 
-  /**
-   * @stable ICU 2.0
-   */
+  /** @stable ICU 2.0 */
   @Override
   public synchronized boolean isGroupingUsed() {
     return PositiveDecimalFormat.useGrouping(properties);
   }
 
-  /**
-   * @stable ICU 2.0
-   */
+  /** @stable ICU 2.0 */
   @Override
   public synchronized void setGroupingUsed(boolean newValue) {
     if (newValue) {

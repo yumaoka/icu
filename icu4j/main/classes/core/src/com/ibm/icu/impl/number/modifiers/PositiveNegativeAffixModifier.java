@@ -5,23 +5,24 @@ package com.ibm.icu.impl.number.modifiers;
 import com.ibm.icu.impl.number.Format;
 import com.ibm.icu.impl.number.FormatQuantity;
 import com.ibm.icu.impl.number.Modifier;
+import com.ibm.icu.impl.number.Modifier.AffixModifier;
 import com.ibm.icu.impl.number.ModifierHolder;
 import com.ibm.icu.impl.number.Properties;
 
 /** A class containing a positive form and a negative form of {@link ConstantAffixModifier}. */
-public class AffixModifier extends Format.BeforeFormat
+public class PositiveNegativeAffixModifier extends Format.BeforeFormat
     implements Modifier.PositiveNegativeModifier {
-  private final ConstantAffixModifier positive;
-  private final ConstantAffixModifier negative;
+  private final AffixModifier positive;
+  private final AffixModifier negative;
 
   /**
-   * Constructs an instance using the two {@link ConstantAffixModifier} classes for positive and
+   * Constructs an instance using the two {@link ConstantMultiFieldModifier} classes for positive and
    * negative.
    *
    * @param positive The positive-form Modifier.
    * @param negative The negative-form Modifier.
    */
-  public AffixModifier(ConstantAffixModifier positive, ConstantAffixModifier negative) {
+  public PositiveNegativeAffixModifier(AffixModifier positive, AffixModifier negative) {
     this.positive = positive;
     this.negative = negative;
   }
@@ -39,9 +40,9 @@ public class AffixModifier extends Format.BeforeFormat
 
   @Override
   public void export(Properties properties) {
-    properties.setPositivePrefix(positive.prefix);
-    properties.setPositiveSuffix(positive.suffix);
-    properties.setNegativePrefix(negative.prefix);
-    properties.setNegativeSuffix(negative.suffix);
+    properties.setPositivePrefix(positive.getPrefix());
+    properties.setPositiveSuffix(positive.getSuffix());
+    properties.setNegativePrefix(negative.getPrefix());
+    properties.setNegativeSuffix(negative.getSuffix());
   }
 }

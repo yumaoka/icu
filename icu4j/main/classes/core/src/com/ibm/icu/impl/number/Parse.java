@@ -541,10 +541,10 @@ public class Parse {
     state.decimalType2 = SeparatorType.fromCp(state.decimalCp2, state.mode == ParseMode.STRICT);
     PNAffixGenerator.Result affixResult =
         PNAffixGenerator.getThreadLocalInstance().getModifiers(symbols, properties);
-    state.pp = affixResult.positive.prefix;
-    state.np = affixResult.negative.prefix;
-    state.ps = affixResult.positive.suffix;
-    state.ns = affixResult.negative.suffix;
+    state.pp = affixResult.positive.getPrefix();
+    state.np = affixResult.negative.getPrefix();
+    state.ps = affixResult.positive.getSuffix();
+    state.ns = affixResult.negative.getSuffix();
     state.exponentSeparator = symbols.getExponentSeparator();
     @SuppressWarnings("deprecation")
     String[] digitStrings = symbols.getDigitStringsLocal();

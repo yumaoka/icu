@@ -5,6 +5,7 @@ package com.ibm.icu.impl.number;
 import java.text.ParseException;
 
 import com.ibm.icu.text.DecimalFormatSymbols;
+import com.ibm.icu.text.NumberFormat.Field;
 
 /**
  * Interpolates locale data into a literal string. Examples of literal strings include the prefix
@@ -73,7 +74,7 @@ public class LiteralString {
    * @param currency2 The string to replace "¤¤".
    * @param currency3 The string to replace "¤¤¤".
    * @param minusSign The string to replace "-".  If null, symbols.getMinusSignString() is used.
-   * @param sb The {@link StringBuilder} to which the result will be appended.
+   * @param sb1 The {@link NumberStringBuilder} to which the result will be appended.
    * @throws ParseException
    */
   public static void unescape(
@@ -83,7 +84,7 @@ public class LiteralString {
       String currency2,
       String currency3,
       String minusSign,
-      StringBuilder sb)
+      NumberStringBuilder sb1)
       throws ParseException {
     if (literalString == null) return;
     if (minusSign == null) minusSign = symbols.getMinusSignString();
@@ -94,6 +95,7 @@ public class LiteralString {
 
       String strToAppend = null;
       int cpToAppend = -1;
+      Field fieldToAppend = null;
 
       switch (state) {
         case BASE:
@@ -101,12 +103,16 @@ public class LiteralString {
             state = State.FIRST_QUOTE;
           } else if (cp == '-' && symbols != null) {
             strToAppend = minusSign;
+            fieldToAppend = Field.SIGN;
           } else if (cp == '+' && symbols != null) {
             strToAppend = symbols.getPlusSignString();
+            fieldToAppend = Field.SIGN;
           } else if (cp == '%' && symbols != null) {
             strToAppend = symbols.getPercentString();
+            fieldToAppend = Field.PERCENT;
           } else if (cp == '‰' && symbols != null) {
             strToAppend = symbols.getPerMillString();
+            fieldToAppend = Field.PERMILLE;
           } else if (cp == '¤' && symbols != null) {
             state = State.FIRST_CURR;
           } else {
@@ -143,6 +149,7 @@ public class LiteralString {
             state = State.SECOND_CURR;
           } else {
             strToAppend = currency1;
+            fieldToAppend = Field.CURRENCY;
             state = State.REWIND_TO_BASE;
           }
           break;
@@ -151,6 +158,7 @@ public class LiteralString {
             state = State.THIRD_CURR;
           } else {
             strToAppend = currency2;
+            fieldToAppend = Field.CURRENCY;
             state = State.REWIND_TO_BASE;
           }
           break;
@@ -163,9 +171,9 @@ public class LiteralString {
       }
 
       if (strToAppend != null) {
-        sb.append(strToAppend);
+        sb1.append(strToAppend, fieldToAppend);
       } else if (cpToAppend != -1) {
-        sb.appendCodePoint(cpToAppend);
+        sb1.appendCodePoint(cpToAppend, fieldToAppend);
       }
 
       // The state REWIND_TO_BASE means that we should look at the current character again
@@ -182,13 +190,13 @@ public class LiteralString {
       case BASE:
         break;
       case FIRST_CURR:
-        sb.append(currency1);
+        sb1.append(currency1, Field.CURRENCY);
         break;
       case SECOND_CURR:
-        sb.append(currency2);
+        sb1.append(currency2, Field.CURRENCY);
         break;
       case THIRD_CURR:
-        sb.append(currency3);
+        sb1.append(currency3, Field.CURRENCY);
         break;
       default:
         // TODO: Should this fail silently instead?

@@ -7,13 +7,14 @@ import java.text.ParseException;
 import com.ibm.icu.impl.number.formatters.CompactDecimalFormat;
 import com.ibm.icu.impl.number.formatters.PositiveNegativeAffixFormat;
 import com.ibm.icu.impl.number.formatters.PositiveNegativeAffixFormat.IProperties;
-import com.ibm.icu.impl.number.modifiers.ConstantAffixModifier;
+import com.ibm.icu.impl.number.modifiers.ConstantMultiFieldModifier;
 import com.ibm.icu.text.DecimalFormatSymbols;
+import com.ibm.icu.text.NumberFormat.Field;
 
 /**
- * A class to convert from a bag of prefix/suffix properties into a positive and
- * negative {@link Modifier}. This is a standard implementation used by {@link
- * PositiveNegativeAffixFormat}, {@link CompactDecimalFormat}, {@link Parse}, and others.
+ * A class to convert from a bag of prefix/suffix properties into a positive and negative {@link
+ * Modifier}. This is a standard implementation used by {@link PositiveNegativeAffixFormat}, {@link
+ * CompactDecimalFormat}, {@link Parse}, and others.
  *
  * <p>This class is is intended to be an efficient generator for instances of Modifier by a single
  * thread during construction of a formatter or during static formatting. It uses internal caching
@@ -27,8 +28,8 @@ import com.ibm.icu.text.DecimalFormatSymbols;
  */
 public class PNAffixGenerator {
   public static class Result {
-    public ConstantAffixModifier positive = null;
-    public ConstantAffixModifier negative = null;
+    public ConstantMultiFieldModifier positive = null;
+    public ConstantMultiFieldModifier negative = null;
   }
 
   protected static final ThreadLocal<PNAffixGenerator> threadLocalInstance =
@@ -47,10 +48,10 @@ public class PNAffixGenerator {
   // also serves as a 1-element cache to avoid creating objects when subsequent calls have
   // identical prefixes and suffixes.  This happens, for example, when consuming CDF data.
   private Result resultInstance = new Result();
-  private StringBuilder sb1 = new StringBuilder();
-  private StringBuilder sb2 = new StringBuilder();
-  private StringBuilder sb3 = new StringBuilder();
-  private StringBuilder sb4 = new StringBuilder();
+  private NumberStringBuilder sb1 = new NumberStringBuilder();
+  private NumberStringBuilder sb2 = new NumberStringBuilder();
+  private NumberStringBuilder sb3 = new NumberStringBuilder();
+  private NumberStringBuilder sb4 = new NumberStringBuilder();
 
   /**
    * Generates modifiers using default currency symbols.
@@ -125,8 +126,8 @@ public class PNAffixGenerator {
     CharSequence nsp = properties.getNegativeSuffixPattern();
 
     // Set sb1/sb2 to the positive prefix/suffix.
-    sb1.setLength(0);
-    sb2.setLength(0);
+    sb1.clear();
+    sb2.clear();
     LiteralString.unescape(ppp, symbols, curr1, curr2, curr3, null, sb1);
     LiteralString.unescape(psp, symbols, curr1, curr2, curr3, null, sb2);
     setPositiveResult(sb1, sb2, properties);
@@ -135,10 +136,10 @@ public class PNAffixGenerator {
     if (npp == null && nsp == null) {
       // Negative prefix defaults to positive prefix prepended with the minus sign.
       // Negative suffix defaults to positive suffix.
-      sb1.insert(0, symbols.getMinusSignString());
+      sb1.insert(0, symbols.getMinusSignString(), Field.SIGN);
     } else {
-      sb1.setLength(0);
-      sb2.setLength(0);
+      sb1.clear();
+      sb2.clear();
       LiteralString.unescape(npp, symbols, curr1, curr2, curr3, null, sb1);
       LiteralString.unescape(nsp, symbols, curr1, curr2, curr3, null, sb2);
     }
@@ -175,10 +176,10 @@ public class PNAffixGenerator {
 
     if (npp != null || nsp != null) {
       // Case 2 or Case 3
-      sb1.setLength(0);
-      sb2.setLength(0);
-      sb3.setLength(0);
-      sb4.setLength(0);
+      sb1.clear();
+      sb2.clear();
+      sb3.clear();
+      sb4.clear();
       LiteralString.unescape(npp, symbols, curr1, curr2, curr3, null, sb1);
       LiteralString.unescape(nsp, symbols, curr1, curr2, curr3, null, sb2);
       LiteralString.unescape(npp, symbols, curr1, curr2, curr3, symbols.getPlusSignString(), sb3);
@@ -195,57 +196,61 @@ public class PNAffixGenerator {
     }
 
     // Case 1 or 2. Set sb1/sb2 to the positive prefix/suffix.
-    sb1.setLength(0);
-    sb2.setLength(0);
+    sb1.clear();
+    sb2.clear();
     LiteralString.unescape(ppp, symbols, curr1, curr2, curr3, null, sb1);
     LiteralString.unescape(psp, symbols, curr1, curr2, curr3, null, sb2);
 
     if (npp == null && nsp == null) {
       // Case 1. Compute the negative result from the positive subpattern.
-      sb3.setLength(0);
-      sb3.append(symbols.getMinusSignString());
+      sb3.clear();
+      sb3.append(symbols.getMinusSignString(), Field.SIGN);
       sb3.append(sb1);
       setNegativeResult(sb3, sb2, properties);
     }
 
     // Case 1 or 2. Prepend a '+' sign to the positive prefix.
-    sb1.insert(0, symbols.getPlusSignString());
+    sb1.insert(0, symbols.getPlusSignString(), Field.SIGN);
     setPositiveResult(sb1, sb2, properties);
 
     return resultInstance;
   }
 
-  private void setPositiveResult(CharSequence prefix, CharSequence suffix, IProperties properties) {
+  private void setPositiveResult(
+      NumberStringBuilder prefix, NumberStringBuilder suffix, IProperties properties) {
     // Perform overrides.
-    if (properties.getPositivePrefix() != null) prefix = properties.getPositivePrefix();
-    if (properties.getPositiveSuffix() != null) suffix = properties.getPositiveSuffix();
+    if (properties.getPositivePrefix() != null)
+      prefix.clear().append(properties.getPositivePrefix(), null);
+    if (properties.getPositiveSuffix() != null)
+      suffix.clear().append(properties.getPositiveSuffix(), null);
 
     // Construct the modifier.
     if (prefix.length() == 0 && suffix.length() == 0) {
-      resultInstance.positive = ConstantAffixModifier.EMPTY;
+      resultInstance.positive = ConstantMultiFieldModifier.EMPTY;
     } else if (resultInstance.positive != null
-        && charSequenceEquals(prefix, resultInstance.positive.prefix)
-        && charSequenceEquals(suffix, resultInstance.positive.suffix)) {
+        && resultInstance.positive.contentEquals(prefix, suffix)) {
       // Use the cached modifier
     } else {
-      resultInstance.positive = new ConstantAffixModifier(prefix.toString(), suffix.toString());
+      resultInstance.positive = new ConstantMultiFieldModifier(prefix, suffix);
     }
   }
 
-  private void setNegativeResult(CharSequence prefix, CharSequence suffix, IProperties properties) {
+  private void setNegativeResult(
+      NumberStringBuilder prefix, NumberStringBuilder suffix, IProperties properties) {
     // Perform overrides.
-    if (properties.getNegativePrefix() != null) prefix = properties.getNegativePrefix();
-    if (properties.getNegativeSuffix() != null) suffix = properties.getNegativeSuffix();
+    if (properties.getNegativePrefix() != null)
+      prefix.clear().append(properties.getNegativePrefix(), null);
+    if (properties.getNegativeSuffix() != null)
+      suffix.clear().append(properties.getNegativeSuffix(), null);
 
     // Construct the modifier.
     if (prefix.length() == 0 && suffix.length() == 0) {
-      resultInstance.negative = ConstantAffixModifier.EMPTY;
+      resultInstance.negative = ConstantMultiFieldModifier.EMPTY;
     } else if (resultInstance.negative != null
-        && charSequenceEquals(prefix, resultInstance.negative.prefix)
-        && charSequenceEquals(suffix, resultInstance.negative.suffix)) {
+        && resultInstance.negative.contentEquals(prefix, suffix)) {
       // Use the cached modifier
     } else {
-      resultInstance.negative = new ConstantAffixModifier(prefix.toString(), suffix.toString());
+      resultInstance.negative = new ConstantMultiFieldModifier(prefix, suffix);
     }
   }
 

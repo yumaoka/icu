@@ -52,7 +52,7 @@ public class ModifierHolder {
     return mods.removeLast();
   }
 
-  public int applyAll(DoubleSidedStringBuilder string, int leftIndex, int rightIndex) {
+  public int applyAll(NumberStringBuilder string, int leftIndex, int rightIndex) {
     int addedLength = 0;
     //      if (mod5 != null) {
     //        addedLength += mod5.apply(string, leftIndex, leftIndex + rightIndex + addedLength);

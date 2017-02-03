@@ -167,7 +167,7 @@ public class Endpoint {
       throws ParseException {
     PluralRules rules = null;
     ModifierHolder mods = Format.threadLocalModifierHolder.get().clear();
-    DoubleSidedStringBuilder sb = Format.threadLocalStringBuilder.get().clear();
+    NumberStringBuilder sb = Format.threadLocalStringBuilder.get().clear();
     int length = 0;
 
     // Pre-processing

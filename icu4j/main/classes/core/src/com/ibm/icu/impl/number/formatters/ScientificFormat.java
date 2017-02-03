@@ -8,8 +8,10 @@ import com.ibm.icu.impl.number.FormatQuantity2;
 import com.ibm.icu.impl.number.ModifierHolder;
 import com.ibm.icu.impl.number.Properties;
 import com.ibm.icu.impl.number.Rounder;
+import com.ibm.icu.impl.number.modifiers.PositiveNegativeAffixModifier;
 import com.ibm.icu.impl.number.modifiers.ConstantAffixModifier;
 import com.ibm.icu.text.DecimalFormatSymbols;
+import com.ibm.icu.text.NumberFormat.Field;
 
 public class ScientificFormat extends Format.BeforeFormat implements Rounder.MultiplierGenerator {
 
@@ -105,11 +107,10 @@ public class ScientificFormat extends Format.BeforeFormat implements Rounder.Mul
   private final int maximumIntegerDigits;
   private final int interval;
   private final Rounder rounder;
+  private final ConstantAffixModifier separatorMod;
+  private final PositiveNegativeAffixModifier signMod;
 
   // Symbols
-  private final String exponentSeparator;
-  private final String minusSign;
-  private final String plusSign;
   private final String[] digitStrings;
 
   public ScientificFormat(
@@ -125,10 +126,15 @@ public class ScientificFormat extends Format.BeforeFormat implements Rounder.Mul
     this.maximumIntegerDigits = maximumIntegerDigits;
     this.interval = Math.max(1, maximumIntegerDigits);
     this.rounder = rounder;
-    exponentSeparator = symbols.getExponentSeparator();
-    minusSign = symbols.getMinusSignString();
-    plusSign = symbols.getPlusSignString();
     digitStrings = symbols.getDigitStrings(); // makes a copy
+
+    separatorMod =
+        new ConstantAffixModifier("", symbols.getExponentSeparator(), Field.EXPONENT_SYMBOL);
+    signMod =
+        new PositiveNegativeAffixModifier(
+            new ConstantAffixModifier(
+                "", exponentShowPlusSign ? symbols.getPlusSignString() : "", Field.EXPONENT_SIGN),
+            new ConstantAffixModifier("", symbols.getMinusSignString(), Field.EXPONENT_SIGN));
   }
 
   @Override
@@ -138,22 +144,20 @@ public class ScientificFormat extends Format.BeforeFormat implements Rounder.Mul
     if (input.isZero()) {
       exponent = 0;
     }
-    StringBuilder exponentSB = new StringBuilder();
-    exponentSB.append(exponentSeparator);
-    if (exponent < 0) {
-      exponentSB.append(minusSign);
-    } else if (exponentShowPlusSign) {
-      exponentSB.append(plusSign);
-    }
+
+    // Add modifiers for the exponent separator and exponent sign
+    mods.add(separatorMod);
+    mods.add(signMod.getModifier(exponent < 0));
 
     // Format the exponent part of the scientific format.
     // Insert digits starting from the left so that append can be used.
     FormatQuantity exponentQ = new FormatQuantity2(exponent);
+    StringBuilder exponentSB = new StringBuilder();
     exponentQ.setIntegerFractionLength(exponentDigits, Integer.MAX_VALUE, 0, 0);
     for (int i = exponentQ.integerCount() - 1; i >= 0; i--) {
       exponentSB.append(digitStrings[exponentQ.getIntegerDigit(i)]);
     }
-    mods.add(new ConstantAffixModifier("", exponentSB.toString()));
+    mods.add(new ConstantAffixModifier("", exponentSB.toString(), Field.EXPONENT));
   }
 
   @Override

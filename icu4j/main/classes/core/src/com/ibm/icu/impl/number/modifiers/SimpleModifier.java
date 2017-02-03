@@ -3,9 +3,10 @@
 package com.ibm.icu.impl.number.modifiers;
 
 import com.ibm.icu.impl.SimpleFormatterImpl;
-import com.ibm.icu.impl.number.DoubleSidedStringBuilder;
 import com.ibm.icu.impl.number.Modifier;
+import com.ibm.icu.impl.number.NumberStringBuilder;
 import com.ibm.icu.impl.number.Properties;
+import com.ibm.icu.text.NumberFormat.Field;
 
 /**
  * The second primary implementation of {@link Modifier}, this one consuming a {@link
@@ -13,21 +14,23 @@ import com.ibm.icu.impl.number.Properties;
  */
 public class SimpleModifier extends Modifier.BaseModifier {
   private final String compiledPattern;
+  private final Field field;
 
   /** Creates a modifier that uses the SimpleFormatter string formats. */
-  public SimpleModifier(String compiledPattern) {
+  public SimpleModifier(String compiledPattern, Field field) {
     this.compiledPattern = (compiledPattern == null) ? "\u0001\u0000" : compiledPattern;
+    this.field = field;
   }
 
   @Override
-  public int apply(DoubleSidedStringBuilder output, int leftIndex, int rightIndex) {
-    return formatAsPrefixSuffix(compiledPattern, output, leftIndex, rightIndex);
+  public int apply(NumberStringBuilder output, int leftIndex, int rightIndex) {
+    return formatAsPrefixSuffix(compiledPattern, output, leftIndex, rightIndex, field);
   }
 
   @Override
   public int length() {
     // TODO: Make a separate method for computing the length only?
-    return formatAsPrefixSuffix(compiledPattern, null, -1, -1);
+    return formatAsPrefixSuffix(compiledPattern, null, -1, -1, field);
   }
 
   @Override
@@ -53,14 +56,18 @@ public class SimpleModifier extends Modifier.BaseModifier {
    * @return The number of characters (UTF-16 code points) that were added to the StringBuilder.
    */
   public static int formatAsPrefixSuffix(
-      String compiledPattern, DoubleSidedStringBuilder result, int startIndex, int endIndex) {
+      String compiledPattern,
+      NumberStringBuilder result,
+      int startIndex,
+      int endIndex,
+      Field field) {
     assert SimpleFormatterImpl.getArgumentLimit(compiledPattern) == 1;
     int ARG_NUM_LIMIT = 0x100;
     int length = 0, offset = 2;
     if (compiledPattern.charAt(1) != '\u0000') {
       int prefixLength = compiledPattern.charAt(1) - ARG_NUM_LIMIT;
       if (result != null) {
-        result.insert(startIndex, compiledPattern, 2, 2 + prefixLength);
+        result.insert(startIndex, compiledPattern, 2, 2 + prefixLength, field);
       }
       length += prefixLength;
       offset = 3 + prefixLength;
@@ -68,7 +75,8 @@ public class SimpleModifier extends Modifier.BaseModifier {
     if (offset < compiledPattern.length()) {
       int suffixLength = compiledPattern.charAt(offset) - ARG_NUM_LIMIT;
       if (result != null) {
-        result.insert(endIndex + length, compiledPattern, offset + 1, offset + suffixLength + 1);
+        result.insert(
+            endIndex + length, compiledPattern, offset + 1, offset + suffixLength + 1, field);
       }
       length += suffixLength;
     }
@@ -90,9 +98,10 @@ public class SimpleModifier extends Modifier.BaseModifier {
         String pattern = patterns[i];
         String compiledPattern =
             SimpleFormatterImpl.compileToStringMinMaxArguments(pattern, new StringBuilder(), 1, 1);
-        DoubleSidedStringBuilder output = new DoubleSidedStringBuilder();
-        output.append((String) outputs[j][0]);
-        formatAsPrefixSuffix(compiledPattern, output, (Integer) outputs[j][1], (Integer) outputs[j][2]);
+        NumberStringBuilder output = new NumberStringBuilder();
+        output.append((String) outputs[j][0], null);
+        formatAsPrefixSuffix(
+            compiledPattern, output, (Integer) outputs[j][1], (Integer) outputs[j][2], null);
         String expected = expecteds[j][i];
         String actual = output.toString();
         assert expected.equals(actual);

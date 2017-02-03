@@ -4,7 +4,7 @@ package com.ibm.icu.impl.number.formatters;
 
 import java.util.Deque;
 
-import com.ibm.icu.impl.number.DoubleSidedStringBuilder;
+import com.ibm.icu.impl.number.NumberStringBuilder;
 import com.ibm.icu.impl.number.Format;
 import com.ibm.icu.impl.number.FormatQuantity;
 import com.ibm.icu.impl.number.ModifierHolder;
@@ -26,7 +26,7 @@ public class StrongAffixFormat extends Format implements Format.AfterFormat {
   public int process(
       Deque<FormatQuantity> inputs,
       ModifierHolder mods,
-      DoubleSidedStringBuilder string,
+      NumberStringBuilder string,
       int startIndex) {
     int length = child.process(inputs, mods, string, startIndex);
     length += mods.applyAll(string, startIndex, startIndex + length);
@@ -35,7 +35,7 @@ public class StrongAffixFormat extends Format implements Format.AfterFormat {
 
   @Override
   public int after(
-      ModifierHolder mods, DoubleSidedStringBuilder string, int leftIndex, int rightIndex) {
+      ModifierHolder mods, NumberStringBuilder string, int leftIndex, int rightIndex) {
     return mods.applyAll(string, leftIndex, rightIndex);
   }
 

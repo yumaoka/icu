@@ -7,7 +7,7 @@ import java.text.ParseException;
 import com.ibm.icu.impl.number.FormatQuantity;
 import com.ibm.icu.impl.number.ModifierHolder;
 import com.ibm.icu.impl.number.PNAffixGenerator;
-import com.ibm.icu.impl.number.modifiers.AffixModifier;
+import com.ibm.icu.impl.number.modifiers.PositiveNegativeAffixModifier;
 import com.ibm.icu.text.DecimalFormatSymbols;
 
 /**
@@ -235,11 +235,11 @@ public class PositiveNegativeAffixFormat {
     public IProperties setAlwaysShowPlusSign(boolean alwaysShowPlusSign);
   }
 
-  public static AffixModifier getInstance(DecimalFormatSymbols symbols, IProperties properties)
+  public static PositiveNegativeAffixModifier getInstance(DecimalFormatSymbols symbols, IProperties properties)
       throws ParseException {
     PNAffixGenerator pnag = PNAffixGenerator.getThreadLocalInstance();
     PNAffixGenerator.Result result = pnag.getModifiers(symbols, properties);
-    return new AffixModifier(result.positive, result.negative);
+    return new PositiveNegativeAffixModifier(result.positive, result.negative);
   }
 
   // TODO: Investigate static interface methods (Java 8 only?)

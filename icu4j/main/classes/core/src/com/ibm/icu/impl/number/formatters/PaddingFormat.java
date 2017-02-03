@@ -2,9 +2,9 @@
 // License & terms of use: http://www.unicode.org/copyright.html#License
 package com.ibm.icu.impl.number.formatters;
 
-import com.ibm.icu.impl.number.DoubleSidedStringBuilder;
 import com.ibm.icu.impl.number.Format.AfterFormat;
 import com.ibm.icu.impl.number.ModifierHolder;
+import com.ibm.icu.impl.number.NumberStringBuilder;
 import com.ibm.icu.impl.number.Properties;
 
 public class PaddingFormat implements AfterFormat {
@@ -137,7 +137,7 @@ public class PaddingFormat implements AfterFormat {
 
   @Override
   public int after(
-      ModifierHolder mods, DoubleSidedStringBuilder string, int leftIndex, int rightIndex) {
+      ModifierHolder mods, NumberStringBuilder string, int leftIndex, int rightIndex) {
 
     // TODO: Count code points instead of code units?
     int requiredPadding = paddingWidth - (rightIndex - leftIndex) - mods.totalLength();
@@ -163,9 +163,9 @@ public class PaddingFormat implements AfterFormat {
     return length;
   }
 
-  private int addPadding(int requiredPadding, DoubleSidedStringBuilder string, int index) {
+  private int addPadding(int requiredPadding, NumberStringBuilder string, int index) {
     for (int i = 0; i < requiredPadding; i++) {
-      string.insert(index, paddingString);
+      string.insert(index, paddingString, null);
     }
     return paddingString.length() * requiredPadding;
   }
