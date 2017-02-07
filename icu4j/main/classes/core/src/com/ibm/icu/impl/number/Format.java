@@ -2,6 +2,7 @@
 // License & terms of use: http://www.unicode.org/copyright.html#License
 package com.ibm.icu.impl.number;
 
+import java.text.AttributedCharacterIterator;
 import java.text.FieldPosition;
 import java.util.ArrayDeque;
 import java.util.Arrays;
@@ -47,28 +48,33 @@ public abstract class Format {
   public abstract static class SingularFormat extends Format implements Exportable {
 
     public String format(FormatQuantity input) {
-      NumberStringBuilder sb = formatToStringBuilder(input, false);
+      NumberStringBuilder sb = formatToStringBuilder(input);
       return sb.toString();
     }
 
     public void format(FormatQuantity input, StringBuffer output) {
-      NumberStringBuilder sb = formatToStringBuilder(input, false);
+      NumberStringBuilder sb = formatToStringBuilder(input);
       output.append(sb);
     }
 
     public String format(FormatQuantity input, FieldPosition fp) {
-      NumberStringBuilder sb = formatToStringBuilder(input, true);
+      NumberStringBuilder sb = formatToStringBuilder(input);
       sb.populateFieldPosition(fp, 0);
       return sb.toString();
     }
 
     public void format(FormatQuantity input, StringBuffer output, FieldPosition fp) {
-      NumberStringBuilder sb = formatToStringBuilder(input, true);
+      NumberStringBuilder sb = formatToStringBuilder(input);
       sb.populateFieldPosition(fp, output.length());
       output.append(sb);
     }
 
-    private NumberStringBuilder formatToStringBuilder(FormatQuantity input, boolean fieldTrackingEnabled) {
+    public AttributedCharacterIterator formatToCharacterIterator(FormatQuantity input) {
+      NumberStringBuilder sb = formatToStringBuilder(input);
+      return sb.getIterator();
+    }
+
+    private NumberStringBuilder formatToStringBuilder(FormatQuantity input) {
       // Setup
       ModifierHolder modDeque = threadLocalModifierHolder.get().clear();
       NumberStringBuilder sb = threadLocalStringBuilder.get().clear();
@@ -91,10 +97,7 @@ public abstract class Format {
     }
 
     public abstract int process(
-        FormatQuantity input,
-        ModifierHolder mods,
-        NumberStringBuilder string,
-        int startIndex);
+        FormatQuantity input, ModifierHolder mods, NumberStringBuilder string, int startIndex);
   }
 
   public static class BeforeTargetAfterFormat extends SingularFormat {
@@ -151,10 +154,7 @@ public abstract class Format {
 
     @Override
     public int process(
-        FormatQuantity input,
-        ModifierHolder mods,
-        NumberStringBuilder string,
-        int startIndex) {
+        FormatQuantity input, ModifierHolder mods, NumberStringBuilder string, int startIndex) {
       // Special case: modifiers are skipped for NaN
       int length = 0;
       if (!input.isNaN()) {
@@ -226,10 +226,7 @@ public abstract class Format {
 
     @Override
     public int process(
-        FormatQuantity input,
-        ModifierHolder mods,
-        NumberStringBuilder string,
-        int startIndex) {
+        FormatQuantity input, ModifierHolder mods, NumberStringBuilder string, int startIndex) {
       // Special case: modifiers are skipped for NaN
       Modifier mod = null;
       rounder.apply(input);
@@ -261,8 +258,7 @@ public abstract class Format {
   }
 
   public static interface TargetFormat extends Exportable {
-    public abstract int target(
-        FormatQuantity input, NumberStringBuilder string, int startIndex);
+    public abstract int target(FormatQuantity input, NumberStringBuilder string, int startIndex);
   }
 
   public static interface AfterFormat extends Exportable {

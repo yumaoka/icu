@@ -152,16 +152,21 @@ public class DecimalFormat extends NumberFormat {
 
   /** @stable ICU 49 */
   @Override
-  public CurrencyAmount parseCurrency(CharSequence text, ParsePosition pos) {
-    // TODO(sffc): Implement fieldPosition
-    throw new UnsupportedOperationException();
+  public CurrencyAmount parseCurrency(CharSequence text, ParsePosition parsePosition) {
+    try {
+      return Parse.parseCurrency(text, parsePosition, properties, symbols);
+    } catch (ParseException e) {
+      return null;
+    }
   }
 
   /** @stable ICU 3.6 */
   @Override
-  public synchronized AttributedCharacterIterator formatToCharacterIterator(Object obj) {
-    // TODO(sffc)
-    throw new UnsupportedOperationException();
+  public AttributedCharacterIterator formatToCharacterIterator(Object obj) {
+    if (!(obj instanceof Number))
+      throw new IllegalArgumentException();
+    Number number = (Number) obj;
+    return formatter.formatToCharacterIterator(new FormatQuantity2(number));
   }
 
   /**
@@ -545,14 +550,13 @@ public class DecimalFormat extends NumberFormat {
 
   /** @stable ICU 4.2 */
   public CurrencyPluralInfo getCurrencyPluralInfo() {
-    // TODO(sffc)
-    throw new UnsupportedOperationException();
+    return properties.getCurrencyPluralInfo();
   }
 
   /** @stable ICU 4.2 */
   public void setCurrencyPluralInfo(CurrencyPluralInfo newInfo) {
-    // TODO(sffc)
-    throw new UnsupportedOperationException();
+    properties.setCurrencyPluralInfo(newInfo);
+    refreshFormatter();
   }
 
   /** @stable ICU 2.0 */

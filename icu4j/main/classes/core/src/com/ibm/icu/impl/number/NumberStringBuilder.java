@@ -2,6 +2,8 @@
 // License & terms of use: http://www.unicode.org/copyright.html#License
 package com.ibm.icu.impl.number;
 
+import java.text.AttributedCharacterIterator;
+import java.text.AttributedString;
 import java.text.FieldPosition;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -309,14 +311,39 @@ public class NumberStringBuilder implements CharSequence {
     boolean seenStart = false;
     for (int i = zero; i <= zero + length; i++) {
       Field _field = (i < zero + length) ? fields[i] : null;
-      if (seenStart && _field != field) {
+      if (seenStart && field != _field) {
+        // Special case: GROUPING_SEPARATOR counts as an INTEGER.
+        if (field == Field.INTEGER && _field == Field.GROUPING_SEPARATOR) continue;
         fp.setEndIndex(i - zero + offset);
         break;
-      } else if (!seenStart && _field == field) {
+      } else if (!seenStart && field == _field) {
         fp.setBeginIndex(i - zero + offset);
         seenStart = true;
       }
     }
+  }
+
+  public AttributedCharacterIterator getIterator() {
+    AttributedString as = new AttributedString(toString());
+    Field current = null;
+    int currentStart = -1;
+    for (int i = 0; i < length; i++) {
+      Field field = fields[i + zero];
+      if (current == Field.INTEGER && field == Field.GROUPING_SEPARATOR) {
+        // Special case: GROUPING_SEPARATOR counts as an INTEGER.
+        as.addAttribute(Field.GROUPING_SEPARATOR, Field.GROUPING_SEPARATOR, i, i + 1);
+      } else if (current != field) {
+        if (current != null) {
+          as.addAttribute(current, current, currentStart, i);
+        }
+        current = field;
+        currentStart = i;
+      }
+    }
+    if (current != null) {
+      as.addAttribute(current, current, currentStart, length);
+    }
+    return as.getIterator();
   }
 
   @Override

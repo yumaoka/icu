@@ -20,13 +20,15 @@ import com.ibm.icu.impl.number.formatters.PositiveNegativeAffixFormat;
 import com.ibm.icu.impl.number.formatters.PositiveNegativeAffixFormat.IProperties;
 import com.ibm.icu.impl.number.formatters.ScientificFormat;
 import com.ibm.icu.text.CompactDecimalFormat.CompactStyle;
+import com.ibm.icu.text.CurrencyPluralInfo;
 import com.ibm.icu.text.MeasureFormat.FormatWidth;
 import com.ibm.icu.util.Currency;
 import com.ibm.icu.util.Currency.CurrencyUsage;
 import com.ibm.icu.util.MeasureUnit;
 
 public class Properties
-    implements PositiveDecimalFormat.IProperties,
+    implements Cloneable,
+        PositiveDecimalFormat.IProperties,
         Rounder.IProperties,
         PositiveNegativeAffixFormat.IProperties,
         MagnitudeMultiplier.IProperties,
@@ -44,6 +46,7 @@ public class Properties
   private boolean alwaysShowPlusSign;
   private CompactStyle compactStyle;
   private Currency currency;
+  private CurrencyPluralInfo currencyPluralInfo;
   private CurrencyStyle currencyStyle;
   private CurrencyUsage currencyUsage;
   private boolean decimalPatternMatchRequired;
@@ -68,6 +71,7 @@ public class Properties
   private PaddingLocation paddingLocation;
   private CharSequence paddingString;
   private int paddingWidth;
+  private boolean parseCurrency;
   private boolean parseIgnoreExponent;
   private boolean parseIntegerOnly;
   private ParseMode parseMode;
@@ -88,6 +92,7 @@ public class Properties
     alwaysShowPlusSign = DEFAULT_ALWAYS_SHOW_PLUS_SIGN;
     compactStyle = DEFAULT_COMPACT_STYLE;
     currency = DEFAULT_CURRENCY;
+    currencyPluralInfo = DEFAULT_CURRENCY_PLURAL_INFO;
     currencyStyle = DEFAULT_CURRENCY_STYLE;
     currencyUsage = DEFAULT_CURRENCY_USAGE;
     decimalPatternMatchRequired = DEFAULT_DECIMAL_PATTERN_MATCH_REQUIRED;
@@ -112,6 +117,7 @@ public class Properties
     paddingLocation = DEFAULT_PADDING_LOCATION;
     paddingString = DEFAULT_PADDING_STRING;
     paddingWidth = DEFAULT_PADDING_WIDTH;
+    parseCurrency = DEFAULT_PARSE_CURRENCY;
     parseIgnoreExponent = DEFAULT_PARSE_IGNORE_EXPONENT;
     parseIntegerOnly = DEFAULT_PARSE_INTEGER_ONLY;
     parseMode = DEFAULT_PARSE_MODE;
@@ -128,24 +134,13 @@ public class Properties
   /** Creates and returns a shallow copy of the property bag. */
   @Override
   public Properties clone() {
-    // There are so many properties that the likelihood of this method becoming stale is high.
-    // Use reflection instead to always grab the latest complete set of fields.
-    Properties copy = new Properties();
-    Field[] fields = Properties.class.getDeclaredFields();
-    for (Field field : fields) {
-      if (java.lang.reflect.Modifier.isStatic(field.getModifiers())) continue;
-      try {
-        Object value = field.get(this);
-        field.set(copy, value);
-      } catch (IllegalArgumentException e) {
-        e.printStackTrace();
-        continue;
-      } catch (IllegalAccessException e) {
-        e.printStackTrace();
-        continue;
-      }
+    // super.clone() returns a shallow copy.
+    try {
+      return (Properties) super.clone();
+    } catch (CloneNotSupportedException e) {
+      // Should never happen since super is Object
+      throw new UnsupportedOperationException(e);
     }
-    return copy;
   }
 
   @Override
@@ -166,6 +161,12 @@ public class Properties
   @Override
   public Currency getCurrency() {
     return currency;
+  }
+
+  @Override
+  @Deprecated
+  public CurrencyPluralInfo getCurrencyPluralInfo() {
+    return currencyPluralInfo;
   }
 
   @Override
@@ -288,6 +289,11 @@ public class Properties
     return paddingWidth;
   }
 
+  @Override
+  public boolean getParseCurrency() {
+    return parseCurrency;
+  }
+
   /* (non-Javadoc)
    * @see com.ibm.icu.impl.number.Parse.IProperties#getParseIgnoreExponent()
    */
@@ -372,6 +378,13 @@ public class Properties
   }
 
   @Override
+  @Deprecated
+  public Properties setCurrencyPluralInfo(CurrencyPluralInfo currencyPluralInfo) {
+    this.currencyPluralInfo = currencyPluralInfo;
+    return this;
+  }
+
+  @Override
   public Properties setCurrencyStyle(CurrencyStyle currencyStyle) {
     this.currencyStyle = currencyStyle;
     return this;
@@ -384,8 +397,7 @@ public class Properties
   }
 
   @Override
-  public Properties setDecimalPatternMatchRequired(
-      boolean decimalPatternMatchRequired) {
+  public Properties setDecimalPatternMatchRequired(boolean decimalPatternMatchRequired) {
     this.decimalPatternMatchRequired = decimalPatternMatchRequired;
     return this;
   }
@@ -513,6 +525,12 @@ public class Properties
   @Override
   public Properties setPaddingWidth(int paddingWidth) {
     this.paddingWidth = paddingWidth;
+    return this;
+  }
+
+  @Override
+  public com.ibm.icu.impl.number.Parse.IProperties setParseCurrency(boolean parseCurrency) {
+    this.parseCurrency = parseCurrency;
     return this;
   }
 

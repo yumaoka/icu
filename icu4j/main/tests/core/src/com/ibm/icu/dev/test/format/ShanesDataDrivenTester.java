@@ -19,6 +19,7 @@ import com.ibm.icu.impl.number.PatternString;
 import com.ibm.icu.impl.number.Properties;
 import com.ibm.icu.impl.number.formatters.PaddingFormat.PaddingLocation;
 import com.ibm.icu.text.DecimalFormatSymbols;
+import com.ibm.icu.util.CurrencyAmount;
 import com.ibm.icu.util.ULocale;
 
 public class ShanesDataDrivenTester extends CodeUnderTest {
@@ -49,7 +50,7 @@ public class ShanesDataDrivenTester extends CodeUnderTest {
     try {
       Properties properties = PatternString.parseToProperties(pattern);
       propertiesFromTuple(tuple, properties);
-      System.out.println(properties);
+//      System.out.println(properties);
       fmt = Endpoint.fromBTA(properties, locale);
     } catch (ParseException e) {
       e.printStackTrace();
@@ -99,7 +100,7 @@ public class ShanesDataDrivenTester extends CodeUnderTest {
     try {
       properties = PatternString.parseToProperties(pattern);
       propertiesFromTuple(tuple, properties);
-      System.out.println(properties);
+//      System.out.println(properties);
     } catch (ParseException e) {
       e.printStackTrace();
       return e.getLocalizedMessage();
@@ -142,7 +143,7 @@ public class ShanesDataDrivenTester extends CodeUnderTest {
               tuple.parse, ppos, properties, DecimalFormatSymbols.getInstance(tuple.locale));
     } catch (ParseException e) {
       e.printStackTrace();
-      return e.getLocalizedMessage();
+      return "parse exception: " + e.getMessage();
     }
     if (ppos.getIndex() == 0) {
       if (!tuple.output.equals("fail")) {
@@ -168,7 +169,38 @@ public class ShanesDataDrivenTester extends CodeUnderTest {
    */
   @Override
   public String parseCurrency(NumberFormatTestData tuple) {
-    return null;
+      String pattern = (tuple.pattern == null) ? "0" : tuple.pattern;
+      Properties properties;
+      ParsePosition ppos = new ParsePosition(0);
+      CurrencyAmount actual;
+      try {
+        properties = PatternString.parseToProperties(pattern);
+        propertiesFromTuple(tuple, properties);
+        actual =
+            Parse.parseCurrency(
+                tuple.parse, ppos, properties, DecimalFormatSymbols.getInstance(tuple.locale));
+      } catch (ParseException e) {
+        e.printStackTrace();
+        return "parse exception: " + e.getMessage();
+      }
+      if (ppos.getIndex() == 0 || actual.getCurrency().getCurrencyCode().equals("XXX")) {
+        if (!tuple.output.equals("fail")) {
+          return "Parse failed; got " + actual + ", but expected " + tuple.output;
+        }
+        return null;
+      }
+      if (tuple.output.equals("fail")) {
+        return "Parse succeeded: " + actual + ", but was expected to fail.";
+      }
+      BigDecimal expectedNumber = new BigDecimal(tuple.output);
+      if (expectedNumber.compareTo(new BigDecimal(actual.getNumber().toString())) != 0) {
+        return "Wrong number: Expected: " + expectedNumber + ", got: " + actual;
+      }
+      String expectedCurrency = tuple.outputCurrency;
+      if (!expectedCurrency.equals(actual.getCurrency().toString())) {
+          return "Wrong currency: Expected: " + expectedCurrency + ", got: " + actual;
+      }
+      return null;
   }
 
   /**

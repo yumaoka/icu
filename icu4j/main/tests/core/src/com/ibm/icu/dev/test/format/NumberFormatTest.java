@@ -135,7 +135,7 @@ public class NumberFormatTest extends TestFmwk {
                     CurrencyAmount currAmt = fmt.parseCurrency(tuple.parse, ppos);
                     if (ppos.getIndex() == 0) {
                         if (!tuple.output.equals("fail")) {
-                            return "Parse error expected.";
+                            return "Got parse error, but expected " + tuple.output;
                         }
                         return null;
                     }

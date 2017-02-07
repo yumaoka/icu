@@ -884,178 +884,197 @@ NaN	0.0	other
 
 test parse currency ISO
 set pattern 0.00 \u00a4\u00a4;(#) \u00a4\u00a4
-set locale en_US
+set locale en_GB
 begin
 parse	output	outputCurrency	breaks
-$53.45	53.45	USD
+53.45	53.45	GBP	J
+£53.45	53.45	GBP
+$53.45	fail	USD
 53.45 USD	53.45	USD
+53.45 GBP	53.45	GBP
 USD 53.45	53.45	USD	J
-53.45USD	fail	USD
+53.45USD	53.45	USD	CJ
 USD53.45	53.45	USD
 (7.92) USD	-7.92	USD
-(7.92) EUR	-7.92	EUR
+(7.92) GBP	-7.92	GBP
 (7.926) USD	-7.926	USD
-(7.926 USD)	fail	USD
-(USD 7.926)	fail	USD
-USD (7.926)	fail	USD
-USD (7.92)	fail	USD
-(7.92)USD	fail	USD
-USD(7.92)	fail	USD
+(7.926 USD)	-7.926	USD	CJ
+(USD 7.926)	-7.926	USD	CJ
+USD (7.926)	-7.926	USD	CJ
+USD (7.92)	-7.92	USD	CJ
+(7.92)USD	-7.92	USD	CJ
+USD(7.92)	-7.92	USD	CJ
 (8) USD	-8	USD
--8 USD	fail	USD
+-8 USD	-8	USD	CJ
 67 USD	67	USD
-53.45$	fail	USD
+// S stops parsing at the $ and returns GBP, the default
+53.45$	53.45	USD	CJS
 US Dollars 53.45	53.45	USD	J
 53.45 US Dollars	53.45	USD
 US Dollar 53.45	53.45	USD	J
 53.45 US Dollar	53.45	USD
 US Dollars53.45	53.45	USD
-53.45US Dollars	fail	USD
+53.45US Dollars	53.45	USD	CJ
 US Dollar53.45	53.45	USD
 US Dollat53.45	fail	USD
-53.45US Dollar	fail	USD
-US Dollars (53.45)	fail	USD
+53.45US Dollar	53.45	USD	CJ
+US Dollars (53.45)	-53.45	USD	CJ
 (53.45) US Dollars	-53.45	USD
-US Dollar (53.45)	fail	USD
+(53.45) Euros	-53.45	EUR
+US Dollar (53.45)	-53.45	USD	CJ
 (53.45) US Dollar	-53.45	USD
-US Dollars(53.45)	fail	USD
-(53.45)US Dollars	fail	USD
-US Dollar(53.45)	fail	USD
+US Dollars(53.45)	-53.45	USD	CJ
+(53.45)US Dollars	-53.45	USD	CJ
+US Dollar(53.45)	-53.45	USD	CJ
 US Dollat(53.45)	fail	USD
-(53.45)US Dollar	fail	USD
+(53.45)US Dollar	-53.45	USD	CJ
 
 
 test parse currency ISO negative
 set pattern 0.00 \u00a4\u00a4;-# \u00a4\u00a4
-set locale en_US
+set locale en_GB
 begin
 parse	output	outputCurrency	breaks
-$53.45	53.45	USD
+53.45	53.45	GBP	J
+£53.45	53.45	GBP
+$53.45	fail	USD
 53.45 USD	53.45	USD
+53.45 GBP	53.45	GBP
 USD 53.45	53.45	USD	J
-53.45USD	fail	USD
+53.45USD	53.45	USD	CJ
 USD53.45	53.45	USD
 -7.92 USD	-7.92	USD
--7.92 EUR	-7.92	EUR
+-7.92 GBP	-7.92	GBP
 -7.926 USD	-7.926	USD
-USD -7.926	fail	USD
--7.92USD	fail	USD
-USD-7.92	fail	USD
+USD -7.926	-7.926	USD	CJ
+-7.92USD	-7.92	USD	CJ
+USD-7.92	-7.92	USD	CJ
 -8 USD	-8	USD
 67 USD	67	USD
-53.45$	fail	USD
+// S stops parsing at the $ and returns GBP, the default
+53.45$	53.45	USD	CJS
 US Dollars 53.45	53.45	USD	J
 53.45 US Dollars	53.45	USD
 US Dollar 53.45	53.45	USD	J
 53.45 US Dollar	53.45	USD
 US Dollars53.45	53.45	USD
-53.45US Dollars	fail	USD
+53.45US Dollars	53.45	USD	CJ
 US Dollar53.45	53.45	USD
 US Dollat53.45	fail	USD
-53.45US Dollar	fail	USD
+53.45US Dollar	53.45	USD	CJ
 
 
 test parse currency long
 set pattern 0.00 \u00a4\u00a4\u00a4;(#) \u00a4\u00a4\u00a4
-set locale en_US
+set locale en_GB
 begin
 parse	output	outputCurrency	breaks
-$53.45	53.45	USD
+53.45	53.45	GBP	J
+£53.45	53.45	GBP
+$53.45	fail	USD
 53.45 USD	53.45	USD
+53.45 GBP	53.45	GBP
 USD 53.45	53.45	USD	J
-// See ticket 11735
-53.45USD	fail	USD
+53.45USD	53.45	USD	CJ
 USD53.45	53.45	USD
 (7.92) USD	-7.92	USD
+(7.92) GBP	-7.92	GBP
 (7.926) USD	-7.926	USD
-(7.926 USD)	fail	USD
-(USD 7.926)	fail	USD
-USD (7.926)	fail	USD
-USD (7.92)	fail	USD
-(7.92)USD	fail	USD
-USD(7.92)	fail	USD
+(7.926 USD)	-7.926	USD	CJ
+(USD 7.926)	-7.926	USD	CJ
+USD (7.926)	-7.926	USD	CJ
+USD (7.92)	-7.92	USD	CJ
+(7.92)USD	-7.92	USD	CJ
+USD(7.92)	-7.92	USD	CJ
 (8) USD	-8	USD
-// See ticket 11735
--8 USD	fail	USD
+-8 USD	-8	USD	CJ
 67 USD	67	USD
-// See ticket 11735
-53.45$	fail	USD
+// S stops parsing at the $ and returns GBP, the default
+53.45$	53.45	USD	CJS
 US Dollars 53.45	53.45	USD	J
 53.45 US Dollars	53.45	USD
 US Dollar 53.45	53.45	USD	J
 53.45 US Dollar	53.45	USD
 US Dollars53.45	53.45	USD
-// See ticket 11735
-53.45US Dollars	fail	USD
+53.45US Dollars	53.45	USD	CJ
 US Dollar53.45	53.45	USD
 US Dollat53.45	fail	USD
-// See ticket 11735
-53.45US Dollar	fail	USD
+53.45US Dollar	53.45	USD	CJ
 
 
 test parse currency short
 set pattern 0.00 \u00a4;(#) \u00a4
-set locale en_US
+set locale en_GB
 begin
 parse	output	outputCurrency	breaks
-$53.45	53.45	USD
+53.45	53.45	GBP	J
+£53.45	53.45	GBP
+$53.45	fail	USD
 53.45 USD	53.45	USD
+53.45 GBP	53.45	GBP
 USD 53.45	53.45	USD	J
-53.45USD	fail	USD
+53.45USD	53.45	USD	CJ
 USD53.45	53.45	USD
 (7.92) USD	-7.92	USD
+(7.92) GBP	-7.92	GBP
 (7.926) USD	-7.926	USD
-(7.926 USD)	fail	USD
-(USD 7.926)	fail	USD
-USD (7.926)	fail	USD
-USD (7.92)	fail	USD
-(7.92)USD	fail	USD
-USD(7.92)	fail	USD
+(7.926 USD)	-7.926	USD	CJ
+(USD 7.926)	-7.926	USD	CJ
+USD (7.926)	-7.926	USD	CJ
+USD (7.92)	-7.92	USD	CJ
+(7.92)USD	-7.92	USD	CJ
+USD(7.92)	-7.92	USD	CJ
 (8) USD	-8	USD
--8 USD	fail	USD
+-8 USD	-8	USD	CJ
 67 USD	67	USD
-53.45$	fail	USD
+// S stops parsing at the $ and returns GBP, the default
+53.45$	53.45	USD	CJS
 US Dollars 53.45	53.45	USD	J
 53.45 US Dollars	53.45	USD
 US Dollar 53.45	53.45	USD	J
 53.45 US Dollar	53.45	USD
 US Dollars53.45	53.45	USD
-53.45US Dollars	fail	USD
+53.45US Dollars	53.45	USD	CJ
 US Dollar53.45	53.45	USD
 US Dollat53.45	fail	USD
-53.45US Dollar	fail	USD
+53.45US Dollar	53.45	USD	CJ
 
 
 test parse currency short prefix
 set pattern \u00a40.00;(\u00a4#)
-set locale en_US
+set locale en_GB
 begin
 parse	output	outputCurrency	breaks
-$53.45	53.45	USD
-53.45 USD	fail	USD
+53.45	53.45	GBP	J
+£53.45	53.45	GBP
+$53.45	fail	USD
+53.45 USD	53.45	USD	CJ
+53.45 GBP	53.45	GBP	CJ
 USD 53.45	53.45	USD	J
-53.45USD	fail	USD
+53.45USD	53.45	USD	CJ
 USD53.45	53.45	USD
-(7.92) USD	fail	USD
-(7.926) USD	fail	USD
-(7.926 USD)	fail	USD
+(7.92) USD	-7.92	USD	CJ
+(7.92) GBP	-7.92	GBP	CJ
+(7.926) USD	-7.926	USD	CJ
+(7.926 USD)	-7.926	USD	CJ
 (USD 7.926)	-7.926	USD	J
-USD (7.926)	fail	USD
-USD (7.92)	fail	USD
-(7.92)USD	fail	USD
-USD(7.92)	fail	USD
-(8) USD	fail	USD
--8 USD	fail	USD
-67 USD	fail	USD
-53.45$	fail	USD
+USD (7.926)	-7.926	USD	CJ
+USD (7.92)	-7.92	USD	CJ
+(7.92)USD	-7.92	USD	CJ
+USD(7.92)	-7.92	USD	CJ
+(8) USD	-8	USD	CJ
+-8 USD	-8	USD	CJ
+67 USD	67	USD	CJ
+// S stops parsing at the $ and returns GBP, the default
+53.45$	53.45	USD	CJS
 US Dollars 53.45	53.45	USD	J
 53.45 US Dollars	53.45	USD
 US Dollar 53.45	53.45	USD	J
 53.45 US Dollar	53.45	USD
 US Dollars53.45	53.45	USD
-53.45US Dollars	fail	USD
+53.45US Dollars	53.45	USD	CJ
 US Dollar53.45	53.45	USD
-53.45US Dollar	fail	USD
+53.45US Dollar	53.45	USD	CJ
 
 test format foreign currency
 set locale fa_IR
@@ -1139,40 +1158,41 @@ begin
 parse	output	outputCurrency	breaks
 $53.45	53.45	USD
 53.45 USD	53.45	USD
-USD 53.45	fail	USD
-53.45USD	fail	USD
+// S doesn't support strict currency parsing
+USD 53.45	fail	USD	S
+53.45USD	fail	USD	S
 USD53.45	53.45	USD
 (7.92) USD	-7.92	USD
 (7.92) EUR	-7.92	EUR
 (7.926) USD	-7.926	USD
-(7.926 USD)	fail	USD
+(7.926 USD)	fail	USD	S
 (USD 7.926)	fail	USD
-USD (7.926)	fail	USD
-USD (7.92)	fail	USD
-(7.92)USD	fail	USD
-USD(7.92)	fail	USD
+USD (7.926)	fail	USD	S
+USD (7.92)	fail	USD	S
+(7.92)USD	fail	USD	S
+USD(7.92)	fail	USD	S
 (8) USD	-8	USD
--8 USD	fail	USD
+-8 USD	fail	USD	S
 67 USD	67	USD
-53.45$	fail	USD
-US Dollars 53.45	fail	USD
+53.45$	fail	USD	S
+US Dollars 53.45	fail	USD	S
 53.45 US Dollars	53.45	USD
-US Dollar 53.45	fail	USD
+US Dollar 53.45	fail	USD	S
 53.45 US Dollar	53.45	USD
 US Dollars53.45	53.45	USD
-53.45US Dollars	fail	USD
+53.45US Dollars	fail	USD	S
 US Dollar53.45	53.45	USD
 US Dollat53.45	fail	USD
-53.45US Dollar	fail	USD
-US Dollars (53.45)	fail	USD
+53.45US Dollar	fail	USD	S
+US Dollars (53.45)	fail	USD	S
 (53.45) US Dollars	-53.45	USD
-US Dollar (53.45)	fail	USD
+US Dollar (53.45)	fail	USD	S
 (53.45) US Dollar	-53.45	USD
-US Dollars(53.45)	fail	USD
-(53.45)US Dollars	fail	USD
-US Dollar(53.45)	fail	USD
+US Dollars(53.45)	fail	USD	S
+(53.45)US Dollars	fail	USD	S
+US Dollar(53.45)	fail	USD	S
 US Dollat(53.45)	fail	USD
-(53.45)US Dollar	fail	USD
+(53.45)US Dollar	fail	USD	S
 
 test ticket 10436
 set locale en

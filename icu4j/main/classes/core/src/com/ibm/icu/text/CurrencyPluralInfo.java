@@ -162,6 +162,10 @@ public class CurrencyPluralInfo implements Cloneable, Serializable {
      * Set currency plural patterns.  These are initially set in the constructor based on the
      * locale, and usually do not need to be changed.
      *
+     * The decimal digits part of the pattern cannot be specified via this method.  All plural
+     * forms will use the same decimal pattern as set in the constructor of DecimalFormat.  For
+     * example, you can't set "0.0" for plural "few" but "0.00" for plural "many".
+     *
      * @param pluralCount the plural count for which the currency pattern will
      *                    be overridden.
      * @param pattern     the new currency plural pattern

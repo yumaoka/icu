@@ -116,6 +116,25 @@ public class FormatQuantity2 implements FormatQuantity {
     copyFrom(other);
   }
 
+  public FormatQuantity2(Number number) {
+    if (number instanceof Long) {
+      readLongToBcd((Long) number);
+    } else if (number instanceof Integer) {
+      readIntToBcd((Integer) number);
+    } else if (number instanceof Double) {
+      readDoubleToBcd((Double) number);
+    } else if (number instanceof BigInteger) {
+      readBigIntegerToBcd((BigInteger) number);
+    } else if (number instanceof BigDecimal) {
+      readBigDecimalToBcd((BigDecimal) number);
+    } else if (number instanceof com.ibm.icu.math.BigDecimal) {
+      readBigDecimalToBcd(((com.ibm.icu.math.BigDecimal) number).toBigDecimal());
+    } else {
+      throw new IllegalArgumentException(
+          "Number is of an unsupported type: " + number.getClass().getName());
+    }
+  }
+
   @Override
   public FormatQuantity clone() {
     return new FormatQuantity2(this);
@@ -218,7 +237,7 @@ public class FormatQuantity2 implements FormatQuantity {
     } else if (magnitude >= scale + 16) {
       // Shift off digits to the right.
       int shift = magnitude - scale - 15;
-      bcd = (bcd >>> (shift*4)) | (((long) digit) << 60);
+      bcd = (bcd >>> (shift * 4)) | (((long) digit) << 60);
       scale += shift;
       computePrecisionAndCompact();
     } else {

@@ -199,15 +199,20 @@ public class DataDrivenNumberFormatTestUtility {
                     }
                     if (runMode == RunMode.INCLUDE_KNOWN_FAILURES || !breaks(codeUnderTestId)) {
                         String errorMessage;
+                        Exception err = null;
                         try {
                             errorMessage = isPass(tuple);
                         } catch (Exception e) {
-                            errorMessage = e.getMessage();
+                            err = e;
+                            errorMessage = "Exception: " + e + ": " + e.getCause();
                         }
                         if (breaks(codeUnderTestId) && errorMessage == null) {
                             showError("Expected failure, but passed");
                         } else if (!breaks(codeUnderTestId) && errorMessage != null) {
                             showError(errorMessage);
+                            if (err != null) {
+                                err.printStackTrace();
+                            }
                         }
                     }
                 }
