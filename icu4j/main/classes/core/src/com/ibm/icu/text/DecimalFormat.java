@@ -11,6 +11,8 @@ import java.text.ParsePosition;
 
 import com.ibm.icu.impl.number.Endpoint;
 import com.ibm.icu.impl.number.Format.SingularFormat;
+import com.ibm.icu.impl.number.FormatQuantity;
+import com.ibm.icu.impl.number.FormatQuantity1;
 import com.ibm.icu.impl.number.FormatQuantity2;
 import com.ibm.icu.impl.number.Parse;
 import com.ibm.icu.impl.number.PatternString;
@@ -75,11 +77,11 @@ public class DecimalFormat extends NumberFormat {
     properties = new Properties();
     setPropertiesFromPattern(pattern);
     // FIXME: Deal with choice
-//    switch (choice) {
-//      case NumberFormat.PLURALCURRENCYSTYLE:
-//        properties.setCurrencyStyle(CurrencyStyle.PLURAL);
-//        break;
-//    }
+    //    switch (choice) {
+    //      case NumberFormat.PLURALCURRENCYSTYLE:
+    //        properties.setCurrencyStyle(CurrencyStyle.PLURAL);
+    //        break;
+    //    }
     refreshFormatter();
   }
 
@@ -94,8 +96,8 @@ public class DecimalFormat extends NumberFormat {
   }
 
   /** @stable ICU 2.0 */
-  public synchronized void applyLocalizedPattern(String pattern) {
-    // TODO(sffc): What exactly is the difference between a "localized" pattern and a regular pattern?
+  public synchronized void applyLocalizedPattern(String localizedPattern) {
+    String pattern = PatternString.convertLocalized(localizedPattern, symbols, false);
     setPropertiesFromPattern(pattern);
     refreshFormatter();
   }
@@ -107,6 +109,7 @@ public class DecimalFormat extends NumberFormat {
    */
   @Override
   public StringBuffer format(double number, StringBuffer result, FieldPosition fieldPosition) {
+    // FIXME: Implement alternative FormatQuantity implementations
     formatter.format(new FormatQuantity2(number), result, fieldPosition);
     return result;
   }
@@ -114,29 +117,61 @@ public class DecimalFormat extends NumberFormat {
   /** @stable ICU 2.0 */
   @Override
   public StringBuffer format(long number, StringBuffer result, FieldPosition fieldPosition) {
-    formatter.format(new FormatQuantity2(number), result, fieldPosition);
+    FormatQuantity fq;
+    if (number == Long.MIN_VALUE) {
+      fq = new FormatQuantity1(java.math.BigDecimal.valueOf(number));
+    } else if (Math.abs(number) >= 1e16) {
+      fq = new FormatQuantity1(number);
+    } else {
+      fq = new FormatQuantity2(number);
+    }
+    formatter.format(fq, result, fieldPosition);
     return result;
   }
+
+  private static final BigInteger BIGINT_1E16 = BigInteger.valueOf((long) 1e16);
 
   /** @stable ICU 2.0 */
   @Override
   public StringBuffer format(BigInteger number, StringBuffer result, FieldPosition fieldPosition) {
-    formatter.format(new FormatQuantity2(number), result, fieldPosition);
+    FormatQuantity fq;
+    if (number.abs().compareTo(BIGINT_1E16) >= 0) {
+      fq = new FormatQuantity1(new java.math.BigDecimal(number));
+    } else {
+      fq = new FormatQuantity2(number);
+    }
+    formatter.format(fq, result, fieldPosition);
     return result;
   }
+
+  private static final java.math.BigDecimal BIGDEC_1E16 = java.math.BigDecimal.valueOf(1e16);
 
   /** @stable ICU 2.0 */
   @Override
   public StringBuffer format(
       java.math.BigDecimal number, StringBuffer result, FieldPosition fieldPosition) {
-    formatter.format(new FormatQuantity2(number), result, fieldPosition);
+    FormatQuantity fq;
+    if (number.abs().compareTo(BIGDEC_1E16) >= 0) {
+      fq = new FormatQuantity1(number);
+    } else {
+      fq = new FormatQuantity2(number);
+    }
+    formatter.format(fq, result, fieldPosition);
     return result;
   }
+
+  private static final BigDecimal ICUBIGDEC_1E16 = BigDecimal.valueOf(1e16);
 
   /** @stable ICU 2.0 */
   @Override
   public StringBuffer format(BigDecimal number, StringBuffer result, FieldPosition fieldPosition) {
-    formatter.format(new FormatQuantity2(number), result, fieldPosition);
+    FormatQuantity fq;
+    if (number.abs().compareTo(ICUBIGDEC_1E16) >= 0) {
+      fq = new FormatQuantity1(number.toBigDecimal());
+    } else {
+      fq = new FormatQuantity2(number);
+    }
+    formatter.format(fq, result, fieldPosition);
     return result;
   }
 
@@ -144,7 +179,20 @@ public class DecimalFormat extends NumberFormat {
   @Override
   public Number parse(String text, ParsePosition parsePosition) {
     try {
-      return Parse.parse(text, parsePosition, properties, symbols);
+      // Backwards compatibility: use currency parse mode if this is a currency instance
+      Number result;
+      if (com.ibm.icu.impl.number.formatters.CurrencyFormat.useCurrency(properties)) {
+        CurrencyAmount temp = Parse.parseCurrency(text, parsePosition, properties, symbols);
+        if (temp == null) return null;
+        result = temp.getNumber();
+      } else {
+        result = Parse.parse(text, parsePosition, properties, symbols);
+      }
+      // Backwards compatibility: return com.ibm.icu.math.BigDecimal
+      if (result instanceof java.math.BigDecimal) {
+        result = new com.ibm.icu.math.BigDecimal((java.math.BigDecimal) result);
+      }
+      return result;
     } catch (ParseException e) {
       return null;
     }
@@ -154,7 +202,15 @@ public class DecimalFormat extends NumberFormat {
   @Override
   public CurrencyAmount parseCurrency(CharSequence text, ParsePosition parsePosition) {
     try {
-      return Parse.parseCurrency(text, parsePosition, properties, symbols);
+      CurrencyAmount result = Parse.parseCurrency(text, parsePosition, properties, symbols);
+      if (result == null) return null;
+      Number number = result.getNumber();
+      // Backwards compatibility: return com.ibm.icu.math.BigDecimal
+      if (number instanceof java.math.BigDecimal) {
+        number = new com.ibm.icu.math.BigDecimal((java.math.BigDecimal) number);
+        result = new CurrencyAmount(number, result.getCurrency());
+      }
+      return result;
     } catch (ParseException e) {
       return null;
     }
@@ -163,8 +219,7 @@ public class DecimalFormat extends NumberFormat {
   /** @stable ICU 3.6 */
   @Override
   public AttributedCharacterIterator formatToCharacterIterator(Object obj) {
-    if (!(obj instanceof Number))
-      throw new IllegalArgumentException();
+    if (!(obj instanceof Number)) throw new IllegalArgumentException();
     Number number = (Number) obj;
     return formatter.formatToCharacterIterator(new FormatQuantity2(number));
   }
@@ -252,7 +307,10 @@ public class DecimalFormat extends NumberFormat {
 
   /** @stable ICU 2.0 */
   public synchronized void setMultiplier(int newValue) {
-    assert newValue > 0;
+    if (newValue == 0) {
+      throw new IllegalArgumentException("Multiplier must be nonzero.");
+    }
+
     // Try to convert to a magnitude multiplier first
     int delta = 0;
     int value = newValue;
@@ -280,6 +338,13 @@ public class DecimalFormat extends NumberFormat {
 
   /** @stable ICU 2.0 */
   public synchronized void setRoundingIncrement(java.math.BigDecimal newValue) {
+    // Backwards compatibility: ignore rounding increment if zero,
+    // and instead set maximum fraction digits.
+    if (newValue.compareTo(java.math.BigDecimal.ZERO) == 0) {
+      properties.setMaximumFractionDigits(Integer.MAX_VALUE);
+      return;
+    }
+
     properties.setRoundingInterval(newValue);
     refreshFormatter();
   }
@@ -287,15 +352,13 @@ public class DecimalFormat extends NumberFormat {
   /** @stable ICU 3.6 */
   public synchronized void setRoundingIncrement(BigDecimal newValue) {
     java.math.BigDecimal javaBigDecimal = newValue.toBigDecimal();
-    properties.setRoundingInterval(javaBigDecimal);
-    refreshFormatter();
+    setRoundingIncrement(javaBigDecimal);
   }
 
   /** @stable ICU 2.0 */
   public synchronized void setRoundingIncrement(double newValue) {
     java.math.BigDecimal javaBigDecimal = java.math.BigDecimal.valueOf(newValue);
-    properties.setRoundingInterval(javaBigDecimal);
-    refreshFormatter();
+    setRoundingIncrement(javaBigDecimal);
   }
 
   /** @stable ICU 2.0 */
@@ -450,14 +513,13 @@ public class DecimalFormat extends NumberFormat {
 
   /** @stable ICU 54 */
   public synchronized void setDecimalPatternMatchRequired(boolean value) {
-    // TODO(sffc)
-    throw new UnsupportedOperationException();
+    properties.setDecimalPatternMatchRequired(value);
+    refreshFormatter();
   }
 
   /** @stable ICU 54 */
   public synchronized boolean isDecimalPatternMatchRequired() {
-    // TODO(sffc)
-    throw new UnsupportedOperationException();
+    return properties.getDecimalPatternMatchRequired();
   }
 
   /** @stable ICU 2.0 */
@@ -468,6 +530,7 @@ public class DecimalFormat extends NumberFormat {
   /** @stable ICU 2.0 */
   public synchronized void setDecimalSeparatorAlwaysShown(boolean newValue) {
     properties.setAlwaysShowDecimal(newValue);
+    refreshFormatter();
   }
 
   /** @stable ICU 2.0 */
@@ -479,7 +542,7 @@ public class DecimalFormat extends NumberFormat {
   /** @stable ICU 2.0 */
   @Override
   public synchronized int getMinimumIntegerDigits() {
-    return properties.getMinimumFractionDigits();
+    return properties.getMinimumIntegerDigits();
   }
 
   /** @stable ICU 2.0 */
@@ -492,6 +555,32 @@ public class DecimalFormat extends NumberFormat {
   /** @stable ICU 2.0 */
   @Override
   public synchronized void setMinimumIntegerDigits(int newValue) {
+    properties.setMinimumIntegerDigits(newValue);
+    refreshFormatter();
+  }
+
+  /** @stable ICU 2.0 */
+  @Override
+  public synchronized int getMaximumFractionDigits() {
+    return properties.getMaximumFractionDigits();
+  }
+
+  /** @stable ICU 2.0 */
+  @Override
+  public synchronized int getMinimumFractionDigits() {
+    return properties.getMinimumFractionDigits();
+  }
+
+  /** @stable ICU 2.0 */
+  @Override
+  public synchronized void setMaximumFractionDigits(int newValue) {
+    properties.setMaximumFractionDigits(newValue);
+    refreshFormatter();
+  }
+
+  /** @stable ICU 2.0 */
+  @Override
+  public synchronized void setMinimumFractionDigits(int newValue) {
     properties.setMinimumFractionDigits(newValue);
     refreshFormatter();
   }
@@ -534,6 +623,12 @@ public class DecimalFormat extends NumberFormat {
   @Override
   public synchronized void setCurrency(Currency theCurrency) {
     properties.setCurrency(theCurrency);
+    // Backwards compatibility: also set the currency in the DecimalFormatSymbols
+    if (theCurrency != null) {
+      symbols.setCurrency(theCurrency);
+      String symbol = theCurrency.getName(symbols.getULocale(), Currency.SYMBOL_NAME, null);
+      symbols.setCurrencySymbol(symbol);
+    }
     refreshFormatter();
   }
 
@@ -559,20 +654,6 @@ public class DecimalFormat extends NumberFormat {
     refreshFormatter();
   }
 
-  /** @stable ICU 2.0 */
-  @Override
-  public synchronized void setMaximumFractionDigits(int newValue) {
-    properties.setMaximumFractionDigits(newValue);
-    refreshFormatter();
-  }
-
-  /** @stable ICU 2.0 */
-  @Override
-  public synchronized void setMinimumFractionDigits(int newValue) {
-    properties.setMinimumFractionDigits(newValue);
-    refreshFormatter();
-  }
-
   /** @stable ICU 3.6 */
   public synchronized void setParseBigDecimal(boolean value) {
     // TODO(sffc)
@@ -586,24 +667,32 @@ public class DecimalFormat extends NumberFormat {
   }
 
   /**
-   * Set the maximum number of exponent digits when parsing a number. If the limit is set too high,
-   * an OutOfMemoryException may be triggered. The default value is 1000.
+   * Setting max parse digits has no effect since ICU 59.
    *
-   * @param newValue the new limit
    * @stable ICU 51
    */
-  public synchronized void setParseMaxDigits(int newValue) {
-    throw new UnsupportedOperationException();
+  public synchronized void setParseMaxDigits(int _) {
   }
 
   /**
-   * Get the current maximum number of exponent digits when parsing a number.
+   * Setting max parse digits has no effect since ICU 59.
+   * Always returns 1000.
    *
-   * @return the maximum number of exponent digits for parsing
    * @stable ICU 51
    */
   public synchronized int getParseMaxDigits() {
-    throw new UnsupportedOperationException();
+    return 1000;
+  }
+
+  @Override
+  public synchronized void setParseStrict(boolean parseStrict) {
+    Parse.ParseMode mode = parseStrict ? Parse.ParseMode.STRICT : Parse.ParseMode.LENIENT;
+    properties.setParseMode(mode);
+  }
+
+  @Override
+  public synchronized boolean isParseStrict() {
+    return properties.getParseMode() == Parse.ParseMode.STRICT;
   }
 
   /** @stable ICU 2.0 */
@@ -615,17 +704,17 @@ public class DecimalFormat extends NumberFormat {
   /** @stable ICU 2.0 */
   @Override
   public synchronized boolean equals(Object obj) {
-    // TODO(sffc)
-    // Implement Properties#equals() and call it
-    throw new UnsupportedOperationException();
+    if (obj == null) return false;
+    if (obj == this) return true;
+    if (!(obj instanceof DecimalFormat)) return false;
+    DecimalFormat other = (DecimalFormat) obj;
+    return properties.equals(other.properties) && symbols.equals(other.symbols);
   }
 
   /** @stable ICU 2.0 */
   @Override
-  public int hashCode() {
-    // TODO(sffc)
-    // Implement Properties#hashCode() and call it
-    throw new UnsupportedOperationException();
+  public synchronized int hashCode() {
+    return properties.hashCode();
   }
 
   /** @stable ICU 2.0 */
@@ -636,8 +725,8 @@ public class DecimalFormat extends NumberFormat {
 
   /** @stable ICU 2.0 */
   public synchronized String toLocalizedPattern() {
-    // TODO(sffc): What exactly is the difference between a "localized" pattern and a regular pattern?
-    return PatternString.propertiesToString(properties);
+    String pattern = PatternString.propertiesToString(properties);
+    return PatternString.convertLocalized(pattern, symbols, true);
   }
 
   /**

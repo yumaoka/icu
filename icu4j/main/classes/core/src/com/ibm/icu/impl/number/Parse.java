@@ -10,7 +10,9 @@ import java.util.Arrays;
 
 import com.ibm.icu.impl.TextTrieMap;
 import com.ibm.icu.impl.number.Parse.ParseMode;
+import com.ibm.icu.impl.number.formatters.BigDecimalMultiplier;
 import com.ibm.icu.impl.number.formatters.CurrencyFormat;
+import com.ibm.icu.impl.number.formatters.MagnitudeMultiplier;
 import com.ibm.icu.impl.number.formatters.PaddingFormat;
 import com.ibm.icu.impl.number.formatters.PositiveNegativeAffixFormat;
 import com.ibm.icu.lang.UCharacter;
@@ -53,7 +55,9 @@ public class Parse {
   public static interface IProperties
       extends PositiveNegativeAffixFormat.IProperties,
           PaddingFormat.IProperties,
-          CurrencyFormat.ICurrencyProperties {
+          CurrencyFormat.ICurrencyProperties,
+          BigDecimalMultiplier.IProperties,
+          MagnitudeMultiplier.IProperties {
 
     boolean DEFAULT_PARSE_INTEGER_ONLY = false;
 
@@ -113,22 +117,22 @@ public class Parse {
      */
     public IProperties setParseMode(ParseMode parseMode);
 
-    boolean DEFAULT_PARSE_CURRENCY = false;
-
-    /** @see #setParseCurrency */
-    public boolean getParseCurrency();
-
-    /**
-     * Whether to parse currency codes and currency names in the string.
-     *
-     * <p>Due to the large number of possible currencies, enabling this option may impact the
-     * runtime of the parse operation.
-     *
-     * @param parseCurrency true to parse arbitrary currency codes and currency names; false to
-     *     disable. (Default is false)
-     * @return The property bag, for chaining.
-     */
-    public IProperties setParseCurrency(boolean parseCurrency);
+//    boolean DEFAULT_PARSE_CURRENCY = false;
+//
+//    /** @see #setParseCurrency */
+//    public boolean getParseCurrency();
+//
+//    /**
+//     * Whether to parse currency codes and currency names in the string.
+//     *
+//     * <p>Due to the large number of possible currencies, enabling this option may impact the
+//     * runtime of the parse operation.
+//     *
+//     * @param parseCurrency true to parse arbitrary currency codes and currency names; false to
+//     *     disable. (Default is false)
+//     * @return The property bag, for chaining.
+//     */
+//    public IProperties setParseCurrency(boolean parseCurrency);
   }
 
   /**
@@ -172,17 +176,22 @@ public class Parse {
     SAW_SUFFIX
   }
 
+  // TODO: Include characters like U+200D ZERO-WIDTH JOINER in the whitespace set?
+  private static final UnicodeSet UNISET_WHITESPACE =
+      new UnicodeSet("[[:whitespace:][\\u2000-\\u200F]]").freeze();
+
   // TODO: Re-generate these sets from the database. They probably haven't been updated in a while.
   private static final UnicodeSet UNISET_PERIOD_LIKE =
-      new UnicodeSet("[.\u2024\u3002\uFE12\uFE52\uFF0E\uFF61]").freeze();
+      new UnicodeSet("[.\\u2024\\u3002\\uFE12\\uFE52\\uFF0E\\uFF61]").freeze();
   private static final UnicodeSet UNISET_STRICT_PERIOD_LIKE =
-      new UnicodeSet("[.\u2024\uFE52\uFF0E\uFF61]").freeze();
+      new UnicodeSet("[.\\u2024\\uFE52\\uFF0E\\uFF61]").freeze();
   private static final UnicodeSet UNISET_COMMA_LIKE =
-      new UnicodeSet("[,\u060C\u066B\u3001\uFE10\uFE11\uFE50\uFE51\uFF0C\uFF64]").freeze();
+      new UnicodeSet("[,\\u060C\\u066B\\u3001\\uFE10\\uFE11\\uFE50\\uFE51\\uFF0C\\uFF64]").freeze();
   private static final UnicodeSet UNISET_STRICT_COMMA_LIKE =
       new UnicodeSet("[,\\u066B\\uFE10\\uFE50\\uFF0C]").freeze();
   private static final UnicodeSet UNISET_OTHER_GROUPING_SEPARATORS =
-      new UnicodeSet("[\\ '\u00A0\u066C\u2000-\u200A\u2018\u2019\u202F\u205F\u3000\uFF07]")
+      new UnicodeSet(
+              "[\\ '\\u00A0\\u066C\\u2000-\\u200A\\u2018\\u2019\\u202F\\u205F\\u3000\\uFF07]")
           .freeze();
 
   private enum SeparatorType {
@@ -192,9 +201,9 @@ public class Parse {
     UNKNOWN;
 
     static SeparatorType fromCp(int cp, boolean strict) {
-      UnicodeSet commaLike = strict ? UNISET_COMMA_LIKE : UNISET_STRICT_COMMA_LIKE;
+      UnicodeSet commaLike = strict ? UNISET_STRICT_COMMA_LIKE : UNISET_COMMA_LIKE;
       if (commaLike.contains(cp)) return COMMA_LIKE;
-      UnicodeSet periodLike = strict ? UNISET_PERIOD_LIKE : UNISET_STRICT_PERIOD_LIKE;
+      UnicodeSet periodLike = strict ? UNISET_STRICT_PERIOD_LIKE : UNISET_PERIOD_LIKE;
       if (periodLike.contains(cp)) return PERIOD_LIKE;
       UnicodeSet other = UNISET_OTHER_GROUPING_SEPARATORS;
       if (other.contains(cp)) return OTHER_GROUPING;
@@ -212,19 +221,20 @@ public class Parse {
     int score;
     byte[] digits = new byte[100];
     int scale;
-    int numDigits;
+    int precision;
     int offset;
     int groupingCp;
     int exponent;
     boolean sawNegative;
     boolean sawNegativeExponent;
     boolean sawDecimal;
+    boolean seenCurrency;
     AffixStatus positiveAffixStatus;
     AffixStatus negativeAffixStatus;
-    public StringType stringType;
-    public String isoCode;
-    public StateName returnTo;
-    public TextTrieMap<CurrencyStringInfo>.ParseState trieState;
+    StringType stringType;
+    String isoCode;
+    StateName returnTo;
+    TextTrieMap<CurrencyStringInfo>.ParseState trieState;
 
     /**
      * Clears the instance so that it can be re-used.
@@ -236,13 +246,14 @@ public class Parse {
       score = 0;
       Arrays.fill(digits, (byte) 0);
       scale = 0;
-      numDigits = 0;
+      precision = 0;
       offset = 0;
       groupingCp = -1;
       exponent = 0;
       sawNegative = false;
       sawNegativeExponent = false;
       sawDecimal = false;
+      seenCurrency = false;
       positiveAffixStatus = AffixStatus.NOT_SEEN;
       negativeAffixStatus = AffixStatus.NOT_SEEN;
       stringType = null;
@@ -265,13 +276,14 @@ public class Parse {
       // in benchmarks on an x86-64 with longs ranging between 1 and 1e12.
       System.arraycopy(other.digits, 0, digits, 0, digits.length);
       scale = other.scale;
-      numDigits = other.numDigits;
+      precision = other.precision;
       offset = other.offset;
       groupingCp = other.groupingCp;
       exponent = other.exponent;
       sawNegative = other.sawNegative;
       sawNegativeExponent = other.sawNegativeExponent;
       sawDecimal = other.sawDecimal;
+      seenCurrency = other.seenCurrency;
       positiveAffixStatus = other.positiveAffixStatus;
       negativeAffixStatus = other.negativeAffixStatus;
       stringType = other.stringType;
@@ -292,12 +304,12 @@ public class Parse {
       if (type == DigitType.EXPONENT) {
         exponent = exponent * 10 + digit;
       } else {
-        if (numDigits >= digits.length) {
+        if (precision >= digits.length) {
           // TODO: Should we fail silently here instead of throwing?
           throw new ParseException("Too many digits", -1);
         }
-        digits[numDigits] = (byte) digit;
-        numDigits++;
+        digits[precision] = (byte) digit;
+        precision++;
         if (type == DigitType.FRACTION) scale--;
       }
     }
@@ -308,36 +320,77 @@ public class Parse {
      *
      * @return The Number. Never null.
      */
-    Number toNumber() {
-      if (scale == 0 && exponent == 0 && numDigits <= 18) {
+    Number toNumber(IProperties properties) {
+      // Multipliers must be applied in reverse.
+      BigDecimal multiplier = properties.getMultiplier();
+      if (properties.getMagnitudeMultiplier() != 0) {
+        if (multiplier == null) multiplier = BigDecimal.ONE;
+        multiplier = multiplier.scaleByPowerOfTen(properties.getMagnitudeMultiplier());
+      }
+
+      // Remove trailing zeros
+      int _precision = precision;
+      int _scale = scale;
+      while (_precision > 0 && digits[_precision - 1] == 0) {
+        _precision--;
+        _scale++;
+      }
+
+      int delta = (sawNegativeExponent ? -1 : 1) * exponent;
+      if (_scale + delta >= 0 && _scale + delta + _precision <= 18) {
         long result = 0;
-        for (int i = 0; i < numDigits; i++) {
+        for (int i = 0; i < _precision; i++) {
           result = result * 10 + digits[i];
+        }
+        for (int i = 0; i < _scale + delta; i++) {
+          result *= 10;
         }
         if (sawNegative) {
           result *= -1;
         }
-        return result;
-      } else if (scale == 0 && exponent == 0) {
+        if (multiplier != null) {
+          BigDecimal temp = BigDecimal.valueOf(result).divide(multiplier);
+          try {
+            return temp.longValueExact();
+          } catch (ArithmeticException e) {
+            return temp;
+          }
+        } else {
+          return result;
+        }
+      } else if (_scale + delta >= 0) {
         BigInteger result = BigInteger.ZERO;
-        for (int i = 0; i < numDigits; i++) {
+        for (int i = 0; i < _precision; i++) {
           result = result.multiply(BigInteger.TEN).add(BigInteger.valueOf(digits[i]));
         }
+        result = BigInteger.TEN.pow(_scale + delta).multiply(result);
         if (sawNegative) {
           result = result.negate();
         }
-        return result;
+        if (multiplier != null) {
+          BigDecimal temp = new BigDecimal(result).divide(multiplier);
+          try {
+            return temp.toBigIntegerExact();
+          } catch (ArithmeticException e) {
+            return temp;
+          }
+        } else {
+          return result;
+        }
       } else {
         BigDecimal result = BigDecimal.ZERO;
-        for (int i = 0; i < numDigits; i++) {
+        for (int i = 0; i < _precision; i++) {
           result = result.scaleByPowerOfTen(1).add(BigDecimal.valueOf(digits[i]));
         }
-        result = result.scaleByPowerOfTen(scale);
-        result = result.scaleByPowerOfTen((sawNegativeExponent ? -1 : 1) * exponent);
+        result = result.scaleByPowerOfTen(_scale + delta);
         if (sawNegative) {
           result = result.negate();
         }
-        return result;
+        if (multiplier != null) {
+          return result.divide(multiplier);
+        } else {
+          return result;
+        }
       }
     }
 
@@ -347,10 +400,10 @@ public class Parse {
      *
      * @return The CurrencyAmount. Never null.
      */
-    public CurrencyAmount toCurrencyAmount(Currency fallback) {
-      Number number = toNumber();
-      // If no currency was found, use the fallback
-      Currency currency = (isoCode == null) ? fallback : Currency.getInstance(isoCode);
+    public CurrencyAmount toCurrencyAmount(IProperties properties) {
+      assert isoCode != null;
+      Number number = toNumber(properties);
+      Currency currency = Currency.getInstance(isoCode);
       return new CurrencyAmount(number, currency);
     }
 
@@ -359,8 +412,13 @@ public class Parse {
       StringBuilder sb = new StringBuilder();
       sb.append("<ParserStateItem ");
       sb.append(name.name());
+      if (name == StateName.INSIDE_STRING) {
+        sb.append("(");
+        sb.append(stringType.name());
+        sb.append(")");
+      }
       sb.append(" ");
-      for (int i = 0; i < numDigits; i++) {
+      for (int i = 0; i < precision; i++) {
         sb.append(digits[i]);
       }
       sb.append(" scale:");
@@ -519,9 +577,6 @@ public class Parse {
         }
       };
 
-  // TODO: Include characters like U+200D ZERO-WIDTH JOINER in the whitespace set?
-  private static final UnicodeSet UNISET_WHITESPACE = new UnicodeSet("[[:whitespace:]]").freeze();
-
   /**
    * @internal
    * @deprecated This API is ICU internal only. TODO: Remove this set from ScientificNumberFormat.
@@ -551,6 +606,9 @@ public class Parse {
     return parse(input, ppos, properties, symbols);
   }
 
+  // TODO: DELETE ME once debugging is finished
+  public static volatile boolean DEBUGGING = false;
+
   /**
    * Implements an iterative parser that maintains a lists of possible states at each code point in
    * the string. At each code point in the string, the list of possible states is updated based on
@@ -572,7 +630,7 @@ public class Parse {
       CharSequence input, ParsePosition ppos, IProperties properties, DecimalFormatSymbols symbols)
       throws ParseException {
     ParserStateItem best = _parse(input, ppos, false, properties, symbols);
-    return (best == null) ? null : best.toNumber();
+    return (best == null) ? null : best.toNumber(properties);
   }
 
   public static CurrencyAmount parseCurrency(
@@ -586,17 +644,7 @@ public class Parse {
       CharSequence input, ParsePosition ppos, IProperties properties, DecimalFormatSymbols symbols)
       throws ParseException {
     ParserStateItem best = _parse(input, ppos, true, properties, symbols);
-
-    // TODO: Is this the correct way to select a fallback currency?
-    Currency fallback = properties.getCurrency();
-    if (fallback == null) {
-      fallback = symbols.getCurrency();
-    }
-    if (fallback == null) {
-      fallback = Currency.getInstance("XXX");
-    }
-
-    return (best == null) ? null : best.toCurrencyAmount(fallback);
+    return (best == null) ? null : best.toCurrencyAmount(properties);
   }
 
   private static ParserStateItem _parse(
@@ -635,6 +683,9 @@ public class Parse {
     state.ps = affixResult.positive.getSuffix();
     state.ns = affixResult.negative.getSuffix();
     state.exponentSeparator = symbols.getExponentSeparator();
+    // TODO: Discuss how to handle custom currency symbols.
+    //    state.currencySymbol = symbols.getCurrencySymbol();
+    //    state.currencyCode = symbols.getInternationalCurrencySymbol();
     @SuppressWarnings("deprecation")
     String[] digitStrings = symbols.getDigitStringsLocal();
     for (int i = 0; i < 10; i++) {
@@ -646,6 +697,11 @@ public class Parse {
     ParserStateItem initialHolder = state.getNext().clear();
     initialHolder.name = StateName.BEFORE_PREFIX;
 
+    if (DEBUGGING) {
+      System.out.println("Parsing: " + input);
+      System.out.println(properties);
+    }
+
     // Start walking through the string, one codepoint at a time. Backtracking is not allowed. This
     // is to enforce linear runtime and prevent edge cases that could result in an infinite loop.
     int offset = ppos.getIndex();
@@ -655,7 +711,9 @@ public class Parse {
       for (int i = 0; i < state.prevLength; i++) {
         ParserStateItem item = state.prevItems[i];
         // NOTE: Uncomment the following line to view the step-by-step parse process.
-        // System.out.println(":" + offset + " " + item);
+        if (DEBUGGING) {
+          System.out.println(":" + offset + " " + item);
+        }
         switch (item.name) {
           case BEFORE_PREFIX:
             // Beginning of string
@@ -813,6 +871,10 @@ public class Parse {
       offset += Character.charCount(cp);
     }
 
+    if (DEBUGGING) {
+      System.out.println("- - - - - - - - - -");
+    }
+
     // Post-processing
     if (state.length == 0) {
       return null;
@@ -823,7 +885,7 @@ public class Parse {
         ParserStateItem item = state.items[i];
 
         // Check that at least one digit was read.
-        if (item.numDigits == 0) continue;
+        if (item.precision == 0) continue;
 
         if (state.mode == ParseMode.STRICT) {
           // Perform extra checks for strict mode.  We require that the affixes match.
@@ -847,9 +909,13 @@ public class Parse {
           continue;
         }
 
+        // When parsing currencies, require that a currency symbol was found.
+        if (parseCurrency && !item.seenCurrency) {
+          continue;
+        }
+
         // If we get here, then this candidate is acceptable.
-        // Use the earliest candidate in the list, or the first one that uses locale symbols for
-        // decimal point and/or grouping separator.
+        // Use the earliest candidate in the list, or the one with the highest score.
         if (best == null) {
           best = item;
         } else if (item.score > best.score) {
@@ -972,6 +1038,9 @@ public class Parse {
       if (type == StringType.POS_SUFFIX) next.positiveAffixStatus = AffixStatus.SAW_SUFFIX;
       if (type == StringType.NEG_SUFFIX) next.negativeAffixStatus = AffixStatus.SAW_SUFFIX;
 
+      // Initial penalty for incomplete affix
+      next.score -= 1;
+
       // State item to consume next code point of string.
       if (str.length() != Character.charCount(cp)) {
         ParserStateItem continuation = state.getNext().copyFrom(next);
@@ -1066,6 +1135,7 @@ public class Parse {
    */
   private static void acceptCurrency(
       int cp, StateName nextName, ParserState state, ParserStateItem item) {
+    if (item.seenCurrency) return;
     acceptCurrencyHelper(
         Currency.openParseState(state.uLocale, cp, Currency.LONG_NAME), cp, nextName, state, item);
     acceptCurrencyHelper(
@@ -1089,6 +1159,7 @@ public class Parse {
       // TODO: What should happen with multiple currency matches?
       next.isoCode = trieState.getCurrentMatches().next().getISOCode();
       next.name = nextName;
+      next.seenCurrency = true;
     }
     if (!trieState.atEnd()) {
       // Prepare for matches on future code points
@@ -1116,6 +1187,7 @@ public class Parse {
       // TODO: What should happen with multiple currency matches?
       next.isoCode = item.trieState.getCurrentMatches().next().getISOCode();
       next.name = item.returnTo;
+      next.seenCurrency = true;
     }
     if (!item.trieState.atEnd()) {
       state.getNext().copyFrom(item);
@@ -1232,12 +1304,9 @@ public class Parse {
       // First time seeing a grouping separator.
       SeparatorType cpType = SeparatorType.fromCp(cp, state.mode == ParseMode.STRICT);
 
-      // Accept separators in PLUS_LIKE or MINUS_LIKE according to the locale.
-      // Always accept separators in OTHER_GROUPING (this includes whitespace).
       // Accept separators in UNKNOWN only if they exactly match the locale.
-      if (cpType != SeparatorType.OTHER_GROUPING
-          && cpType != state.groupingType1
-          && cpType != state.groupingType2) {
+      // Accept all other separators as long as they are not exactly the same as the decimal.
+      if (cp == state.decimalCp1 || cp == state.decimalCp2) {
         return;
       }
       if (cpType == SeparatorType.UNKNOWN && cp != state.groupingCp1 && cp != state.groupingCp2) {
@@ -1280,7 +1349,7 @@ public class Parse {
 
     SeparatorType cpType = SeparatorType.fromCp(cp, state.mode == ParseMode.STRICT);
 
-    // Accept separators in PLUS_LIKE or MINUS_LIKE according to the locale.
+    // Accept separators in COMMA_LIKE or PERIOD_LIKE strictly according to the locale.
     // Accept separators in OTHER_GROUPING or UNKNOWN only if they exactly match the locale.
     if (cpType != state.decimalType1 && cpType != state.decimalType2) {
       // No match.

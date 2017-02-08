@@ -405,6 +405,12 @@ public class FormatQuantity2 implements FormatQuantity {
 
   @Override
   public int fractionCount() {
+    // Special handling for zero
+    // Show digit to the left of decimal unless minInt==0 and maxFrac>0
+    if (isZero() && (lReqPos == 0 && rOptPos < 0)) {
+      return Math.max(1, -rReqPos);
+    }
+
     int ncount = scale;
     return (rReqPos < ncount) ? -rReqPos : (rOptPos > ncount) ? -rOptPos : -ncount;
   }
@@ -416,8 +422,9 @@ public class FormatQuantity2 implements FormatQuantity {
   @Override
   public int integerCount() {
     // Special handling for zero
-    if (isZero() && lReqPos == 0 && rReqPos == 0) {
-      return 1;
+    // Show digit to the left of decimal unless minInt==0 and maxFrac>0
+    if (isZero() && (lReqPos > 0 || rOptPos == 0)) {
+      return Math.max(1, lReqPos);
     }
 
     int count = scale + precision;

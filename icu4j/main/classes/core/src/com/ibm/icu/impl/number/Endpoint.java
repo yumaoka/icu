@@ -81,7 +81,7 @@ public class Endpoint {
     // TODO: This fast track results in an improvement of about 10ns during formatting.  See if
     // there is a way to implement it more elegantly.
     boolean canUseFastTrack = true;
-    PluralRules rules = PluralRules.forLocale(symbols.getULocale());
+    PluralRules rules = getPluralRules(symbols.getULocale(), properties);
     BeforeTargetAfterFormat format = new Format.BeforeTargetAfterFormat(rules);
     TargetFormat target = new PositiveDecimalFormat(symbols, properties);
     format.setTargetFormat(target);
@@ -98,21 +98,31 @@ public class Endpoint {
       canUseFastTrack = false;
       format.addBeforeFormat(MeasureFormat.getInstance(symbols, properties));
     }
-    if (CompactDecimalFormat.useCompactDecimalFormat(properties)) {
+    if (CurrencyFormat.useCurrency(properties)) {
       canUseFastTrack = false;
-      format.addBeforeFormat(CompactDecimalFormat.getInstance(symbols, properties));
-    } else if (CurrencyFormat.useCurrency(properties)) {
-      canUseFastTrack = false;
-      format.addBeforeFormat(CurrencyFormat.getCurrencyModifier(symbols, properties));
-      format.addBeforeFormat(CurrencyFormat.getCurrencyRounder(symbols, properties));
-    } else if (ScientificFormat.useScientificNotation(properties)) {
-      // TODO: Is it possible to combine significant digits with currency?
-      canUseFastTrack = false;
-      format.addBeforeFormat(PositiveNegativeAffixFormat.getInstance(symbols, properties));
-      format.addBeforeFormat(ScientificFormat.getInstance(symbols, properties));
+      if (CompactDecimalFormat.useCompactDecimalFormat(properties)) {
+        // TODO: Implement compact currency
+        throw new UnsupportedOperationException();
+      } else if (ScientificFormat.useScientificNotation(properties)) {
+        // TODO: Think more about currency + scientific
+        format.addBeforeFormat(PositiveNegativeAffixFormat.getInstance(symbols, properties));
+        format.addBeforeFormat(ScientificFormat.getInstance(symbols, properties));
+      } else {
+        format.addBeforeFormat(CurrencyFormat.getCurrencyRounder(symbols, properties));
+        format.addBeforeFormat(CurrencyFormat.getCurrencyModifier(symbols, properties));
+      }
     } else {
-      format.addBeforeFormat(PositiveNegativeAffixFormat.getInstance(symbols, properties));
-      format.addBeforeFormat(Rounder.getDefaultRounder(properties));
+      if (CompactDecimalFormat.useCompactDecimalFormat(properties)) {
+        canUseFastTrack = false;
+        format.addBeforeFormat(CompactDecimalFormat.getInstance(symbols, properties));
+      } else if (ScientificFormat.useScientificNotation(properties)) {
+        canUseFastTrack = false;
+        format.addBeforeFormat(PositiveNegativeAffixFormat.getInstance(symbols, properties));
+        format.addBeforeFormat(ScientificFormat.getInstance(symbols, properties));
+      } else {
+        format.addBeforeFormat(PositiveNegativeAffixFormat.getInstance(symbols, properties));
+        format.addBeforeFormat(Rounder.getDefaultRounder(properties));
+      }
     }
     if (PaddingFormat.usePadding(properties)) {
       canUseFastTrack = false;
@@ -179,16 +189,16 @@ public class Endpoint {
         BigDecimalMultiplier.getInstance(properties).before(input, mods, rules);
       }
       if (MeasureFormat.useMeasureFormat(properties)) {
-        rules = (rules != null) ? rules : getPluralRules(symbols.getULocale());
+        rules = (rules != null) ? rules : getPluralRules(symbols.getULocale(), properties);
         MeasureFormat.getInstance(symbols, properties).before(input, mods, rules);
       }
       if (CompactDecimalFormat.useCompactDecimalFormat(properties)) {
-        rules = (rules != null) ? rules : getPluralRules(symbols.getULocale());
+        rules = (rules != null) ? rules : getPluralRules(symbols.getULocale(), properties);
         CompactDecimalFormat.apply(input, mods, rules, symbols, properties);
       } else if (CurrencyFormat.useCurrency(properties)) {
-        rules = (rules != null) ? rules : getPluralRules(symbols.getULocale());
-        CurrencyFormat.getCurrencyModifier(symbols, properties).before(input, mods, rules);
+        rules = (rules != null) ? rules : getPluralRules(symbols.getULocale(), properties);
         CurrencyFormat.getCurrencyRounder(symbols, properties).before(input, mods, rules);
+        CurrencyFormat.getCurrencyModifier(symbols, properties).before(input, mods, rules);
       } else if (ScientificFormat.useScientificNotation(properties)) {
         // TODO: Is it possible to combine significant digits with currency?
         PositiveNegativeAffixFormat.getInstance(symbols, properties).before(input, mods, rules);
@@ -201,6 +211,7 @@ public class Endpoint {
 
     // Primary format step
     length += new PositiveDecimalFormat(symbols, properties).target(input, sb, 0);
+    length += mods.applyStrong(sb, 0, length);
 
     // Post-processing
     if (PaddingFormat.usePadding(properties)) {
@@ -265,7 +276,12 @@ public class Endpoint {
         }
       };
 
-  private static PluralRules getPluralRules(ULocale uLocale) {
+  private static PluralRules getPluralRules(ULocale uLocale, Properties properties) {
+    // Backwards compatibility: CurrencyPluralInfo wraps its own copy of PluralRules
+    if (properties.getCurrencyPluralInfo() != null) {
+      return properties.getCurrencyPluralInfo().getPluralRules();
+    }
+
     if (uLocale == null) uLocale = ULocale.getDefault();
     PluralRules rules = threadLocalRulesCache.get().get(uLocale);
     if (rules == null) {

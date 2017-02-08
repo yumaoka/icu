@@ -17,7 +17,6 @@ import com.ibm.icu.impl.number.formatters.PaddingFormat;
 import com.ibm.icu.impl.number.formatters.PaddingFormat.PaddingLocation;
 import com.ibm.icu.impl.number.formatters.PositiveDecimalFormat;
 import com.ibm.icu.impl.number.formatters.PositiveNegativeAffixFormat;
-import com.ibm.icu.impl.number.formatters.PositiveNegativeAffixFormat.IProperties;
 import com.ibm.icu.impl.number.formatters.ScientificFormat;
 import com.ibm.icu.text.CompactDecimalFormat.CompactStyle;
 import com.ibm.icu.text.CurrencyPluralInfo;
@@ -71,7 +70,7 @@ public class Properties
   private PaddingLocation paddingLocation;
   private CharSequence paddingString;
   private int paddingWidth;
-  private boolean parseCurrency;
+  //  private boolean parseCurrency;
   private boolean parseIgnoreExponent;
   private boolean parseIntegerOnly;
   private ParseMode parseMode;
@@ -87,7 +86,7 @@ public class Properties
     clear();
   }
 
-  public Properties clear() {
+  private Properties _clear() {
     alwaysShowDecimal = DEFAULT_ALWAYS_SHOW_DECIMAL;
     alwaysShowPlusSign = DEFAULT_ALWAYS_SHOW_PLUS_SIGN;
     compactStyle = DEFAULT_COMPACT_STYLE;
@@ -117,7 +116,7 @@ public class Properties
     paddingLocation = DEFAULT_PADDING_LOCATION;
     paddingString = DEFAULT_PADDING_STRING;
     paddingWidth = DEFAULT_PADDING_WIDTH;
-    parseCurrency = DEFAULT_PARSE_CURRENCY;
+    //    parseCurrency = DEFAULT_PARSE_CURRENCY;
     parseIgnoreExponent = DEFAULT_PARSE_IGNORE_EXPONENT;
     parseIntegerOnly = DEFAULT_PARSE_INTEGER_ONLY;
     parseMode = DEFAULT_PARSE_MODE;
@@ -131,6 +130,141 @@ public class Properties
     return this;
   }
 
+  private boolean _equals(Properties other) {
+    boolean eq = true;
+    eq = eq && _equalsHelper(alwaysShowDecimal, other.alwaysShowDecimal);
+    eq = eq && _equalsHelper(alwaysShowPlusSign, other.alwaysShowPlusSign);
+    eq = eq && _equalsHelper(compactStyle, other.compactStyle);
+    eq = eq && _equalsHelper(currency, other.currency);
+    eq = eq && _equalsHelper(currencyPluralInfo, other.currencyPluralInfo);
+    eq = eq && _equalsHelper(currencyStyle, other.currencyStyle);
+    eq = eq && _equalsHelper(currencyUsage, other.currencyUsage);
+    eq = eq && _equalsHelper(decimalPatternMatchRequired, other.decimalPatternMatchRequired);
+    eq = eq && _equalsHelper(exponentDigits, other.exponentDigits);
+    eq = eq && _equalsHelper(exponentShowPlusSign, other.exponentShowPlusSign);
+    eq = eq && _equalsHelper(groupingSize, other.groupingSize);
+    eq = eq && _equalsHelper(magnitudeMultiplier, other.magnitudeMultiplier);
+    eq = eq && _equalsHelper(maximumFractionDigits, other.maximumFractionDigits);
+    eq = eq && _equalsHelper(maximumIntegerDigits, other.maximumIntegerDigits);
+    eq = eq && _equalsHelper(maximumSignificantDigits, other.maximumSignificantDigits);
+    eq = eq && _equalsHelper(measureFormatWidth, other.measureFormatWidth);
+    eq = eq && _equalsHelper(measureUnit, other.measureUnit);
+    eq = eq && _equalsHelper(minimumFractionDigits, other.minimumFractionDigits);
+    eq = eq && _equalsHelper(minimumGroupingDigits, other.minimumGroupingDigits);
+    eq = eq && _equalsHelper(minimumIntegerDigits, other.minimumIntegerDigits);
+    eq = eq && _equalsHelper(minimumSignificantDigits, other.minimumSignificantDigits);
+    eq = eq && _equalsHelper(multiplier, other.multiplier);
+    eq = eq && _equalsHelper(negativePrefix, other.negativePrefix);
+    eq = eq && _equalsHelper(negativePrefixPattern, other.negativePrefixPattern);
+    eq = eq && _equalsHelper(negativeSuffix, other.negativeSuffix);
+    eq = eq && _equalsHelper(negativeSuffixPattern, other.negativeSuffixPattern);
+    eq = eq && _equalsHelper(paddingLocation, other.paddingLocation);
+    eq = eq && _equalsHelper(paddingString, other.paddingString);
+    eq = eq && _equalsHelper(paddingWidth, other.paddingWidth);
+    //    eq = eq && _equalsHelper(parseCurrency, other.parseCurrency);
+    eq = eq && _equalsHelper(parseIgnoreExponent, other.parseIgnoreExponent);
+    eq = eq && _equalsHelper(parseIntegerOnly, other.parseIntegerOnly);
+    eq = eq && _equalsHelper(parseMode, other.parseMode);
+    eq = eq && _equalsHelper(positivePrefix, other.positivePrefix);
+    eq = eq && _equalsHelper(positivePrefixPattern, other.positivePrefixPattern);
+    eq = eq && _equalsHelper(positiveSuffix, other.positiveSuffix);
+    eq = eq && _equalsHelper(positiveSuffixPattern, other.positiveSuffixPattern);
+    eq = eq && _equalsHelper(roundingInterval, other.roundingInterval);
+    eq = eq && _equalsHelper(roundingMode, other.roundingMode);
+    eq = eq && _equalsHelper(secondaryGroupingSize, other.secondaryGroupingSize);
+    return eq;
+  }
+
+  private boolean _equalsHelper(boolean mine, boolean theirs) {
+    return mine == theirs;
+  }
+
+  private boolean _equalsHelper(int mine, int theirs) {
+    return mine == theirs;
+  }
+
+  private boolean _equalsHelper(CharSequence mine, CharSequence theirs) {
+    // We have to write this helper separately from Object because the CharSequence interface
+    // doesn't require the #equals() method to work as one would expect.
+    // This also allows a null CharSequence to equal an empty CharSequence.
+    if (mine == theirs) return true;
+    if (mine == null && theirs.length() != 0) return false;
+    if (theirs == null && mine.length() != 0) return false;
+    if (mine.length() != theirs.length()) return false;
+    for (int i = 0; i < mine.length(); i++) {
+      if (mine.charAt(i) != theirs.charAt(i)) return false;
+    }
+    return true;
+  }
+
+  private boolean _equalsHelper(Object mine, Object theirs) {
+    if (mine == theirs) return true;
+    if (mine == null) return false;
+    return mine.equals(theirs);
+  }
+
+  private int _hashCode() {
+    int hashCode = 0;
+    hashCode ^= _hashCodeHelper(alwaysShowDecimal);
+    hashCode ^= _hashCodeHelper(alwaysShowPlusSign);
+    hashCode ^= _hashCodeHelper(compactStyle);
+    hashCode ^= _hashCodeHelper(currency);
+    hashCode ^= _hashCodeHelper(currencyPluralInfo);
+    hashCode ^= _hashCodeHelper(currencyStyle);
+    hashCode ^= _hashCodeHelper(currencyUsage);
+    hashCode ^= _hashCodeHelper(decimalPatternMatchRequired);
+    hashCode ^= _hashCodeHelper(exponentDigits);
+    hashCode ^= _hashCodeHelper(exponentShowPlusSign);
+    hashCode ^= _hashCodeHelper(groupingSize);
+    hashCode ^= _hashCodeHelper(magnitudeMultiplier);
+    hashCode ^= _hashCodeHelper(maximumFractionDigits);
+    hashCode ^= _hashCodeHelper(maximumIntegerDigits);
+    hashCode ^= _hashCodeHelper(maximumSignificantDigits);
+    hashCode ^= _hashCodeHelper(measureFormatWidth);
+    hashCode ^= _hashCodeHelper(measureUnit);
+    hashCode ^= _hashCodeHelper(minimumFractionDigits);
+    hashCode ^= _hashCodeHelper(minimumGroupingDigits);
+    hashCode ^= _hashCodeHelper(minimumIntegerDigits);
+    hashCode ^= _hashCodeHelper(minimumSignificantDigits);
+    hashCode ^= _hashCodeHelper(multiplier);
+    hashCode ^= _hashCodeHelper(negativePrefix);
+    hashCode ^= _hashCodeHelper(negativePrefixPattern);
+    hashCode ^= _hashCodeHelper(negativeSuffix);
+    hashCode ^= _hashCodeHelper(negativeSuffixPattern);
+    hashCode ^= _hashCodeHelper(paddingLocation);
+    hashCode ^= _hashCodeHelper(paddingString);
+    hashCode ^= _hashCodeHelper(paddingWidth);
+    //    hashCode ^= _hashCodeHelper(parseCurrency);
+    hashCode ^= _hashCodeHelper(parseIgnoreExponent);
+    hashCode ^= _hashCodeHelper(parseIntegerOnly);
+    hashCode ^= _hashCodeHelper(parseMode);
+    hashCode ^= _hashCodeHelper(positivePrefix);
+    hashCode ^= _hashCodeHelper(positivePrefixPattern);
+    hashCode ^= _hashCodeHelper(positiveSuffix);
+    hashCode ^= _hashCodeHelper(positiveSuffixPattern);
+    hashCode ^= _hashCodeHelper(roundingInterval);
+    hashCode ^= _hashCodeHelper(roundingMode);
+    hashCode ^= _hashCodeHelper(secondaryGroupingSize);
+    return hashCode;
+  }
+
+  private int _hashCodeHelper(boolean value) {
+    return value ? 1 : 0;
+  }
+
+  private int _hashCodeHelper(int value) {
+    return value * 13;
+  }
+
+  private int _hashCodeHelper(Object value) {
+    if (value == null) return 0;
+    return value.hashCode();
+  }
+
+  public Properties clear() {
+    return _clear();
+  }
+
   /** Creates and returns a shallow copy of the property bag. */
   @Override
   public Properties clone() {
@@ -141,6 +275,14 @@ public class Properties
       // Should never happen since super is Object
       throw new UnsupportedOperationException(e);
     }
+  }
+
+  @Override
+  public boolean equals(Object other) {
+    if (other == null) return false;
+    if (this == other) return true;
+    if (!(other instanceof Properties)) return false;
+    return _equals((Properties) other);
   }
 
   @Override
@@ -289,10 +431,10 @@ public class Properties
     return paddingWidth;
   }
 
-  @Override
-  public boolean getParseCurrency() {
-    return parseCurrency;
-  }
+  //  @Override
+  //  public boolean getParseCurrency() {
+  //    return parseCurrency;
+  //  }
 
   /* (non-Javadoc)
    * @see com.ibm.icu.impl.number.Parse.IProperties#getParseIgnoreExponent()
@@ -354,13 +496,18 @@ public class Properties
   }
 
   @Override
+  public int hashCode() {
+    return _hashCode();
+  }
+
+  @Override
   public Properties setAlwaysShowDecimal(boolean alwaysShowDecimal) {
     this.alwaysShowDecimal = alwaysShowDecimal;
     return this;
   }
 
   @Override
-  public IProperties setAlwaysShowPlusSign(boolean alwaysShowPlusSign) {
+  public Properties setAlwaysShowPlusSign(boolean alwaysShowPlusSign) {
     this.alwaysShowPlusSign = alwaysShowPlusSign;
     return this;
   }
@@ -528,11 +675,11 @@ public class Properties
     return this;
   }
 
-  @Override
-  public com.ibm.icu.impl.number.Parse.IProperties setParseCurrency(boolean parseCurrency) {
-    this.parseCurrency = parseCurrency;
-    return this;
-  }
+  //  @Override
+  //  public Properties setParseCurrency(boolean parseCurrency) {
+  //    this.parseCurrency = parseCurrency;
+  //    return this;
+  //  }
 
   /* (non-Javadoc)
    * @see com.ibm.icu.impl.number.Parse.IProperties#setParseIgnoreExponent(boolean)

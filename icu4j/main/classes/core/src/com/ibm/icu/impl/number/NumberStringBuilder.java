@@ -309,6 +309,7 @@ public class NumberStringBuilder implements CharSequence {
     }
 
     boolean seenStart = false;
+    int fractionStart = -1;
     for (int i = zero; i <= zero + length; i++) {
       Field _field = (i < zero + length) ? fields[i] : null;
       if (seenStart && field != _field) {
@@ -320,6 +321,15 @@ public class NumberStringBuilder implements CharSequence {
         fp.setBeginIndex(i - zero + offset);
         seenStart = true;
       }
+      if (_field == Field.INTEGER || _field == Field.DECIMAL_SEPARATOR) {
+        fractionStart = i - zero + 1;
+      }
+    }
+
+    // Backwards compatibility: FRACTION needs to start after INTEGER if empty
+    if (field == Field.FRACTION && !seenStart) {
+      fp.setBeginIndex(fractionStart);
+      fp.setEndIndex(fractionStart);
     }
   }
 

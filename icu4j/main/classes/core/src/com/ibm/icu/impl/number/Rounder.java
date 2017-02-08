@@ -143,7 +143,7 @@ public abstract class Rounder extends Format.BeforeFormat {
     public int getMaximumSignificantDigits();
 
     /**
-     * Sets the maximium number of significant digits to display. The number of significant digits
+     * Sets the maximum number of significant digits to display. The number of significant digits
      * is equal to the number of digits counted from the leftmost nonzero digit through the
      * rightmost nonzero digit; for example, the number "2010" has 3 significant digits. If the
      * number has more significant digits than specified here, the extra significant digits will be

@@ -169,6 +169,7 @@ public abstract class Format {
         }
       }
       length = target.target(input, string, startIndex);
+      length += mods.applyStrong(string, startIndex, startIndex + length);
       if (after1 != null) {
         length += after1.after(mods, string, startIndex, startIndex + length);
       }
@@ -234,6 +235,7 @@ public abstract class Format {
         mod = positiveNegative.getModifier(input.isNegative());
       }
       int length = target.target(input, string, startIndex);
+      length += mods.applyStrong(string, startIndex, startIndex + length);
       if (mod != null) {
         length += mod.apply(string, 0, length);
       }

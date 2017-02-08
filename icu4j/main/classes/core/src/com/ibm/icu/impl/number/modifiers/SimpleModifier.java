@@ -15,11 +15,13 @@ import com.ibm.icu.text.NumberFormat.Field;
 public class SimpleModifier extends Modifier.BaseModifier {
   private final String compiledPattern;
   private final Field field;
+  private final boolean strong;
 
   /** Creates a modifier that uses the SimpleFormatter string formats. */
-  public SimpleModifier(String compiledPattern, Field field) {
+  public SimpleModifier(String compiledPattern, Field field, boolean strong) {
     this.compiledPattern = (compiledPattern == null) ? "\u0001\u0000" : compiledPattern;
     this.field = field;
+    this.strong = strong;
   }
 
   @Override
@@ -31,6 +33,11 @@ public class SimpleModifier extends Modifier.BaseModifier {
   public int length() {
     // TODO: Make a separate method for computing the length only?
     return formatAsPrefixSuffix(compiledPattern, null, -1, -1, field);
+  }
+
+  @Override
+  public boolean isStrong() {
+    return strong;
   }
 
   @Override

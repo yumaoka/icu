@@ -55,29 +55,37 @@ public class ModifierHolder {
   public int applyAll(NumberStringBuilder string, int leftIndex, int rightIndex) {
     int addedLength = 0;
     //      if (mod5 != null) {
-    //        addedLength += mod5.apply(string, leftIndex, leftIndex + rightIndex + addedLength);
+    //        addedLength += mod5.apply(string, leftIndex, rightIndex + addedLength);
     //        mod5 = null;
     //      }
     //      if (mod4 != null) {
-    //        addedLength += mod4.apply(string, leftIndex, leftIndex + rightIndex + addedLength);
+    //        addedLength += mod4.apply(string, leftIndex, rightIndex + addedLength);
     //        mod4 = null;
     //      }
     //      if (mod3 != null) {
-    //        addedLength += mod3.apply(string, leftIndex, leftIndex + rightIndex + addedLength);
+    //        addedLength += mod3.apply(string, leftIndex, rightIndex + addedLength);
     //        mod3 = null;
     //      }
     //      if (mod2 != null) {
-    //        addedLength += mod2.apply(string, leftIndex, leftIndex + rightIndex + addedLength);
+    //        addedLength += mod2.apply(string, leftIndex, rightIndex + addedLength);
     //        mod2 = null;
     //      }
     //      if (mod1 != null) {
-    //        addedLength += mod1.apply(string, leftIndex, leftIndex + rightIndex + addedLength);
+    //        addedLength += mod1.apply(string, leftIndex, rightIndex + addedLength);
     //        mod1 = null;
     //      }
     while (!mods.isEmpty()) {
-      Modifier mod = mods.removeLast();
-      if (mod == null) continue;
-      addedLength += mod.apply(string, leftIndex, leftIndex + rightIndex + addedLength);
+      Modifier mod = mods.removeFirst();
+      addedLength += mod.apply(string, leftIndex, rightIndex + addedLength);
+    }
+    return addedLength;
+  }
+
+  public int applyStrong(NumberStringBuilder string, int leftIndex, int rightIndex) {
+    int addedLength = 0;
+    while (!mods.isEmpty() && mods.peekFirst().isStrong()) {
+      Modifier mod = mods.removeFirst();
+      addedLength += mod.apply(string, leftIndex, rightIndex + addedLength);
     }
     return addedLength;
   }

@@ -65,6 +65,73 @@ public class LiteralString {
   }
 
   /**
+   * Estimates the number of code points present in an unescaped version of the literal string (one
+   * that would be returned by {@link #unescape}), assuming that all interpolated symbols consume
+   * one code point. Used for computing padding width.
+   *
+   * @param literalString The original string whose width will be estimated.
+   * @return The length of the unescaped string.
+   */
+  public static int unescapedLength(CharSequence literalString) {
+    if (literalString == null) return 0;
+    State state = State.BASE;
+    int offset = 0;
+    int length = 0;
+    for (; offset < literalString.length(); ) {
+      int cp = Character.codePointAt(literalString, offset);
+
+      switch (state) {
+        case BASE:
+          if (cp == '\'') {
+            // First quote
+            state = State.FIRST_QUOTE;
+          } else {
+            // Unquoted symbol
+            length++;
+          }
+          break;
+        case FIRST_QUOTE:
+          if (cp == '\'') {
+            // Repeated quote
+            length++;
+            state = State.BASE;
+          } else {
+            // Quoted code point
+            length++;
+            state = State.INSIDE_QUOTE;
+          }
+          break;
+        case INSIDE_QUOTE:
+          if (cp == '\'') {
+            // End of quoted sequence
+            state = State.AFTER_QUOTE;
+          } else {
+            // Quoted code point
+            length++;
+          }
+          break;
+        case AFTER_QUOTE:
+          if (cp == '\'') {
+            // Double quote inside of quoted sequence
+            length++;
+            state = State.INSIDE_QUOTE;
+          } else {
+            // Unquoted symbol
+            length++;
+          }
+          break;
+        default:
+          throw new AssertionError();
+      }
+
+      offset += Character.charCount(cp);
+    }
+
+    // Fail silently if string is malformed.
+    return length;
+  }
+
+  /**
    * Executes the unescape state machine. Replaces the unquoted characters "-", "%", and "‰" with
    * their localized equivalents. Replaces "¤", "¤¤", and "¤¤¤" with the three argument strings.
    *
@@ -73,7 +140,7 @@ public class LiteralString {
    * @param currency1 The string to replace "¤".
    * @param currency2 The string to replace "¤¤".
    * @param currency3 The string to replace "¤¤¤".
-   * @param minusSign The string to replace "-".  If null, symbols.getMinusSignString() is used.
+   * @param minusSign The string to replace "-". If null, symbols.getMinusSignString() is used.
    * @param sb1 The {@link NumberStringBuilder} to which the result will be appended.
    * @throws ParseException
    */

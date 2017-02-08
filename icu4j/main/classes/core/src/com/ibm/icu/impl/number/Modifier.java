@@ -41,6 +41,15 @@ public interface Modifier {
   public int length();
 
   /**
+   * Whether this modifier is strong. If a modifier is strong, it should always be applied
+   * immediately and not allowed to bubble up. With regard to padding, strong modifiers are
+   * considered to be on the inside of the prefix and suffix.
+   *
+   * @return Whether the modifier is strong.
+   */
+  public boolean isStrong();
+
+  /**
    * An interface for a modifier that contains both a positive and a negative form. Note that a
    * class implementing {@link PositiveNegativeModifier} is not necessarily a {@link Modifier}
    * itself. Rather, it returns a {@link Modifier} when {@link #getModifier} is called.

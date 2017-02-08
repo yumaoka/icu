@@ -148,7 +148,7 @@ public class CurrencyPluralInfo implements Cloneable, Serializable {
     }
 
     /**
-     * Set plural rules.  These are initially set in the constructor based on the locale, 
+     * Set plural rules.  These are initially set in the constructor based on the locale,
      * and usually do not need to be changed.
      *
      * @param ruleDescription new plural rule description
@@ -192,6 +192,7 @@ public class CurrencyPluralInfo implements Cloneable, Serializable {
      *
      * @stable ICU 4.2
      */
+    @Override
     public Object clone() {
         try {
             CurrencyPluralInfo other = (CurrencyPluralInfo) super.clone();
@@ -217,6 +218,7 @@ public class CurrencyPluralInfo implements Cloneable, Serializable {
      *
      * @stable ICU 4.2
      */
+    @Override
     public boolean equals(Object a) {
         if (a instanceof CurrencyPluralInfo) {
             CurrencyPluralInfo other = (CurrencyPluralInfo)a;
@@ -225,17 +227,19 @@ public class CurrencyPluralInfo implements Cloneable, Serializable {
         }
         return false;
     }
-    
+
     /**
-     * Mock implementation of hashCode(). This implementation always returns a constant
-     * value. When Java assertion is enabled, this method triggers an assertion failure.
+     * Override hashCode
+     *
      * @internal
      * @deprecated This API is ICU internal only.
      */
+    @Override
     @Deprecated
     public int hashCode() {
-        assert false : "hashCode not designed";
-        return 42;
+      return pluralCountToCurrencyUnitPattern.hashCode()
+          ^ pluralRules.hashCode()
+          ^ ulocale.hashCode();
     }
 
     /**
@@ -277,7 +281,7 @@ public class CurrencyPluralInfo implements Cloneable, Serializable {
 
     private void setupCurrencyPluralPattern(ULocale uloc) {
         pluralCountToCurrencyUnitPattern = new HashMap<String, String>();
-        
+
         String numberStylePattern = NumberFormat.getPattern(uloc, NumberFormat.NUMBERSTYLE);
         // Split the number style pattern into pos and neg if applicable
         int separatorIndex = numberStylePattern.indexOf(";");
@@ -290,7 +294,7 @@ public class CurrencyPluralInfo implements Cloneable, Serializable {
         for (Map.Entry<String, String> e : map.entrySet()) {
             String pluralCount = e.getKey();
             String pattern = e.getValue();
-            
+
             // replace {0} with numberStylePattern
             // and {1} with triple currency sign
             String patternWithNumber = pattern.replace("{0}", numberStylePattern);

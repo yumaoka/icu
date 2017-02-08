@@ -24,14 +24,17 @@ public class ConstantMultiFieldModifier extends Modifier.BaseModifier implements
   private final Field[] suffixFields;
   private final String prefix;
   private final String suffix;
+  private final boolean strong;
 
-  public ConstantMultiFieldModifier(NumberStringBuilder prefix, NumberStringBuilder suffix) {
+  public ConstantMultiFieldModifier(
+      NumberStringBuilder prefix, NumberStringBuilder suffix, boolean strong) {
     prefixChars = prefix.toCharArray();
     suffixChars = suffix.toCharArray();
     prefixFields = prefix.toFieldArray();
     suffixFields = suffix.toFieldArray();
     this.prefix = new String(prefixChars);
     this.suffix = new String(suffixChars);
+    this.strong = strong;
   }
 
   private ConstantMultiFieldModifier() {
@@ -41,6 +44,7 @@ public class ConstantMultiFieldModifier extends Modifier.BaseModifier implements
     suffixFields = new Field[0];
     prefix = "";
     suffix = "";
+    strong = false;
   }
 
   public boolean contentEquals(NumberStringBuilder prefix, NumberStringBuilder suffix) {
@@ -59,6 +63,11 @@ public class ConstantMultiFieldModifier extends Modifier.BaseModifier implements
   @Override
   public int length() {
     return prefixChars.length + suffixChars.length;
+  }
+
+  @Override
+  public boolean isStrong() {
+    return strong;
   }
 
   @Override

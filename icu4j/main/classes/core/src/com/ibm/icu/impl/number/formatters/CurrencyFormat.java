@@ -180,7 +180,7 @@ public class CurrencyFormat {
     }
 
     // Get the long name
-    return currency.getName(symbols.getULocale(), Currency.PLURAL_LONG_NAME, plural.name(), null);
+    return currency.getName(symbols.getULocale(), Currency.PLURAL_LONG_NAME, plural.getKeyword(), null);
   }
 
   public static Format.BeforeFormat getCurrencyModifier(

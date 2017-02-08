@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 import java.text.ParseException;
 
 import com.ibm.icu.impl.number.formatters.PaddingFormat.PaddingLocation;
+import com.ibm.icu.text.DecimalFormatSymbols;
 
 /**
  * Handles parsing and creation of the compact pattern string representation of a decimal format.
@@ -26,10 +27,10 @@ public class PatternString {
   }
 
   /**
-   * Parses a pattern string into an existing property bag. All properties that can be encoded
-   * into a pattern string will be overwritten with either their default value or with the
-   * value coming from the pattern string. Properties that cannot be encoded into a pattern
-   * string, such as rounding mode, are not modified.
+   * Parses a pattern string into an existing property bag. All properties that can be encoded into
+   * a pattern string will be overwritten with either their default value or with the value coming
+   * from the pattern string. Properties that cannot be encoded into a pattern string, such as
+   * rounding mode, are not modified.
    *
    * @param pattern The pattern string, like "#,##0.00"
    * @param properties The property bag object to overwrite.
@@ -177,18 +178,23 @@ public class PatternString {
         sb.insert(afterPrefixPos, '#');
         beforeSuffixPos++;
       }
+      int addedLength;
       switch (paddingLocation) {
         case BEFORE_PREFIX:
-          escape(paddingString, sb, 0);
+          addedLength = escape(paddingString, sb, 0);
           sb.insert(0, '*');
+          afterPrefixPos += addedLength + 1;
+          beforeSuffixPos += addedLength + 1;
           break;
         case AFTER_PREFIX:
-          escape(paddingString, sb, afterPrefixPos);
+          addedLength = escape(paddingString, sb, afterPrefixPos);
           sb.insert(afterPrefixPos, '*');
+          afterPrefixPos += addedLength + 1;
+          beforeSuffixPos += addedLength + 1;
           break;
         case BEFORE_SUFFIX:
           escape(paddingString, sb, beforeSuffixPos);
-          sb.insert(0, '*');
+          sb.insert(beforeSuffixPos, '*');
           break;
         case AFTER_SUFFIX:
           sb.append('*');
@@ -202,7 +208,9 @@ public class PatternString {
       sb.append(';');
       if (npp != null) sb.append(npp);
       escape(np, sb);
-      sb.append('#');
+      // Copy the positive digit format into the negative.
+      // This is optional; the pattern is the same as if '#' were appended here instead.
+      sb.append(sb, afterPrefixPos, beforeSuffixPos);
       if (nsp != null) sb.append(nsp);
       escape(ns, sb);
     }
@@ -210,10 +218,12 @@ public class PatternString {
     return sb.toString();
   }
 
-  private static void escape(CharSequence input, StringBuilder sb) {
-    if (input == null) return;
+  /** @return The number of chars inserted. */
+  private static int escape(CharSequence input, StringBuilder sb) {
+    if (input == null) return 0;
     int length = input.length();
-    if (length == 0) return;
+    if (length == 0) return 0;
+    int startLength = sb.length();
     if (length > 1) sb.append('\'');
     for (int i = 0; i < length; i++) {
       char ch = input.charAt(i);
@@ -224,14 +234,81 @@ public class PatternString {
       }
     }
     if (length > 1) sb.append('\'');
+    return sb.length() - startLength;
   }
 
-  private static void escape(CharSequence input, StringBuilder sb, int insertIndex) {
+  /** @return The number of chars inserted. */
+  private static int escape(CharSequence input, StringBuilder sb, int insertIndex) {
     // Although this triggers a new object creation, it reduces the number of calls to insert (and
     // therefore System.arraycopy).
     StringBuilder temp = new StringBuilder();
-    escape(input, temp);
+    int length = escape(input, temp);
     sb.insert(insertIndex, temp);
+    return length;
+  }
+
+  /**
+   * Converts a pattern between standard notation and localized notation. Localized notation means
+   * that instead of using generic placeholders in the pattern, you use the corresponding
+   * locale-specific characters instead.
+   *
+   * @param input The pattern to convert.
+   * @param symbols The symbols corresponding to the localized pattern.
+   * @param toLocalized true to convert from standard to localized notation; false to convert from
+   *     localized to standard notation.
+   * @return The pattern expressed in the other notation.
+   * @deprecated ICU 59 This method is provided for backwards compatibility and should not be used
+   *     in any new code.
+   */
+  @Deprecated
+  public static String convertLocalized(
+      CharSequence input, DecimalFormatSymbols symbols, boolean toLocalized) {
+    if (input == null) return null;
+
+    // Construct a table of code points to be converted between localized and standard.
+    int[][] table = new int[6][2];
+    int standIdx = toLocalized ? 0 : 1;
+    int localIdx = toLocalized ? 1 : 0;
+    table[0][standIdx] = '%';
+    table[0][localIdx] = Character.codePointAt(symbols.getPercentString(), 0);
+    table[1][standIdx] = '‰';
+    table[1][localIdx] = Character.codePointAt(symbols.getPerMillString(), 0);
+    table[2][standIdx] = '.';
+    table[2][localIdx] = Character.codePointAt(symbols.getDecimalSeparatorString(), 0);
+    table[3][standIdx] = ',';
+    table[3][localIdx] = Character.codePointAt(symbols.getGroupingSeparatorString(), 0);
+    table[4][standIdx] = '-';
+    table[4][localIdx] = Character.codePointAt(symbols.getMinusSignString(), 0);
+    table[5][standIdx] = '+';
+    table[5][localIdx] = Character.codePointAt(symbols.getPlusSignString(), 0);
+
+    // Iterate through the string and convert
+    int offset = 0;
+    boolean insideQuote = false;
+    StringBuilder result = new StringBuilder();
+    for (; offset < input.length(); ) {
+      int cp = Character.codePointAt(input, offset);
+      int cpToAppend = cp;
+      if (insideQuote) {
+        if (cp == '\'') {
+          insideQuote = false;
+        }
+      } else {
+        if (cp == '\'') {
+          insideQuote = true;
+        } else {
+          for (int i = 0; i < table.length; i++) {
+            if (table[i][0] == cp) {
+              cpToAppend = table[i][1];
+              break;
+            }
+          }
+        }
+      }
+      result.appendCodePoint(cpToAppend);
+      offset += Character.charCount(cp);
+    }
+    return result.toString();
   }
 
   /** Implements a recursive descent parser for decimal format patterns. */
@@ -283,9 +360,10 @@ public class PatternString {
           properties.setMaximumSignificantDigits(Properties.DEFAULT_MAXIMUM_SIGNIFICANT_DIGITS);
         }
 
-        // If the pattern starts with '.' or if it doesn't have '.', minInt can be zero.
-        // Otherwise, for backwards compatibility, maxInt needs to be at least 1.
-        if (!positive.hasDecimal || (positive.hasDecimal && positive.totalIntegerDigits == 0)) {
+        // If the pattern starts with '.' or if it doesn't have '.' (and isn't sigdigit notation),
+        // then minInt can be zero. Otherwise, minInt needs to be at least 1.
+        if ((!positive.hasDecimal && positive.minimumSignificantDigits == 0)
+            || (positive.hasDecimal && positive.totalIntegerDigits == 0)) {
           properties.setMinimumIntegerDigits(positive.minimumIntegerDigits);
         } else {
           properties.setMinimumIntegerDigits(Math.max(1, positive.minimumIntegerDigits));
@@ -302,7 +380,13 @@ public class PatternString {
         if (positive.exponentDigits > 0) {
           properties.setExponentShowPlusSign(positive.exponentShowPlusSign);
           properties.setExponentDigits(positive.exponentDigits);
-          properties.setMaximumIntegerDigits(positive.totalIntegerDigits);
+          if (positive.minimumSignificantDigits == 0) {
+            // patterns without '@' can define max integer digits, used for engineering notation
+            properties.setMaximumIntegerDigits(positive.totalIntegerDigits);
+          } else {
+            // patterns with '@' cannot define max integer digits
+            properties.setMaximumIntegerDigits(Properties.DEFAULT_MAXIMUM_INTEGER_DIGITS);
+          }
         } else {
           properties.setExponentShowPlusSign(Properties.DEFAULT_EXPONENT_SHOW_PLUS_SIGN);
           properties.setExponentDigits(Properties.DEFAULT_EXPONENT_DIGITS);
@@ -312,7 +396,10 @@ public class PatternString {
         // Padding settings
         if (positive.padding.length() > 0) {
           // The width of the positive prefix and suffix templates are included in the padding
-          int paddingWidth = positive.paddingWidth + positive.prefix.length() + positive.suffix.length();
+          int paddingWidth =
+              positive.paddingWidth
+                  + LiteralString.unescapedLength(positive.prefix)
+                  + LiteralString.unescapedLength(positive.suffix);
           properties.setPaddingWidth(paddingWidth);
           properties.setPaddingString(positive.padding.toString());
           assert positive.paddingLocation != null;
@@ -445,6 +532,7 @@ public class PatternString {
     }
 
     static void parse(String pattern, Properties properties) throws ParseException {
+      if (pattern.isEmpty()) return;
       // TODO: Use whitespace characters from PatternProps
       ParserState state = new ParserState(pattern);
       PatternParseResult result = new PatternParseResult();
@@ -606,7 +694,7 @@ public class PatternString {
           case '7':
           case '8':
           case '9':
-            // TODO: Crash here if we've seen the significant digit marker?
+            // TODO: Crash here if we've seen the significant digit marker? See NumberFormatTestCases.txt
             result.paddingWidth += 1;
             result.groupingSizes[0] += 1;
             result.totalIntegerDigits += 1;
@@ -662,13 +750,16 @@ public class PatternString {
         return;
       }
       state.next(); // consume the E
+      result.paddingWidth++;
       if (state.peek() == '+') {
         state.next(); // consume the +
         result.exponentShowPlusSign = true;
+        result.paddingWidth++;
       }
       while (state.peek() == '0') {
         state.next(); // consume the 0
         result.exponentDigits += 1;
+        result.paddingWidth++;
       }
     }
   }

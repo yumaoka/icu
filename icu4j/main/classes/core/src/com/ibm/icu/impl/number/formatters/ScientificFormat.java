@@ -8,8 +8,8 @@ import com.ibm.icu.impl.number.FormatQuantity2;
 import com.ibm.icu.impl.number.ModifierHolder;
 import com.ibm.icu.impl.number.Properties;
 import com.ibm.icu.impl.number.Rounder;
-import com.ibm.icu.impl.number.modifiers.PositiveNegativeAffixModifier;
 import com.ibm.icu.impl.number.modifiers.ConstantAffixModifier;
+import com.ibm.icu.impl.number.modifiers.PositiveNegativeAffixModifier;
 import com.ibm.icu.text.DecimalFormatSymbols;
 import com.ibm.icu.text.NumberFormat.Field;
 
@@ -129,25 +129,24 @@ public class ScientificFormat extends Format.BeforeFormat implements Rounder.Mul
     digitStrings = symbols.getDigitStrings(); // makes a copy
 
     separatorMod =
-        new ConstantAffixModifier("", symbols.getExponentSeparator(), Field.EXPONENT_SYMBOL);
+        new ConstantAffixModifier("", symbols.getExponentSeparator(), Field.EXPONENT_SYMBOL, true);
     signMod =
         new PositiveNegativeAffixModifier(
             new ConstantAffixModifier(
-                "", exponentShowPlusSign ? symbols.getPlusSignString() : "", Field.EXPONENT_SIGN),
-            new ConstantAffixModifier("", symbols.getMinusSignString(), Field.EXPONENT_SIGN));
+                "", exponentShowPlusSign ? symbols.getPlusSignString() : "", Field.EXPONENT_SIGN, true),
+            new ConstantAffixModifier("", symbols.getMinusSignString(), Field.EXPONENT_SIGN, true));
   }
 
   @Override
   public void before(FormatQuantity input, ModifierHolder mods) {
-    int exponent = -rounder.chooseMultiplierAndApply(input, this);
+    int exponent;
     // Special case for zero handling
     if (input.isZero()) {
       exponent = 0;
+      rounder.apply(input);
+    } else {
+      exponent = -rounder.chooseMultiplierAndApply(input, this);
     }
-
-    // Add modifiers for the exponent separator and exponent sign
-    mods.add(separatorMod);
-    mods.add(signMod.getModifier(exponent < 0));
 
     // Format the exponent part of the scientific format.
     // Insert digits starting from the left so that append can be used.
@@ -157,7 +156,11 @@ public class ScientificFormat extends Format.BeforeFormat implements Rounder.Mul
     for (int i = exponentQ.integerCount() - 1; i >= 0; i--) {
       exponentSB.append(digitStrings[exponentQ.getIntegerDigit(i)]);
     }
-    mods.add(new ConstantAffixModifier("", exponentSB.toString(), Field.EXPONENT));
+
+    // Add modifiers from the outside in.
+    mods.add(new ConstantAffixModifier("", exponentSB.toString(), Field.EXPONENT, true));
+    mods.add(signMod.getModifier(exponent < 0));
+    mods.add(separatorMod);
   }
 
   @Override

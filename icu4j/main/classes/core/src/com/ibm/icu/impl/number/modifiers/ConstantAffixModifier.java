@@ -14,6 +14,7 @@ public class ConstantAffixModifier extends Modifier.BaseModifier implements Affi
   private final String prefix;
   private final String suffix;
   private final Field field;
+  private final boolean strong;
 
   /**
    * Constructs an instance with the given strings.
@@ -24,13 +25,15 @@ public class ConstantAffixModifier extends Modifier.BaseModifier implements Affi
    * @param prefix The prefix string.
    * @param suffix The suffix string.
    * @param field The field type to be associated with this modifier. Can be null.
+   * @param strong Whether this modifier should be strongly applied.
    * @see Field
    */
-  public ConstantAffixModifier(String prefix, String suffix, Field field) {
+  public ConstantAffixModifier(String prefix, String suffix, Field field, boolean strong) {
     // Use an empty string instead of null if we are given null
     this.prefix = (prefix == null ? "" : prefix);
     this.suffix = (suffix == null ? "" : suffix);
     this.field = field;
+    this.strong = strong;
   }
 
   @Override
@@ -44,6 +47,11 @@ public class ConstantAffixModifier extends Modifier.BaseModifier implements Affi
   @Override
   public int length() {
     return prefix.length() + suffix.length();
+  }
+
+  @Override
+  public boolean isStrong() {
+    return strong;
   }
 
   @Override

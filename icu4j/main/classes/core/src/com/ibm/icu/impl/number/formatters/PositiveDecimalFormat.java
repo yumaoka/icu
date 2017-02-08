@@ -177,9 +177,11 @@ public class PositiveDecimalFormat implements Format.TargetFormat {
     int integerCount = input.integerCount();
     for (int i = 0; i < integerCount; i++) {
       // Add grouping separator
-      if (i == groupingSize && integerCount - i >= minimumGroupingDigits) {
+      if (groupingSize > 0 && i == groupingSize && integerCount - i >= minimumGroupingDigits) {
         length += string.insert(startIndex, groupingSeparator, Field.GROUPING_SEPARATOR);
-      } else if (i > groupingSize && (i - groupingSize) % secondaryGroupingSize == 0) {
+      } else if (secondaryGroupingSize > 0
+          && i > groupingSize
+          && (i - groupingSize) % secondaryGroupingSize == 0) {
         length += string.insert(startIndex, groupingSeparator, Field.GROUPING_SEPARATOR);
       }
 

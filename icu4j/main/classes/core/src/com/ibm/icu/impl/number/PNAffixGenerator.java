@@ -231,7 +231,7 @@ public class PNAffixGenerator {
         && resultInstance.positive.contentEquals(prefix, suffix)) {
       // Use the cached modifier
     } else {
-      resultInstance.positive = new ConstantMultiFieldModifier(prefix, suffix);
+      resultInstance.positive = new ConstantMultiFieldModifier(prefix, suffix, false);
     }
   }
 
@@ -250,7 +250,7 @@ public class PNAffixGenerator {
         && resultInstance.negative.contentEquals(prefix, suffix)) {
       // Use the cached modifier
     } else {
-      resultInstance.negative = new ConstantMultiFieldModifier(prefix, suffix);
+      resultInstance.negative = new ConstantMultiFieldModifier(prefix, suffix, false);
     }
   }
 

@@ -69,7 +69,7 @@ pattern	format	output	breaks
 #.#	0	0
 .#	514.23	514.2
 .#	0.23	.2
-.#	0	.0	S
+.#	0	.0
 #.	514.23	514.
 #.	0.23	0.
 #.	0	0.
@@ -335,7 +335,7 @@ set pattern #,##0.###
 begin
 format	maxIntegerDigits	output	breaks
 123	1	3	
-0	0	0
+0	0	.0	CJK
 // S treats negative max integer digits as zero.
 // Zero (line above) is special-cased, but when maxInt is zero,
 // S respects the request and prints an empty string.
@@ -352,10 +352,7 @@ begin
 pattern	output	breaks
 #.#	0
 #.	0.
-// S prints "0" because it interprets the pattern to simply mean that minimum
-// integer digits is zero, but maximum integer digits is not bounded.  Is that
-// the correct interpretation?
-.#	.0	S
+.#	.0
 #	0
 00.000E00	00.000E00
 0.####E0	0E0
@@ -601,7 +598,7 @@ pp#,000	pp#,000
 #,#00.025	#,#00.025
 // No secondary grouping in JDK
 #,##,###.02500	#,##,###.02500	KS
-pp#,000;(#)	pp#,000;(#,000)	KS
+pp#,000;(#)	pp#,000;(#,000)	K
 **####,##,##0.0##;(#)	**#,##,##,##0.0##;**(##,##,##0.0##)	KS
 // No significant digits in JDK
 @@###	@@###	K
@@ -769,9 +766,8 @@ begin
 parse	output	breaks
 35	35
 // S accepts leading plus signs
-+35	fail	S
++35	35	CJK
 -35	-35
-// S sees the '.' as a grouping separator
 2.63	2
 -39.99	-39
 
@@ -887,7 +883,7 @@ set pattern 0.00 \u00a4\u00a4;(#) \u00a4\u00a4
 set locale en_GB
 begin
 parse	output	outputCurrency	breaks
-53.45	53.45	GBP	J
+53.45	fail	GBP
 £53.45	53.45	GBP
 $53.45	fail	USD
 53.45 USD	53.45	USD
@@ -907,8 +903,7 @@ USD(7.92)	-7.92	USD	CJ
 (8) USD	-8	USD
 -8 USD	-8	USD	CJ
 67 USD	67	USD
-// S stops parsing at the $ and returns GBP, the default
-53.45$	53.45	USD	CJS
+53.45$	fail	USD
 US Dollars 53.45	53.45	USD	J
 53.45 US Dollars	53.45	USD
 US Dollar 53.45	53.45	USD	J
@@ -935,7 +930,7 @@ set pattern 0.00 \u00a4\u00a4;-# \u00a4\u00a4
 set locale en_GB
 begin
 parse	output	outputCurrency	breaks
-53.45	53.45	GBP	J
+53.45	fail	GBP
 £53.45	53.45	GBP
 $53.45	fail	USD
 53.45 USD	53.45	USD
@@ -951,8 +946,7 @@ USD -7.926	-7.926	USD	CJ
 USD-7.92	-7.92	USD	CJ
 -8 USD	-8	USD
 67 USD	67	USD
-// S stops parsing at the $ and returns GBP, the default
-53.45$	53.45	USD	CJS
+53.45$	fail	USD
 US Dollars 53.45	53.45	USD	J
 53.45 US Dollars	53.45	USD
 US Dollar 53.45	53.45	USD	J
@@ -969,7 +963,8 @@ set pattern 0.00 \u00a4\u00a4\u00a4;(#) \u00a4\u00a4\u00a4
 set locale en_GB
 begin
 parse	output	outputCurrency	breaks
-53.45	53.45	GBP	J
+// J throws a NullPointerException on the first case
+53.45	fail	GBP	J
 £53.45	53.45	GBP
 $53.45	fail	USD
 53.45 USD	53.45	USD
@@ -989,8 +984,8 @@ USD(7.92)	-7.92	USD	CJ
 (8) USD	-8	USD
 -8 USD	-8	USD	CJ
 67 USD	67	USD
-// S stops parsing at the $ and returns GBP, the default
-53.45$	53.45	USD	CJS
+// J throws a NullPointerException on the next case
+53.45$	fail	USD	J
 US Dollars 53.45	53.45	USD	J
 53.45 US Dollars	53.45	USD
 US Dollar 53.45	53.45	USD	J
@@ -1007,7 +1002,7 @@ set pattern 0.00 \u00a4;(#) \u00a4
 set locale en_GB
 begin
 parse	output	outputCurrency	breaks
-53.45	53.45	GBP	J
+53.45	fail	GBP
 £53.45	53.45	GBP
 $53.45	fail	USD
 53.45 USD	53.45	USD
@@ -1027,8 +1022,7 @@ USD(7.92)	-7.92	USD	CJ
 (8) USD	-8	USD
 -8 USD	-8	USD	CJ
 67 USD	67	USD
-// S stops parsing at the $ and returns GBP, the default
-53.45$	53.45	USD	CJS
+53.45$	fail	USD
 US Dollars 53.45	53.45	USD	J
 53.45 US Dollars	53.45	USD
 US Dollar 53.45	53.45	USD	J
@@ -1045,7 +1039,7 @@ set pattern \u00a40.00;(\u00a4#)
 set locale en_GB
 begin
 parse	output	outputCurrency	breaks
-53.45	53.45	GBP	J
+53.45	fail	GBP
 £53.45	53.45	GBP
 $53.45	fail	USD
 53.45 USD	53.45	USD	CJ
@@ -1065,8 +1059,7 @@ USD(7.92)	-7.92	USD	CJ
 (8) USD	-8	USD	CJ
 -8 USD	-8	USD	CJ
 67 USD	67	USD	CJ
-// S stops parsing at the $ and returns GBP, the default
-53.45$	53.45	USD	CJS
+53.45$	fail	USD
 US Dollars 53.45	53.45	USD	J
 53.45 US Dollars	53.45	USD
 US Dollar 53.45	53.45	USD	J
