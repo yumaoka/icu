@@ -77,6 +77,14 @@ pattern	format	output	breaks
 .	0.23	0.
 .	0	0.
 
+// Not in official spec, but needed for backwards compatibility
+test patterns with leading grouping separator
+set locale en_US
+begin
+pattern	format	output	breaks
+,##0	1234.56	1,235
+'#',##	3456	#34,56
+
 test int64
 set locale en
 begin
@@ -777,7 +785,7 @@ set locale en
 begin
 parseNoExponent	parse	output	breaks
 // JDK doesn't allow lowercase exponent but ICU4J and ICU4C do.
-0	5e2	500	KS
+0	5e2	500	K
 0	5.3E2	530
 // See ticket 11725
 1	5e2	5	J
@@ -1195,4 +1203,28 @@ set maxFractionDigits 0
 begin
 format	output	breaks
 -0.99	-0	JK
+
+test parse case sensitive
+set locale en
+set lenient 1
+set pattern Aa#
+begin
+parse	parseCaseSensitive	output	breaks
+Aa1.23	1	1.23
+Aa1.23	0	1.23
+AA1.23	1	fail
+// J and K do not support case-insensitive parsing for prefix/suffix.
+// J supports it for the exponent separator, but not K.
+AA1.23	0	1.23	JK
+aa1.23	1	fail
+aa1.23	0	1.23	JK
+Aa1.23E3	1	1230
+Aa1.23E3	0	1230
+Aa1.23e3	1	1.23	J
+Aa1.23e3	0	1230	K
+NaN	1	NaN	K
+NaN	0	NaN	K
+nan	1	fail
+nan	0	NaN	JK
+
 

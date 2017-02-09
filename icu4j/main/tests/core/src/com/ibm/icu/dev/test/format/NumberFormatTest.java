@@ -76,7 +76,7 @@ public class NumberFormatTest extends TestFmwk {
                 public Character Id() { return 'J'; }
 
                 @Override
-                public String format(NumberFormatTestData tuple) {
+                public String format(DataDrivenNumberFormatTestData tuple) {
                     DecimalFormat_ICU58 fmt = createDecimalFormat(tuple);
                     String actual = fmt.format(toNumber(tuple.format));
                     String expected = tuple.output;
@@ -87,7 +87,7 @@ public class NumberFormatTest extends TestFmwk {
                 }
 
                 @Override
-                public String toPattern(NumberFormatTestData tuple) {
+                public String toPattern(DataDrivenNumberFormatTestData tuple) {
                     DecimalFormat_ICU58 fmt = createDecimalFormat(tuple);
                     StringBuilder result = new StringBuilder();
                     if (tuple.toPattern != null) {
@@ -108,7 +108,7 @@ public class NumberFormatTest extends TestFmwk {
                 }
 
                 @Override
-                public String parse(NumberFormatTestData tuple) {
+                public String parse(DataDrivenNumberFormatTestData tuple) {
                     DecimalFormat_ICU58 fmt = createDecimalFormat(tuple);
                     ParsePosition ppos = new ParsePosition(0);
                     Number actual = fmt.parse(tuple.parse, ppos);
@@ -123,14 +123,16 @@ public class NumberFormatTest extends TestFmwk {
                     }
                     Number expected = toNumber(tuple.output);
                     // number types cannot be compared, this is the best we can do.
-                    if (expected.doubleValue() != (actual.doubleValue())) {
+                    if (expected.doubleValue() != actual.doubleValue()
+                            && !Double.isNaN(expected.doubleValue())
+                            && !Double.isNaN(expected.doubleValue())) {
                         return "Expected: " + expected + ", got: " + actual;
                     }
                     return null;
                 }
 
                 @Override
-                public String parseCurrency(NumberFormatTestData tuple) {
+                public String parseCurrency(DataDrivenNumberFormatTestData tuple) {
                     DecimalFormat_ICU58 fmt = createDecimalFormat(tuple);
                     ParsePosition ppos = new ParsePosition(0);
                     CurrencyAmount currAmt = fmt.parseCurrency(tuple.parse, ppos);
@@ -146,7 +148,9 @@ public class NumberFormatTest extends TestFmwk {
                     Number expected = toNumber(tuple.output);
                     Number actual = currAmt.getNumber();
                     // number types cannot be compared, this is the best we can do.
-                    if (expected.doubleValue() != (actual.doubleValue())) {
+                    if (expected.doubleValue() != actual.doubleValue()
+                            && !Double.isNaN(expected.doubleValue())
+                            && !Double.isNaN(expected.doubleValue())) {
                         return "Expected: " + expected + ", got: " + actual;
                     }
 
@@ -160,7 +164,7 @@ public class NumberFormatTest extends TestFmwk {
                  * @param tuple
                  * @return
                  */
-                private DecimalFormat_ICU58 createDecimalFormat(NumberFormatTestData tuple) {
+                private DecimalFormat_ICU58 createDecimalFormat(DataDrivenNumberFormatTestData tuple) {
 
                     DecimalFormat_ICU58 fmt = new DecimalFormat_ICU58(
                             tuple.pattern == null ? "0" : tuple.pattern,
@@ -172,7 +176,7 @@ public class NumberFormatTest extends TestFmwk {
                  * @param tuple
                  * @param fmt
                  */
-                private void adjustDecimalFormat(NumberFormatTestData tuple, DecimalFormat_ICU58 fmt) {
+                private void adjustDecimalFormat(DataDrivenNumberFormatTestData tuple, DecimalFormat_ICU58 fmt) {
                     if (tuple.minIntegerDigits != null) {
                         fmt.setMinimumIntegerDigits(tuple.minIntegerDigits);
                     }
@@ -265,6 +269,9 @@ public class NumberFormatTest extends TestFmwk {
                     if (tuple.parseIntegerOnly != null) {
                         fmt.setParseIntegerOnly(tuple.parseIntegerOnly != 0);
                     }
+                    if (tuple.parseCaseSensitive != null) {
+                        // Not supported.
+                    }
                     if (tuple.decimalPatternMatchRequired != null) {
                         fmt.setDecimalPatternMatchRequired(tuple.decimalPatternMatchRequired != 0);
                     }
@@ -281,7 +288,7 @@ public class NumberFormatTest extends TestFmwk {
                 public Character Id() { return 'K'; }
 
                 @Override
-                public String format(NumberFormatTestData tuple) {
+                public String format(DataDrivenNumberFormatTestData tuple) {
                     java.text.DecimalFormat fmt = createDecimalFormat(tuple);
                     String actual = fmt.format(toNumber(tuple.format));
                     String expected = tuple.output;
@@ -292,7 +299,7 @@ public class NumberFormatTest extends TestFmwk {
                 }
 
                 @Override
-                public String toPattern(NumberFormatTestData tuple) {
+                public String toPattern(DataDrivenNumberFormatTestData tuple) {
                     java.text.DecimalFormat fmt = createDecimalFormat(tuple);
                     StringBuilder result = new StringBuilder();
                     if (tuple.toPattern != null) {
@@ -313,7 +320,7 @@ public class NumberFormatTest extends TestFmwk {
                 }
 
                 @Override
-                public String parse(NumberFormatTestData tuple) {
+                public String parse(DataDrivenNumberFormatTestData tuple) {
                     java.text.DecimalFormat fmt = createDecimalFormat(tuple);
                     ParsePosition ppos = new ParsePosition(0);
                     Number actual = fmt.parse(tuple.parse, ppos);
@@ -328,7 +335,9 @@ public class NumberFormatTest extends TestFmwk {
                     }
                     Number expected = toNumber(tuple.output);
                     // number types cannot be compared, this is the best we can do.
-                    if (expected.doubleValue() != actual.doubleValue()) {
+                    if (expected.doubleValue() != actual.doubleValue()
+                            && !Double.isNaN(expected.doubleValue())
+                            && !Double.isNaN(expected.doubleValue())) {
                         return "Expected: " + expected + ", got: " + actual;
                     }
                     return null;
@@ -340,7 +349,7 @@ public class NumberFormatTest extends TestFmwk {
                  * @param tuple
                  * @return
                  */
-                private java.text.DecimalFormat createDecimalFormat(NumberFormatTestData tuple) {
+                private java.text.DecimalFormat createDecimalFormat(DataDrivenNumberFormatTestData tuple) {
                     java.text.DecimalFormat fmt = new java.text.DecimalFormat(
                             tuple.pattern == null ? "0" : tuple.pattern,
                             new java.text.DecimalFormatSymbols(
@@ -353,7 +362,7 @@ public class NumberFormatTest extends TestFmwk {
                  * @param tuple
                  * @param fmt
                  */
-                private void adjustDecimalFormat(NumberFormatTestData tuple, java.text.DecimalFormat fmt) {
+                private void adjustDecimalFormat(DataDrivenNumberFormatTestData tuple, java.text.DecimalFormat fmt) {
                     if (tuple.minIntegerDigits != null) {
                         fmt.setMinimumIntegerDigits(tuple.minIntegerDigits);
                     }
@@ -443,6 +452,9 @@ public class NumberFormatTest extends TestFmwk {
                     // lenient parsing not supported by JDK
                     if (tuple.parseIntegerOnly != null) {
                         fmt.setParseIntegerOnly(tuple.parseIntegerOnly != 0);
+                    }
+                    if (tuple.parseCaseSensitive != null) {
+                        // Not supported.
                     }
                     if (tuple.decimalPatternMatchRequired != null) {
                        // Oops, not supported
@@ -612,7 +624,7 @@ public class NumberFormatTest extends TestFmwk {
         DecimalFormatSymbols sym = new DecimalFormatSymbols(Locale.US);
         final String pat[]    = { "#.#", "#.", ".#", "#" };
         int pat_length = pat.length;
-        final String newpat[] = { "#0.#", "#0.", "#.0", "#" };
+        final String newpat[] = { "0.#", "0.", "#.#", "#" };
         final String num[]    = { "0",   "0.", ".0", "0" };
         for (int i=0; i<pat_length; ++i)
         {
@@ -1201,7 +1213,7 @@ public class NumberFormatTest extends TestFmwk {
         final ParseCurrencyItem[] parseCurrencyItems = {
                 new ParseCurrencyItem( "en_US", "dollars2", "$2.00",            5,  2,  5,  2,  "USD" ),
                 new ParseCurrencyItem( "en_US", "dollars4", "$4",               2,  4,  2,  4,  "USD" ),
-                new ParseCurrencyItem( "en_US", "dollars9", "9\u00A0$",         0,  0,  0,  0,  ""    ),
+                new ParseCurrencyItem( "en_US", "dollars9", "9\u00A0$",         3,  9,  3,  9,  "USD" ),
                 new ParseCurrencyItem( "en_US", "pounds3",  "\u00A33.00",       0,  0,  5,  3,  "GBP" ),
                 new ParseCurrencyItem( "en_US", "pounds5",  "\u00A35",          0,  0,  2,  5,  "GBP" ),
                 new ParseCurrencyItem( "en_US", "pounds7",  "7\u00A0\u00A3",    0,  0,  0,  0,  ""    ),
@@ -1750,9 +1762,12 @@ public class NumberFormatTest extends TestFmwk {
         //              12  3456789012345
         expectPat(fmt, "AA*^####,##0.00ZZ"); // This is the interesting case
 
+        // The new implementation produces "AA*^#####,##0.00ZZ", which is functionally equivalent
+        // to what the old implementation produced, "AA*^#,###,##0.00ZZ"
         fmt.setFormatWidth(16);
         //              12  34567890123456
-        expectPat(fmt, "AA*^#,###,##0.00ZZ");
+        //expectPat(fmt, "AA*^#,###,##0.00ZZ");
+        expectPat(fmt, "AA*^#####,##0.00ZZ");
     }
 
     @Test
@@ -4501,7 +4516,7 @@ public class NumberFormatTest extends TestFmwk {
 
     @Test
     public void TestNumberFormatTestDataToString() {
-        new NumberFormatTestData().toString();
+        new DataDrivenNumberFormatTestData().toString();
     }
 
    // Testing for Issue 11805.

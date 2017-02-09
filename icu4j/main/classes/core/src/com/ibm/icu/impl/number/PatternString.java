@@ -435,7 +435,7 @@ public class PatternString {
     }
 
     private static class SubpatternParseResult {
-      int[] groupingSizes = new int[] {-1, -1, -1};
+      int[] groupingSizes = new int[] {0, -1, -1};
       int minimumIntegerDigits = 0;
       int totalIntegerDigits = 0;
       int minimumFractionDigits = 0;
@@ -589,6 +589,7 @@ public class PatternString {
           case ';':
           case '*':
           case '.':
+          case ',':
           case '0':
           case '1':
           case '2':

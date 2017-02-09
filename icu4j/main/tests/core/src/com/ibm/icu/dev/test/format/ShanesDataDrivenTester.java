@@ -43,14 +43,14 @@ public class ShanesDataDrivenTester extends CodeUnderTest {
    * @param tuple contains the parameters of the format test.
    */
   @Override
-  public String format(NumberFormatTestData tuple) {
+  public String format(DataDrivenNumberFormatTestData tuple) {
     String pattern = (tuple.pattern == null) ? "0" : tuple.pattern;
     ULocale locale = (tuple.locale == null) ? ULocale.ENGLISH : tuple.locale;
     Format fmt;
     try {
       Properties properties = PatternString.parseToProperties(pattern);
       propertiesFromTuple(tuple, properties);
-//      System.out.println(properties);
+      //      System.out.println(properties);
       fmt = Endpoint.fromBTA(properties, locale);
     } catch (ParseException e) {
       e.printStackTrace();
@@ -94,13 +94,13 @@ public class ShanesDataDrivenTester extends CodeUnderTest {
    * @param tuple contains the parameters of the format test.
    */
   @Override
-  public String toPattern(NumberFormatTestData tuple) {
+  public String toPattern(DataDrivenNumberFormatTestData tuple) {
     String pattern = (tuple.pattern == null) ? "0" : tuple.pattern;
     Properties properties;
     try {
       properties = PatternString.parseToProperties(pattern);
       propertiesFromTuple(tuple, properties);
-//      System.out.println(properties);
+      //      System.out.println(properties);
     } catch (ParseException e) {
       e.printStackTrace();
       return e.getLocalizedMessage();
@@ -130,7 +130,7 @@ public class ShanesDataDrivenTester extends CodeUnderTest {
    * @param tuple contains the parameters of the format test.
    */
   @Override
-  public String parse(NumberFormatTestData tuple) {
+  public String parse(DataDrivenNumberFormatTestData tuple) {
     String pattern = (tuple.pattern == null) ? "0" : tuple.pattern;
     Properties properties;
     ParsePosition ppos = new ParsePosition(0);
@@ -154,9 +154,12 @@ public class ShanesDataDrivenTester extends CodeUnderTest {
     if (tuple.output.equals("fail")) {
       return "Parse succeeded: " + actual + ", but was expected to fail.";
     }
-    BigDecimal expected = new BigDecimal(tuple.output);
-    if (expected.compareTo(new BigDecimal(actual.toString())) != 0) {
-      return "Expected: " + expected + ", got: " + actual;
+    if (tuple.output.equals("NaN")) {
+      if (!Double.isNaN(actual.doubleValue())) {
+        return "Expected NaN, but got: " + actual;
+      }
+    } else if (new BigDecimal(tuple.output).compareTo(new BigDecimal(actual.toString())) != 0) {
+      return "Expected: " + tuple.output + ", got: " + actual;
     }
     return null;
   }
@@ -168,39 +171,39 @@ public class ShanesDataDrivenTester extends CodeUnderTest {
    * @param tuple contains the parameters of the format test.
    */
   @Override
-  public String parseCurrency(NumberFormatTestData tuple) {
-      String pattern = (tuple.pattern == null) ? "0" : tuple.pattern;
-      Properties properties;
-      ParsePosition ppos = new ParsePosition(0);
-      CurrencyAmount actual;
-      try {
-        properties = PatternString.parseToProperties(pattern);
-        propertiesFromTuple(tuple, properties);
-        actual =
-            Parse.parseCurrency(
-                tuple.parse, ppos, properties, DecimalFormatSymbols.getInstance(tuple.locale));
-      } catch (ParseException e) {
-        e.printStackTrace();
-        return "parse exception: " + e.getMessage();
-      }
-      if (ppos.getIndex() == 0 || actual.getCurrency().getCurrencyCode().equals("XXX")) {
-        if (!tuple.output.equals("fail")) {
-          return "Parse failed; got " + actual + ", but expected " + tuple.output;
-        }
-        return null;
-      }
-      if (tuple.output.equals("fail")) {
-        return "Parse succeeded: " + actual + ", but was expected to fail.";
-      }
-      BigDecimal expectedNumber = new BigDecimal(tuple.output);
-      if (expectedNumber.compareTo(new BigDecimal(actual.getNumber().toString())) != 0) {
-        return "Wrong number: Expected: " + expectedNumber + ", got: " + actual;
-      }
-      String expectedCurrency = tuple.outputCurrency;
-      if (!expectedCurrency.equals(actual.getCurrency().toString())) {
-          return "Wrong currency: Expected: " + expectedCurrency + ", got: " + actual;
+  public String parseCurrency(DataDrivenNumberFormatTestData tuple) {
+    String pattern = (tuple.pattern == null) ? "0" : tuple.pattern;
+    Properties properties;
+    ParsePosition ppos = new ParsePosition(0);
+    CurrencyAmount actual;
+    try {
+      properties = PatternString.parseToProperties(pattern);
+      propertiesFromTuple(tuple, properties);
+      actual =
+          Parse.parseCurrency(
+              tuple.parse, ppos, properties, DecimalFormatSymbols.getInstance(tuple.locale));
+    } catch (ParseException e) {
+      e.printStackTrace();
+      return "parse exception: " + e.getMessage();
+    }
+    if (ppos.getIndex() == 0 || actual.getCurrency().getCurrencyCode().equals("XXX")) {
+      if (!tuple.output.equals("fail")) {
+        return "Parse failed; got " + actual + ", but expected " + tuple.output;
       }
       return null;
+    }
+    if (tuple.output.equals("fail")) {
+      return "Parse succeeded: " + actual + ", but was expected to fail.";
+    }
+    BigDecimal expectedNumber = new BigDecimal(tuple.output);
+    if (expectedNumber.compareTo(new BigDecimal(actual.getNumber().toString())) != 0) {
+      return "Wrong number: Expected: " + expectedNumber + ", got: " + actual;
+    }
+    String expectedCurrency = tuple.outputCurrency;
+    if (!expectedCurrency.equals(actual.getCurrency().toString())) {
+      return "Wrong currency: Expected: " + expectedCurrency + ", got: " + actual;
+    }
+    return null;
   }
 
   /**
@@ -210,11 +213,11 @@ public class ShanesDataDrivenTester extends CodeUnderTest {
    * @param tuple contains the parameters of the format test.
    */
   @Override
-  public String select(NumberFormatTestData tuple) {
+  public String select(DataDrivenNumberFormatTestData tuple) {
     return null;
   }
 
-  private static void propertiesFromTuple(NumberFormatTestData tuple, Properties properties) {
+  private static void propertiesFromTuple(DataDrivenNumberFormatTestData tuple, Properties properties) {
     if (tuple.minIntegerDigits != null) {
       properties.setMinimumIntegerDigits(tuple.minIntegerDigits);
     }
@@ -305,6 +308,9 @@ public class ShanesDataDrivenTester extends CodeUnderTest {
     }
     if (tuple.parseIntegerOnly != null) {
       properties.setParseIntegerOnly(tuple.parseIntegerOnly != 0);
+    }
+    if (tuple.parseCaseSensitive != null) {
+      properties.setParseCaseSensitive(tuple.parseCaseSensitive != 0);
     }
     if (tuple.decimalPatternMatchRequired != null) {
       properties.setDecimalPatternMatchRequired(tuple.decimalPatternMatchRequired != 0);

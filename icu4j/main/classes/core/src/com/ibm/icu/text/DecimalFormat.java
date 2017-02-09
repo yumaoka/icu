@@ -421,7 +421,11 @@ public class DecimalFormat extends NumberFormat {
 
   /** @stable ICU 2.0 */
   public synchronized void setScientificNotation(boolean useScientific) {
-    properties.setExponentDigits(1);
+    if (useScientific) {
+      properties.setExponentDigits(1);
+    } else {
+      properties.setExponentDigits(0);
+    }
     refreshFormatter();
   }
 
@@ -614,8 +618,14 @@ public class DecimalFormat extends NumberFormat {
 
   /** @stable ICU 3.0 */
   public synchronized void setSignificantDigitsUsed(boolean useSignificantDigits) {
-    // TODO(sffc): is this the correct behavior?
-    properties.setMaximumSignificantDigits(3);
+    if (useSignificantDigits) {
+      // These are the default values from the old implementation.
+      properties.setMinimumSignificantDigits(1);
+      properties.setMaximumSignificantDigits(6);
+    } else {
+      properties.setMinimumSignificantDigits(Properties.DEFAULT_MINIMUM_SIGNIFICANT_DIGITS);
+      properties.setMaximumSignificantDigits(Properties.DEFAULT_MAXIMUM_SIGNIFICANT_DIGITS);
+    }
     refreshFormatter();
   }
 
@@ -656,14 +666,13 @@ public class DecimalFormat extends NumberFormat {
 
   /** @stable ICU 3.6 */
   public synchronized void setParseBigDecimal(boolean value) {
-    // TODO(sffc)
-    throw new UnsupportedOperationException();
+    properties.setParseToBigDecimal(value);
+    // refreshFormatter() not needed
   }
 
   /** @stable ICU 3.6 */
   public synchronized boolean isParseBigDecimal() {
-    // TODO(sffc)
-    throw new UnsupportedOperationException();
+    return properties.getParseToBigDecimal();
   }
 
   /**
@@ -688,6 +697,7 @@ public class DecimalFormat extends NumberFormat {
   public synchronized void setParseStrict(boolean parseStrict) {
     Parse.ParseMode mode = parseStrict ? Parse.ParseMode.STRICT : Parse.ParseMode.LENIENT;
     properties.setParseMode(mode);
+    // refreshFormatter() not needed
   }
 
   @Override

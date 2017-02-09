@@ -117,22 +117,53 @@ public class Parse {
      */
     public IProperties setParseMode(ParseMode parseMode);
 
-//    boolean DEFAULT_PARSE_CURRENCY = false;
-//
-//    /** @see #setParseCurrency */
-//    public boolean getParseCurrency();
-//
-//    /**
-//     * Whether to parse currency codes and currency names in the string.
-//     *
-//     * <p>Due to the large number of possible currencies, enabling this option may impact the
-//     * runtime of the parse operation.
-//     *
-//     * @param parseCurrency true to parse arbitrary currency codes and currency names; false to
-//     *     disable. (Default is false)
-//     * @return The property bag, for chaining.
-//     */
-//    public IProperties setParseCurrency(boolean parseCurrency);
+    //    boolean DEFAULT_PARSE_CURRENCY = false;
+    //
+    //    /** @see #setParseCurrency */
+    //    public boolean getParseCurrency();
+    //
+    //    /**
+    //     * Whether to parse currency codes and currency names in the string.
+    //     *
+    //     * <p>Due to the large number of possible currencies, enabling this option may impact the
+    //     * runtime of the parse operation.
+    //     *
+    //     * @param parseCurrency true to parse arbitrary currency codes and currency names; false to
+    //     *     disable. (Default is false)
+    //     * @return The property bag, for chaining.
+    //     */
+    //    public IProperties setParseCurrency(boolean parseCurrency);
+
+    boolean DEFAULT_PARSE_TO_BIG_DECIMAL = false;
+
+    /** @see #setParseToBigDecimal */
+    public boolean getParseToBigDecimal();
+
+    /**
+     * Whether to always return a BigDecimal from {@link Parse#parse} and all other parse methods.
+     * By default, a Long or a BigInteger are returned when possible.
+     *
+     * @param parseToBigDecimal true to always return a BigDecimal; false to return a Long or a
+     *     BigInteger when possible.
+     * @return The property bag, for chaining.
+     */
+    public IProperties setParseToBigDecimal(boolean parseToBigDecimal);
+
+    boolean DEFAULT_PARSE_CASE_SENSITIVE = false;
+
+    /** @see #setParseCaseSensitive */
+    public boolean getParseCaseSensitive();
+
+    /**
+     * Whether to require cases to match when parsing strings; default is false. Case sensitivity
+     * applies to prefixes, suffixes, the exponent separator, the symbol "NaN", and the infinity
+     * symbol. Grouping separators, decimal separators, and padding are always case-sensitive.
+     * Currencies are always case-insensitive.
+     *
+     * @param parseCaseSensitive true to be case-sensitive when parsing; false to allow any case.
+     * @return The property bag, for chaining.
+     */
+    public IProperties setParseCaseSensitive(boolean parseCaseSensitive);
   }
 
   /**
@@ -166,7 +197,9 @@ public class Parse {
     NEG_PREFIX,
     POS_SUFFIX,
     NEG_SUFFIX,
-    EXPONENT_SEPARATOR
+    EXPONENT_SEPARATOR,
+    NAN,
+    INFINITY
   }
 
   /** @see #acceptString */
@@ -228,7 +261,9 @@ public class Parse {
     boolean sawNegative;
     boolean sawNegativeExponent;
     boolean sawDecimal;
-    boolean seenCurrency;
+    boolean sawCurrency;
+    boolean sawNaN;
+    boolean sawInfinity;
     AffixStatus positiveAffixStatus;
     AffixStatus negativeAffixStatus;
     StringType stringType;
@@ -253,7 +288,9 @@ public class Parse {
       sawNegative = false;
       sawNegativeExponent = false;
       sawDecimal = false;
-      seenCurrency = false;
+      sawCurrency = false;
+      sawNaN = false;
+      sawInfinity = false;
       positiveAffixStatus = AffixStatus.NOT_SEEN;
       negativeAffixStatus = AffixStatus.NOT_SEEN;
       stringType = null;
@@ -283,7 +320,9 @@ public class Parse {
       sawNegative = other.sawNegative;
       sawNegativeExponent = other.sawNegativeExponent;
       sawDecimal = other.sawDecimal;
-      seenCurrency = other.seenCurrency;
+      sawCurrency = other.sawCurrency;
+      sawNaN = other.sawNaN;
+      sawInfinity = other.sawInfinity;
       positiveAffixStatus = other.positiveAffixStatus;
       negativeAffixStatus = other.negativeAffixStatus;
       stringType = other.stringType;
@@ -314,20 +353,18 @@ public class Parse {
       }
     }
 
+    /** @return Whether or not this item contains a valid number. */
+    public boolean hasNumber() {
+      return precision > 0 || sawNaN || sawInfinity;
+    }
+
     /**
      * Converts the internal digits from this instance into a Number, preferring a Long, then a
-     * BigInteger, then a BigDecimal.
+     * BigInteger, then a BigDecimal. A Double is used for NaN, infinity, and -0.0.
      *
      * @return The Number. Never null.
      */
     Number toNumber(IProperties properties) {
-      // Multipliers must be applied in reverse.
-      BigDecimal multiplier = properties.getMultiplier();
-      if (properties.getMagnitudeMultiplier() != 0) {
-        if (multiplier == null) multiplier = BigDecimal.ONE;
-        multiplier = multiplier.scaleByPowerOfTen(properties.getMagnitudeMultiplier());
-      }
-
       // Remove trailing zeros
       int _precision = precision;
       int _scale = scale;
@@ -336,8 +373,31 @@ public class Parse {
         _scale++;
       }
 
+      // Check for NaN, infinity, and -0.0
+      if (sawNaN) {
+        return Double.NaN;
+      }
+      if (sawInfinity) {
+        if (sawNegative) {
+          return Double.NEGATIVE_INFINITY;
+        } else {
+          return Double.POSITIVE_INFINITY;
+        }
+      }
+      if (_precision == 0 && sawNegative) {
+        return -0.0;
+      }
+
+      // Multipliers must be applied in reverse.
+      BigDecimal multiplier = properties.getMultiplier();
+      if (properties.getMagnitudeMultiplier() != 0) {
+        if (multiplier == null) multiplier = BigDecimal.ONE;
+        multiplier = multiplier.scaleByPowerOfTen(properties.getMagnitudeMultiplier());
+      }
+
+      boolean forceBigDecimal = properties.getParseToBigDecimal();
       int delta = (sawNegativeExponent ? -1 : 1) * exponent;
-      if (_scale + delta >= 0 && _scale + delta + _precision <= 18) {
+      if (!forceBigDecimal && _scale + delta >= 0 && _scale + delta + _precision <= 18) {
         long result = 0;
         for (int i = 0; i < _precision; i++) {
           result = result * 10 + digits[i];
@@ -358,7 +418,7 @@ public class Parse {
         } else {
           return result;
         }
-      } else if (_scale + delta >= 0) {
+      } else if (!forceBigDecimal && _scale + delta >= 0) {
         BigInteger result = BigInteger.ZERO;
         for (int i = 0; i < _precision; i++) {
           result = result.multiply(BigInteger.TEN).add(BigInteger.valueOf(digits[i]));
@@ -433,6 +493,8 @@ public class Parse {
       sb.append(sawNegative ? 1 : 0);
       sb.append(sawNegativeExponent ? 1 : 0);
       sb.append(sawDecimal ? 1 : 0);
+      sb.append(sawNaN ? 1 : 0);
+      sb.append(sawInfinity ? 1 : 0);
       sb.append(" affixStatus:");
       sb.append(positiveAffixStatus.ordinal());
       sb.append(negativeAffixStatus.ordinal());
@@ -473,11 +535,14 @@ public class Parse {
     CharSequence np;
     CharSequence ps;
     CharSequence ns;
+    CharSequence nanString;
+    CharSequence infinityString;
     int[] digitCps = new int[10];
 
     ParseMode mode;
     boolean integerOnly;
     boolean ignoreExponent;
+    boolean caseSensitive;
     boolean parseCurrency;
 
     ParserState() {
@@ -506,10 +571,13 @@ public class Parse {
       np = null;
       ps = null;
       ns = null;
+      nanString = null;
+      infinityString = null;
       Arrays.fill(digitCps, -1);
       mode = null;
       integerOnly = false;
       ignoreExponent = false;
+      caseSensitive = false;
       parseCurrency = false;
       return this;
     }
@@ -683,6 +751,8 @@ public class Parse {
     state.ps = affixResult.positive.getSuffix();
     state.ns = affixResult.negative.getSuffix();
     state.exponentSeparator = symbols.getExponentSeparator();
+    state.nanString = symbols.getNaN();
+    state.infinityString = symbols.getInfinity();
     // TODO: Discuss how to handle custom currency symbols.
     //    state.currencySymbol = symbols.getCurrencySymbol();
     //    state.currencyCode = symbols.getInternationalCurrencySymbol();
@@ -693,6 +763,7 @@ public class Parse {
     }
     state.integerOnly = properties.getParseIntegerOnly();
     state.ignoreExponent = properties.getParseIgnoreExponent();
+    state.caseSensitive = properties.getParseCaseSensitive();
     state.parseCurrency = parseCurrency;
     ParserStateItem initialHolder = state.getNext().clear();
     initialHolder.name = StateName.BEFORE_PREFIX;
@@ -721,6 +792,8 @@ public class Parse {
             acceptPadding(cp, StateName.BEFORE_PREFIX, state, item);
             acceptString(cp, StringType.POS_PREFIX, state, item);
             acceptString(cp, StringType.NEG_PREFIX, state, item);
+            acceptString(cp, StringType.NAN, state, item);
+            acceptString(cp, StringType.INFINITY, state, item);
             acceptMinusSign(cp, DigitType.INTEGER, state, item);
             acceptDigit(cp, DigitType.INTEGER, state, item);
             if (!state.integerOnly) {
@@ -742,6 +815,8 @@ public class Parse {
               acceptWhitespace(cp, StateName.AFTER_PREFIX, state, item);
             }
             acceptPadding(cp, StateName.AFTER_PREFIX, state, item);
+            acceptString(cp, StringType.NAN, state, item);
+            acceptString(cp, StringType.INFINITY, state, item);
             acceptDigit(cp, DigitType.INTEGER, state, item);
             if (!state.integerOnly) {
               acceptDecimalPoint(cp, state, item);
@@ -871,12 +946,12 @@ public class Parse {
       offset += Character.charCount(cp);
     }
 
-    if (DEBUGGING) {
-      System.out.println("- - - - - - - - - -");
-    }
-
     // Post-processing
     if (state.length == 0) {
+      if (DEBUGGING) {
+        System.out.println("No matches found");
+        System.out.println("- - - - - - - - - -");
+      }
       return null;
     } else {
       // Loop through the candidates.  "continue" skips a candidate as invalid.
@@ -884,8 +959,12 @@ public class Parse {
       for (int i = 0; i < state.length; i++) {
         ParserStateItem item = state.items[i];
 
+        if (DEBUGGING) {
+          System.out.println(":end " + item);
+        }
+
         // Check that at least one digit was read.
-        if (item.precision == 0) continue;
+        if (!item.hasNumber()) continue;
 
         if (state.mode == ParseMode.STRICT) {
           // Perform extra checks for strict mode.  We require that the affixes match.
@@ -910,7 +989,7 @@ public class Parse {
         }
 
         // When parsing currencies, require that a currency symbol was found.
-        if (parseCurrency && !item.seenCurrency) {
+        if (parseCurrency && !item.sawCurrency) {
           continue;
         }
 
@@ -921,6 +1000,10 @@ public class Parse {
         } else if (item.score > best.score) {
           best = item;
         }
+      }
+
+      if (DEBUGGING) {
+        System.out.println("- - - - - - - - - -");
       }
 
       if (best != null) {
@@ -1021,16 +1104,33 @@ public class Parse {
         str = state.exponentSeparator;
         doneName = StateName.AFTER_EXPONENT_SEPARATOR;
         break;
+      case NAN:
+        str = state.nanString;
+        doneName = StateName.BEFORE_SUFFIX;
+        break;
+      case INFINITY:
+        str = state.infinityString;
+        doneName = StateName.BEFORE_SUFFIX;
+        break;
     }
     if (str == null || str.length() == 0) return;
 
-    if (cp == Character.codePointAt(str, 0)) {
+    // Case-map the character if not in case-sensitive mode
+    int referenceCp = Character.codePointAt(str, 0);
+    if (!state.caseSensitive) {
+      cp = UCharacter.foldCase(cp, true);
+      referenceCp = UCharacter.foldCase(referenceCp, true);
+    }
+
+    if (cp == referenceCp) {
       // Matches first character of prefix/suffix
 
       ParserStateItem next = state.getNext().copyFrom(item);
 
       if (type == StringType.NEG_PREFIX) next.sawNegative = true;
       if (type == StringType.NEG_SUFFIX) next.sawNegative = true;
+      if (type == StringType.NAN) next.sawNaN = true;
+      if (type == StringType.INFINITY) next.sawInfinity = true;
 
       // Mark if we have seen a positive or negative prefix/suffix (needed for strict mode)
       if (type == StringType.POS_PREFIX) next.positiveAffixStatus = AffixStatus.SAW_PREFIX;
@@ -1096,10 +1196,25 @@ public class Parse {
         str = state.exponentSeparator;
         doneName = StateName.AFTER_EXPONENT_SEPARATOR;
         break;
+      case NAN:
+        str = state.nanString;
+        doneName = StateName.BEFORE_SUFFIX;
+        break;
+      case INFINITY:
+        str = state.infinityString;
+        doneName = StateName.BEFORE_SUFFIX;
+        break;
     }
     if (charSeqEmpty(str)) return;
 
-    if (cp == Character.codePointAt(str, item.offset)) {
+    // Case-map the character if not in case-sensitive mode
+    int referenceCp = Character.codePointAt(str, item.offset);
+    if (!state.caseSensitive) {
+      cp = UCharacter.foldCase(cp, true);
+      referenceCp = UCharacter.foldCase(referenceCp, true);
+    }
+
+    if (cp == referenceCp) {
       // Matches current character of prefix/suffix.
       // State item to return to normal parsing.
       // This intentionally allows for partial string prefixes.
@@ -1135,7 +1250,7 @@ public class Parse {
    */
   private static void acceptCurrency(
       int cp, StateName nextName, ParserState state, ParserStateItem item) {
-    if (item.seenCurrency) return;
+    if (item.sawCurrency) return;
     acceptCurrencyHelper(
         Currency.openParseState(state.uLocale, cp, Currency.LONG_NAME), cp, nextName, state, item);
     acceptCurrencyHelper(
@@ -1159,7 +1274,7 @@ public class Parse {
       // TODO: What should happen with multiple currency matches?
       next.isoCode = trieState.getCurrentMatches().next().getISOCode();
       next.name = nextName;
-      next.seenCurrency = true;
+      next.sawCurrency = true;
     }
     if (!trieState.atEnd()) {
       // Prepare for matches on future code points
@@ -1187,7 +1302,7 @@ public class Parse {
       // TODO: What should happen with multiple currency matches?
       next.isoCode = item.trieState.getCurrentMatches().next().getISOCode();
       next.name = item.returnTo;
-      next.seenCurrency = true;
+      next.sawCurrency = true;
     }
     if (!item.trieState.atEnd()) {
       state.getNext().copyFrom(item);

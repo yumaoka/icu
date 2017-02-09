@@ -6,6 +6,7 @@ import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
+import com.ibm.icu.impl.number.Parse.IProperties;
 import com.ibm.icu.impl.number.Parse.ParseMode;
 import com.ibm.icu.impl.number.formatters.BigDecimalMultiplier;
 import com.ibm.icu.impl.number.formatters.CompactDecimalFormat;
@@ -41,6 +42,18 @@ public class Properties
 
   private static final Properties DEFAULT = new Properties();
 
+  // TODO: Change all the CharSequence types to immutable Strings?
+  // This would also require either retiring CurrencyPluralInfo or copying it upon receipt.
+  // These two changes would make all fields in Properties immutable.
+
+  /*--------------------------------------------------------------------------------------------+/
+  /| IMPORTANT!                                                                                 |/
+  /| WHEN ADDING A NEW PROPERTY, ADD IT HERE, IN #clear(), IN #equals(), AND IN #hashCode().    |/
+  /|                                                                                            |/
+  /| The unit test PropertiesTest will catch if you forget to add it to #clear() or #equals(),  |/
+  /| but it will NOT catch if you forget to add it to #hashCode().                              |/
+  /+--------------------------------------------------------------------------------------------*/
+
   private boolean alwaysShowDecimal;
   private boolean alwaysShowPlusSign;
   private CompactStyle compactStyle;
@@ -71,9 +84,11 @@ public class Properties
   private CharSequence paddingString;
   private int paddingWidth;
   //  private boolean parseCurrency;
+  private boolean parseCaseSensitive;
   private boolean parseIgnoreExponent;
   private boolean parseIntegerOnly;
   private ParseMode parseMode;
+  private boolean parseToBigDecimal;
   private CharSequence positivePrefix;
   private CharSequence positivePrefixPattern;
   private CharSequence positiveSuffix;
@@ -117,9 +132,11 @@ public class Properties
     paddingString = DEFAULT_PADDING_STRING;
     paddingWidth = DEFAULT_PADDING_WIDTH;
     //    parseCurrency = DEFAULT_PARSE_CURRENCY;
+    parseCaseSensitive = DEFAULT_PARSE_CASE_SENSITIVE;
     parseIgnoreExponent = DEFAULT_PARSE_IGNORE_EXPONENT;
     parseIntegerOnly = DEFAULT_PARSE_INTEGER_ONLY;
     parseMode = DEFAULT_PARSE_MODE;
+    parseToBigDecimal = DEFAULT_PARSE_TO_BIG_DECIMAL;
     positivePrefix = DEFAULT_POSITIVE_PREFIX;
     positivePrefixPattern = DEFAULT_POSITIVE_PREFIX_PATTERN;
     positiveSuffix = DEFAULT_POSITIVE_SUFFIX;
@@ -162,9 +179,11 @@ public class Properties
     eq = eq && _equalsHelper(paddingString, other.paddingString);
     eq = eq && _equalsHelper(paddingWidth, other.paddingWidth);
     //    eq = eq && _equalsHelper(parseCurrency, other.parseCurrency);
+    eq = eq && _equalsHelper(parseCaseSensitive, other.parseCaseSensitive);
     eq = eq && _equalsHelper(parseIgnoreExponent, other.parseIgnoreExponent);
     eq = eq && _equalsHelper(parseIntegerOnly, other.parseIntegerOnly);
     eq = eq && _equalsHelper(parseMode, other.parseMode);
+    eq = eq && _equalsHelper(parseToBigDecimal, other.parseToBigDecimal);
     eq = eq && _equalsHelper(positivePrefix, other.positivePrefix);
     eq = eq && _equalsHelper(positivePrefixPattern, other.positivePrefixPattern);
     eq = eq && _equalsHelper(positiveSuffix, other.positiveSuffix);
@@ -235,9 +254,11 @@ public class Properties
     hashCode ^= _hashCodeHelper(paddingString);
     hashCode ^= _hashCodeHelper(paddingWidth);
     //    hashCode ^= _hashCodeHelper(parseCurrency);
+    hashCode ^= _hashCodeHelper(parseCaseSensitive);
     hashCode ^= _hashCodeHelper(parseIgnoreExponent);
     hashCode ^= _hashCodeHelper(parseIntegerOnly);
     hashCode ^= _hashCodeHelper(parseMode);
+    hashCode ^= _hashCodeHelper(parseToBigDecimal);
     hashCode ^= _hashCodeHelper(positivePrefix);
     hashCode ^= _hashCodeHelper(positivePrefixPattern);
     hashCode ^= _hashCodeHelper(positiveSuffix);
@@ -777,5 +798,27 @@ public class Properties
     }
     result.append(">");
     return result.toString();
+  }
+
+  @Override
+  public boolean getParseToBigDecimal() {
+    return parseToBigDecimal;
+  }
+
+  @Override
+  public Properties setParseToBigDecimal(boolean parseToBigDecimal) {
+    this.parseToBigDecimal = parseToBigDecimal;
+    return this;
+  }
+
+  @Override
+  public boolean getParseCaseSensitive() {
+    return parseCaseSensitive;
+  }
+
+  @Override
+  public IProperties setParseCaseSensitive(boolean parseCaseSensitive) {
+    this.parseCaseSensitive = parseCaseSensitive;
+    return this;
   }
 }

@@ -214,10 +214,7 @@ public class FormatQuantity2 implements FormatQuantity {
   public void roundToInterval(BigDecimal roundingInterval, RoundingMode roundingMode) {
     // TODO: Avoid converting back and forth to BigDecimal.
     BigDecimal temp = bcdToBigDecimal();
-    temp = temp.setScale(8, roundingMode).divide(roundingInterval, roundingMode);
-    temp = temp.setScale(0, roundingMode);
-    temp = temp.multiply(roundingInterval);
-    flags = 0;
+    temp = temp.divide(roundingInterval, 0, roundingMode).multiply(roundingInterval);
     readBigDecimalToBcd(temp);
   }
 
@@ -340,7 +337,7 @@ public class FormatQuantity2 implements FormatQuantity {
       case w:
         return fractionCountWithoutTrailingZeros();
       default:
-        return bcdToDouble();
+        return Math.abs(bcdToDouble());
     }
   }
 
@@ -553,7 +550,8 @@ public class FormatQuantity2 implements FormatQuantity {
    * @param n The value to consume.
    */
   private void readDoubleToBcd(double n) {
-    if (n < 0) {
+    if (Double.compare(n, 0.0) < 0) {
+      // Double.compare() handles +0.0 vs -0.0
       flags |= NEGATIVE_FLAG;
       n = -n;
     }

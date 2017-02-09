@@ -9,7 +9,9 @@
 package com.ibm.icu.dev.test.format;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,7 +46,7 @@ public class DataDrivenNumberFormatTestUtility {
          *  Subclasses should override.
          *  @param tuple contains the parameters of the format test.
          */
-        public String format(NumberFormatTestData tuple) {
+        public String format(DataDrivenNumberFormatTestData tuple) {
             return null;
         }
 
@@ -54,7 +56,7 @@ public class DataDrivenNumberFormatTestUtility {
          *  Subclasses should override.
          *  @param tuple contains the parameters of the format test.
          */
-        public String toPattern(NumberFormatTestData tuple) {
+        public String toPattern(DataDrivenNumberFormatTestData tuple) {
             return null;
         }
 
@@ -64,7 +66,7 @@ public class DataDrivenNumberFormatTestUtility {
          *  Subclasses should override.
          *  @param tuple contains the parameters of the format test.
          */
-        public String parse(NumberFormatTestData tuple) {
+        public String parse(DataDrivenNumberFormatTestData tuple) {
             return null;
         }
 
@@ -74,7 +76,7 @@ public class DataDrivenNumberFormatTestUtility {
          *  Subclasses should override.
          *  @param tuple contains the parameters of the format test.
          */
-        public String parseCurrency(NumberFormatTestData tuple) {
+        public String parseCurrency(DataDrivenNumberFormatTestData tuple) {
             return null;
         }
 
@@ -84,7 +86,7 @@ public class DataDrivenNumberFormatTestUtility {
          *  Subclasses should override.
          * @param tuple contains the parameters of the format test.
          */
-        public String select(NumberFormatTestData tuple) {
+        public String select(DataDrivenNumberFormatTestData tuple) {
             return null;
         }
     }
@@ -98,7 +100,7 @@ public class DataDrivenNumberFormatTestUtility {
     private String fileLine = null;
     private int fileLineNumber = 0;
     private String fileTestName = "";
-    private NumberFormatTestData tuple = new NumberFormatTestData();
+    private DataDrivenNumberFormatTestData tuple = new DataDrivenNumberFormatTestData();
 
     /**
      * Runs all the tests in the data driven test suite against codeUnderTest.
@@ -167,7 +169,7 @@ public class DataDrivenNumberFormatTestUtility {
                 if (state == 0) {
                     if (fileLine.startsWith("test ")) {
                         fileTestName = fileLine;
-                        tuple = new NumberFormatTestData();
+                        tuple = new DataDrivenNumberFormatTestData();
                     } else if (fileLine.startsWith("set ")) {
                         if (!setTupleField()) {
                             return;
@@ -209,9 +211,14 @@ public class DataDrivenNumberFormatTestUtility {
                         if (breaks(codeUnderTestId) && errorMessage == null) {
                             showError("Expected failure, but passed");
                         } else if (!breaks(codeUnderTestId) && errorMessage != null) {
-                            showError(errorMessage);
                             if (err != null) {
-                                err.printStackTrace();
+                                ByteArrayOutputStream os = new ByteArrayOutputStream();
+                                PrintStream ps = new PrintStream(os);
+                                err.printStackTrace(ps);
+                                String stackTrace = os.toString();
+                                showError(errorMessage + "     Stack trace: " + stackTrace.substring(0, 500));
+                            } else {
+                                showError(errorMessage);
                             }
                         }
                     }
@@ -314,7 +321,7 @@ public class DataDrivenNumberFormatTestUtility {
         return true;
     }
 
-    private String isPass(NumberFormatTestData tuple) {
+    private String isPass(DataDrivenNumberFormatTestData tuple) {
         StringBuilder result = new StringBuilder();
         if (tuple.format != null && tuple.output != null) {
             String errorMessage = codeUnderTest.format(tuple);
