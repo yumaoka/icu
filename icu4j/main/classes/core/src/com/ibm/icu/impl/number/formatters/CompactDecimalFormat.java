@@ -2,7 +2,6 @@
 // License & terms of use: http://www.unicode.org/copyright.html#License
 package com.ibm.icu.impl.number.formatters;
 
-import java.math.RoundingMode;
 import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
@@ -19,6 +18,7 @@ import com.ibm.icu.impl.number.PNAffixGenerator;
 import com.ibm.icu.impl.number.PatternString;
 import com.ibm.icu.impl.number.Properties;
 import com.ibm.icu.impl.number.Rounder;
+import com.ibm.icu.impl.number.rounders.SignificantDigitsRounder;
 import com.ibm.icu.text.CompactDecimalFormat.CompactStyle;
 import com.ibm.icu.text.DecimalFormatSymbols;
 import com.ibm.icu.text.NumberingSystem;
@@ -28,7 +28,7 @@ import com.ibm.icu.util.UResourceBundle;
 
 public class CompactDecimalFormat extends Format.BeforeFormat {
   public static interface IProperties
-      extends Rounder.IProperties, CurrencyFormat.ICurrencyProperties {
+      extends RoundingFormat.IProperties, CurrencyFormat.ICurrencyProperties {
 
     static CompactStyle DEFAULT_COMPACT_STYLE = null;
 
@@ -70,9 +70,14 @@ public class CompactDecimalFormat extends Format.BeforeFormat {
 
   private static Rounder getRounder(IProperties properties) {
     // Use rounding settings if they were specified, or else use the default CDF rounder.
-    Rounder rounder = Rounder.getDefaultRounderOrNull(properties);
+    Rounder rounder = RoundingFormat.getDefaultRounderOrNull(properties);
     if (rounder == null) {
-      rounder = ShanesCompactDecimalRounder.INSTANCE;
+      rounder =
+          SignificantDigitsRounder.getInstance(
+              SignificantDigitsRounder.getThreadLocalProperties()
+                  .setMinimumSignificantDigits(2)
+                  .setMaximumFractionDigits(1)
+                  .setSignificantDigitsOverride(false));
     }
     return rounder;
   }
@@ -149,45 +154,25 @@ public class CompactDecimalFormat extends Format.BeforeFormat {
       PluralRules rules,
       Rounder rounder,
       CompactDecimalData data) {
-    int multiplier = rounder.chooseMultiplierAndApply(input, data);
+
+    // Treat zero as if it had magnitude 0
+    int magnitude;
+    if (input.isZero()) {
+      magnitude = 0;
+      rounder.apply(input);
+    } else {
+      magnitude = input.getMagnitude();
+      rounder.chooseMultiplierAndApply(input, data);
+    }
+
     StandardPlural plural = input.getStandardPlural(rules);
     boolean isNegative = input.isNegative();
-    mods.add(data.getModifier(input.getMagnitude() - multiplier, plural, isNegative));
+    mods.add(data.getModifier(magnitude, plural, isNegative));
   }
 
   @Override
   public void export(Properties properties) {
     properties.setCompactStyle(style);
-  }
-
-  /**
-   * Rounds numbers less than 10 to 2 significant digits, and numbers greater than 10 to the closest
-   * integer value.
-   *
-   * <p>Note that the rounder class automatically handles the case of the magnitude changing upon a
-   * rounding operation.
-   */
-  static class ShanesCompactDecimalRounder extends Rounder {
-    static final ShanesCompactDecimalRounder INSTANCE = new ShanesCompactDecimalRounder();
-
-    private ShanesCompactDecimalRounder() {
-      super(RoundingMode.HALF_EVEN);
-    }
-
-    @Override
-    protected void round(FormatQuantity input) {
-      int magnitude = input.getMagnitude();
-      if (magnitude <= 0) {
-        input.roundToSignificantDigits(1, 2, roundingMode);
-      } else {
-        input.roundToMagnitude(0, roundingMode);
-      }
-    }
-
-    @Override
-    public void export(Properties properties) {
-      throw new UnsupportedOperationException();
-    }
   }
 
   static class CompactDecimalData implements Rounder.MultiplierGenerator {

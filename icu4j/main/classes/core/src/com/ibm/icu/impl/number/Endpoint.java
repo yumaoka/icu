@@ -18,6 +18,7 @@ import com.ibm.icu.impl.number.formatters.MeasureFormat;
 import com.ibm.icu.impl.number.formatters.PaddingFormat;
 import com.ibm.icu.impl.number.formatters.PositiveDecimalFormat;
 import com.ibm.icu.impl.number.formatters.PositiveNegativeAffixFormat;
+import com.ibm.icu.impl.number.formatters.RoundingFormat;
 import com.ibm.icu.impl.number.formatters.ScientificFormat;
 import com.ibm.icu.text.DecimalFormatSymbols;
 import com.ibm.icu.text.PluralRules;
@@ -121,7 +122,7 @@ public class Endpoint {
         format.addBeforeFormat(ScientificFormat.getInstance(symbols, properties));
       } else {
         format.addBeforeFormat(PositiveNegativeAffixFormat.getInstance(symbols, properties));
-        format.addBeforeFormat(Rounder.getDefaultRounder(properties));
+        format.addBeforeFormat(RoundingFormat.getDefaultRounder(properties));
       }
     }
     if (PaddingFormat.usePadding(properties)) {
@@ -131,7 +132,7 @@ public class Endpoint {
     if (canUseFastTrack) {
       return new Format.PositiveNegativeRounderTargetFormat(
           PositiveNegativeAffixFormat.getInstance(symbols, properties),
-          Rounder.getDefaultRounder(properties),
+          RoundingFormat.getDefaultRounder(properties),
           target);
     } else {
       return format;
@@ -205,7 +206,7 @@ public class Endpoint {
         ScientificFormat.getInstance(symbols, properties).before(input, mods, rules);
       } else {
         PositiveNegativeAffixFormat.apply(input, mods, symbols, properties);
-        Rounder.getDefaultRounder(properties).before(input, mods, rules);
+        RoundingFormat.getDefaultRounder(properties).before(input, mods, rules);
       }
     }
 

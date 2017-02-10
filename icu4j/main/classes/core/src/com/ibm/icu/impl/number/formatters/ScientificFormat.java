@@ -4,18 +4,20 @@ package com.ibm.icu.impl.number.formatters;
 
 import com.ibm.icu.impl.number.Format;
 import com.ibm.icu.impl.number.FormatQuantity;
-import com.ibm.icu.impl.number.FormatQuantity2;
+import com.ibm.icu.impl.number.FormatQuantitySelector;
 import com.ibm.icu.impl.number.ModifierHolder;
 import com.ibm.icu.impl.number.Properties;
 import com.ibm.icu.impl.number.Rounder;
 import com.ibm.icu.impl.number.modifiers.ConstantAffixModifier;
 import com.ibm.icu.impl.number.modifiers.PositiveNegativeAffixModifier;
+import com.ibm.icu.impl.number.rounders.IntervalRounder;
+import com.ibm.icu.impl.number.rounders.SignificantDigitsRounder;
 import com.ibm.icu.text.DecimalFormatSymbols;
 import com.ibm.icu.text.NumberFormat.Field;
 
 public class ScientificFormat extends Format.BeforeFormat implements Rounder.MultiplierGenerator {
 
-  public static interface IProperties extends Rounder.IProperties {
+  public static interface IProperties extends RoundingFormat.IProperties {
 
     static boolean DEFAULT_EXPONENT_SHOW_PLUS_SIGN = false;
 
@@ -32,7 +34,7 @@ public class ScientificFormat extends Format.BeforeFormat implements Rounder.Mul
      */
     public IProperties setExponentShowPlusSign(boolean exponentShowPlusSign);
 
-    static int DEFAULT_EXPONENT_DIGITS = 0;
+    static int DEFAULT_EXPONENT_DIGITS = -1;
 
     /** @see #setExponentDigits */
     public int getExponentDigits();
@@ -54,57 +56,60 @@ public class ScientificFormat extends Format.BeforeFormat implements Rounder.Mul
     return properties.getExponentDigits() != IProperties.DEFAULT_EXPONENT_DIGITS;
   }
 
+  private static final ThreadLocal<Properties> threadLocalProperties =
+      new ThreadLocal<Properties>() {
+        @Override
+        protected Properties initialValue() {
+          return new Properties();
+        }
+      };
+
   public static ScientificFormat getInstance(DecimalFormatSymbols symbols, IProperties properties) {
-    if (properties.getExponentDigits() <= 0) {
-      throw new IllegalArgumentException("Exponent digits must be greater than zero");
-    }
-
-    boolean exponentShowPlusSign = properties.getExponentShowPlusSign();
-    int expDigits = properties.getExponentDigits();
-    int minInt = properties.getMinimumIntegerDigits();
-    int maxInt = properties.getMaximumIntegerDigits();
-    int minFrac = properties.getMinimumFractionDigits();
-    int maxFrac = properties.getMaximumFractionDigits();
-    Rounder rounder;
-
-    // Special case
-    if (maxInt > 8) {
-      maxInt = minInt;
-    }
-
     // If significant digits or rounding interval are specified through normal means, we use those.
     // Otherwise, we use the special significant digit rules for scientific notation.
-    if (Rounder.useRoundingInterval(properties)) {
-      rounder = Rounder.IntervalRounder.getInstance(properties);
-    } else if (Rounder.useSignificantDigits(properties)) {
-      rounder = Rounder.SignificantDigitsRounder.getInstance(properties);
+    Rounder rounder;
+    if (IntervalRounder.useRoundingInterval(properties)) {
+      rounder = IntervalRounder.getInstance(properties);
+    } else if (SignificantDigitsRounder.useSignificantDigits(properties)) {
+      rounder = SignificantDigitsRounder.getInstance(properties);
     } else {
-      IProperties rprops = new Properties();
+
+      Properties rprops = threadLocalProperties.get().clear();
       rprops.setRoundingMode(properties.getRoundingMode());
+
+      int minInt = properties.getMinimumIntegerDigits();
+      int maxInt = properties.getMaximumIntegerDigits();
+      int minFrac = properties.getMinimumFractionDigits();
+      int maxFrac = properties.getMaximumFractionDigits();
+
+      if (minInt < 0) minInt = 0;
+      if (maxInt < minInt) maxInt = minInt;
+      if (minFrac < 0) minFrac = 0;
+      if (maxFrac < minFrac) maxFrac = minFrac;
+
       if (minInt == 0 && maxFrac == 0) {
         // Special case for the pattern "#E0" with no significant digits specified.
         rprops.setMinimumSignificantDigits(1);
         rprops.setMaximumSignificantDigits(Integer.MAX_VALUE);
       } else {
         rprops.setMinimumSignificantDigits(minInt + minFrac);
-        rprops.setMaximumSignificantDigits(
-            (maxFrac < Integer.MAX_VALUE) ? minInt + maxFrac : Integer.MAX_VALUE);
+        rprops.setMaximumSignificantDigits(minInt + maxFrac);
       }
       rprops.setMinimumIntegerDigits(maxInt == 0 ? 0 : Math.max(1, minInt + minFrac - maxFrac));
       rprops.setMaximumIntegerDigits(maxInt);
       rprops.setMinimumFractionDigits(Math.max(0, minFrac + minInt - maxInt));
       rprops.setMaximumFractionDigits(maxFrac);
-      rounder = Rounder.SignificantDigitsRounder.getInstance(rprops);
+      rounder = SignificantDigitsRounder.getInstance(rprops);
     }
 
-    return new ScientificFormat(symbols, exponentShowPlusSign, expDigits, minInt, maxInt, rounder);
+    return new ScientificFormat(symbols, properties, rounder);
   }
 
   // Properties
   private final boolean exponentShowPlusSign;
   private final int exponentDigits;
-  private final int minimumIntegerDigits;
-  private final int maximumIntegerDigits;
+  private final int minInt;
+  private final int maxInt;
   private final int interval;
   private final Rounder rounder;
   private final ConstantAffixModifier separatorMod;
@@ -113,18 +118,21 @@ public class ScientificFormat extends Format.BeforeFormat implements Rounder.Mul
   // Symbols
   private final String[] digitStrings;
 
-  public ScientificFormat(
+  private ScientificFormat(
       DecimalFormatSymbols symbols,
-      boolean exponentShowPlusSign,
-      int exponentDigits,
-      int minimumIntegerDigits,
-      int maximumIntegerDigits,
+      IProperties properties,
       Rounder rounder) {
-    this.exponentShowPlusSign = exponentShowPlusSign;
-    this.exponentDigits = exponentDigits;
-    this.minimumIntegerDigits = minimumIntegerDigits;
-    this.maximumIntegerDigits = maximumIntegerDigits;
-    this.interval = Math.max(1, maximumIntegerDigits);
+    exponentShowPlusSign = properties.getExponentShowPlusSign();
+    exponentDigits = Math.max(1, properties.getExponentDigits());
+    int _maxInt = properties.getMaximumIntegerDigits();
+    int _minInt = properties.getMinimumIntegerDigits();
+    // Special behavior:
+    if (_maxInt > 8) {
+      _maxInt = _minInt;
+    }
+    maxInt = _maxInt < 0 ? Integer.MAX_VALUE : _maxInt;
+    minInt = _minInt < 0 ? 0 : _minInt < maxInt ? _minInt : maxInt;
+    interval = Math.max(1, maxInt);
     this.rounder = rounder;
     digitStrings = symbols.getDigitStrings(); // makes a copy
 
@@ -137,24 +145,35 @@ public class ScientificFormat extends Format.BeforeFormat implements Rounder.Mul
             new ConstantAffixModifier("", symbols.getMinusSignString(), Field.EXPONENT_SIGN, true));
   }
 
+  private static final ThreadLocal<StringBuilder> threadLocalStringBuilder =
+      new ThreadLocal<StringBuilder>() {
+        @Override
+        protected StringBuilder initialValue() {
+          return new StringBuilder();
+        }
+      };
+
   @Override
   public void before(FormatQuantity input, ModifierHolder mods) {
+
+    // Treat zero as if it had magnitude 0
     int exponent;
-    // Special case for zero handling
     if (input.isZero()) {
-      exponent = 0;
       rounder.apply(input);
+      exponent = 0;
     } else {
       exponent = -rounder.chooseMultiplierAndApply(input, this);
     }
 
     // Format the exponent part of the scientific format.
     // Insert digits starting from the left so that append can be used.
-    FormatQuantity exponentQ = new FormatQuantity2(exponent);
-    StringBuilder exponentSB = new StringBuilder();
+    // TODO: Use thread locals here.
+    FormatQuantity exponentQ = FormatQuantitySelector.from(exponent);
+    StringBuilder exponentSB = threadLocalStringBuilder.get();
+    exponentSB.setLength(0);
     exponentQ.setIntegerFractionLength(exponentDigits, Integer.MAX_VALUE, 0, 0);
-    for (int i = exponentQ.integerCount() - 1; i >= 0; i--) {
-      exponentSB.append(digitStrings[exponentQ.getIntegerDigit(i)]);
+    for (int i = exponentQ.getUpperDisplayMagnitude(); i >= 0; i--) {
+      exponentSB.append(digitStrings[exponentQ.getDigit(i)]);
     }
 
     // Add modifiers from the outside in.
@@ -166,10 +185,10 @@ public class ScientificFormat extends Format.BeforeFormat implements Rounder.Mul
   @Override
   public int getMultiplier(int magnitude) {
     int digitsShown = ((magnitude % interval + interval) % interval) + 1;
-    if (digitsShown < minimumIntegerDigits) {
-      digitsShown = minimumIntegerDigits;
-    } else if (digitsShown > maximumIntegerDigits) {
-      digitsShown = maximumIntegerDigits;
+    if (digitsShown < minInt) {
+      digitsShown = minInt;
+    } else if (digitsShown > maxInt) {
+      digitsShown = maxInt;
     }
     int retval = digitsShown - magnitude - 1;
     return retval;

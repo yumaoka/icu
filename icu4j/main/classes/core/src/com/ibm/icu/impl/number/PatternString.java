@@ -3,6 +3,7 @@
 package com.ibm.icu.impl.number;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.ParseException;
 
 import com.ibm.icu.impl.number.formatters.PaddingFormat.PaddingLocation;
@@ -360,6 +361,7 @@ public class PatternString {
           properties.setMaximumSignificantDigits(Properties.DEFAULT_MAXIMUM_SIGNIFICANT_DIGITS);
         }
 
+        // Backwards compatibility:
         // If the pattern starts with '.' or if it doesn't have '.' (and isn't sigdigit notation),
         // then minInt can be zero. Otherwise, minInt needs to be at least 1.
         if ((!positive.hasDecimal && positive.minimumSignificantDigits == 0)
@@ -461,6 +463,7 @@ public class PatternString {
       long integer = 0L;
       long fraction = 0L;
       long fractionDivisor = 1;
+      int fractionLength = 0;
 
       void appendInteger(int n) throws ParseException {
         if (integer > Long.MAX_VALUE / 10) {
@@ -477,6 +480,7 @@ public class PatternString {
         fraction *= 10;
         fraction += n;
         fractionDivisor *= 10;
+        fractionLength += 1;
       }
 
       boolean isEmpty() {
@@ -485,8 +489,10 @@ public class PatternString {
 
       BigDecimal toBigDecimal() {
         BigDecimal d = new BigDecimal(fraction);
-        d = d.divide(new BigDecimal(fractionDivisor));
-        d = d.add(new BigDecimal(integer));
+        BigDecimal v = new BigDecimal(fractionDivisor);
+        BigDecimal i = new BigDecimal(integer);
+        d = d.divide(v, fractionLength, RoundingMode.UNNECESSARY);
+        d = d.add(i);
         return d;
       }
     }

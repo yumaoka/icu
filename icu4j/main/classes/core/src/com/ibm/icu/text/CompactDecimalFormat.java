@@ -23,7 +23,7 @@ import java.util.Locale;
 
 import com.ibm.icu.impl.number.Endpoint;
 import com.ibm.icu.impl.number.Format.SingularFormat;
-import com.ibm.icu.impl.number.FormatQuantity2;
+import com.ibm.icu.impl.number.FormatQuantitySelector;
 import com.ibm.icu.impl.number.Properties;
 import com.ibm.icu.util.CurrencyAmount;
 import com.ibm.icu.util.ULocale;
@@ -141,7 +141,7 @@ public class CompactDecimalFormat extends DecimalFormat {
   @Override
   public StringBuffer format(double number, StringBuffer toAppendTo, FieldPosition pos) {
     // TODO(sffc): Implement FieldPosition
-    formatter.format(new FormatQuantity2(number), toAppendTo);
+    formatter.format(FormatQuantitySelector.from(number), toAppendTo);
     return toAppendTo;
   }
 
@@ -164,7 +164,7 @@ public class CompactDecimalFormat extends DecimalFormat {
   @Override
   public StringBuffer format(long number, StringBuffer toAppendTo, FieldPosition pos) {
     // TODO(sffc): Implement FieldPosition
-    formatter.format(new FormatQuantity2(number), toAppendTo);
+    formatter.format(FormatQuantitySelector.from(number), toAppendTo);
     return toAppendTo;
   }
 
@@ -176,7 +176,7 @@ public class CompactDecimalFormat extends DecimalFormat {
   @Override
   public StringBuffer format(BigInteger number, StringBuffer toAppendTo, FieldPosition pos) {
     // TODO(sffc): Implement FieldPosition
-    formatter.format(new FormatQuantity2(number), toAppendTo);
+    formatter.format(FormatQuantitySelector.from(number), toAppendTo);
     return toAppendTo;
   }
 
@@ -188,7 +188,7 @@ public class CompactDecimalFormat extends DecimalFormat {
   @Override
   public StringBuffer format(BigDecimal number, StringBuffer toAppendTo, FieldPosition pos) {
     // TODO(sffc): Implement FieldPosition
-    formatter.format(new FormatQuantity2(number), toAppendTo);
+    formatter.format(FormatQuantitySelector.from(number), toAppendTo);
     return toAppendTo;
   }
 
@@ -201,7 +201,7 @@ public class CompactDecimalFormat extends DecimalFormat {
   public StringBuffer format(
       com.ibm.icu.math.BigDecimal number, StringBuffer toAppendTo, FieldPosition pos) {
     // TODO(sffc): Implement FieldPosition
-    formatter.format(new FormatQuantity2(number), toAppendTo);
+    formatter.format(FormatQuantitySelector.from(number), toAppendTo);
     return toAppendTo;
   }
 

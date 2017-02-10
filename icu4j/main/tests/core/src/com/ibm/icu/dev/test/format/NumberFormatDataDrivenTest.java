@@ -12,7 +12,6 @@ import com.ibm.icu.text.DecimalFormat_ICU58;
 import com.ibm.icu.util.CurrencyAmount;
 import com.ibm.icu.util.ULocale;
 
-/** @author sffc */
 public class NumberFormatDataDrivenTest {
 
   private static ULocale EN = new ULocale("en");

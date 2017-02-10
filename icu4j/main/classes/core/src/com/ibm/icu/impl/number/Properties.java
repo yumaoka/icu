@@ -19,6 +19,9 @@ import com.ibm.icu.impl.number.formatters.PaddingFormat.PaddingLocation;
 import com.ibm.icu.impl.number.formatters.PositiveDecimalFormat;
 import com.ibm.icu.impl.number.formatters.PositiveNegativeAffixFormat;
 import com.ibm.icu.impl.number.formatters.ScientificFormat;
+import com.ibm.icu.impl.number.rounders.IntervalRounder;
+import com.ibm.icu.impl.number.rounders.MagnitudeRounder;
+import com.ibm.icu.impl.number.rounders.SignificantDigitsRounder;
 import com.ibm.icu.text.CompactDecimalFormat.CompactStyle;
 import com.ibm.icu.text.CurrencyPluralInfo;
 import com.ibm.icu.text.MeasureFormat.FormatWidth;
@@ -29,7 +32,6 @@ import com.ibm.icu.util.MeasureUnit;
 public class Properties
     implements Cloneable,
         PositiveDecimalFormat.IProperties,
-        Rounder.IProperties,
         PositiveNegativeAffixFormat.IProperties,
         MagnitudeMultiplier.IProperties,
         ScientificFormat.IProperties,
@@ -38,7 +40,10 @@ public class Properties
         PaddingFormat.IProperties,
         BigDecimalMultiplier.IProperties,
         CurrencyFormat.IProperties,
-        Parse.IProperties {
+        Parse.IProperties,
+        IntervalRounder.IProperties,
+        MagnitudeRounder.IProperties,
+        SignificantDigitsRounder.IProperties {
 
   private static final Properties DEFAULT = new Properties();
 
@@ -95,7 +100,10 @@ public class Properties
   private CharSequence positiveSuffixPattern;
   private BigDecimal roundingInterval;
   private RoundingMode roundingMode;
+
   private int secondaryGroupingSize;
+
+  private boolean significantDigitsOverride;
 
   public Properties() {
     clear();
@@ -144,6 +152,7 @@ public class Properties
     roundingInterval = DEFAULT_ROUNDING_INTERVAL;
     roundingMode = DEFAULT_ROUNDING_MODE;
     secondaryGroupingSize = DEFAULT_SECONDARY_GROUPING_SIZE;
+    significantDigitsOverride = DEFAULT_SIGNIFICANT_DIGITS_OVERRIDE_MAXIMUM_DIGITS;
     return this;
   }
 
@@ -191,14 +200,11 @@ public class Properties
     eq = eq && _equalsHelper(roundingInterval, other.roundingInterval);
     eq = eq && _equalsHelper(roundingMode, other.roundingMode);
     eq = eq && _equalsHelper(secondaryGroupingSize, other.secondaryGroupingSize);
+    eq = eq && _equalsHelper(significantDigitsOverride, other.significantDigitsOverride);
     return eq;
   }
 
   private boolean _equalsHelper(boolean mine, boolean theirs) {
-    return mine == theirs;
-  }
-
-  private boolean _equalsHelper(int mine, int theirs) {
     return mine == theirs;
   }
 
@@ -214,6 +220,10 @@ public class Properties
       if (mine.charAt(i) != theirs.charAt(i)) return false;
     }
     return true;
+  }
+
+  private boolean _equalsHelper(int mine, int theirs) {
+    return mine == theirs;
   }
 
   private boolean _equalsHelper(Object mine, Object theirs) {
@@ -266,6 +276,7 @@ public class Properties
     hashCode ^= _hashCodeHelper(roundingInterval);
     hashCode ^= _hashCodeHelper(roundingMode);
     hashCode ^= _hashCodeHelper(secondaryGroupingSize);
+    hashCode ^= _hashCodeHelper(significantDigitsOverride);
     return hashCode;
   }
 
@@ -442,6 +453,11 @@ public class Properties
     return paddingLocation;
   }
 
+  //  @Override
+  //  public boolean getParseCurrency() {
+  //    return parseCurrency;
+  //  }
+
   @Override
   public CharSequence getPaddingString() {
     return paddingString;
@@ -452,10 +468,10 @@ public class Properties
     return paddingWidth;
   }
 
-  //  @Override
-  //  public boolean getParseCurrency() {
-  //    return parseCurrency;
-  //  }
+  @Override
+  public boolean getParseCaseSensitive() {
+    return parseCaseSensitive;
+  }
 
   /* (non-Javadoc)
    * @see com.ibm.icu.impl.number.Parse.IProperties#getParseIgnoreExponent()
@@ -479,6 +495,11 @@ public class Properties
   @Override
   public ParseMode getParseMode() {
     return parseMode;
+  }
+
+  @Override
+  public boolean getParseToBigDecimal() {
+    return parseToBigDecimal;
   }
 
   @Override
@@ -514,6 +535,11 @@ public class Properties
   @Override
   public int getSecondaryGroupingSize() {
     return secondaryGroupingSize;
+  }
+
+  @Override
+  public boolean getSignificantDigitsOverride() {
+    return significantDigitsOverride;
   }
 
   @Override
@@ -666,6 +692,12 @@ public class Properties
     return this;
   }
 
+  //  @Override
+  //  public Properties setParseCurrency(boolean parseCurrency) {
+  //    this.parseCurrency = parseCurrency;
+  //    return this;
+  //  }
+
   @Override
   public Properties setNegativeSuffix(CharSequence negativeSuffix) {
     this.negativeSuffix = negativeSuffix;
@@ -696,11 +728,11 @@ public class Properties
     return this;
   }
 
-  //  @Override
-  //  public Properties setParseCurrency(boolean parseCurrency) {
-  //    this.parseCurrency = parseCurrency;
-  //    return this;
-  //  }
+  @Override
+  public IProperties setParseCaseSensitive(boolean parseCaseSensitive) {
+    this.parseCaseSensitive = parseCaseSensitive;
+    return this;
+  }
 
   /* (non-Javadoc)
    * @see com.ibm.icu.impl.number.Parse.IProperties#setParseIgnoreExponent(boolean)
@@ -726,6 +758,12 @@ public class Properties
   @Override
   public Properties setParseMode(ParseMode parseMode) {
     this.parseMode = parseMode;
+    return this;
+  }
+
+  @Override
+  public Properties setParseToBigDecimal(boolean parseToBigDecimal) {
+    this.parseToBigDecimal = parseToBigDecimal;
     return this;
   }
 
@@ -772,6 +810,12 @@ public class Properties
   }
 
   @Override
+  public Properties setSignificantDigitsOverride(boolean significantDigitsOverrideMaximumDigits) {
+    this.significantDigitsOverride = significantDigitsOverrideMaximumDigits;
+    return this;
+  }
+
+  @Override
   public String toString() {
     StringBuilder result = new StringBuilder();
     result.append("<Properties");
@@ -798,27 +842,5 @@ public class Properties
     }
     result.append(">");
     return result.toString();
-  }
-
-  @Override
-  public boolean getParseToBigDecimal() {
-    return parseToBigDecimal;
-  }
-
-  @Override
-  public Properties setParseToBigDecimal(boolean parseToBigDecimal) {
-    this.parseToBigDecimal = parseToBigDecimal;
-    return this;
-  }
-
-  @Override
-  public boolean getParseCaseSensitive() {
-    return parseCaseSensitive;
-  }
-
-  @Override
-  public IProperties setParseCaseSensitive(boolean parseCaseSensitive) {
-    this.parseCaseSensitive = parseCaseSensitive;
-    return this;
   }
 }

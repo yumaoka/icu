@@ -90,6 +90,11 @@ public class FormatQuantity1 implements FormatQuantity {
     1000000000000000000L
   };
 
+  @Override
+  public int maxRepresentableDigits() {
+    return Integer.MAX_VALUE;
+  }
+
   public FormatQuantity1(long input) {
     if (input < 0) {
       setNegative(true);
@@ -334,22 +339,6 @@ public class FormatQuantity1 implements FormatQuantity {
     rOptPos = -maxFrac;
   }
 
-  // TODO: Should the significant digit and interval logic be removed from this class and moved
-  // into the Rounder class instead?
-
-  @Override
-  public void roundToSignificantDigits(
-      int minimumSignificantDigits, int maximumSignificantDigits, RoundingMode roundingMode) {
-    assert 0 <= minimumSignificantDigits && minimumSignificantDigits <= maximumSignificantDigits;
-    int magnitude = getMagnitude();
-    if (maximumSignificantDigits < Integer.MAX_VALUE) {
-      roundToMagnitude(magnitude - maximumSignificantDigits + 1, roundingMode);
-    }
-    magnitude = getMagnitude(); // in case magnitude changed
-    lReqPos = Math.max(lReqPos, magnitude + 1);
-    rReqPos = Math.min(rReqPos, magnitude - minimumSignificantDigits + 1);
-  }
-
   @Override
   public void roundToInterval(BigDecimal roundingInterval, RoundingMode roundingMode) {
     divideBy(roundingInterval, scaleBigDecimal(roundingInterval), roundingMode);
@@ -357,10 +346,6 @@ public class FormatQuantity1 implements FormatQuantity {
     multiplyBy(roundingInterval);
   }
 
-  /**
-   * @param roundingMagnitude
-   * @param roundingMode
-   */
   @Override
   public void roundToMagnitude(int roundingMagnitude, RoundingMode roundingMode) {
     if (primary == -1) {
@@ -393,35 +378,6 @@ public class FormatQuantity1 implements FormatQuantity {
       } else {
         // No rounding is necessary. All digits are to the left of the rounding magnitude.
       }
-    }
-  }
-
-  @Override
-  public void setDigitAtMagnitude(byte digit, int magnitude) {
-    assert digit >= 0 && digit < 10;
-    if (magnitude >= primaryScale && magnitude < primaryScale + 16) {
-      // Set a digit in the middle.
-      int index = magnitude - primaryScale;
-      primary =
-          ((primary / POWERS_OF_TEN[index + 1] * 10 + digit) * POWERS_OF_TEN[index])
-              + (primary % POWERS_OF_TEN[index]);
-      primaryPrecision = computePrecision(primary);
-    } else if (magnitude >= primaryScale + 16) {
-      // Shift off digits to the right.
-      int shift = magnitude - primaryScale - 15;
-      for (int i = 0; i < shift; i++) primary /= 10;
-      primary += digit * POWERS_OF_TEN[15];
-      primaryScale += shift;
-      primaryPrecision = computePrecision(primary);
-    } else {
-      // Might require shifting off digits to the left.
-      // Since we never lose the high-significance digits, exit if the BCD is already full.
-      int shift = primaryScale - magnitude;
-      if (shift + primaryPrecision > 16) return;
-      for (int i = 0; i < shift; i++) primary *= 10;
-      primary += digit;
-      primaryScale -= shift;
-      primaryPrecision = computePrecision(primary);
     }
   }
 
@@ -472,12 +428,11 @@ public class FormatQuantity1 implements FormatQuantity {
 
   /** @return The power of ten of the highest digit represented by this FormatQuantity */
   @Override
-  public int getMagnitude() {
+  public int getMagnitude() throws ArithmeticException {
     int scale = (primary == -1) ? scaleBigDecimal(fallback) : primaryScale;
     int precision = (primary == -1) ? precisionBigDecimal(fallback) : primaryPrecision;
     if (precision == 0) {
-      // Special case for the number zero; magnitude is not well defined.
-      return 0;
+      throw new ArithmeticException("Magnitude is not well-defined for zero");
     } else {
       return scale + precision - 1;
     }
@@ -498,10 +453,6 @@ public class FormatQuantity1 implements FormatQuantity {
     } else {
       primaryScale = addOrMaxValue(primaryScale, delta);
     }
-    lOptPos = addOrMaxValue(lOptPos, delta);
-    lReqPos = addOrMaxValue(lReqPos, delta);
-    rReqPos = addOrMaxValue(rReqPos, delta);
-    rOptPos = addOrMaxValue(rOptPos, delta);
   }
 
   private static int addOrMaxValue(int a, int b) {
@@ -547,19 +498,31 @@ public class FormatQuantity1 implements FormatQuantity {
    */
   @Override
   public double toDouble() {
+    double result;
     if (primary == -1) {
-      return fallback.doubleValue();
+      result = fallback.doubleValue();
     } else {
       // TODO: Make this more efficient
-      double temp = primary;
+      result = primary;
       for (int i = 0; i < primaryScale; i++) {
-        temp *= 10.;
+        result *= 10.;
       }
       for (int i = 0; i > primaryScale; i--) {
-        temp /= 10.;
+        result /= 10.;
       }
-      return temp;
     }
+    return isNegative() ? -result : result;
+  }
+
+  @Override
+  public BigDecimal toBigDecimal() {
+    BigDecimal result;
+    if (primary != -1) {
+      result = new BigDecimal(primary).scaleByPowerOfTen(primaryScale);
+    } else {
+      result = fallback;
+    }
+    return isNegative() ? result.negate() : result;
   }
 
   /** @return */
@@ -594,7 +557,7 @@ public class FormatQuantity1 implements FormatQuantity {
       if (primary == -1) {
         return fallback.remainder(BigDecimal.ONE).compareTo(BigDecimal.ZERO) > 0;
       } else {
-        if (primaryScale < -19) {
+        if (primaryScale <= -19) {
           // The number is a fraction so small that it consists of only fraction digits.
           return primary > 0;
         } else if (primaryScale < 0) {
@@ -617,7 +580,7 @@ public class FormatQuantity1 implements FormatQuantity {
       returnValue = temp.setScale(0, RoundingMode.FLOOR).remainder(BigDecimal.TEN).byteValue();
       fallback = fallback.setScale(0, RoundingMode.FLOOR).add(temp.remainder(BigDecimal.ONE));
     } else {
-      if (primaryScale < -20) {
+      if (primaryScale <= -20) {
         // The number is a fraction so small that it has no first fraction digit.
         primaryScale += 1;
         returnValue = 0;
@@ -684,15 +647,7 @@ public class FormatQuantity1 implements FormatQuantity {
     }
   }
 
-  /** @return */
-  @Override
-  public int integerCount() {
-    // Special handling for zero
-    // Show digit to the left of decimal unless minInt==0 and maxFrac>0
-    if (isZero() && (lReqPos > 0 || rOptPos == 0)) {
-      return Math.max(1, lReqPos);
-    }
-
+  private int integerCount() {
     int digitsRemaining;
     if (primary == -1) {
       digitsRemaining = precisionBigDecimal(fallback) + scaleBigDecimal(fallback);
@@ -702,15 +657,7 @@ public class FormatQuantity1 implements FormatQuantity {
     return Math.min(Math.max(digitsRemaining, lReqPos), lOptPos);
   }
 
-  /** @return */
-  @Override
-  public int fractionCount() {
-    // Special handling for zero
-    // Show digit to the left of decimal unless minInt==0 and maxFrac>0
-    if (isZero() && (lReqPos == 0 && rOptPos < 0)) {
-      return Math.max(1, -rReqPos);
-    }
-
+  private int fractionCount() {
     // TODO: This is temporary.
     FormatQuantity1 copy = (FormatQuantity1) this.clone();
     int fractionCount = 0;
@@ -722,16 +669,27 @@ public class FormatQuantity1 implements FormatQuantity {
   }
 
   @Override
-  public byte getIntegerDigit(int index) {
-    return getDigitPos(index);
+  public int getUpperDisplayMagnitude() {
+    return integerCount() - 1;
   }
 
   @Override
-  public byte getFractionDigit(int index) {
-    return getDigitPos(-index - 1);
+  public int getLowerDisplayMagnitude() {
+    return -fractionCount();
   }
 
-  public byte getDigitPos(int magnitude) {
+  //  @Override
+  //  public byte getIntegerDigit(int index) {
+  //    return getDigitPos(index);
+  //  }
+  //
+  //  @Override
+  //  public byte getFractionDigit(int index) {
+  //    return getDigitPos(-index - 1);
+  //  }
+
+  @Override
+  public byte getDigit(int magnitude) {
     // TODO: This is temporary.
     FormatQuantity1 copy = (FormatQuantity1) this.clone();
     if (magnitude < 0) {

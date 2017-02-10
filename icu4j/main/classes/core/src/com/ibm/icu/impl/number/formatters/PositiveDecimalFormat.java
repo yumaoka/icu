@@ -161,7 +161,7 @@ public class PositiveDecimalFormat implements Format.TargetFormat {
       length += addIntegerDigits(input, string, startIndex);
 
       // Add the decimal point
-      if (input.fractionCount() > 0 || alwaysShowDecimal) {
+      if (input.getLowerDisplayMagnitude() < 0 || alwaysShowDecimal) {
         length += string.insert(startIndex + length, decimalSeparator, Field.DECIMAL_SEPARATOR);
       }
 
@@ -174,7 +174,7 @@ public class PositiveDecimalFormat implements Format.TargetFormat {
 
   private int addIntegerDigits(FormatQuantity input, NumberStringBuilder string, int startIndex) {
     int length = 0;
-    int integerCount = input.integerCount();
+    int integerCount = input.getUpperDisplayMagnitude() + 1;
     for (int i = 0; i < integerCount; i++) {
       // Add grouping separator
       if (groupingSize > 0 && i == groupingSize && integerCount - i >= minimumGroupingDigits) {
@@ -186,7 +186,7 @@ public class PositiveDecimalFormat implements Format.TargetFormat {
       }
 
       // Get and append the next digit value
-      byte nextDigit = input.getIntegerDigit(i);
+      byte nextDigit = input.getDigit(i);
       length += addDigit(nextDigit, string, startIndex, Field.INTEGER);
     }
 
@@ -195,10 +195,10 @@ public class PositiveDecimalFormat implements Format.TargetFormat {
 
   private int addFractionDigits(FormatQuantity input, NumberStringBuilder string, int index) {
     int length = 0;
-    int fractionCount = input.fractionCount();
+    int fractionCount = -input.getLowerDisplayMagnitude();
     for (int i = 0; i < fractionCount; i++) {
       // Get and append the next digit value
-      byte nextDigit = input.getFractionDigit(i);
+      byte nextDigit = input.getDigit(-i - 1);
       length += addDigit(nextDigit, string, index + length, Field.FRACTION);
     }
     return length;

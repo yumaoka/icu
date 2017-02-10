@@ -16,6 +16,7 @@ import com.ibm.icu.impl.number.Format;
 import com.ibm.icu.impl.number.FormatQuantity;
 import com.ibm.icu.impl.number.FormatQuantity1;
 import com.ibm.icu.impl.number.FormatQuantity2;
+import com.ibm.icu.impl.number.FormatQuantity3;
 import com.ibm.icu.impl.number.Properties;
 import com.ibm.icu.text.CompactDecimalFormat.CompactStyle;
 
@@ -53,51 +54,63 @@ public class FormatQuantityTest extends TestFmwk {
     formats.add(rif);
 
     String[] cases = {
-            "1.0",
-            "2.01",
-            "1234.56",
-            "3000.0",
-            //      "512.0000000000017",
-            //      "4096.000000000001",
-            //      "4096.000000000004",
-            //      "4096.000000000005",
-            //      "4096.000000000006",
-            //      "4096.000000000007",
-            "0.00026418",
-            "0.01789261",
-            "468160.0",
-            "999000.0",
-            "999900.0",
-            "999990.0",
-            "0.0",
-            "12345678901.0",
-            //      "789000000000000000000000.0",
-            //      "789123123567853156372158.0",
-            "-5193.48",
-          };
+      "1.0",
+      "2.01",
+      "1234.56",
+      "3000.0",
+      "0.00026418",
+      "0.01789261",
+      "468160.0",
+      "999000.0",
+      "999900.0",
+      "999990.0",
+      "0.0",
+      "12345678901.0",
+      "-5193.48",
+    };
+
+    String[] hardCases = {
+//      "512.0000000000017",
+//      "4096.000000000001",
+//      "4096.000000000004",
+//      "4096.000000000005",
+//      "4096.000000000006",
+//      "4096.000000000007",
+      "789000000000000000000000.0",
+      "789123123567853156372158.0",
+      "987654321987654321987654321987654321987654311987654321.0",
+    };
 
     int i = 0;
     for (String str : cases) {
-      testFormatQuantity(i++, str, formats);
+      testFormatQuantity(i++, str, formats, false);
+    }
+
+    i = 0;
+    for (String str : hardCases) {
+      testFormatQuantity(i++, str, formats, true);
     }
   }
 
-  static void testFormatQuantity(int t, String str, List<Format> formats) {
+  static void testFormatQuantity(int t, String str, List<Format> formats, boolean bigOnly) {
     List<FormatQuantity> qs = new ArrayList<FormatQuantity>();
     BigDecimal d = new BigDecimal(str);
     qs.add(new FormatQuantity1(d));
-    qs.add(new FormatQuantity2(d));
+    if (!bigOnly) qs.add(new FormatQuantity2(d));
+    qs.add(new FormatQuantity3(d));
 
     if (new BigDecimal(Double.toString(d.doubleValue())).equals(d)) {
       double dv = d.doubleValue();
       qs.add(new FormatQuantity1(dv));
-      qs.add(new FormatQuantity2(dv));
+      if (!bigOnly) qs.add(new FormatQuantity2(dv));
+      qs.add(new FormatQuantity3(dv));
     }
 
     if (new BigDecimal(Long.toString(d.longValue())).setScale(1).equals(d)) {
       double lv = d.longValue();
       qs.add(new FormatQuantity1(lv));
-      qs.add(new FormatQuantity2(lv));
+      if (!bigOnly) qs.add(new FormatQuantity2(lv));
+      qs.add(new FormatQuantity3(lv));
     }
 
     testFormatQuantityExpectedOutput(qs.get(0), str);
@@ -110,7 +123,6 @@ public class FormatQuantityTest extends TestFmwk {
       FormatQuantity q0 = qs.get(0);
       FormatQuantity q1 = qs.get(i);
       testFormatQuantityExpectedOutput(q1, str);
-      testFormatQuantitySignificantDigits(q0, q1);
       testFormatQuantityRounding(q0, q1);
       testFormatQuantityRoundingInterval(q0, q1);
       testFormatQuantityMath(q0, q1);
@@ -122,32 +134,15 @@ public class FormatQuantityTest extends TestFmwk {
     StringBuilder sb = new StringBuilder();
     FormatQuantity q0 = rq.clone();
     q0.setIntegerFractionLength(1, Integer.MAX_VALUE, 1, Integer.MAX_VALUE);
-    for (int m = 0; m < q0.integerCount(); m++) {
-      sb.insert(0, "" + q0.getIntegerDigit(m));
-    }
-    sb.append('.');
-    for (int m = 0; m < q0.fractionCount(); m++) {
-      sb.append("" + q0.getFractionDigit(m));
+    for (int m = q0.getUpperDisplayMagnitude(); m >= q0.getLowerDisplayMagnitude(); m--) {
+      sb.append(q0.getDigit(m));
+      if (m == 0) sb.append('.');
     }
     if (q0.isNegative()) {
       sb.insert(0, '-');
     }
     String actual = sb.toString();
     assertEquals("Unexpected output from simple string conversion (" + q0 + ")", expected, actual);
-  }
-
-  private static void testFormatQuantitySignificantDigits(FormatQuantity rq0, FormatQuantity rq1) {
-    FormatQuantity q0 = rq0.clone();
-    FormatQuantity q1 = rq1.clone();
-    q0.roundToSignificantDigits(2, 4, RoundingMode.HALF_EVEN);
-    q1.roundToSignificantDigits(2, 4, RoundingMode.HALF_EVEN);
-    testFormatQuantityBehavior(q0, q1);
-
-    q0 = rq0.clone();
-    q1 = rq1.clone();
-    q0.roundToSignificantDigits(3, 3, RoundingMode.HALF_EVEN);
-    q1.roundToSignificantDigits(3, 3, RoundingMode.HALF_EVEN);
-    testFormatQuantityBehavior(q0, q1);
   }
 
   private static void testFormatQuantityRounding(FormatQuantity rq0, FormatQuantity rq1) {
@@ -215,31 +210,32 @@ public class FormatQuantityTest extends TestFmwk {
         q1.getPositionFingerprint());
 
     assertEquals(
-        "Different number of integer digits (" + q0 + ", " + q1 + ")",
-        q0.integerCount(),
-        q1.integerCount());
+        "Different upper range of digits (" + q0 + ", " + q1 + ")",
+        q0.getUpperDisplayMagnitude(),
+        q1.getUpperDisplayMagnitude());
 
-    // Equality is guaranteed for only 16 digits
-    int guaranteed = Math.max(16 - q0.integerCount(), 0);
-    assertTrue(
-        "Different number of fraction digits (" + q0 + ", " + q1 + ")",
-        (q0.fractionCount() == q1.fractionCount()
-            || (q0.fractionCount() >= guaranteed && q1.fractionCount() >= guaranteed)));
+    assertDoubleEquals(
+        "Different double values (" + q0 + ", " + q1 + ")", q0.toDouble(), q1.toDouble());
 
-    for (int i = 0; i < q0.integerCount() && guaranteed > 0; i++) {
+    assertDoubleEquals(
+        "Different BigDecimal values (" + q0 + ", " + q1 + ")",
+        q0.toBigDecimal().doubleValue(),
+        q1.toBigDecimal().doubleValue());
+
+    int equalityDigits = Math.min(q0.maxRepresentableDigits(), q1.maxRepresentableDigits());
+    for (int m = q0.getUpperDisplayMagnitude(), i = 0;
+        m >= Math.min(q0.getLowerDisplayMagnitude(), q1.getLowerDisplayMagnitude())
+            && i < equalityDigits;
+        m--, i++) {
       assertEquals(
-          "Different integer digit at index " + i + " (" + q0 + ", " + q1 + ")",
-          q0.getIntegerDigit(i),
-          q1.getIntegerDigit(i));
-      guaranteed--;
+          "Different digit at magnitude " + m + " (" + q0 + ", " + q1 + ")",
+          q0.getDigit(m),
+          q1.getDigit(m));
     }
+  }
 
-    for (int i = 0; i < q0.fractionCount() && guaranteed > 0; i++) {
-      assertEquals(
-          "Different fraction digit at index " + i + " (" + q0 + ", " + q1 + ")",
-          q0.getFractionDigit(i),
-          q1.getFractionDigit(i));
-      guaranteed--;
-    }
+  static void assertDoubleEquals(String message, double d1, double d2) {
+    boolean equal = (Math.abs(d1 - d2) < 1e-6) || (Math.abs((d1 - d2) / d1) < 0.01);
+    handleAssert(equal, message, d1, d2, null, false);
   }
 }

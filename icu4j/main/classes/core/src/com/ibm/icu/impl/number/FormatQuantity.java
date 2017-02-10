@@ -16,6 +16,9 @@ import com.ibm.icu.text.PluralRules;
  * object holding state during a pass through the decimal formatting pipeline.
  *
  * <p>Implementations of this interface are free to use any internal storage mechanism.
+ *
+ * <p>TODO: Should I change this to an abstract class so that logic for min/max digits doesn't need
+ * to be copied to every implementation?
  */
 public interface FormatQuantity extends PluralRules.IFixedDecimal {
 
@@ -29,23 +32,6 @@ public interface FormatQuantity extends PluralRules.IFixedDecimal {
    * @param maxFrac The maximum number of fraction digits.
    */
   public void setIntegerFractionLength(int minInt, int maxInt, int minFrac, int maxFrac);
-
-  /**
-   * Sets the number of significant digits displayed by this {@link FormatQuantity}, performing
-   * rounding if necessary.
-   *
-   * <p>This method may result in changes to the integer and fraction lengths set earlier in {@link
-   * #setIntegerFractionLength(int, int, int, int)}.
-   *
-   * @param minimumSignificantDigits The minimum number of significant digits. Zeros will be padded
-   *     if necessary.
-   * @param maximumSignificantDigits The maximum number of significant digits. Extra digits will be
-   *     rounded.
-   * @param roundingMode The {@link RoundingMode} to use if rounding is necessary. Undefined
-   *     behavior if null.
-   */
-  public void roundToSignificantDigits(
-      int minimumSignificantDigits, int maximumSignificantDigits, RoundingMode roundingMode);
 
   /**
    * Rounds the number to a specified interval, such as 0.05.
@@ -63,21 +49,10 @@ public interface FormatQuantity extends PluralRules.IFixedDecimal {
    *
    * @param roundingMagnitude The power of ten to which to round. For example, a value of -2 will
    *     round to 2 decimal places.
-   * @param roundingMode
+   * @param roundingMode The {@link RoundingMode} to use if rounding is necessary. Undefined
+   *     behavior if null.
    */
   public void roundToMagnitude(int roundingMagnitude, RoundingMode roundingMode);
-
-  /**
-   * Sets the digit at the specified magnitude. May involve shifting the digits in the number. If
-   * more than 16 digits are present, always saves the more significant digits.
-   *
-   * <p>TODO: This method is UNTESTED and should probably be removed.
-   *
-   * @param digit The digit value to set, in [0,9].
-   * @param magnitude The magnitude of the digit to set. Positive values mean higher significance,
-   *     and negative numbers mean lower significance.
-   */
-  public void setDigitAtMagnitude(byte digit, int magnitude);
 
   /**
    * Multiply the internal value.
@@ -86,21 +61,19 @@ public interface FormatQuantity extends PluralRules.IFixedDecimal {
    */
   public void multiplyBy(BigDecimal multiplicand);
 
-  // TODO: Include a divideBy?
-
   /**
    * Scales the number by a power of ten. For example, if the value is currently "1234.56", calling
    * this method with delta=-3 will change the value to "1.23456".
-   *
-   * <p>This method will result in changes to the integer and fraction lengths set earlier in {@link
-   * #setIntegerFractionLength(int, int, int, int)}.
    *
    * @param delta The number of magnitudes of ten to change by.
    */
   public void adjustMagnitude(int delta);
 
-  /** @return The power of ten corresponding to the most significant nonzero digit. */
-  public int getMagnitude();
+  /**
+   * @return The power of ten corresponding to the most significant nonzero digit.
+   * @throws ArithmeticException If the value represented is zero.
+   */
+  public int getMagnitude() throws ArithmeticException;
 
   /** @return Whether the value represented by this {@link FormatQuantity} is zero. */
   public boolean isZero();
@@ -119,6 +92,10 @@ public interface FormatQuantity extends PluralRules.IFixedDecimal {
   /** @return The value contained in this {@link FormatQuantity} approximated as a double. */
   public double toDouble();
 
+  public BigDecimal toBigDecimal();
+
+  public int maxRepresentableDigits();
+
   // TODO: Should this method be removed, since FormatQuantity implements IFixedDecimal now?
   /**
    * Computes the plural form for this number based on the specified set of rules.
@@ -129,35 +106,60 @@ public interface FormatQuantity extends PluralRules.IFixedDecimal {
    */
   public StandardPlural getStandardPlural(PluralRules rules);
 
-  /**
-   * @return The number of fraction digits, always in the closed interval [minFrac, maxFrac].
-   * @see #setIntegerFractionLength(int, int, int, int)
-   */
-  public int fractionCount();
+  //  /**
+  //   * @return The number of fraction digits, always in the closed interval [minFrac, maxFrac].
+  //   * @see #setIntegerFractionLength(int, int, int, int)
+  //   */
+  //  public int fractionCount();
+  //
+  //  /**
+  //   * @return The number of integer digits, always in the closed interval [minInt, maxInt].
+  //   * @see #setIntegerFractionLength(int, int, int, int)
+  //   */
+  //  public int integerCount();
+  //
+  //  /**
+  //   * @param index The index of the fraction digit relative to the decimal place, or 1 minus the
+  //   *     digit's power of ten.
+  //   * @return The digit at the specified index. Undefined if index is greater than maxInt or less
+  //   *     than 0.
+  //   * @see #fractionCount()
+  //   */
+  //  public byte getFractionDigit(int index);
+  //
+  //  /**
+  //   * @param index The index of the integer digit relative to the decimal place, or the digit's power
+  //   *     of ten.
+  //   * @return The digit at the specified index. Undefined if index is greater than maxInt or less
+  //   *     than 0.
+  //   * @see #integerCount()
+  //   */
+  //  public byte getIntegerDigit(int index);
 
   /**
-   * @return The number of integer digits, always in the closed interval [minInt, maxInt].
-   * @see #setIntegerFractionLength(int, int, int, int)
+   * Gets the digit at the specified magnitude. For example, if the represented number is 12.3,
+   * getDigit(-1) returns 3, since 3 is the digit corresponding to 10^-1.
+   *
+   * @param magnitude The magnitude of the digit.
+   * @return The digit at the specified magnitude.
    */
-  public int integerCount();
+  public byte getDigit(int magnitude);
 
   /**
-   * @param index The index of the fraction digit relative to the decimal place, or 1 minus the
-   *     digit's power of ten.
-   * @return The digit at the specified index. Undefined if index is greater than maxInt or less
-   *     than 0.
-   * @see #fractionCount()
+   * Gets the largest power of ten that needs to be displayed. The value returned by this function
+   * will be bounded between minInt and maxInt.
+   *
+   * @return The highest-magnitude digit to be displayed.
    */
-  public byte getFractionDigit(int index);
+  public int getUpperDisplayMagnitude();
 
   /**
-   * @param index The index of the integer digit relative to the decimal place, or the digit's power
-   *     of ten.
-   * @return The digit at the specified index. Undefined if index is greater than maxInt or less
-   *     than 0.
-   * @see #integerCount()
+   * Gets the smallest power of ten that needs to be displayed. The value returned by this function
+   * will be bounded between -minFrac and -maxFrac.
+   *
+   * @return The lowest-magnitude digit to be displayed.
    */
-  public byte getIntegerDigit(int index);
+  public int getLowerDisplayMagnitude();
 
   public FormatQuantity clone();
 

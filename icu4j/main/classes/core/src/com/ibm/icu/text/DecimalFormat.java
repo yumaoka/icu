@@ -12,15 +12,14 @@ import java.text.ParsePosition;
 import com.ibm.icu.impl.number.Endpoint;
 import com.ibm.icu.impl.number.Format.SingularFormat;
 import com.ibm.icu.impl.number.FormatQuantity;
-import com.ibm.icu.impl.number.FormatQuantity1;
-import com.ibm.icu.impl.number.FormatQuantity2;
+import com.ibm.icu.impl.number.FormatQuantitySelector;
 import com.ibm.icu.impl.number.Parse;
 import com.ibm.icu.impl.number.PatternString;
 import com.ibm.icu.impl.number.Properties;
-import com.ibm.icu.impl.number.Rounder;
 import com.ibm.icu.impl.number.formatters.PaddingFormat.PaddingLocation;
 import com.ibm.icu.impl.number.formatters.PositiveDecimalFormat;
 import com.ibm.icu.impl.number.formatters.ScientificFormat;
+import com.ibm.icu.impl.number.rounders.SignificantDigitsRounder;
 import com.ibm.icu.math.BigDecimal;
 import com.ibm.icu.math.MathContext;
 import com.ibm.icu.text.PluralRules.IFixedDecimal;
@@ -61,8 +60,10 @@ public class DecimalFormat extends NumberFormat {
   /** @stable ICU 4.2 */
   public DecimalFormat(
       String pattern, DecimalFormatSymbols symbols, CurrencyPluralInfo infoInput, int style) {
-    // TODO(sffc)
-    throw new UnsupportedOperationException();
+    this.symbols = (DecimalFormatSymbols) symbols.clone();
+    properties = new Properties();
+    properties.setCurrencyPluralInfo(infoInput);
+    refreshFormatter();
   }
 
   private DecimalFormat(DecimalFormat other) {
@@ -92,14 +93,18 @@ public class DecimalFormat extends NumberFormat {
   /** @stable ICU 2.0 */
   public synchronized void applyPattern(String pattern) {
     setPropertiesFromPattern(pattern);
+    // Backwards compatibility: clear out user-specified prefix and suffix
+    properties.setPositivePrefix(null);
+    properties.setNegativePrefix(null);
+    properties.setPositiveSuffix(null);
+    properties.setNegativeSuffix(null);
     refreshFormatter();
   }
 
   /** @stable ICU 2.0 */
   public synchronized void applyLocalizedPattern(String localizedPattern) {
     String pattern = PatternString.convertLocalized(localizedPattern, symbols, false);
-    setPropertiesFromPattern(pattern);
-    refreshFormatter();
+    applyPattern(pattern);
   }
 
   /**
@@ -109,69 +114,36 @@ public class DecimalFormat extends NumberFormat {
    */
   @Override
   public StringBuffer format(double number, StringBuffer result, FieldPosition fieldPosition) {
-    // FIXME: Implement alternative FormatQuantity implementations
-    formatter.format(new FormatQuantity2(number), result, fieldPosition);
+    formatter.format(FormatQuantitySelector.from(number), result, fieldPosition);
     return result;
   }
 
   /** @stable ICU 2.0 */
   @Override
   public StringBuffer format(long number, StringBuffer result, FieldPosition fieldPosition) {
-    FormatQuantity fq;
-    if (number == Long.MIN_VALUE) {
-      fq = new FormatQuantity1(java.math.BigDecimal.valueOf(number));
-    } else if (Math.abs(number) >= 1e16) {
-      fq = new FormatQuantity1(number);
-    } else {
-      fq = new FormatQuantity2(number);
-    }
-    formatter.format(fq, result, fieldPosition);
+    formatter.format(FormatQuantitySelector.from(number), result, fieldPosition);
     return result;
   }
-
-  private static final BigInteger BIGINT_1E16 = BigInteger.valueOf((long) 1e16);
 
   /** @stable ICU 2.0 */
   @Override
   public StringBuffer format(BigInteger number, StringBuffer result, FieldPosition fieldPosition) {
-    FormatQuantity fq;
-    if (number.abs().compareTo(BIGINT_1E16) >= 0) {
-      fq = new FormatQuantity1(new java.math.BigDecimal(number));
-    } else {
-      fq = new FormatQuantity2(number);
-    }
-    formatter.format(fq, result, fieldPosition);
+    formatter.format(FormatQuantitySelector.from(number), result, fieldPosition);
     return result;
   }
-
-  private static final java.math.BigDecimal BIGDEC_1E16 = java.math.BigDecimal.valueOf(1e16);
 
   /** @stable ICU 2.0 */
   @Override
   public StringBuffer format(
       java.math.BigDecimal number, StringBuffer result, FieldPosition fieldPosition) {
-    FormatQuantity fq;
-    if (number.abs().compareTo(BIGDEC_1E16) >= 0) {
-      fq = new FormatQuantity1(number);
-    } else {
-      fq = new FormatQuantity2(number);
-    }
-    formatter.format(fq, result, fieldPosition);
+    formatter.format(FormatQuantitySelector.from(number), result, fieldPosition);
     return result;
   }
-
-  private static final BigDecimal ICUBIGDEC_1E16 = BigDecimal.valueOf(1e16);
 
   /** @stable ICU 2.0 */
   @Override
   public StringBuffer format(BigDecimal number, StringBuffer result, FieldPosition fieldPosition) {
-    FormatQuantity fq;
-    if (number.abs().compareTo(ICUBIGDEC_1E16) >= 0) {
-      fq = new FormatQuantity1(number.toBigDecimal());
-    } else {
-      fq = new FormatQuantity2(number);
-    }
-    formatter.format(fq, result, fieldPosition);
+    formatter.format(FormatQuantitySelector.from(number), result, fieldPosition);
     return result;
   }
 
@@ -221,7 +193,7 @@ public class DecimalFormat extends NumberFormat {
   public AttributedCharacterIterator formatToCharacterIterator(Object obj) {
     if (!(obj instanceof Number)) throw new IllegalArgumentException();
     Number number = (Number) obj;
-    return formatter.formatToCharacterIterator(new FormatQuantity2(number));
+    return formatter.formatToCharacterIterator(FormatQuantitySelector.from(number));
   }
 
   /**
@@ -424,7 +396,7 @@ public class DecimalFormat extends NumberFormat {
     if (useScientific) {
       properties.setExponentDigits(1);
     } else {
-      properties.setExponentDigits(0);
+      properties.setExponentDigits(Properties.DEFAULT_EXPONENT_DIGITS);
     }
     refreshFormatter();
   }
@@ -613,7 +585,7 @@ public class DecimalFormat extends NumberFormat {
 
   /** @stable ICU 3.0 */
   public synchronized boolean areSignificantDigitsUsed() {
-    return Rounder.useSignificantDigits(properties);
+    return SignificantDigitsRounder.useSignificantDigits(properties);
   }
 
   /** @stable ICU 3.0 */
@@ -745,7 +717,7 @@ public class DecimalFormat extends NumberFormat {
    */
   @Deprecated
   public IFixedDecimal getFixedDecimal(double number) {
-    FormatQuantity2 fq = new FormatQuantity2(number);
+    FormatQuantity fq = FormatQuantitySelector.from(number);
     formatter.format(fq);
     return fq;
   }

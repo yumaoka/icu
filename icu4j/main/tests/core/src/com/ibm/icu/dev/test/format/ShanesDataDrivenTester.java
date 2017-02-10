@@ -13,6 +13,7 @@ import com.ibm.icu.impl.number.Format;
 import com.ibm.icu.impl.number.FormatQuantity;
 import com.ibm.icu.impl.number.FormatQuantity1;
 import com.ibm.icu.impl.number.FormatQuantity2;
+import com.ibm.icu.impl.number.FormatQuantity3;
 import com.ibm.icu.impl.number.Parse;
 import com.ibm.icu.impl.number.Parse.ParseMode;
 import com.ibm.icu.impl.number.PatternString;
@@ -67,9 +68,16 @@ public class ShanesDataDrivenTester extends CodeUnderTest {
       q1 = q2 = new FormatQuantity1(Double.POSITIVE_INFINITY);
       q3 = new FormatQuantity1(Double.POSITIVE_INFINITY);
     } else {
-      q1 = new FormatQuantity1(new BigDecimal(tuple.format));
-      q2 = new FormatQuantity1(Double.parseDouble(tuple.format));
-      q3 = new FormatQuantity2(new BigDecimal(tuple.format));
+      BigDecimal d = new BigDecimal(tuple.format);
+      if (d.precision() <= 16) {
+        q1 = new FormatQuantity1(d);
+        q2 = new FormatQuantity1(Double.parseDouble(tuple.format));
+        q3 = new FormatQuantity2(d);
+      } else {
+        q1 = new FormatQuantity1(d);
+        q2 = new FormatQuantity3(d);
+        q3 = new FormatQuantity3(d); // duplicate values so no null
+      }
     }
     String expected = tuple.output;
     String actual1 = fmt.format(q1);
@@ -217,7 +225,8 @@ public class ShanesDataDrivenTester extends CodeUnderTest {
     return null;
   }
 
-  private static void propertiesFromTuple(DataDrivenNumberFormatTestData tuple, Properties properties) {
+  private static void propertiesFromTuple(
+      DataDrivenNumberFormatTestData tuple, Properties properties) {
     if (tuple.minIntegerDigits != null) {
       properties.setMinimumIntegerDigits(tuple.minIntegerDigits);
     }
@@ -262,7 +271,8 @@ public class ShanesDataDrivenTester extends CodeUnderTest {
       properties.setPaddingString(tuple.padCharacter.toString());
     }
     if (tuple.useScientific != null) {
-      properties.setExponentDigits(tuple.useScientific);
+      properties.setExponentDigits(
+          tuple.useScientific != 0 ? 1 : Properties.DEFAULT_EXPONENT_DIGITS);
     }
     if (tuple.grouping != null) {
       properties.setGroupingSize(tuple.grouping);

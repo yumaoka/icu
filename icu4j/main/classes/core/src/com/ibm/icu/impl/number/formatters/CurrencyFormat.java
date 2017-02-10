@@ -13,6 +13,8 @@ import com.ibm.icu.impl.number.PatternString;
 import com.ibm.icu.impl.number.Properties;
 import com.ibm.icu.impl.number.Rounder;
 import com.ibm.icu.impl.number.modifiers.GeneralPluralModifier;
+import com.ibm.icu.impl.number.rounders.IntervalRounder;
+import com.ibm.icu.impl.number.rounders.MagnitudeRounder;
 import com.ibm.icu.text.CurrencyPluralInfo;
 import com.ibm.icu.text.DecimalFormatSymbols;
 import com.ibm.icu.util.Currency;
@@ -97,7 +99,9 @@ public class CurrencyFormat {
   }
 
   public static interface IProperties
-      extends ICurrencyProperties, Rounder.IProperties, PositiveNegativeAffixFormat.IProperties {}
+      extends ICurrencyProperties,
+          RoundingFormat.IProperties,
+          PositiveNegativeAffixFormat.IProperties {}
 
   /**
    * Returns true if the currency is set in The property bag or if currency symbols are present in
@@ -180,7 +184,8 @@ public class CurrencyFormat {
     }
 
     // Get the long name
-    return currency.getName(symbols.getULocale(), Currency.PLURAL_LONG_NAME, plural.getKeyword(), null);
+    return currency.getName(
+        symbols.getULocale(), Currency.PLURAL_LONG_NAME, plural.getKeyword(), null);
   }
 
   public static Format.BeforeFormat getCurrencyModifier(
@@ -215,33 +220,63 @@ public class CurrencyFormat {
     return mod;
   }
 
+  private static final ThreadLocal<Properties> threadLocalProperties =
+      new ThreadLocal<Properties>() {
+        @Override
+        protected Properties initialValue() {
+          return new Properties();
+        }
+      };
+
   public static Rounder getCurrencyRounder(DecimalFormatSymbols symbols, IProperties properties) {
     Currency currency = properties.getCurrency();
     if (currency == null) {
-      // This is the only time when it is okay to fallback to the DecimalFormatSymbols currency instance.
+      // Fall back to the DecimalFormatSymbols currency instance.
       currency = symbols.getCurrency();
     }
     if (currency == null) {
       // There is a currency symbol in the pattern, but we have no currency available to use.
-      return Rounder.getDefaultRounder(properties);
+      return RoundingFormat.getDefaultRounder(properties);
     }
 
     Currency.CurrencyUsage currencyUsage = properties.getCurrencyUsage();
+    if (currencyUsage == null) {
+      currencyUsage = CurrencyUsage.STANDARD;
+    }
+
     double incrementDouble = currency.getRoundingIncrement(currencyUsage);
     int fractionDigits = currency.getDefaultFractionDigits(currencyUsage);
 
-    // TODO: The object clone could be avoided here if the contructors to IntervalRounder and
-    // MagnitudeRounder took all of their properties directly instead of in the wrapper object.
-    // Is avoiding the object creation worth the increase in code complexity?
-    IProperties cprops = properties.clone();
+    Properties cprops = threadLocalProperties.get().clear();
+    cprops.setRoundingMode(properties.getRoundingMode());
+    cprops.setMinimumIntegerDigits(properties.getMinimumIntegerDigits());
+    cprops.setMaximumIntegerDigits(properties.getMaximumIntegerDigits());
+
+    //    int _minFrac = properties.getMinimumFractionDigits();
+    //    if (_minFrac < 0) {
     cprops.setMinimumFractionDigits(fractionDigits);
+    //    } else {
+    //      cprops.setMinimumFractionDigits(Math.min(_minFrac, fractionDigits));
+    //    }
+    //    int _maxFrac = properties.getMaximumFractionDigits();
+    //    if (_maxFrac < 0) {
     cprops.setMaximumFractionDigits(fractionDigits);
+    //    } else {
+    //      cprops.setMaximumFractionDigits(Math.max(_maxFrac, fractionDigits));
+    //    }
 
     if (incrementDouble > 0.0) {
-      cprops.setRoundingInterval(new BigDecimal(Double.toString(incrementDouble)));
-      return Rounder.IntervalRounder.getInstance(cprops);
+      BigDecimal incrementBigDecimal;
+      //      BigDecimal _roundingIncrement = properties.getRoundingInterval();
+      //      if (_roundingIncrement != null) {
+      //        incrementBigDecimal = _roundingIncrement;
+      //      } else {
+      incrementBigDecimal = new BigDecimal(Double.toString(incrementDouble));
+      //      }
+      cprops.setRoundingInterval(incrementBigDecimal);
+      return IntervalRounder.getInstance(cprops);
     } else {
-      return Rounder.MagnitudeRounder.getInstance(cprops);
+      return MagnitudeRounder.getInstance(cprops);
     }
   }
 }
