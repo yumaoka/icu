@@ -17,6 +17,7 @@ import com.ibm.icu.impl.number.FormatQuantity;
 import com.ibm.icu.impl.number.FormatQuantity1;
 import com.ibm.icu.impl.number.FormatQuantity2;
 import com.ibm.icu.impl.number.FormatQuantity3;
+import com.ibm.icu.impl.number.FormatQuantity4;
 import com.ibm.icu.impl.number.Properties;
 import com.ibm.icu.text.CompactDecimalFormat.CompactStyle;
 
@@ -70,12 +71,14 @@ public class FormatQuantityTest extends TestFmwk {
     };
 
     String[] hardCases = {
-//      "512.0000000000017",
-//      "4096.000000000001",
-//      "4096.000000000004",
-//      "4096.000000000005",
-//      "4096.000000000006",
-//      "4096.000000000007",
+      //      "512.0000000000017",
+      //      "4096.000000000001",
+      //      "4096.000000000004",
+      //      "4096.000000000005",
+      //      "4096.000000000006",
+      //      "4096.000000000007",
+      //      "9999999999999999.0",
+      "9999999999999900.0",
       "789000000000000000000000.0",
       "789123123567853156372158.0",
       "987654321987654321987654321987654321987654311987654321.0",
@@ -98,12 +101,14 @@ public class FormatQuantityTest extends TestFmwk {
     qs.add(new FormatQuantity1(d));
     if (!bigOnly) qs.add(new FormatQuantity2(d));
     qs.add(new FormatQuantity3(d));
+    qs.add(new FormatQuantity4(d));
 
     if (new BigDecimal(Double.toString(d.doubleValue())).equals(d)) {
       double dv = d.doubleValue();
       qs.add(new FormatQuantity1(dv));
       if (!bigOnly) qs.add(new FormatQuantity2(dv));
       qs.add(new FormatQuantity3(dv));
+      qs.add(new FormatQuantity4(dv));
     }
 
     if (new BigDecimal(Long.toString(d.longValue())).setScale(1).equals(d)) {
@@ -111,6 +116,7 @@ public class FormatQuantityTest extends TestFmwk {
       qs.add(new FormatQuantity1(lv));
       if (!bigOnly) qs.add(new FormatQuantity2(lv));
       qs.add(new FormatQuantity3(lv));
+      qs.add(new FormatQuantity4(lv));
     }
 
     testFormatQuantityExpectedOutput(qs.get(0), str);

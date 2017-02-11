@@ -77,6 +77,14 @@ public class DecimalFormat extends NumberFormat {
     this.symbols = (DecimalFormatSymbols) symbols.clone();
     properties = new Properties();
     setPropertiesFromPattern(pattern);
+    // HACK: If choice is a currency type, unset the rounding information.
+    if (choice == NumberFormat.CURRENCYSTYLE
+        || choice == NumberFormat.ISOCURRENCYSTYLE
+        || choice == NumberFormat.PLURALCURRENCYSTYLE){
+      properties.setMinimumFractionDigits(Properties.DEFAULT_MINIMUM_FRACTION_DIGITS);
+      properties.setMaximumFractionDigits(Properties.DEFAULT_MAXIMUM_FRACTION_DIGITS);
+      properties.setRoundingInterval(Properties.DEFAULT_ROUNDING_INTERVAL);
+    }
     // FIXME: Deal with choice
     //    switch (choice) {
     //      case NumberFormat.PLURALCURRENCYSTYLE:

@@ -54,7 +54,8 @@ public class Endpoint {
     return fromBTA(properties, getSymbols(locale));
   }
 
-  public static SingularFormat fromBTA(Properties properties, ULocale uLocale) throws ParseException {
+  public static SingularFormat fromBTA(Properties properties, ULocale uLocale)
+      throws ParseException {
     return fromBTA(properties, getSymbols(uLocale));
   }
 
@@ -70,7 +71,8 @@ public class Endpoint {
     return fromBTA(getProperties(pattern), getSymbols(uLocale));
   }
 
-  public static SingularFormat fromBTA(String pattern, DecimalFormatSymbols symbols) throws ParseException {
+  public static SingularFormat fromBTA(String pattern, DecimalFormatSymbols symbols)
+      throws ParseException {
     return fromBTA(getProperties(pattern), symbols);
   }
 
@@ -105,9 +107,9 @@ public class Endpoint {
         // TODO: Implement compact currency
         throw new UnsupportedOperationException();
       } else if (ScientificFormat.useScientificNotation(properties)) {
-        // TODO: Think more about currency + scientific
         format.addBeforeFormat(PositiveNegativeAffixFormat.getInstance(symbols, properties));
-        format.addBeforeFormat(ScientificFormat.getInstance(symbols, properties));
+        Rounder rounder = CurrencyFormat.getCurrencyRounder(symbols, properties);
+        format.addBeforeFormat(ScientificFormat.getInstance(symbols, properties, rounder));
       } else {
         format.addBeforeFormat(CurrencyFormat.getCurrencyRounder(symbols, properties));
         format.addBeforeFormat(CurrencyFormat.getCurrencyModifier(symbols, properties));

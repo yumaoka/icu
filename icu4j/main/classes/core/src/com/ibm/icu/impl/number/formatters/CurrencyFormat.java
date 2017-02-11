@@ -252,27 +252,27 @@ public class CurrencyFormat {
     cprops.setMinimumIntegerDigits(properties.getMinimumIntegerDigits());
     cprops.setMaximumIntegerDigits(properties.getMaximumIntegerDigits());
 
-    //    int _minFrac = properties.getMinimumFractionDigits();
-    //    if (_minFrac < 0) {
-    cprops.setMinimumFractionDigits(fractionDigits);
-    //    } else {
-    //      cprops.setMinimumFractionDigits(Math.min(_minFrac, fractionDigits));
-    //    }
-    //    int _maxFrac = properties.getMaximumFractionDigits();
-    //    if (_maxFrac < 0) {
-    cprops.setMaximumFractionDigits(fractionDigits);
-    //    } else {
-    //      cprops.setMaximumFractionDigits(Math.max(_maxFrac, fractionDigits));
-    //    }
+    int _minFrac = properties.getMinimumFractionDigits();
+    if (_minFrac < 0) {
+      cprops.setMinimumFractionDigits(fractionDigits);
+    } else {
+      cprops.setMinimumFractionDigits(_minFrac);
+    }
+    int _maxFrac = properties.getMaximumFractionDigits();
+    if (_maxFrac < 0) {
+      cprops.setMaximumFractionDigits(fractionDigits);
+    } else {
+      cprops.setMaximumFractionDigits(_maxFrac);
+    }
 
     if (incrementDouble > 0.0) {
       BigDecimal incrementBigDecimal;
-      //      BigDecimal _roundingIncrement = properties.getRoundingInterval();
-      //      if (_roundingIncrement != null) {
-      //        incrementBigDecimal = _roundingIncrement;
-      //      } else {
-      incrementBigDecimal = new BigDecimal(Double.toString(incrementDouble));
-      //      }
+      BigDecimal _roundingIncrement = properties.getRoundingInterval();
+      if (_roundingIncrement != null) {
+        incrementBigDecimal = _roundingIncrement;
+      } else {
+        incrementBigDecimal = new BigDecimal(Double.toString(incrementDouble));
+      }
       cprops.setRoundingInterval(incrementBigDecimal);
       return IntervalRounder.getInstance(cprops);
     } else {

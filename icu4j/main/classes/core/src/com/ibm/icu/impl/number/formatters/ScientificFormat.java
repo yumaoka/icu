@@ -105,6 +105,11 @@ public class ScientificFormat extends Format.BeforeFormat implements Rounder.Mul
     return new ScientificFormat(symbols, properties, rounder);
   }
 
+  public static ScientificFormat getInstance(
+      DecimalFormatSymbols symbols, IProperties properties, Rounder rounder) {
+    return new ScientificFormat(symbols, properties, rounder);
+  }
+
   // Properties
   private final boolean exponentShowPlusSign;
   private final int exponentDigits;
@@ -118,10 +123,7 @@ public class ScientificFormat extends Format.BeforeFormat implements Rounder.Mul
   // Symbols
   private final String[] digitStrings;
 
-  private ScientificFormat(
-      DecimalFormatSymbols symbols,
-      IProperties properties,
-      Rounder rounder) {
+  private ScientificFormat(DecimalFormatSymbols symbols, IProperties properties, Rounder rounder) {
     exponentShowPlusSign = properties.getExponentShowPlusSign();
     exponentDigits = Math.max(1, properties.getExponentDigits());
     int _maxInt = properties.getMaximumIntegerDigits();
@@ -141,7 +143,10 @@ public class ScientificFormat extends Format.BeforeFormat implements Rounder.Mul
     signMod =
         new PositiveNegativeAffixModifier(
             new ConstantAffixModifier(
-                "", exponentShowPlusSign ? symbols.getPlusSignString() : "", Field.EXPONENT_SIGN, true),
+                "",
+                exponentShowPlusSign ? symbols.getPlusSignString() : "",
+                Field.EXPONENT_SIGN,
+                true),
             new ConstantAffixModifier("", symbols.getMinusSignString(), Field.EXPONENT_SIGN, true));
   }
 
