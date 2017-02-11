@@ -127,7 +127,7 @@ public class SignificantDigitsRounder extends Rounder {
           // Round to the strongest of maxFrac, maxInt, and maxSig.
           roundingMagnitude = Math.max(-maxFrac, Math.min(maxInt - maxSig, magnitude - maxSig + 1));
         }
-        input.roundToMagnitude(roundingMagnitude, roundingMode);
+        input.roundToMagnitude(roundingMagnitude, mathContext);
         magnitude = input.getMagnitude(); // in case magnitude changed
       }
     }

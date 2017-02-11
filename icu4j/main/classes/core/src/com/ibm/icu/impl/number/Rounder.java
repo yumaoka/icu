@@ -2,6 +2,7 @@
 // License & terms of use: http://www.unicode.org/copyright.html#License
 package com.ibm.icu.impl.number;
 
+import java.math.MathContext;
 import java.math.RoundingMode;
 
 import com.ibm.icu.impl.number.formatters.CompactDecimalFormat;
@@ -100,19 +101,47 @@ public abstract class Rounder extends Format.BeforeFormat {
      * rounded either up or down. See {@link RoundingMode} for details on the choices of rounding
      * mode. The default if not set explicitly is {@link RoundingMode#HALF_EVEN}.
      *
+     * <p>This setting is ignored if {@link #setMathContext} is used.
+     *
      * @param roundingMode The rounding mode to use when rounding is required.
      * @return The property bag, for chaining.
      * @see RoundingMode
+     * @see #setMathContext
      */
     public IBasicRoundingProperties setRoundingMode(RoundingMode roundingMode);
+
+    static MathContext DEFAULT_MATH_CONTEXT = null;
+
+    /** @see #setMathContext */
+    public MathContext getMathContext();
+
+    /**
+     * Sets the {@link MathContext} to be used during math and rounding operations. A MathContext
+     * encapsulates a RoundingMode and the number of significant digits in the output.
+     *
+     * @param mathContext The math context to use when rounding is required.
+     * @return The property bag, for chaining.
+     * @see MathContext
+     * @see #setRoundingMode
+     */
+    public IBasicRoundingProperties setMathContext(MathContext mathContext);
   }
 
   public static interface MultiplierGenerator {
     public int getMultiplier(int magnitude);
   }
 
+  private static final MathContext[] MATH_CONTEXT_BY_ROUNDING_MODE =
+      new MathContext[RoundingMode.values().length];
+
+  static {
+    for (int i = 0; i < MATH_CONTEXT_BY_ROUNDING_MODE.length; i++) {
+      MATH_CONTEXT_BY_ROUNDING_MODE[i] = new MathContext(0, RoundingMode.valueOf(i));
+    }
+  }
+
   // Properties available to all rounding strategies
-  protected final RoundingMode roundingMode;
+  protected final MathContext mathContext;
   protected final int minInt;
   protected final int maxInt;
   protected final int minFrac;
@@ -124,7 +153,14 @@ public abstract class Rounder extends Format.BeforeFormat {
    * @param properties
    */
   protected Rounder(IBasicRoundingProperties properties) {
-    roundingMode = properties.getRoundingMode();
+    MathContext _mc = properties.getMathContext();
+    if (_mc == null) {
+      RoundingMode _rm = properties.getRoundingMode();
+      if (_rm == null) _rm = RoundingMode.HALF_EVEN;
+      _mc = MATH_CONTEXT_BY_ROUNDING_MODE[_rm.ordinal()];
+    }
+    mathContext = _mc;
+
     int _maxInt = properties.getMaximumIntegerDigits();
     int _minInt = properties.getMinimumIntegerDigits();
     int _maxFrac = properties.getMaximumFractionDigits();
@@ -219,7 +255,8 @@ public abstract class Rounder extends Format.BeforeFormat {
 
   @Override
   public void export(Properties properties) {
-    properties.setRoundingMode(roundingMode);
+    properties.setMathContext(mathContext);
+    properties.setRoundingMode(mathContext.getRoundingMode());
     properties.setMinimumFractionDigits(minFrac);
     properties.setMinimumIntegerDigits(minInt);
     properties.setMaximumFractionDigits(maxFrac);

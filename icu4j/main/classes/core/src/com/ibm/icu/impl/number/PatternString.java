@@ -3,7 +3,6 @@
 package com.ibm.icu.impl.number;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.text.ParseException;
 
 import com.ibm.icu.impl.number.formatters.PaddingFormat.PaddingLocation;
@@ -350,7 +349,7 @@ public class PatternString {
           }
           properties.setMinimumSignificantDigits(positive.minimumSignificantDigits);
           properties.setMaximumSignificantDigits(positive.maximumSignificantDigits);
-        } else if (!positive.rounding.isEmpty()) {
+        } else if (!positive.rounding.isZero()) {
           if (!positive.hasCurrencySign) {
             properties.setMinimumFractionDigits(positive.minimumFractionDigits);
             properties.setMaximumFractionDigits(positive.maximumFractionDigits);
@@ -454,7 +453,7 @@ public class PatternString {
       boolean hasDecimal = false;
       int paddingWidth = 0;
       PaddingLocation paddingLocation = null;
-      RoundingInterval rounding = new RoundingInterval();
+      FormatQuantity4 rounding = new FormatQuantity4();
       boolean exponentShowPlusSign = false;
       int exponentDigits = 0;
       boolean hasPercentSign = false;
@@ -464,44 +463,6 @@ public class PatternString {
       StringBuilder padding = new StringBuilder();
       StringBuilder prefix = new StringBuilder();
       StringBuilder suffix = new StringBuilder();
-    }
-
-    private static class RoundingInterval {
-      long integer = 0L;
-      long fraction = 0L;
-      long fractionDivisor = 1;
-      int fractionLength = 0;
-
-      void appendInteger(int n) throws ParseException {
-        if (integer > Long.MAX_VALUE / 10) {
-          throw new ParseException("Rounding interval in decimal pattern is too large", 0);
-        }
-        integer *= 10;
-        integer += n;
-      }
-
-      void appendFraction(int n) throws ParseException {
-        if (fraction > Long.MAX_VALUE / 10) {
-          throw new ParseException("Rounding interval in decimal pattern is too large", 0);
-        }
-        fraction *= 10;
-        fraction += n;
-        fractionDivisor *= 10;
-        fractionLength += 1;
-      }
-
-      boolean isEmpty() {
-        return integer == 0 && fraction == 0;
-      }
-
-      BigDecimal toBigDecimal() {
-        BigDecimal d = new BigDecimal(fraction);
-        BigDecimal v = new BigDecimal(fractionDivisor);
-        BigDecimal i = new BigDecimal(integer);
-        d = d.divide(v, fractionLength, RoundingMode.UNNECESSARY);
-        d = d.add(i);
-        return d;
-      }
     }
 
     /** An internal class used for tracking the cursor during parsing of a pattern string. */
@@ -684,7 +645,7 @@ public class PatternString {
             // no change to result.minimumIntegerDigits
             // no change to result.minimumSignificantDigits
             result.maximumSignificantDigits += (seenSignificantDigitMarker ? 1 : 0);
-            result.rounding.appendInteger(0);
+            result.rounding.appendDigit((byte) 0, 0, true);
             break;
 
           case '@':
@@ -695,7 +656,7 @@ public class PatternString {
             // no change to result.minimumIntegerDigits
             result.minimumSignificantDigits += 1;
             result.maximumSignificantDigits += 1;
-            result.rounding.appendInteger(0); // TODO: does this make sense?
+            result.rounding.appendDigit((byte) 0, 0, true);
             break;
 
           case '0':
@@ -715,7 +676,7 @@ public class PatternString {
             result.minimumIntegerDigits += 1;
             // no change to result.minimumSignificantDigits
             result.maximumSignificantDigits += (seenSignificantDigitMarker ? 1 : 0);
-            result.rounding.appendInteger(state.peek() - '0');
+            result.rounding.appendDigit((byte) (state.peek() - '0'), 0, true);
             break;
 
           default:
@@ -727,13 +688,14 @@ public class PatternString {
 
     private static void consumeFractionFormat(ParserState state, SubpatternParseResult result)
         throws ParseException {
+      int zeroCounter = 0;
       while (true) {
         switch (state.peek()) {
           case '#':
             result.paddingWidth += 1;
             // no change to result.minimumFractionDigits
             result.maximumFractionDigits += 1;
-            result.rounding.appendFraction(0);
+            zeroCounter++;
             break;
 
           case '0':
@@ -749,7 +711,12 @@ public class PatternString {
             result.paddingWidth += 1;
             result.minimumFractionDigits += 1;
             result.maximumFractionDigits += 1;
-            result.rounding.appendFraction(state.peek() - '0');
+            if (state.peek() == '0') {
+              zeroCounter++;
+            } else {
+              result.rounding.appendDigit((byte) (state.peek() - '0'), zeroCounter, false);
+              zeroCounter = 0;
+            }
             break;
 
           default:

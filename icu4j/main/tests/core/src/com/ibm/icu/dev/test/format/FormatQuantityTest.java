@@ -3,6 +3,7 @@
 package com.ibm.icu.dev.test.format;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
 import java.math.RoundingMode;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -151,31 +152,41 @@ public class FormatQuantityTest extends TestFmwk {
     assertEquals("Unexpected output from simple string conversion (" + q0 + ")", expected, actual);
   }
 
+  private static final MathContext MATH_CONTEXT_HALF_EVEN = new MathContext(0, RoundingMode.HALF_EVEN);
+  private static final MathContext MATH_CONTEXT_CEILING = new MathContext(0, RoundingMode.CEILING);
+  private static final MathContext MATH_CONTEXT_PRECISION = new MathContext(3, RoundingMode.HALF_UP);
+
   private static void testFormatQuantityRounding(FormatQuantity rq0, FormatQuantity rq1) {
     FormatQuantity q0 = rq0.clone();
     FormatQuantity q1 = rq1.clone();
-    q0.roundToMagnitude(-1, RoundingMode.HALF_EVEN);
-    q1.roundToMagnitude(-1, RoundingMode.HALF_EVEN);
+    q0.roundToMagnitude(-1, MATH_CONTEXT_HALF_EVEN);
+    q1.roundToMagnitude(-1, MATH_CONTEXT_HALF_EVEN);
     testFormatQuantityBehavior(q0, q1);
 
     q0 = rq0.clone();
     q1 = rq1.clone();
-    q0.roundToMagnitude(-1, RoundingMode.CEILING);
-    q1.roundToMagnitude(-1, RoundingMode.CEILING);
+    q0.roundToMagnitude(-1, MATH_CONTEXT_CEILING);
+    q1.roundToMagnitude(-1, MATH_CONTEXT_CEILING);
+    testFormatQuantityBehavior(q0, q1);
+
+    q0 = rq0.clone();
+    q1 = rq1.clone();
+    q0.roundToMagnitude(-1, MATH_CONTEXT_PRECISION);
+    q1.roundToMagnitude(-1, MATH_CONTEXT_PRECISION);
     testFormatQuantityBehavior(q0, q1);
   }
 
   private static void testFormatQuantityRoundingInterval(FormatQuantity rq0, FormatQuantity rq1) {
     FormatQuantity q0 = rq0.clone();
     FormatQuantity q1 = rq1.clone();
-    q0.roundToInterval(new BigDecimal("0.05"), RoundingMode.HALF_EVEN);
-    q1.roundToInterval(new BigDecimal("0.05"), RoundingMode.HALF_EVEN);
+    q0.roundToInterval(new BigDecimal("0.05"), MATH_CONTEXT_HALF_EVEN);
+    q1.roundToInterval(new BigDecimal("0.05"), MATH_CONTEXT_HALF_EVEN);
     testFormatQuantityBehavior(q0, q1);
 
     q0 = rq0.clone();
     q1 = rq1.clone();
-    q0.roundToInterval(new BigDecimal("0.05"), RoundingMode.CEILING);
-    q1.roundToInterval(new BigDecimal("0.05"), RoundingMode.CEILING);
+    q0.roundToInterval(new BigDecimal("0.05"), MATH_CONTEXT_CEILING);
+    q1.roundToInterval(new BigDecimal("0.05"), MATH_CONTEXT_CEILING);
     testFormatQuantityBehavior(q0, q1);
   }
 
@@ -237,6 +248,15 @@ public class FormatQuantityTest extends TestFmwk {
           "Different digit at magnitude " + m + " (" + q0 + ", " + q1 + ")",
           q0.getDigit(m),
           q1.getDigit(m));
+    }
+
+    if (rq0 instanceof FormatQuantity4) {
+      String message = ((FormatQuantity4) rq0).checkHealth();
+      if (message != null) errln(message);
+    }
+    if (rq1 instanceof FormatQuantity4) {
+      String message = ((FormatQuantity4) rq1).checkHealth();
+      if (message != null) errln(message);
     }
   }
 

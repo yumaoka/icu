@@ -8,39 +8,23 @@ import java.math.BigInteger;
 /** @author sffc */
 public class FormatQuantitySelector {
   public static FormatQuantityBCD from(int input) {
-    return new FormatQuantity2(input);
+    return new FormatQuantity4(input);
   }
 
   public static FormatQuantityBCD from(long input) {
-    if (Math.abs(input) < 10000000000000000L && input != Long.MIN_VALUE) {
-      return new FormatQuantity2(input);
-    } else {
-      return new FormatQuantity3(input);
-    }
+    return new FormatQuantity4(input);
   }
 
   public static FormatQuantityBCD from(double input) {
-    return new FormatQuantity2(input);
+    return new FormatQuantity4(input);
   }
-
-  private static final BigInteger BIGINT_1E16 = BigInteger.valueOf((long) 1e16);
 
   public static FormatQuantityBCD from(BigInteger input) {
-    if (input.abs().compareTo(BIGINT_1E16) < 0) {
-      return new FormatQuantity2(input);
-    } else {
-      return new FormatQuantity3(input);
-    }
+    return new FormatQuantity4(input);
   }
 
-  private static final java.math.BigDecimal BIGDEC_1E16 = java.math.BigDecimal.valueOf(1e16);
-
   public static FormatQuantityBCD from(BigDecimal input) {
-    if (input.abs().compareTo(BIGDEC_1E16) < 0) {
-      return new FormatQuantity2(input);
-    } else {
-      return new FormatQuantity3(input);
-    }
+    return new FormatQuantity4(input);
   }
 
   public static FormatQuantityBCD from(com.ibm.icu.math.BigDecimal input) {

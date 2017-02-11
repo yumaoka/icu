@@ -31,8 +31,8 @@ import com.ibm.icu.util.CurrencyAmount;
 public class DecimalFormat extends NumberFormat {
 
   private final Properties properties;
-  private SingularFormat formatter;
-  private DecimalFormatSymbols symbols;
+  private volatile DecimalFormatSymbols symbols;
+  private transient volatile SingularFormat formatter;
 
   /** @stable ICU 2.0 */
   public DecimalFormat() {
@@ -471,28 +471,52 @@ public class DecimalFormat extends NumberFormat {
     refreshFormatter();
   }
 
+  /** Remember the ICU math context form in order to be able to return it from the API. */
+  private int icuMathContextForm = MathContext.PLAIN;
+
   /** @stable ICU 4.2 */
   public synchronized MathContext getMathContextICU() {
-    // TODO(sffc)
-    throw new UnsupportedOperationException();
+    java.math.MathContext mathContext = getMathContext();
+    return new MathContext(
+        mathContext.getPrecision(),
+        icuMathContextForm,
+        false,
+        mathContext.getRoundingMode().ordinal());
   }
 
   /** @stable ICU 4.2 */
   public synchronized void setMathContextICU(MathContext newValue) {
-    // TODO(sffc)
-    throw new UnsupportedOperationException();
+    icuMathContextForm = newValue.getForm();
+    java.math.MathContext mathContext;
+    if (newValue.getLostDigits()) {
+      // The getLostDigits() feature in ICU MathContext means "throw an ArithmeticException if
+      // rounding causes digits to be lost". That feature is called RoundingMode.UNNECESSARY in
+      // Java MathContext.
+      mathContext = new java.math.MathContext(
+          newValue.getDigits(),
+          RoundingMode.UNNECESSARY);
+    } else {
+      mathContext = new java.math.MathContext(
+          newValue.getDigits(),
+          RoundingMode.valueOf(newValue.getRoundingMode()));
+    }
+    setMathContext(mathContext);
   }
 
   /** @stable ICU 4.2 */
   public synchronized java.math.MathContext getMathContext() {
-    // TODO(sffc)
-    throw new UnsupportedOperationException();
+    java.math.MathContext mathContext = properties.getMathContext();
+    if (mathContext == null) {
+      return new java.math.MathContext(0, RoundingMode.HALF_EVEN);
+    } else {
+      return mathContext;
+    }
   }
 
   /** @stable ICU 4.2 */
   public synchronized void setMathContext(java.math.MathContext newValue) {
-    // TODO(sffc)
-    throw new UnsupportedOperationException();
+    properties.setMathContext(newValue);
+    refreshFormatter();
   }
 
   /** @stable ICU 54 */

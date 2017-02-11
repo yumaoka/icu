@@ -3,6 +3,7 @@
 package com.ibm.icu.impl.number;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
 import java.math.RoundingMode;
 
 import com.ibm.icu.impl.StandardPlural;
@@ -340,18 +341,20 @@ public class FormatQuantity1 implements FormatQuantity {
   }
 
   @Override
-  public void roundToInterval(BigDecimal roundingInterval, RoundingMode roundingMode) {
+  public void roundToInterval(BigDecimal roundingInterval, MathContext roundingMode) {
     divideBy(roundingInterval, scaleBigDecimal(roundingInterval), roundingMode);
     roundToMagnitude(0, roundingMode);
     multiplyBy(roundingInterval);
   }
 
   @Override
-  public void roundToMagnitude(int roundingMagnitude, RoundingMode roundingMode) {
+  public void roundToMagnitude(int roundingMagnitude, MathContext mathContext) {
     if (primary == -1) {
       if (isNegative()) fallback = fallback.negate();
-      fallback = fallback.setScale(-roundingMagnitude, roundingMode);
+      fallback = fallback.setScale(-roundingMagnitude, mathContext.getRoundingMode());
       if (isNegative()) fallback = fallback.negate();
+      // Enforce the math context.
+      fallback = fallback.round(mathContext);
     } else {
       int relativeScale = primaryScale - roundingMagnitude;
       if (relativeScale < -18) {
@@ -368,16 +371,19 @@ public class FormatQuantity1 implements FormatQuantity {
           // TODO: Make this more efficient. Temporarily, convert to a BigDecimal and back again.
           BigDecimal temp = new BigDecimal(primary).scaleByPowerOfTen(primaryScale);
           if (isNegative()) temp = temp.negate();
-          temp = temp.setScale(-roundingMagnitude, roundingMode);
+          temp = temp.setScale(-roundingMagnitude, mathContext.getRoundingMode());
           if (isNegative()) temp = temp.negate();
           temp = temp.scaleByPowerOfTen(-roundingMagnitude);
-          primary = temp.longValueExact(); // should never throw since the number can't grow longer
+          primary = temp.longValueExact(); // should never throw
           primaryScale = roundingMagnitude;
           primaryPrecision = computePrecision(primary);
         }
       } else {
         // No rounding is necessary. All digits are to the left of the rounding magnitude.
       }
+      // Enforce the math context.
+      primary = new BigDecimal(primary).round(mathContext).longValueExact();
+      primaryPrecision = computePrecision(primary);
     }
   }
 
@@ -405,12 +411,12 @@ public class FormatQuantity1 implements FormatQuantity {
    *
    * @param divisor The number to be passed to {@link BigDecimal#divide}.
    * @param scale The scale of the final rounded number. More negative means more decimal places.
-   * @param roundingMode The rounding mode to use if rounding is necessary.
+   * @param mathContext The math context to use if rounding is necessary.
    */
-  private void divideBy(BigDecimal divisor, int scale, RoundingMode roundingMode) {
+  private void divideBy(BigDecimal divisor, int scale, MathContext mathContext) {
     convertToBigDecimal();
     // Negate the scale because BigDecimal's scale is defined as the inverse of our scale
-    fallback = fallback.setScale(-scale, roundingMode).divide(divisor, roundingMode);
+    fallback = fallback.setScale(-scale, mathContext.getRoundingMode()).divide(divisor, mathContext);
     if (fallback.compareTo(BigDecimal.ZERO) < 0) {
       setNegative(!isNegative());
       fallback = fallback.negate();
@@ -791,7 +797,7 @@ public class FormatQuantity1 implements FormatQuantity {
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("<FormatQuantity ");
+    sb.append("<FormatQuantity1 ");
     if (primary == -1) {
       sb.append(lOptPos > 1000 ? "max" : lOptPos);
       sb.append(":");

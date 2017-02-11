@@ -72,7 +72,7 @@ public final class FormatQuantity3 extends FormatQuantityBCD {
   }
 
   @Override
-  protected void setToZero() {
+  protected void setBcdToZero() {
     for (int i = 0; i < precision; i++) {
       bcd[i] = (byte) 0;
     }

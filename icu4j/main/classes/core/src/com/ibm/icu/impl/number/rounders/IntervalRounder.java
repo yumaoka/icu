@@ -40,7 +40,6 @@ public class IntervalRounder extends Rounder {
   }
 
   private final BigDecimal roundingInterval;
-  private final boolean intervalLessThanOne;
 
   public static IntervalRounder getInstance(IProperties properties) {
     return new IntervalRounder(properties);
@@ -52,12 +51,11 @@ public class IntervalRounder extends Rounder {
       throw new IllegalArgumentException("Rounding interval must be greater than zero");
     }
     roundingInterval = properties.getRoundingInterval();
-    intervalLessThanOne = roundingInterval.compareTo(BigDecimal.ONE) < 0;
   }
 
   @Override
   public void apply(FormatQuantity input) {
-    input.roundToInterval(roundingInterval, roundingMode);
+    input.roundToInterval(roundingInterval, mathContext);
     applyDefaults(input);
   }
 

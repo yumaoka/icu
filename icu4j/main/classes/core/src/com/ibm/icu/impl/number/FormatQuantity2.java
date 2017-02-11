@@ -66,7 +66,7 @@ public final class FormatQuantity2 extends FormatQuantityBCD {
   }
 
   @Override
-  protected void setToZero() {
+  protected void setBcdToZero() {
     bcd = 0L;
     scale = 0;
     precision = 0;

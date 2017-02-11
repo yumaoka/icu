@@ -24,7 +24,7 @@ public class MagnitudeRounder extends Rounder {
 
   @Override
   public void apply(FormatQuantity input) {
-    input.roundToMagnitude(-maxFrac, roundingMode);
+    input.roundToMagnitude(-maxFrac, mathContext);
     applyDefaults(input);
   }
 }

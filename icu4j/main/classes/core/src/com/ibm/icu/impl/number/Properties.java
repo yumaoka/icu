@@ -4,6 +4,7 @@ package com.ibm.icu.impl.number;
 
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
+import java.math.MathContext;
 import java.math.RoundingMode;
 
 import com.ibm.icu.impl.number.Parse.IProperties;
@@ -71,6 +72,7 @@ public class Properties
   private boolean exponentShowPlusSign;
   private int groupingSize;
   private int magnitudeMultiplier;
+  private MathContext mathContext;
   private int maximumFractionDigits;
   private int maximumIntegerDigits;
   private int maximumSignificantDigits;
@@ -100,10 +102,16 @@ public class Properties
   private CharSequence positiveSuffixPattern;
   private BigDecimal roundingInterval;
   private RoundingMode roundingMode;
-
   private int secondaryGroupingSize;
-
   private boolean significantDigitsOverride;
+
+  /*--------------------------------------------------------------------------------------------+/
+  /| IMPORTANT!                                                                                 |/
+  /| WHEN ADDING A NEW PROPERTY, ADD IT HERE, IN #clear(), IN #equals(), AND IN #hashCode().    |/
+  /|                                                                                            |/
+  /| The unit test PropertiesTest will catch if you forget to add it to #clear() or #equals(),  |/
+  /| but it will NOT catch if you forget to add it to #hashCode().                              |/
+  /+--------------------------------------------------------------------------------------------*/
 
   public Properties() {
     clear();
@@ -122,6 +130,7 @@ public class Properties
     exponentShowPlusSign = DEFAULT_EXPONENT_SHOW_PLUS_SIGN;
     groupingSize = DEFAULT_GROUPING_SIZE;
     magnitudeMultiplier = DEFAULT_MAGNITUDE_MULTIPLIER;
+    mathContext = DEFAULT_MATH_CONTEXT;
     maximumFractionDigits = DEFAULT_MAXIMUM_FRACTION_DIGITS;
     maximumIntegerDigits = DEFAULT_MAXIMUM_INTEGER_DIGITS;
     maximumSignificantDigits = DEFAULT_MAXIMUM_SIGNIFICANT_DIGITS;
@@ -170,6 +179,7 @@ public class Properties
     eq = eq && _equalsHelper(exponentShowPlusSign, other.exponentShowPlusSign);
     eq = eq && _equalsHelper(groupingSize, other.groupingSize);
     eq = eq && _equalsHelper(magnitudeMultiplier, other.magnitudeMultiplier);
+    eq = eq && _equalsHelper(mathContext, other.mathContext);
     eq = eq && _equalsHelper(maximumFractionDigits, other.maximumFractionDigits);
     eq = eq && _equalsHelper(maximumIntegerDigits, other.maximumIntegerDigits);
     eq = eq && _equalsHelper(maximumSignificantDigits, other.maximumSignificantDigits);
@@ -246,6 +256,7 @@ public class Properties
     hashCode ^= _hashCodeHelper(exponentShowPlusSign);
     hashCode ^= _hashCodeHelper(groupingSize);
     hashCode ^= _hashCodeHelper(magnitudeMultiplier);
+    hashCode ^= _hashCodeHelper(mathContext);
     hashCode ^= _hashCodeHelper(maximumFractionDigits);
     hashCode ^= _hashCodeHelper(maximumIntegerDigits);
     hashCode ^= _hashCodeHelper(maximumSignificantDigits);
@@ -379,6 +390,11 @@ public class Properties
   }
 
   @Override
+  public MathContext getMathContext() {
+    return mathContext;
+  }
+
+  @Override
   public int getMaximumFractionDigits() {
     return maximumFractionDigits;
   }
@@ -448,15 +464,15 @@ public class Properties
     return negativeSuffixPattern;
   }
 
-  @Override
-  public PaddingLocation getPaddingLocation() {
-    return paddingLocation;
-  }
-
   //  @Override
   //  public boolean getParseCurrency() {
   //    return parseCurrency;
   //  }
+
+  @Override
+  public PaddingLocation getPaddingLocation() {
+    return paddingLocation;
+  }
 
   @Override
   public CharSequence getPaddingString() {
@@ -621,6 +637,12 @@ public class Properties
   }
 
   @Override
+  public Properties setMathContext(MathContext mathContext) {
+    this.mathContext = mathContext;
+    return this;
+  }
+
+  @Override
   public Properties setMaximumFractionDigits(int maximumFractionDigits) {
     this.maximumFractionDigits = maximumFractionDigits;
     return this;
@@ -680,6 +702,12 @@ public class Properties
     return this;
   }
 
+  //  @Override
+  //  public Properties setParseCurrency(boolean parseCurrency) {
+  //    this.parseCurrency = parseCurrency;
+  //    return this;
+  //  }
+
   @Override
   public Properties setNegativePrefix(CharSequence negativePrefix) {
     this.negativePrefix = negativePrefix;
@@ -691,12 +719,6 @@ public class Properties
     this.negativePrefixPattern = negativePrefixPattern;
     return this;
   }
-
-  //  @Override
-  //  public Properties setParseCurrency(boolean parseCurrency) {
-  //    this.parseCurrency = parseCurrency;
-  //    return this;
-  //  }
 
   @Override
   public Properties setNegativeSuffix(CharSequence negativeSuffix) {

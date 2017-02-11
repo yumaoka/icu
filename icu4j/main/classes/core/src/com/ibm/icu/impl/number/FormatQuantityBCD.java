@@ -4,7 +4,7 @@ package com.ibm.icu.impl.number;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.math.RoundingMode;
+import java.math.MathContext;
 
 import com.ibm.icu.impl.StandardPlural;
 import com.ibm.icu.text.PluralRules;
@@ -133,20 +133,25 @@ public abstract class FormatQuantityBCD implements FormatQuantity {
   }
 
   @Override
-  public void roundToInterval(BigDecimal roundingInterval, RoundingMode roundingMode) {
+  public void roundToInterval(BigDecimal roundingInterval, MathContext mathContext) {
     // TODO: Avoid converting back and forth to BigDecimal.
     BigDecimal temp = bcdToBigDecimal();
-    temp = temp.divide(roundingInterval, 0, roundingMode).multiply(roundingInterval);
-    setToBigDecimal(temp);
+    temp =
+        temp.divide(roundingInterval, 0, mathContext.getRoundingMode())
+            .multiply(roundingInterval)
+            .round(mathContext);
+    if (temp.signum() == 0) {
+      setBcdToZero(); // keeps negative flag for -0.0
+    } else {
+      setToBigDecimal(temp);
+    }
   }
 
   @Override
   public void multiplyBy(BigDecimal multiplicand) {
     // TODO: Perform the multiplication in BCD space.
-    // FIXME: This can push the FormatQuantity2 out of range.
     BigDecimal temp = bcdToBigDecimal();
     temp = temp.multiply(multiplicand);
-    flags = 0;
     setToBigDecimal(temp);
   }
 
@@ -254,33 +259,41 @@ public abstract class FormatQuantityBCD implements FormatQuantity {
     }
   }
 
-  protected void setToInt(int n) {
-    if (n == 0) {
-      setToZero();
-      return;
-    } else if (n < 0) {
+  public void setToInt(int n) {
+    setBcdToZero();
+    flags = 0;
+    if (n < 0) {
       flags |= NEGATIVE_FLAG;
       n = -n;
     }
+    if (n != 0) {
+      _setToInt(n);
+      compact();
+    }
+  }
 
+  private void _setToInt(int n) {
     if (n == Integer.MIN_VALUE) {
       readLongToBcd(-(long) n);
     } else {
       readIntToBcd(n);
     }
-
-    compact();
   }
 
-  protected void setToLong(long n) {
-    if (n == 0) {
-      setToZero();
-      return;
-    } else if (n < 0) {
+  public void setToLong(long n) {
+    setBcdToZero();
+    flags = 0;
+    if (n < 0) {
       flags |= NEGATIVE_FLAG;
       n = -n;
     }
+    if (n != 0) {
+      _setToLong(n);
+      compact();
+    }
+  }
 
+  private void _setToLong(long n) {
     if (n == Long.MIN_VALUE) {
       readBigIntegerToBcd(BigInteger.valueOf(n).negate());
     } else if (n <= Integer.MAX_VALUE) {
@@ -288,19 +301,22 @@ public abstract class FormatQuantityBCD implements FormatQuantity {
     } else {
       readLongToBcd(n);
     }
-
-    compact();
   }
 
-  protected void setToBigInteger(BigInteger n) {
-    if (n.signum() == 0) {
-      setToZero();
-      return;
-    } else if (n.signum() == -1) {
+  public void setToBigInteger(BigInteger n) {
+    setBcdToZero();
+    flags = 0;
+    if (n.signum() == -1) {
       flags |= NEGATIVE_FLAG;
       n = n.negate();
     }
+    if (n.signum() != 0) {
+      _setToBigInteger(n);
+      compact();
+    }
+  }
 
+  private void _setToBigInteger(BigInteger n) {
     if (n.bitLength() < 32) {
       readIntToBcd(n.intValueExact());
     } else if (n.bitLength() < 64) {
@@ -308,35 +324,32 @@ public abstract class FormatQuantityBCD implements FormatQuantity {
     } else {
       readBigIntegerToBcd(n);
     }
-
-    compact();
   }
 
   /**
    * Sets the internal BCD state to represent the value in the given double.
    *
-   * <p>With all of the readToBcd methods, it is the caller's responsibility to clear out the flags
-   * if they want the flags cleared.
-   *
    * @param n The value to consume.
    */
-  protected void setToDouble(double n) {
+  public void setToDouble(double n) {
+    setBcdToZero();
+    flags = 0;
+    // Double.compare() handles +0.0 vs -0.0
     if (Double.compare(n, 0.0) < 0) {
-      // Double.compare() handles +0.0 vs -0.0
       flags |= NEGATIVE_FLAG;
       n = -n;
     }
-    if (n == 0) {
-      setToZero();
-      return;
-    } else if (Double.isNaN(n)) {
+    if (Double.isNaN(n)) {
       flags |= NAN_FLAG;
-      return;
     } else if (Double.isInfinite(n)) {
       flags |= INFINITY_FLAG;
-      return;
+    } else {
+      _setToDouble(n);
+      compact();
     }
+  }
 
+  private void _setToDouble(double n) {
     long ieeeBits = Double.doubleToLongBits(n);
     int exponent = (int) ((ieeeBits & 0x7ff0000000000000L) >> 52) - 0x3ff;
     int fracLength = (int) ((52 - exponent) / 3.32192809489);
@@ -351,30 +364,33 @@ public abstract class FormatQuantityBCD implements FormatQuantity {
       for (; i <= -3; i += 3) n /= 1000;
       for (; i <= -1; i += 1) n /= 10;
     }
-    setToLong(Math.round(n));
+    _setToLong(Math.round(n));
     scale -= fracLength;
   }
 
   /**
    * Sets the internal BCD state to represent the value in the given BigDecimal.
    *
-   * <p>With all of the readToBcd methods, it is the caller's responsibility to clear out the flags
-   * if they want the flags cleared.
-   *
    * @param n The value to consume.
    */
-  protected void setToBigDecimal(BigDecimal n) {
-    setToZero();
-    if (n.signum() == 0) {
-      return;
-    } else if (n.signum() == -1) {
+  public void setToBigDecimal(BigDecimal n) {
+    setBcdToZero();
+    flags = 0;
+    if (n.signum() == -1) {
       flags |= NEGATIVE_FLAG;
       n = n.negate();
     }
+    if (n.signum() != 0) {
+      _setToBigDecimal(n);
+      compact();
+    }
+  }
 
+  private void _setToBigDecimal(BigDecimal n) {
     int fracLength = n.scale();
     n = n.scaleByPowerOfTen(fracLength);
-    setToBigInteger(n.toBigInteger());
+    BigInteger bi = n.toBigInteger();
+    _setToBigInteger(bi);
     scale -= fracLength;
   }
 
@@ -445,10 +461,16 @@ public abstract class FormatQuantityBCD implements FormatQuantity {
   }
 
   @Override
-  public void roundToMagnitude(int magnitude, RoundingMode roundingMode) {
+  public void roundToMagnitude(int magnitude, MathContext mathContext) {
     // The position in the BCD at which rounding will be performed; digits to the right of position
     // will be rounded away.
     int position = magnitude - scale;
+
+    // Enforce the number of digits required by the MathContext.
+    int _mcPrecision = mathContext.getPrecision();
+    if (_mcPrecision > 0 && precision - position > _mcPrecision) {
+      position = precision - _mcPrecision;
+    }
 
     if (position <= 0) {
       // All digits are to the left of the rounding magnitude.
@@ -478,15 +500,19 @@ public abstract class FormatQuantityBCD implements FormatQuantity {
 
       boolean roundDown =
           RoundingUtils.getRoundingDirection(
-              (trailingDigit % 2) == 0, isNegative(), section, roundingMode.ordinal(), this);
+              (trailingDigit % 2) == 0,
+              isNegative(),
+              section,
+              mathContext.getRoundingMode().ordinal(),
+              this);
 
       // Perform truncation
       if (position >= precision) {
-        setToZero();
+        setBcdToZero();
+        scale = magnitude;
       } else {
         shiftRight(position);
       }
-      scale = magnitude;
 
       // Bubble the result to the higher digits
       if (!roundDown) {
@@ -502,6 +528,7 @@ public abstract class FormatQuantityBCD implements FormatQuantity {
         setDigitPos(0, (byte) (digit0 + 1));
         precision += 1; // in case an extra digit got added
       }
+
       compact();
     }
   }
@@ -528,7 +555,7 @@ public abstract class FormatQuantityBCD implements FormatQuantity {
 
   protected abstract void shiftRight(int numDigits);
 
-  protected abstract void setToZero();
+  protected abstract void setBcdToZero();
 
   /**
    * Sets the internal BCD state to represent the value in the given int. The int is guaranteed to

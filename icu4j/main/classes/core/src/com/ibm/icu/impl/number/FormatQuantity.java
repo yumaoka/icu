@@ -3,7 +3,7 @@
 package com.ibm.icu.impl.number;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
+import java.math.MathContext;
 
 import com.ibm.icu.impl.StandardPlural;
 import com.ibm.icu.text.PluralRules;
@@ -39,20 +39,20 @@ public interface FormatQuantity extends PluralRules.IFixedDecimal {
    * <p>If rounding to a power of ten, use the more efficient {@link #roundToMagnitude} instead.
    *
    * @param roundingInterval The increment to which to round.
-   * @param roundingMode The {@link RoundingMode} to use if rounding is necessary. Undefined
+   * @param mathContext The {@link MathContext} to use if rounding is necessary. Undefined
    *     behavior if null.
    */
-  public void roundToInterval(BigDecimal roundingInterval, RoundingMode roundingMode);
+  public void roundToInterval(BigDecimal roundingInterval, MathContext mathContext);
 
   /**
    * Rounds the number to a specified magnitude (power of ten).
    *
    * @param roundingMagnitude The power of ten to which to round. For example, a value of -2 will
    *     round to 2 decimal places.
-   * @param roundingMode The {@link RoundingMode} to use if rounding is necessary. Undefined
+   * @param mathContext The {@link MathContext} to use if rounding is necessary. Undefined
    *     behavior if null.
    */
-  public void roundToMagnitude(int roundingMagnitude, RoundingMode roundingMode);
+  public void roundToMagnitude(int roundingMagnitude, MathContext mathContext);
 
   /**
    * Multiply the internal value.
