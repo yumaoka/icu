@@ -1,6 +1,6 @@
 // © 2017 and later: Unicode, Inc. and others.
 // License & terms of use: http://www.unicode.org/copyright.html#License
-package com.ibm.icu.dev.test.format;
+package com.ibm.icu.dev.test.numbers;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -26,10 +26,10 @@ import com.ibm.icu.text.CompactDecimalFormat.CompactStyle;
 public class FormatQuantityTest extends TestFmwk {
 
   @Test
-  public void test() throws ParseException {
+  public void testBehavior() throws ParseException {
 
     // Make a list of several formatters to test the behavior of FormatQuantity.
-    List<Format> formats = new ArrayList<Format>();
+    List<Format> formats = new ArrayList<>();
 
     Properties properties = new Properties();
     Format ndf = Endpoint.fromBTA(properties);
@@ -97,7 +97,7 @@ public class FormatQuantityTest extends TestFmwk {
   }
 
   static void testFormatQuantity(int t, String str, List<Format> formats, boolean bigOnly) {
-    List<FormatQuantity> qs = new ArrayList<FormatQuantity>();
+    List<FormatQuantity> qs = new ArrayList<>();
     BigDecimal d = new BigDecimal(str);
     qs.add(new FormatQuantity1(d));
     if (!bigOnly) qs.add(new FormatQuantity2(d));
@@ -152,9 +152,11 @@ public class FormatQuantityTest extends TestFmwk {
     assertEquals("Unexpected output from simple string conversion (" + q0 + ")", expected, actual);
   }
 
-  private static final MathContext MATH_CONTEXT_HALF_EVEN = new MathContext(0, RoundingMode.HALF_EVEN);
+  private static final MathContext MATH_CONTEXT_HALF_EVEN =
+      new MathContext(0, RoundingMode.HALF_EVEN);
   private static final MathContext MATH_CONTEXT_CEILING = new MathContext(0, RoundingMode.CEILING);
-  private static final MathContext MATH_CONTEXT_PRECISION = new MathContext(3, RoundingMode.HALF_UP);
+  private static final MathContext MATH_CONTEXT_PRECISION =
+      new MathContext(3, RoundingMode.HALF_UP);
 
   private static void testFormatQuantityRounding(FormatQuantity rq0, FormatQuantity rq1) {
     FormatQuantity q0 = rq0.clone();
@@ -234,10 +236,10 @@ public class FormatQuantityTest extends TestFmwk {
     assertDoubleEquals(
         "Different double values (" + q0 + ", " + q1 + ")", q0.toDouble(), q1.toDouble());
 
-    assertDoubleEquals(
+    assertBigDecimalEquals(
         "Different BigDecimal values (" + q0 + ", " + q1 + ")",
-        q0.toBigDecimal().doubleValue(),
-        q1.toBigDecimal().doubleValue());
+        q0.toBigDecimal(),
+        q1.toBigDecimal());
 
     int equalityDigits = Math.min(q0.maxRepresentableDigits(), q1.maxRepresentableDigits());
     for (int m = q0.getUpperDisplayMagnitude(), i = 0;
@@ -260,8 +262,40 @@ public class FormatQuantityTest extends TestFmwk {
     }
   }
 
+  @Test
+  public void testAppend() {
+    FormatQuantity4 fq = new FormatQuantity4();
+    fq.appendDigit((byte) 1, 0, true);
+    assertBigDecimalEquals("Failed on append", "1.", fq.toBigDecimal());
+    fq.appendDigit((byte) 2, 0, true);
+    assertBigDecimalEquals("Failed on append", "12.", fq.toBigDecimal());
+    fq.appendDigit((byte) 3, 1, true);
+    assertBigDecimalEquals("Failed on append", "1203.", fq.toBigDecimal());
+    fq.appendDigit((byte) 0, 1, true);
+    assertBigDecimalEquals("Failed on append", "120300.", fq.toBigDecimal());
+    fq.appendDigit((byte) 4, 0, true);
+    assertBigDecimalEquals("Failed on append", "1203004.", fq.toBigDecimal());
+    fq.appendDigit((byte) 0, 0, true);
+    assertBigDecimalEquals("Failed on append", "12030040.", fq.toBigDecimal());
+    fq.appendDigit((byte) 5, 0, false);
+    assertBigDecimalEquals("Failed on append", "12030040.5", fq.toBigDecimal());
+    fq.appendDigit((byte) 6, 0, false);
+    assertBigDecimalEquals("Failed on append", "12030040.56", fq.toBigDecimal());
+    fq.appendDigit((byte) 7, 3, false);
+    assertBigDecimalEquals("Failed on append", "12030040.560007", fq.toBigDecimal());
+  }
+
   static void assertDoubleEquals(String message, double d1, double d2) {
-    boolean equal = (Math.abs(d1 - d2) < 1e-6) || (Math.abs((d1 - d2) / d1) < 0.01);
+    boolean equal = (Math.abs(d1 - d2) < 1e-6) || (Math.abs((d1 - d2) / d1) < 1e-6);
+    handleAssert(equal, message, d1, d2, null, false);
+  }
+
+  static void assertBigDecimalEquals(String message, String d1, BigDecimal d2) {
+    assertBigDecimalEquals(message, new BigDecimal(d1), d2);
+  }
+
+  static void assertBigDecimalEquals(String message, BigDecimal d1, BigDecimal d2) {
+    boolean equal = d1.compareTo(d2) == 0;
     handleAssert(equal, message, d1, d2, null, false);
   }
 }

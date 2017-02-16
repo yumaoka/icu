@@ -92,6 +92,16 @@ public abstract class FormatQuantityBCD implements FormatQuantity {
     flags = other.flags;
   }
 
+  public FormatQuantityBCD clear() {
+    lOptPos = Integer.MAX_VALUE;
+    lReqPos = 0;
+    rReqPos = 0;
+    rOptPos = Integer.MIN_VALUE;
+    flags = 0;
+    setBcdToZero();
+    return this;
+  }
+
   @Override
   public void setIntegerFractionLength(int minInt, int maxInt, int minFrac, int maxFrac) {
     // Graceful failures for bogus input

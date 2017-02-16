@@ -3,20 +3,25 @@
 package com.ibm.icu.impl.number;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.text.ParseException;
 import java.text.ParsePosition;
-import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
+import com.ibm.icu.impl.StandardPlural;
 import com.ibm.icu.impl.TextTrieMap;
 import com.ibm.icu.impl.number.Parse.ParseMode;
 import com.ibm.icu.impl.number.formatters.BigDecimalMultiplier;
 import com.ibm.icu.impl.number.formatters.CurrencyFormat;
 import com.ibm.icu.impl.number.formatters.MagnitudeMultiplier;
 import com.ibm.icu.impl.number.formatters.PaddingFormat;
+import com.ibm.icu.impl.number.formatters.PositiveDecimalFormat;
 import com.ibm.icu.impl.number.formatters.PositiveNegativeAffixFormat;
 import com.ibm.icu.lang.UCharacter;
+import com.ibm.icu.text.CurrencyPluralInfo;
 import com.ibm.icu.text.DecimalFormatSymbols;
+import com.ibm.icu.text.NumberFormat;
 import com.ibm.icu.text.UnicodeSet;
 import com.ibm.icu.util.Currency;
 import com.ibm.icu.util.Currency.CurrencyStringInfo;
@@ -57,7 +62,8 @@ public class Parse {
           PaddingFormat.IProperties,
           CurrencyFormat.ICurrencyProperties,
           BigDecimalMultiplier.IProperties,
-          MagnitudeMultiplier.IProperties {
+          MagnitudeMultiplier.IProperties,
+          PositiveDecimalFormat.IProperties {
 
     boolean DEFAULT_PARSE_INTEGER_ONLY = false;
 
@@ -170,7 +176,7 @@ public class Parse {
    * @see #parse(String, ParsePosition, ParseMode, boolean, boolean, IProperties,
    *     DecimalFormatSymbols)
    */
-  private enum StateName {
+  private static enum StateName {
     BEFORE_PREFIX,
     AFTER_PREFIX,
     AFTER_INTEGER_DIGIT,
@@ -182,31 +188,20 @@ public class Parse {
     AFTER_SUFFIX,
     INSIDE_CURRENCY,
     INSIDE_STRING,
+    INSIDE_AFFIX_PATTERN;
+
+    private static final StateName[] VALUES = values();
+
+    public static StateName valueOf(int ordinal) {
+      return VALUES[ordinal];
+    }
   }
 
   /** @see #acceptDigit */
-  private enum DigitType {
+  private static enum DigitType {
     INTEGER,
     FRACTION,
     EXPONENT
-  }
-
-  /** @see #acceptString */
-  private enum StringType {
-    POS_PREFIX,
-    NEG_PREFIX,
-    POS_SUFFIX,
-    NEG_SUFFIX,
-    EXPONENT_SEPARATOR,
-    NAN,
-    INFINITY
-  }
-
-  /** @see #acceptString */
-  private enum AffixStatus {
-    NOT_SEEN,
-    SAW_PREFIX,
-    SAW_SUFFIX
   }
 
   // TODO: Include characters like U+200D ZERO-WIDTH JOINER in the whitespace set?
@@ -249,54 +244,82 @@ public class Parse {
    * current state name, and other properties like the grouping separator used on this parse path,
    * details about the exponent and negative signs, etc.
    */
-  private static class ParserStateItem {
+  private static class StateItem {
+    // Parser state:
     StateName name;
     int score;
-    byte[] digits = new byte[100];
-    int scale;
-    int precision;
-    int offset;
-    int groupingCp;
+
+    // Numerical value:
+    FormatQuantity4 fq = new FormatQuantity4();
+    int numDigits;
+    int trailingZeros;
     int exponent;
+
+    // Other items that we've seen:
+    int groupingCp;
+    long groupingWidths;
+    String isoCode;
     boolean sawNegative;
     boolean sawNegativeExponent;
     boolean sawDecimal;
     boolean sawCurrency;
     boolean sawNaN;
     boolean sawInfinity;
-    AffixStatus positiveAffixStatus;
-    AffixStatus negativeAffixStatus;
-    StringType stringType;
-    String isoCode;
-    StateName returnTo;
-    TextTrieMap<CurrencyStringInfo>.ParseState trieState;
+    AffixHolder affix;
+    boolean sawPrefix;
+    boolean sawSuffix;
+
+    // Data for intermediate parsing steps:
+    StateName returnTo1;
+    StateName returnTo2;
+    // For string literals:
+    CharSequence currentString;
+    int currentOffset;
+    // For affix patterns:
+    CharSequence currentAffixPattern;
+    long currentStepwiseParserTag;
+    // For currency:
+    TextTrieMap<CurrencyStringInfo>.ParseState currentTrieState;
 
     /**
      * Clears the instance so that it can be re-used.
      *
      * @return Myself, for chaining.
      */
-    ParserStateItem clear() {
+    StateItem clear() {
+      // Parser state:
       name = StateName.BEFORE_PREFIX;
       score = 0;
-      Arrays.fill(digits, (byte) 0);
-      scale = 0;
-      precision = 0;
-      offset = 0;
-      groupingCp = -1;
+
+      // Numerical value:
+      fq.clear();
+      numDigits = 0;
+      trailingZeros = 0;
       exponent = 0;
+
+      // Other items we've seen:
+      groupingCp = -1;
+      groupingWidths = 0L;
+      isoCode = null;
       sawNegative = false;
       sawNegativeExponent = false;
       sawDecimal = false;
       sawCurrency = false;
       sawNaN = false;
       sawInfinity = false;
-      positiveAffixStatus = AffixStatus.NOT_SEEN;
-      negativeAffixStatus = AffixStatus.NOT_SEEN;
-      stringType = null;
-      isoCode = null;
-      returnTo = null;
-      trieState = null;
+      affix = null;
+      sawPrefix = false;
+      sawSuffix = false;
+
+      // Data for intermediate parsing steps:
+      returnTo1 = null;
+      returnTo2 = null;
+      currentString = null;
+      currentOffset = 0;
+      currentAffixPattern = null;
+      currentStepwiseParserTag = 0L;
+      currentTrieState = null;
+
       return this;
     }
 
@@ -306,29 +329,40 @@ public class Parse {
      * @param other The instance to copy from.
      * @return Myself, for chaining.
      */
-    ParserStateItem copyFrom(ParserStateItem other) {
+    StateItem copyFrom(StateItem other) {
+      // Parser state:
       name = other.name;
       score = other.score;
-      // Using System.arraycopy() results in overall parsing runtime ~5% faster than a for loop
-      // in benchmarks on an x86-64 with longs ranging between 1 and 1e12.
-      System.arraycopy(other.digits, 0, digits, 0, digits.length);
-      scale = other.scale;
-      precision = other.precision;
-      offset = other.offset;
-      groupingCp = other.groupingCp;
+
+      // Numerical value:
+      fq.copyFrom(other.fq);
+      numDigits = other.numDigits;
+      trailingZeros = other.trailingZeros;
       exponent = other.exponent;
+
+      // Other items we've seen:
+      groupingCp = other.groupingCp;
+      groupingWidths = other.groupingWidths;
+      isoCode = other.isoCode;
       sawNegative = other.sawNegative;
       sawNegativeExponent = other.sawNegativeExponent;
       sawDecimal = other.sawDecimal;
       sawCurrency = other.sawCurrency;
       sawNaN = other.sawNaN;
       sawInfinity = other.sawInfinity;
-      positiveAffixStatus = other.positiveAffixStatus;
-      negativeAffixStatus = other.negativeAffixStatus;
-      stringType = other.stringType;
-      isoCode = other.isoCode;
-      returnTo = other.returnTo;
-      trieState = other.trieState;
+      affix = other.affix;
+      sawPrefix = other.sawPrefix;
+      sawSuffix = other.sawSuffix;
+
+      // Data for intermediate parsing steps:
+      returnTo1 = other.returnTo1;
+      returnTo2 = other.returnTo2;
+      currentString = other.currentString;
+      currentOffset = other.currentOffset;
+      currentAffixPattern = other.currentAffixPattern;
+      currentStepwiseParserTag = other.currentStepwiseParserTag;
+      currentTrieState = other.currentTrieState;
+
       return this;
     }
 
@@ -336,26 +370,27 @@ public class Parse {
      * Adds a digit to the internal representation of this instance.
      *
      * @param digit The digit that was read from the string.
-     * @param type The type of digit, which determines how it is interpreted.
-     * @throws ParseException If this instance can't fit any more digits.
+     * @param fraction Whether the digit occured after the decimal point.
      */
-    void appendDigit(int digit, DigitType type) throws ParseException {
-      if (type == DigitType.EXPONENT) {
-        exponent = exponent * 10 + digit;
+    void appendDigit(byte digit, boolean fraction) {
+      numDigits++;
+      if (fraction && digit == 0) {
+        trailingZeros++;
+      } else if (fraction) {
+        fq.appendDigit(digit, trailingZeros, false);
+        trailingZeros = 0;
       } else {
-        if (precision >= digits.length) {
-          // TODO: Should we fail silently here instead of throwing?
-          throw new ParseException("Too many digits", -1);
-        }
-        digits[precision] = (byte) digit;
-        precision++;
-        if (type == DigitType.FRACTION) scale--;
+        fq.appendDigit(digit, 0, true);
       }
+    }
+
+    void appendExponent(int digit) {
+      exponent = exponent * 10 + digit;
     }
 
     /** @return Whether or not this item contains a valid number. */
     public boolean hasNumber() {
-      return precision > 0 || sawNaN || sawInfinity;
+      return numDigits > 0 || sawNaN || sawInfinity;
     }
 
     /**
@@ -365,14 +400,6 @@ public class Parse {
      * @return The Number. Never null.
      */
     Number toNumber(IProperties properties) {
-      // Remove trailing zeros
-      int _precision = precision;
-      int _scale = scale;
-      while (_precision > 0 && digits[_precision - 1] == 0) {
-        _precision--;
-        _scale++;
-      }
-
       // Check for NaN, infinity, and -0.0
       if (sawNaN) {
         return Double.NaN;
@@ -384,7 +411,7 @@ public class Parse {
           return Double.POSITIVE_INFINITY;
         }
       }
-      if (_precision == 0 && sawNegative) {
+      if (fq.isZero() && sawNegative) {
         return -0.0;
       }
 
@@ -394,63 +421,21 @@ public class Parse {
         if (multiplier == null) multiplier = BigDecimal.ONE;
         multiplier = multiplier.scaleByPowerOfTen(properties.getMagnitudeMultiplier());
       }
-
       boolean forceBigDecimal = properties.getParseToBigDecimal();
       int delta = (sawNegativeExponent ? -1 : 1) * exponent;
-      if (!forceBigDecimal && _scale + delta >= 0 && _scale + delta + _precision <= 18) {
-        long result = 0;
-        for (int i = 0; i < _precision; i++) {
-          result = result * 10 + digits[i];
-        }
-        for (int i = 0; i < _scale + delta; i++) {
-          result *= 10;
-        }
-        if (sawNegative) {
-          result *= -1;
-        }
-        if (multiplier != null) {
-          BigDecimal temp = BigDecimal.valueOf(result).divide(multiplier);
-          try {
-            return temp.longValueExact();
-          } catch (ArithmeticException e) {
-            return temp;
-          }
-        } else {
-          return result;
-        }
-      } else if (!forceBigDecimal && _scale + delta >= 0) {
-        BigInteger result = BigInteger.ZERO;
-        for (int i = 0; i < _precision; i++) {
-          result = result.multiply(BigInteger.TEN).add(BigInteger.valueOf(digits[i]));
-        }
-        result = BigInteger.TEN.pow(_scale + delta).multiply(result);
-        if (sawNegative) {
-          result = result.negate();
-        }
-        if (multiplier != null) {
-          BigDecimal temp = new BigDecimal(result).divide(multiplier);
-          try {
-            return temp.toBigIntegerExact();
-          } catch (ArithmeticException e) {
-            return temp;
-          }
-        } else {
-          return result;
-        }
+
+      // Construct the output number.
+      BigDecimal result = fq.toBigDecimal();
+      if (sawNegative) result = result.negate();
+      result = result.scaleByPowerOfTen(delta);
+      if (multiplier != null) result = result.divide(multiplier);
+      result = result.stripTrailingZeros();
+      if (forceBigDecimal || result.scale() > 0) {
+        return result;
+      } else if (-result.scale() + result.precision() <= 18) {
+        return result.longValueExact();
       } else {
-        BigDecimal result = BigDecimal.ZERO;
-        for (int i = 0; i < _precision; i++) {
-          result = result.scaleByPowerOfTen(1).add(BigDecimal.valueOf(digits[i]));
-        }
-        result = result.scaleByPowerOfTen(_scale + delta);
-        if (sawNegative) {
-          result = result.negate();
-        }
-        if (multiplier != null) {
-          return result.divide(multiplier);
-        } else {
-          return result;
-        }
+        return result.toBigIntegerExact();
       }
     }
 
@@ -473,33 +458,35 @@ public class Parse {
       sb.append("<ParserStateItem ");
       sb.append(name.name());
       if (name == StateName.INSIDE_STRING) {
-        sb.append("(");
-        sb.append(stringType.name());
-        sb.append(")");
+        sb.append("{");
+        sb.append(currentString);
+        sb.append(":");
+        sb.append(currentOffset);
+        sb.append("}");
+      }
+      if (name == StateName.INSIDE_AFFIX_PATTERN) {
+        sb.append("{");
+        sb.append(currentAffixPattern);
+        sb.append("}");
       }
       sb.append(" ");
-      for (int i = 0; i < precision; i++) {
-        sb.append(digits[i]);
-      }
-      sb.append(" scale:");
-      sb.append(scale);
-      sb.append(" offset:");
-      sb.append(offset);
+      sb.append(fq.toBigDecimal());
       sb.append(" grouping:");
       sb.append(groupingCp == -1 ? new char[] {'?'} : Character.toChars(groupingCp));
-      sb.append(" exponent:");
-      sb.append(exponent);
+      sb.append(" widths:");
+      sb.append(Long.toHexString(groupingWidths));
       sb.append(" seen:");
       sb.append(sawNegative ? 1 : 0);
       sb.append(sawNegativeExponent ? 1 : 0);
       sb.append(sawDecimal ? 1 : 0);
       sb.append(sawNaN ? 1 : 0);
       sb.append(sawInfinity ? 1 : 0);
-      sb.append(" affixStatus:");
-      sb.append(positiveAffixStatus.ordinal());
-      sb.append(negativeAffixStatus.ordinal());
+      sb.append(sawPrefix ? 1 : 0);
+      sb.append(sawSuffix ? 1 : 0);
       sb.append(" score:");
       sb.append(score);
+      sb.append(" affix:");
+      sb.append(affix);
       sb.append(" currency:");
       sb.append(isoCode);
       sb.append(">");
@@ -508,47 +495,36 @@ public class Parse {
   }
 
   /**
-   * Holds an ordered list of {@link ParserStateItem} and other metadata about the string to be
-   * parsed. There are two internal arrays of {@link ParserStateItem}, which are swapped back and
-   * forth in order to avoid object creations. The items in one array can be populated at the same
-   * time that items in the other array are being read from.
+   * Holds an ordered list of {@link StateItem} and other metadata about the string to be parsed.
+   * There are two internal arrays of {@link StateItem}, which are swapped back and forth in order
+   * to avoid object creations. The items in one array can be populated at the same time that items
+   * in the other array are being read from.
    */
   private static class ParserState {
 
-    ParserStateItem[] items = new ParserStateItem[16];
-    ParserStateItem[] prevItems = new ParserStateItem[16];
+    // Basic ParserStateItem lists:
+    StateItem[] items = new StateItem[16];
+    StateItem[] prevItems = new StateItem[16];
     int length;
     int prevLength;
 
-    ULocale uLocale;
-    int paddingCp;
-    int groupingCp1;
-    int groupingCp2;
-    int decimalCp1;
-    int decimalCp2;
-    SeparatorType groupingType1;
-    SeparatorType groupingType2;
-    SeparatorType decimalType1;
-    SeparatorType decimalType2;
-    CharSequence exponentSeparator;
-    CharSequence pp;
-    CharSequence np;
-    CharSequence ps;
-    CharSequence ns;
-    CharSequence nanString;
-    CharSequence infinityString;
-    int[] digitCps = new int[10];
-
+    // Properties and Symbols memory:
+    IProperties properties;
+    DecimalFormatSymbols symbols;
     ParseMode mode;
-    boolean integerOnly;
-    boolean ignoreExponent;
     boolean caseSensitive;
-    boolean parseCurrency;
+
+    // Other pre-computed fields:
+    public int decimalCp1;
+    public int decimalCp2;
+    public int groupingCp1;
+    public int groupingCp2;
+    public Set<AffixHolder> affixHolders = new HashSet<AffixHolder>();
 
     ParserState() {
       for (int i = 0; i < items.length; i++) {
-        items[i] = new ParserStateItem();
-        prevItems[i] = new ParserStateItem();
+        items[i] = new StateItem();
+        prevItems[i] = new StateItem();
       }
     }
 
@@ -560,34 +536,16 @@ public class Parse {
     ParserState clear() {
       length = 0;
       prevLength = 0;
-      uLocale = null;
-      paddingCp = -1;
-      groupingCp1 = -1;
-      groupingCp2 = -1;
-      decimalCp1 = -1;
-      decimalCp2 = -1;
-      exponentSeparator = null;
-      pp = null;
-      np = null;
-      ps = null;
-      ns = null;
-      nanString = null;
-      infinityString = null;
-      Arrays.fill(digitCps, -1);
-      mode = null;
-      integerOnly = false;
-      ignoreExponent = false;
-      caseSensitive = false;
-      parseCurrency = false;
+      affixHolders.clear();
       return this;
     }
 
     /**
-     * Swaps the internal arrays of {@link ParserStateItem}. Sets the length of the primary list to
-     * zero, so that it can be appended to.
+     * Swaps the internal arrays of {@link StateItem}. Sets the length of the primary list to zero,
+     * so that it can be appended to.
      */
     void swap() {
-      ParserStateItem[] temp = prevItems;
+      StateItem[] temp = prevItems;
       prevItems = items;
       items = temp;
       prevLength = length;
@@ -595,11 +553,11 @@ public class Parse {
     }
 
     /**
-     * Swaps the internal arrays of {@link ParserStateItem}. Sets the length of the primary list to
-     * the length of the previous list, so that it can be read from.
+     * Swaps the internal arrays of {@link StateItem}. Sets the length of the primary list to the
+     * length of the previous list, so that it can be read from.
      */
     void swapBack() {
-      ParserStateItem[] temp = prevItems;
+      StateItem[] temp = prevItems;
       prevItems = items;
       items = temp;
       length = prevLength;
@@ -607,25 +565,192 @@ public class Parse {
     }
 
     /**
-     * Gets the next available {@link ParserStateItem} from the primary list for writing. This
-     * method should be thought of like a list append method, except that there are no object
-     * creations taking place.
+     * Gets the next available {@link StateItem} from the primary list for writing. This method
+     * should be thought of like a list append method, except that there are no object creations
+     * taking place.
      *
-     * <p>It is the caller's responsibility to call either {@link ParserStateItem#clear} or {@link
-     * ParserStateItem#copyFrom} on the returned object.
+     * <p>It is the caller's responsibility to call either {@link StateItem#clear} or {@link
+     * StateItem#copyFrom} on the returned object.
      *
-     * @return A dirty {@link ParserStateItem}.
+     * @return A dirty {@link StateItem}.
      */
-    ParserStateItem getNext() {
+    StateItem getNext() {
       if (length >= items.length) {
         // TODO: What to do here? Expand the array?
         // This case is rare and would happen only with specially designed input.
         // For now, just overwrite the last entry.
         length = items.length - 1;
       }
-      ParserStateItem item = items[length];
+      StateItem item = items[length];
       length++;
       return item;
+    }
+
+    /** @return The index of the last inserted StateItem via a call to {@link #getNext}. */
+    public int lastInsertedIndex() {
+      assert length > 0;
+      return length - 1;
+    }
+
+    /**
+     * Gets a {@link StateItem} from the primary list. Assumes that the item has already been added
+     * via a call to {@link #getNext}.
+     *
+     * @param i The index of the item to get.
+     * @return The item.
+     */
+    public StateItem getItem(int i) {
+      assert i >= 0 && i < length;
+      return items[i];
+    }
+  }
+
+  private static class AffixHolder {
+    final String p; // prefix
+    final String s; // suffix
+    final boolean strings;
+    final boolean negative;
+
+    static final AffixHolder EMPTY_POSITIVE = new AffixHolder("", "", true, false);
+    static final AffixHolder EMPTY_NEGATIVE = new AffixHolder("", "", true, true);
+    static final AffixHolder DEFAULT_POSITIVE = new AffixHolder("+", "", false, false);
+    static final AffixHolder DEFAULT_NEGATIVE = new AffixHolder("-", "", false, true);
+
+    static void addToState(ParserState state, IProperties properties) {
+      state.affixHolders.add(fromPropertiesPositivePattern(properties));
+      state.affixHolders.add(fromPropertiesNegativePattern(properties));
+      state.affixHolders.add(fromPropertiesPositiveString(properties));
+      state.affixHolders.add(fromPropertiesNegativeString(properties));
+      // TODO: Should consuming the plus sign depend on properties.getAlwaysShowPlusSign()?
+      state.affixHolders.add(DEFAULT_POSITIVE);
+      state.affixHolders.add(DEFAULT_NEGATIVE);
+      // TODO: Under what conditions should EMPTY_POSITIVE and EMPTY_NEGATIVE be added?
+    }
+
+    static AffixHolder fromPropertiesPositivePattern(IProperties properties) {
+      CharSequence ppp = properties.getPositivePrefixPattern();
+      CharSequence psp = properties.getPositiveSuffixPattern();
+      return getInstance(ppp, psp, false, false);
+    }
+
+    static AffixHolder fromPropertiesNegativePattern(IProperties properties) {
+      CharSequence npp = properties.getNegativePrefixPattern();
+      CharSequence nsp = properties.getNegativeSuffixPattern();
+      return getInstance(npp, nsp, false, true);
+    }
+
+    static AffixHolder fromPropertiesPositiveString(IProperties properties) {
+      CharSequence pp = properties.getPositivePrefix();
+      CharSequence ps = properties.getPositiveSuffix();
+      return getInstance(pp, ps, true, false);
+    }
+
+    static AffixHolder fromPropertiesNegativeString(IProperties properties) {
+      CharSequence np = properties.getNegativePrefix();
+      CharSequence ns = properties.getNegativeSuffix();
+      return getInstance(np, ns, true, true);
+    }
+
+    static AffixHolder getInstance(
+        CharSequence p, CharSequence s, boolean strings, boolean negative) {
+      if (p == null && s == null) return null;
+      if (p == null) p = "";
+      if (s == null) s = "";
+      if (p.length() == 0 && s.length() == 0) return negative ? EMPTY_NEGATIVE : EMPTY_POSITIVE;
+      return new AffixHolder(p.toString(), s.toString(), strings, negative);
+    }
+
+    AffixHolder(String pp, String sp, boolean strings, boolean negative) {
+      this.p = pp;
+      this.s = sp;
+      this.strings = strings;
+      this.negative = negative;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+      if (other == null) return false;
+      if (this == other) return true;
+      if (!(other instanceof AffixHolder)) return false;
+      AffixHolder _other = (AffixHolder) other;
+      if (!p.equals(_other.p)) return false;
+      if (!s.equals(_other.s)) return false;
+      if (strings != _other.strings) return false;
+      if (negative != _other.negative) return false;
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      return p.hashCode() ^ s.hashCode();
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder();
+      sb.append("{");
+      sb.append(p);
+      sb.append("|");
+      sb.append(s);
+      sb.append("|");
+      sb.append(strings ? 'S' : 'P');
+      sb.append("}");
+      return sb.toString();
+    }
+  }
+
+  /**
+   * A class that holds information about all currency affix patterns for the locale. This allows
+   * the parser to accept currencies in any format that are valid for the locale.
+   */
+  private static class CurrencyAffixPatterns {
+    private final Set<AffixHolder> set = new HashSet<AffixHolder>();
+
+    private static final ConcurrentHashMap<ULocale, CurrencyAffixPatterns> currencyAffixPatterns =
+        new ConcurrentHashMap<ULocale, CurrencyAffixPatterns>();
+
+    static void addToState(ULocale uloc, ParserState state) {
+      if (!currencyAffixPatterns.contains(uloc)) {
+        // There can be multiple threads computing the same CurrencyAffixPatterns simultaneously,
+        // but that scenario is harmless.
+        CurrencyAffixPatterns value = new CurrencyAffixPatterns(uloc);
+        currencyAffixPatterns.put(uloc, value);
+      }
+      CurrencyAffixPatterns instance = currencyAffixPatterns.get(uloc);
+      state.affixHolders.addAll(instance.set);
+    }
+
+    private CurrencyAffixPatterns(ULocale uloc) {
+      // Get the basic currency pattern.
+      String pattern = NumberFormat.getPattern(uloc, NumberFormat.CURRENCYSTYLE);
+      addPattern(pattern);
+
+      // Get the currency plural patterns.
+      // TODO: Update this after CurrencyPluralInfo is replaced.
+      CurrencyPluralInfo pluralInfo = CurrencyPluralInfo.getInstance(uloc);
+      for (StandardPlural plural : StandardPlural.VALUES) {
+        pattern = pluralInfo.getCurrencyPluralPattern(plural.getKeyword());
+        addPattern(pattern);
+      }
+    }
+
+    private static final ThreadLocal<Properties> threadLocalProperties =
+        new ThreadLocal<Properties>() {
+          @Override
+          protected Properties initialValue() {
+            return new Properties();
+          }
+        };
+
+    private void addPattern(String pattern) {
+      Properties properties = threadLocalProperties.get();
+      try {
+        PatternString.parseToExistingProperties(pattern, properties);
+      } catch (IllegalArgumentException e) {
+        // This should only happen if there is a bug in CLDR data. Fail silently.
+      }
+      set.add(AffixHolder.fromPropertiesPositivePattern(properties));
+      set.add(AffixHolder.fromPropertiesNegativePattern(properties));
     }
   }
 
@@ -667,8 +792,7 @@ public class Parse {
               0xFE63, 0xFE63, 0xFF0D, 0xFF0D)
           .freeze();
 
-  public static Number parse(String input, IProperties properties, DecimalFormatSymbols symbols)
-      throws ParseException {
+  public static Number parse(String input, IProperties properties, DecimalFormatSymbols symbols) {
     ParsePosition ppos = threadLocalParsePosition.get();
     ppos.setIndex(0);
     return parse(input, ppos, properties, symbols);
@@ -692,12 +816,13 @@ public class Parse {
    * @param symbols A {@link DecimalFormatSymbols} object, used for determining locale-specific
    *     symbols for grouping/decimal separators, digit strings, and prefix/suffix substitutions.
    * @return A Number matching the parser's best interpretation of the string.
-   * @throws ParseException If an error is encountered during parsing.
    */
   public static Number parse(
-      CharSequence input, ParsePosition ppos, IProperties properties, DecimalFormatSymbols symbols)
-      throws ParseException {
-    ParserStateItem best = _parse(input, ppos, false, properties, symbols);
+      CharSequence input,
+      ParsePosition ppos,
+      IProperties properties,
+      DecimalFormatSymbols symbols) {
+    StateItem best = _parse(input, ppos, false, properties, symbols);
     return (best == null) ? null : best.toNumber(properties);
   }
 
@@ -711,66 +836,47 @@ public class Parse {
   public static CurrencyAmount parseCurrency(
       CharSequence input, ParsePosition ppos, IProperties properties, DecimalFormatSymbols symbols)
       throws ParseException {
-    ParserStateItem best = _parse(input, ppos, true, properties, symbols);
+    StateItem best = _parse(input, ppos, true, properties, symbols);
     return (best == null) ? null : best.toCurrencyAmount(properties);
   }
 
-  private static ParserStateItem _parse(
+  private static StateItem _parse(
       CharSequence input,
       ParsePosition ppos,
       boolean parseCurrency,
       IProperties properties,
-      DecimalFormatSymbols symbols)
-      throws ParseException {
+      DecimalFormatSymbols symbols) {
 
-    if (symbols == null) throw new IllegalArgumentException("symbols must not be null");
+    if (input == null || ppos == null || properties == null || symbols == null) {
+      throw new IllegalArgumentException("All arguments are required for parse.");
+    }
+
+    ParseMode mode = properties.getParseMode();
+    boolean integerOnly = properties.getParseIntegerOnly();
+    boolean ignoreExponent = properties.getParseIgnoreExponent();
 
     // Set up the initial state
     ParserState state = threadLocalParseState.get().clear();
-    state.uLocale = symbols.getULocale();
-    state.mode = properties.getParseMode();
-    // TODO: Many of these calls use only the first codepoint from a string that could contain
-    // multiple codepoints.  Is that OK?
-    if (properties.getPaddingString() != null
-        && !UNISET_WHITESPACE.contains(properties.getPaddingString())) {
-      // TODO: Should we accept treating whitespace like padding here?
-      state.paddingCp = Character.codePointAt(properties.getPaddingString(), 0);
-    }
-    state.groupingCp1 = Character.codePointAt(symbols.getGroupingSeparatorString(), 0);
-    state.groupingCp2 = Character.codePointAt(symbols.getMonetaryGroupingSeparatorString(), 0);
+    state.properties = properties;
+    state.symbols = symbols;
+    state.mode = mode;
+    state.caseSensitive = properties.getParseCaseSensitive();
     state.decimalCp1 = Character.codePointAt(symbols.getDecimalSeparatorString(), 0);
     state.decimalCp2 = Character.codePointAt(symbols.getMonetaryDecimalSeparatorString(), 0);
-    state.groupingType1 = SeparatorType.fromCp(state.groupingCp1, state.mode == ParseMode.STRICT);
-    state.groupingType2 = SeparatorType.fromCp(state.groupingCp2, state.mode == ParseMode.STRICT);
-    state.decimalType1 = SeparatorType.fromCp(state.decimalCp1, state.mode == ParseMode.STRICT);
-    state.decimalType2 = SeparatorType.fromCp(state.decimalCp2, state.mode == ParseMode.STRICT);
-    PNAffixGenerator.Result affixResult =
-        PNAffixGenerator.getThreadLocalInstance().getModifiers(symbols, properties);
-    state.pp = affixResult.positive.getPrefix();
-    state.np = affixResult.negative.getPrefix();
-    state.ps = affixResult.positive.getSuffix();
-    state.ns = affixResult.negative.getSuffix();
-    state.exponentSeparator = symbols.getExponentSeparator();
-    state.nanString = symbols.getNaN();
-    state.infinityString = symbols.getInfinity();
-    // TODO: Discuss how to handle custom currency symbols.
-    //    state.currencySymbol = symbols.getCurrencySymbol();
-    //    state.currencyCode = symbols.getInternationalCurrencySymbol();
-    @SuppressWarnings("deprecation")
-    String[] digitStrings = symbols.getDigitStringsLocal();
-    for (int i = 0; i < 10; i++) {
-      state.digitCps[i] = Character.codePointAt(digitStrings[i], 0);
-    }
-    state.integerOnly = properties.getParseIntegerOnly();
-    state.ignoreExponent = properties.getParseIgnoreExponent();
-    state.caseSensitive = properties.getParseCaseSensitive();
-    state.parseCurrency = parseCurrency;
-    ParserStateItem initialHolder = state.getNext().clear();
+    state.groupingCp1 = Character.codePointAt(symbols.getGroupingSeparatorString(), 0);
+    state.groupingCp2 = Character.codePointAt(symbols.getMonetaryGroupingSeparatorString(), 0);
+    StateItem initialHolder = state.getNext().clear();
     initialHolder.name = StateName.BEFORE_PREFIX;
+
+    AffixHolder.addToState(state, properties);
+    if (parseCurrency) {
+      CurrencyAffixPatterns.addToState(symbols.getULocale(), state);
+    }
 
     if (DEBUGGING) {
       System.out.println("Parsing: " + input);
       System.out.println(properties);
+      System.out.println(state.affixHolders);
     }
 
     // Start walking through the string, one codepoint at a time. Backtracking is not allowed. This
@@ -780,8 +886,7 @@ public class Parse {
       int cp = Character.codePointAt(input, offset);
       state.swap();
       for (int i = 0; i < state.prevLength; i++) {
-        ParserStateItem item = state.prevItems[i];
-        // NOTE: Uncomment the following line to view the step-by-step parse process.
+        StateItem item = state.prevItems[i];
         if (DEBUGGING) {
           System.out.println(":" + offset + " " + item);
         }
@@ -790,135 +895,124 @@ public class Parse {
             // Beginning of string
             acceptWhitespace(cp, StateName.BEFORE_PREFIX, state, item);
             acceptPadding(cp, StateName.BEFORE_PREFIX, state, item);
-            acceptString(cp, StringType.POS_PREFIX, state, item);
-            acceptString(cp, StringType.NEG_PREFIX, state, item);
-            acceptString(cp, StringType.NAN, state, item);
-            acceptString(cp, StringType.INFINITY, state, item);
-            acceptMinusSign(cp, DigitType.INTEGER, state, item);
-            acceptDigit(cp, DigitType.INTEGER, state, item);
-            if (!state.integerOnly) {
-              acceptDecimalPoint(cp, state, item);
+            acceptNan(cp, StateName.BEFORE_SUFFIX, state, item);
+            acceptInfinity(cp, StateName.BEFORE_SUFFIX, state, item);
+            acceptPrefix(cp, StateName.AFTER_PREFIX, state, item);
+            acceptIntegerDigit(cp, StateName.AFTER_INTEGER_DIGIT, state, item);
+            if (!integerOnly) {
+              acceptDecimalPoint(cp, StateName.AFTER_FRACTION_DIGIT, state, item);
             }
-            if (state.mode == ParseMode.LENIENT) {
-              // Accept a plus sign in lenient mode even if it's not in the prefix string
-              acceptPlusSign(cp, state, item);
+            if (mode == ParseMode.LENIENT) {
+              acceptMinusOrPlusSign(cp, StateName.BEFORE_PREFIX, state, item, false);
             }
-            if (state.parseCurrency) {
+            if (parseCurrency && mode == ParseMode.LENIENT) {
               acceptCurrency(cp, StateName.BEFORE_PREFIX, state, item);
             }
             break;
 
           case AFTER_PREFIX:
             // Prefix is consumed
-            if (state.mode == ParseMode.LENIENT) {
-              // Arbitrary whitespace in the middle of the string is not allowed in strict mode.
+            acceptPadding(cp, StateName.AFTER_PREFIX, state, item);
+            acceptNan(cp, StateName.BEFORE_SUFFIX, state, item);
+            acceptInfinity(cp, StateName.BEFORE_SUFFIX, state, item);
+            acceptIntegerDigit(cp, StateName.AFTER_INTEGER_DIGIT, state, item);
+            if (!integerOnly) {
+              acceptDecimalPoint(cp, StateName.AFTER_FRACTION_DIGIT, state, item);
+            }
+            if (mode == ParseMode.LENIENT) {
               acceptWhitespace(cp, StateName.AFTER_PREFIX, state, item);
             }
-            acceptPadding(cp, StateName.AFTER_PREFIX, state, item);
-            acceptString(cp, StringType.NAN, state, item);
-            acceptString(cp, StringType.INFINITY, state, item);
-            acceptDigit(cp, DigitType.INTEGER, state, item);
-            if (!state.integerOnly) {
-              acceptDecimalPoint(cp, state, item);
-            }
-            if (state.parseCurrency) {
+            if (parseCurrency && mode == ParseMode.LENIENT) {
               acceptCurrency(cp, StateName.AFTER_PREFIX, state, item);
             }
             break;
 
           case AFTER_INTEGER_DIGIT:
             // Previous character was an integer digit (or grouping/whitespace)
-            acceptGrouping(cp, state, item);
-            acceptDigit(cp, DigitType.INTEGER, state, item);
-            if (!state.integerOnly) {
-              acceptDecimalPoint(cp, state, item);
+            acceptPadding(cp, StateName.BEFORE_SUFFIX, state, item);
+            acceptSuffix(cp, StateName.AFTER_SUFFIX, state, item);
+            acceptGrouping(cp, StateName.AFTER_INTEGER_DIGIT, state, item);
+            acceptIntegerDigit(cp, StateName.AFTER_INTEGER_DIGIT, state, item);
+            if (!integerOnly) {
+              acceptDecimalPoint(cp, StateName.AFTER_FRACTION_DIGIT, state, item);
             }
-            if (state.mode == ParseMode.LENIENT) {
+            if (!ignoreExponent) {
+              acceptExponentSeparator(cp, StateName.AFTER_EXPONENT_SEPARATOR, state, item);
+            }
+            if (mode == ParseMode.LENIENT) {
               acceptWhitespace(cp, StateName.BEFORE_SUFFIX, state, item);
             }
-            acceptPadding(cp, StateName.BEFORE_SUFFIX, state, item);
-            acceptString(cp, StringType.POS_SUFFIX, state, item);
-            acceptString(cp, StringType.NEG_SUFFIX, state, item);
-            if (!state.ignoreExponent) {
-              acceptString(cp, StringType.EXPONENT_SEPARATOR, state, item);
-            }
-            if (state.parseCurrency) {
+            if (parseCurrency && mode == ParseMode.LENIENT) {
               acceptCurrency(cp, StateName.BEFORE_SUFFIX, state, item);
             }
             break;
 
           case AFTER_FRACTION_DIGIT:
             // We encountered a decimal point
-            acceptDigit(cp, DigitType.FRACTION, state, item);
-            if (state.mode == ParseMode.LENIENT) {
+            acceptPadding(cp, StateName.BEFORE_SUFFIX, state, item);
+            acceptSuffix(cp, StateName.AFTER_SUFFIX, state, item);
+            acceptFractionDigit(cp, StateName.AFTER_FRACTION_DIGIT, state, item);
+            if (!ignoreExponent) {
+              acceptExponentSeparator(cp, StateName.AFTER_EXPONENT_SEPARATOR, state, item);
+            }
+            if (mode == ParseMode.LENIENT) {
               acceptWhitespace(cp, StateName.BEFORE_SUFFIX, state, item);
             }
-            acceptPadding(cp, StateName.BEFORE_SUFFIX, state, item);
-            acceptString(cp, StringType.POS_SUFFIX, state, item);
-            acceptString(cp, StringType.NEG_SUFFIX, state, item);
-            if (!state.ignoreExponent) {
-              acceptString(cp, StringType.EXPONENT_SEPARATOR, state, item);
-            }
-            if (state.parseCurrency) {
+            if (parseCurrency && mode == ParseMode.LENIENT) {
               acceptCurrency(cp, StateName.BEFORE_SUFFIX, state, item);
             }
             break;
 
           case AFTER_EXPONENT_SEPARATOR:
-            acceptPlusSign(cp, state, item);
-            acceptMinusSign(cp, DigitType.EXPONENT, state, item);
-            acceptDigit(cp, DigitType.EXPONENT, state, item);
+            acceptMinusOrPlusSign(cp, StateName.AFTER_EXPONENT_SEPARATOR, state, item, true);
+            acceptExponentDigit(cp, StateName.AFTER_EXPONENT_DIGIT, state, item);
             break;
 
           case AFTER_EXPONENT_DIGIT:
-            if (state.mode == ParseMode.LENIENT) {
+            acceptPadding(cp, StateName.BEFORE_SUFFIX_SEEN_EXPONENT, state, item);
+            acceptExponentDigit(cp, StateName.AFTER_EXPONENT_DIGIT, state, item);
+            acceptSuffix(cp, StateName.AFTER_SUFFIX, state, item);
+            if (mode == ParseMode.LENIENT) {
               acceptWhitespace(cp, StateName.BEFORE_SUFFIX_SEEN_EXPONENT, state, item);
             }
-            acceptPadding(cp, StateName.BEFORE_SUFFIX_SEEN_EXPONENT, state, item);
-            acceptDigit(cp, DigitType.EXPONENT, state, item);
-            acceptString(cp, StringType.POS_SUFFIX, state, item);
-            acceptString(cp, StringType.NEG_SUFFIX, state, item);
-            if (state.parseCurrency) {
+            if (parseCurrency && mode == ParseMode.LENIENT) {
               acceptCurrency(cp, StateName.BEFORE_SUFFIX_SEEN_EXPONENT, state, item);
             }
             break;
 
           case BEFORE_SUFFIX:
             // Accept whitespace, suffixes, and exponent separators
-            if (state.mode == ParseMode.LENIENT) {
+            acceptPadding(cp, StateName.BEFORE_SUFFIX, state, item);
+            acceptSuffix(cp, StateName.AFTER_SUFFIX, state, item);
+            if (!ignoreExponent) {
+              acceptExponentSeparator(cp, StateName.AFTER_EXPONENT_SEPARATOR, state, item);
+            }
+            if (mode == ParseMode.LENIENT) {
               acceptWhitespace(cp, StateName.BEFORE_SUFFIX, state, item);
             }
-            acceptPadding(cp, StateName.BEFORE_SUFFIX, state, item);
-            acceptString(cp, StringType.POS_SUFFIX, state, item);
-            acceptString(cp, StringType.NEG_SUFFIX, state, item);
-            if (!state.ignoreExponent) {
-              acceptString(cp, StringType.EXPONENT_SEPARATOR, state, item);
-            }
-            if (state.parseCurrency) {
+            if (parseCurrency && mode == ParseMode.LENIENT) {
               acceptCurrency(cp, StateName.BEFORE_SUFFIX, state, item);
             }
             break;
 
           case BEFORE_SUFFIX_SEEN_EXPONENT:
             // Accept whitespace and suffixes but not exponent separators
-            // Note: The only way to get here is to read whitespace or padding after an exponent
-            if (state.mode == ParseMode.LENIENT) {
-              acceptWhitespace(cp, StateName.BEFORE_SUFFIX, state, item);
+            acceptPadding(cp, StateName.BEFORE_SUFFIX_SEEN_EXPONENT, state, item);
+            acceptSuffix(cp, StateName.AFTER_SUFFIX, state, item);
+            if (mode == ParseMode.LENIENT) {
+              acceptWhitespace(cp, StateName.BEFORE_SUFFIX_SEEN_EXPONENT, state, item);
             }
-            acceptPadding(cp, StateName.BEFORE_SUFFIX, state, item);
-            acceptString(cp, StringType.POS_SUFFIX, state, item);
-            acceptString(cp, StringType.NEG_SUFFIX, state, item);
-            if (state.parseCurrency) {
+            if (parseCurrency && mode == ParseMode.LENIENT) {
               acceptCurrency(cp, StateName.BEFORE_SUFFIX_SEEN_EXPONENT, state, item);
             }
             break;
 
           case AFTER_SUFFIX:
-            if (state.mode == ParseMode.LENIENT) {
+            acceptPadding(cp, StateName.AFTER_SUFFIX, state, item);
+            if (mode == ParseMode.LENIENT) {
               acceptWhitespace(cp, StateName.AFTER_SUFFIX, state, item);
             }
-            acceptPadding(cp, StateName.AFTER_SUFFIX, state, item);
-            if (state.parseCurrency) {
+            if (parseCurrency && mode == ParseMode.LENIENT) {
               acceptCurrency(cp, StateName.AFTER_SUFFIX, state, item);
             }
             // Otherwise, do not accept any more characters.
@@ -932,6 +1026,11 @@ public class Parse {
           case INSIDE_STRING:
             // Already read the first code point of a string
             acceptStringOffset(cp, state, item);
+            break;
+
+          case INSIDE_AFFIX_PATTERN:
+            // Already read the first code point of an affix pattern
+            acceptAffixPatternOffset(cp, state, item);
             break;
         }
       }
@@ -954,10 +1053,15 @@ public class Parse {
       }
       return null;
     } else {
+      boolean hasEmptyAffix =
+          state.affixHolders.contains(AffixHolder.EMPTY_POSITIVE)
+              || state.affixHolders.contains(AffixHolder.EMPTY_NEGATIVE);
+
       // Loop through the candidates.  "continue" skips a candidate as invalid.
-      ParserStateItem best = null;
+      StateItem best = null;
+      outer:
       for (int i = 0; i < state.length; i++) {
-        ParserStateItem item = state.items[i];
+        StateItem item = state.items[i];
 
         if (DEBUGGING) {
           System.out.println(":end " + item);
@@ -966,20 +1070,49 @@ public class Parse {
         // Check that at least one digit was read.
         if (!item.hasNumber()) continue;
 
-        if (state.mode == ParseMode.STRICT) {
-          // Perform extra checks for strict mode.  We require that the affixes match.
-          // Accept if any of the following checks are true.
-          if ((item.positiveAffixStatus == AffixStatus.SAW_SUFFIX)
-              || (item.negativeAffixStatus == AffixStatus.SAW_SUFFIX)
-              || (item.positiveAffixStatus == AffixStatus.SAW_PREFIX && charSeqEmpty(state.ps))
-              || (item.negativeAffixStatus == AffixStatus.SAW_PREFIX && charSeqEmpty(state.ns))
-              || (item.positiveAffixStatus == AffixStatus.NOT_SEEN
-                  && item.negativeAffixStatus == AffixStatus.NOT_SEEN
-                  && (charSeqEmpty(state.pp) || charSeqEmpty(state.np)))) {
-            // Affixes match
+        if (mode == ParseMode.STRICT) {
+          // Perform extra checks for strict mode.
+          // We require that the affixes match.
+          boolean sawPrefix = item.sawPrefix || (item.affix != null && item.affix.p.isEmpty());
+          boolean sawSuffix = item.sawSuffix || (item.affix != null && item.affix.s.isEmpty());
+          if (sawPrefix && sawSuffix) {
+            // OK
+          } else if (!sawPrefix && !sawSuffix && hasEmptyAffix) {
+            // OK
           } else {
-            // Affixes don't match
+            // Has a prefix or suffix that doesn't match
             continue;
+          }
+
+          // Check that grouping sizes are valid.
+          int grouping1 = properties.getGroupingSize();
+          int grouping2 = properties.getSecondaryGroupingSize();
+          grouping1 = grouping1 > 0 ? grouping1 : grouping2;
+          grouping2 = grouping2 > 0 ? grouping2 : grouping1;
+          int groupingMin = properties.getMinimumGroupingDigits();
+          int numGroupingRegions = 16 - Long.numberOfLeadingZeros(item.groupingWidths) / 4;
+          if (grouping1 < 0) {
+            // OK (no grouping data available)
+          } else if (numGroupingRegions <= 1) {
+            // OK (no grouping digits)
+          } else if ((item.groupingWidths & 0xf) != grouping1) {
+            // First grouping size is invalid
+            continue;
+          } else if (numGroupingRegions == 2
+              && groupingMin > 0
+              && ((item.groupingWidths >>> 4) & 0xf) < groupingMin) {
+            // String like "1,234" with groupingMin == 2
+            continue;
+          } else if (((item.groupingWidths >>> ((numGroupingRegions - 1) * 4)) & 0xf) > grouping2) {
+            // String like "1234,567" where the highest grouping is too large
+            continue;
+          } else {
+            for (int j = 1; j < numGroupingRegions - 1; j++) {
+              if (((item.groupingWidths >>> (j * 4)) & 0xf) != grouping2) {
+                // A grouping size somewhere in the middle is invalid
+                continue outer;
+              }
+            }
           }
         }
 
@@ -1027,9 +1160,9 @@ public class Parse {
    * @param item The old state leading into the code point.
    */
   private static void acceptWhitespace(
-      int cp, StateName nextName, ParserState state, ParserStateItem item) {
+      int cp, StateName nextName, ParserState state, StateItem item) {
     if (UNISET_WHITESPACE.contains(cp)) {
-      ParserStateItem next = state.getNext().copyFrom(item);
+      StateItem next = state.getNext().copyFrom(item);
       next.name = nextName;
     }
   }
@@ -1044,194 +1177,453 @@ public class Parse {
    * @param state The state object to update.
    * @param item The old state leading into the code point.
    */
-  private static void acceptPadding(
-      int cp, StateName nextName, ParserState state, ParserStateItem item) {
-    if (cp == state.paddingCp) {
-      ParserStateItem next = state.getNext().copyFrom(item);
+  private static void acceptPadding(int cp, StateName nextName, ParserState state, StateItem item) {
+    CharSequence padding = state.properties.getPaddingString();
+    if (padding == null || padding.length() == 0) return;
+    int referenceCp = Character.codePointAt(padding, 0);
+    if (cp == referenceCp) {
+      StateItem next = state.getNext().copyFrom(item);
       next.name = nextName;
     }
   }
 
-  /**
-   * If <code>cp</code> is equal to the first codepoint in the string corresponding to the parameter
-   * <code>type</code>, copies <code>item</code> to the new list in <code>state</code> and sets its
-   * state name to a state determined by <code>type</code>.
-   *
-   * @param cp The code point to check.
-   * @param type The string type, which corresponds to one of the CharSequences stored inside the
-   *     state object. Read the code for details.
-   * @param state The state object to update.
-   * @param item The old state leading into the code point.
-   */
-  private static void acceptString(
-      int cp, StringType type, ParserState state, ParserStateItem item) {
-    assert type != null;
-
-    // For strict mode, don't accept if this string is a suffix that doesn't match the prefix
-    if (state.mode == ParseMode.STRICT) {
-      if (type == StringType.POS_SUFFIX
-          && item.positiveAffixStatus != AffixStatus.SAW_PREFIX
-          && !charSeqEmpty(state.pp)) {
-        return;
-      }
-      if (type == StringType.NEG_SUFFIX
-          && item.negativeAffixStatus != AffixStatus.SAW_PREFIX
-          && !charSeqEmpty(state.np)) {
-        return;
+  private static void acceptIntegerDigit(
+      int cp, StateName nextName, ParserState state, StateItem item) {
+    byte digit = acceptDigitHelper(cp, nextName, state, item);
+    if (digit >= 0) {
+      StateItem next = state.getItem(state.lastInsertedIndex());
+      next.appendDigit(digit, false);
+      if ((next.groupingWidths & 0xf) < 15) {
+        next.groupingWidths++;
       }
     }
+  }
 
-    CharSequence str = null;
-    StateName doneName = null;
-    switch (type) {
-      case POS_PREFIX:
-        str = state.pp;
-        doneName = StateName.AFTER_PREFIX;
-        break;
-      case NEG_PREFIX:
-        str = state.np;
-        doneName = StateName.AFTER_PREFIX;
-        break;
-      case POS_SUFFIX:
-        str = state.ps;
-        doneName = StateName.AFTER_SUFFIX;
-        break;
-      case NEG_SUFFIX:
-        str = state.ns;
-        doneName = StateName.AFTER_SUFFIX;
-        break;
-      case EXPONENT_SEPARATOR:
-        str = state.exponentSeparator;
-        doneName = StateName.AFTER_EXPONENT_SEPARATOR;
-        break;
-      case NAN:
-        str = state.nanString;
-        doneName = StateName.BEFORE_SUFFIX;
-        break;
-      case INFINITY:
-        str = state.infinityString;
-        doneName = StateName.BEFORE_SUFFIX;
-        break;
+  private static void acceptFractionDigit(
+      int cp, StateName nextName, ParserState state, StateItem item) {
+    byte digit = acceptDigitHelper(cp, nextName, state, item);
+    if (digit >= 0) {
+      state.getItem(state.lastInsertedIndex()).appendDigit(digit, true);
     }
-    if (str == null || str.length() == 0) return;
+  }
 
-    // Case-map the character if not in case-sensitive mode
-    int referenceCp = Character.codePointAt(str, 0);
-    if (!state.caseSensitive) {
-      cp = UCharacter.foldCase(cp, true);
-      referenceCp = UCharacter.foldCase(referenceCp, true);
-    }
-
-    if (cp == referenceCp) {
-      // Matches first character of prefix/suffix
-
-      ParserStateItem next = state.getNext().copyFrom(item);
-
-      if (type == StringType.NEG_PREFIX) next.sawNegative = true;
-      if (type == StringType.NEG_SUFFIX) next.sawNegative = true;
-      if (type == StringType.NAN) next.sawNaN = true;
-      if (type == StringType.INFINITY) next.sawInfinity = true;
-
-      // Mark if we have seen a positive or negative prefix/suffix (needed for strict mode)
-      if (type == StringType.POS_PREFIX) next.positiveAffixStatus = AffixStatus.SAW_PREFIX;
-      if (type == StringType.NEG_PREFIX) next.negativeAffixStatus = AffixStatus.SAW_PREFIX;
-      if (type == StringType.POS_SUFFIX) next.positiveAffixStatus = AffixStatus.SAW_SUFFIX;
-      if (type == StringType.NEG_SUFFIX) next.negativeAffixStatus = AffixStatus.SAW_SUFFIX;
-
-      // Initial penalty for incomplete affix
-      next.score -= 1;
-
-      // State item to consume next code point of string.
-      if (str.length() != Character.charCount(cp)) {
-        ParserStateItem continuation = state.getNext().copyFrom(next);
-        continuation.name = StateName.INSIDE_STRING;
-        continuation.offset = Character.charCount(cp);
-        continuation.stringType = type;
-      } else {
-        // The entire string was only one character. Give a 5-point reward for consuming it.
-        next.score += 5;
-      }
-
-      // State item to return to normal parsing.
-      // This intentionally allows for partial string prefixes.
-      // FIXME: Discuss options with Andy and Mark before merge to trunk.
-      // Case that won't work: affix of the form "A¤B" where B is not whitespace.
-      next.name = doneName;
+  private static void acceptExponentDigit(
+      int cp, StateName nextName, ParserState state, StateItem item) {
+    byte digit = acceptDigitHelper(cp, nextName, state, item);
+    if (digit >= 0) {
+      state.getItem(state.lastInsertedIndex()).appendExponent(digit);
     }
   }
 
   /**
-   * If <code>cp</code> is equal to the codepoint at the current offset in the string corresponding
-   * to <code>item.stringType</code>, copies <code>item</code> to the new list in <code>state</code>
-   * and sets its state name to a state determined by <code>type</code>.
+   * If <code>cp</code> is a digit character (as determined by either {@link UCharacter#digit} or
+   * {@link ParserState#digitCps}), copies <code>item</code> to the new list in <code>state</code>
+   * and sets its state name to one determined by <code>type</code>. Also copies the digit into a
+   * field in the new item determined by <code>type</code>.
    *
-   * <p>This method should only be called in a state following {@link #acceptString}.
+   * <p>This function guarantees that it will add no more than one {@link StateItem} to the {@link
+   * ParserState}. This means that {@link ParserState#lastInsertedIndex()} can be called to access
+   * the {@link StateItem} that was inserted.
+   *
+   * @param cp The code point to check.
+   * @param nextName The state to set if a digit is accepted.
+   * @param type The digit type, which determines the next state and the field into which to insert
+   *     the digit.
+   * @param state The state object to update.
+   * @param item The old state leading into the code point.
+   * @return The digit that was accepted, or -1 if no digit was accepted.
+   */
+  private static byte acceptDigitHelper(
+      int cp, StateName nextName, ParserState state, StateItem item) {
+    // Check the Unicode digit character property
+    byte digit = (byte) UCharacter.digit(cp, 10);
+    if (digit >= 0) {
+      // Code point is a number
+      StateItem next = state.getNext().copyFrom(item);
+      next.name = nextName;
+    } else {
+      // Check custom digits.
+      if (digit < 0) {
+        for (byte d = 0; d < 10; d++) {
+          String digitString = state.symbols.getDigitStringsLocal()[d];
+          long added = acceptString(cp, nextName, null, state, item, digitString, 0);
+          if (added != 0) {
+            digit = d;
+            break;
+          }
+        }
+      }
+    }
+    return digit;
+  }
+
+  /**
+   * If <code>cp</code> is a sign (as determined by the unicode sets {@link #UNISET_PLUS} and {@link
+   * #UNISET_MINUS}), copies <code>item</code> to the new list in <code>state</code>. Loops back to
+   * the same state name.
    *
    * @param cp The code point to check.
    * @param state The state object to update.
    * @param item The old state leading into the code point.
    */
-  private static void acceptStringOffset(int cp, ParserState state, ParserStateItem item) {
-
-    CharSequence str = null;
-    StateName doneName = null;
-    switch (item.stringType) {
-      case POS_PREFIX:
-        str = state.pp;
-        doneName = StateName.AFTER_PREFIX;
-        break;
-      case NEG_PREFIX:
-        str = state.np;
-        doneName = StateName.AFTER_PREFIX;
-        break;
-      case POS_SUFFIX:
-        str = state.ps;
-        doneName = StateName.AFTER_SUFFIX;
-        break;
-      case NEG_SUFFIX:
-        str = state.ns;
-        doneName = StateName.AFTER_SUFFIX;
-        break;
-      case EXPONENT_SEPARATOR:
-        str = state.exponentSeparator;
-        doneName = StateName.AFTER_EXPONENT_SEPARATOR;
-        break;
-      case NAN:
-        str = state.nanString;
-        doneName = StateName.BEFORE_SUFFIX;
-        break;
-      case INFINITY:
-        str = state.infinityString;
-        doneName = StateName.BEFORE_SUFFIX;
-        break;
-    }
-    if (charSeqEmpty(str)) return;
-
-    // Case-map the character if not in case-sensitive mode
-    int referenceCp = Character.codePointAt(str, item.offset);
-    if (!state.caseSensitive) {
-      cp = UCharacter.foldCase(cp, true);
-      referenceCp = UCharacter.foldCase(referenceCp, true);
-    }
-
-    if (cp == referenceCp) {
-      // Matches current character of prefix/suffix.
-      // State item to return to normal parsing.
-      // This intentionally allows for partial string prefixes.
-      // FIXME: Discuss options with Andy and Mark before merge to trunk.
-      // Case that won't work: affix of the form "A¤B" where B is not whitespace.
-      ParserStateItem next = state.getNext().copyFrom(item);
-      next.name = doneName;
-
-      // State item to consume next code point of string.
-      if (str.length() != Character.charCount(cp) + item.offset) {
-        ParserStateItem continuation = state.getNext().copyFrom(item);
-        continuation.offset += Character.charCount(cp);
+  private static void acceptMinusOrPlusSign(
+      int cp, StateName nextName, ParserState state, StateItem item, boolean exponent) {
+    if (UNISET_PLUS.contains(cp)) {
+      StateItem next = state.getNext().copyFrom(item);
+      next.name = nextName;
+    } else if (UNISET_MINUS.contains(cp)) {
+      StateItem next = state.getNext().copyFrom(item);
+      next.name = nextName;
+      if (exponent) {
+        next.sawNegativeExponent = true;
       } else {
-        // We consumed the entire string. Give a 5-point reward.
-        next.score += 5;
+        next.sawNegative = true;
       }
     }
+  }
+
+  /**
+   * If <code>cp</code> is a grouping separator (as determined by the unicode set {@link
+   * #UNISET_GROUPING}), copies <code>item</code> to the new list in <code>state</code> and loops
+   * back to the same state. Also accepts if <code>cp</code> is the locale-specific grouping
+   * separator in {@link ParserState#groupingCp}, in which case the {@link
+   * StateItem#usesLocaleSymbols} flag is also set.
+   *
+   * @param cp The code point to check.
+   * @param state The state object to update.
+   * @param item The old state leading into the code point.
+   */
+  private static void acceptGrouping(
+      int cp, StateName nextName, ParserState state, StateItem item) {
+    // Do not accept mixed grouping separators in the same string.
+    if (item.groupingCp == -1) {
+      // First time seeing a grouping separator.
+      SeparatorType cpType = SeparatorType.fromCp(cp, state.mode == ParseMode.STRICT);
+
+      // Accept separators in UNKNOWN only if they exactly match the locale.
+      // Accept all other separators as long as they are not exactly the same as the decimal.
+      if (cp == state.decimalCp1 || cp == state.decimalCp2) {
+        return;
+      }
+      if (cpType == SeparatorType.UNKNOWN && cp != state.groupingCp1 && cp != state.groupingCp2) {
+        return;
+      }
+
+      // A match was found.
+      StateItem next = state.getNext().copyFrom(item);
+      next.name = nextName;
+      next.groupingCp = cp;
+      next.groupingWidths <<= 4;
+    } else {
+      // Have already seen a grouping separator.
+      if (cp == item.groupingCp) {
+        StateItem next = state.getNext().copyFrom(item);
+        next.name = nextName;
+        next.groupingWidths <<= 4;
+      }
+    }
+  }
+
+  /**
+   * If <code>cp</code> is a decimal (as determined by the unicode set {@link #UNISET_DECIMAL}),
+   * copies <code>item</code> to the new list in <code>state</code> and goes to {@link
+   * StateName#AFTER_FRACTION_DIGIT}. Also accepts if <code>cp</code> is the locale-specific decimal
+   * point in {@link ParserState#decimalCp}, in which case the {@link StateItem#usesLocaleSymbols}
+   * flag is also set.
+   *
+   * @param cp The code point to check.
+   * @param state The state object to update.
+   * @param item The old state leading into the code point.
+   */
+  private static void acceptDecimalPoint(
+      int cp, StateName nextName, ParserState state, StateItem item) {
+    if (cp == item.groupingCp) {
+      // Don't accept a decimal point that is the same as the grouping separator
+      return;
+    }
+
+    SeparatorType cpType = SeparatorType.fromCp(cp, state.mode == ParseMode.STRICT);
+
+    // Accept separators in UNKNOWN or OTHER only if they exactly match the locale.
+    // Accept all other separators as long as they are not exactly the same as the grouping.
+    if (cp == state.groupingCp1 || cp == state.groupingCp2) {
+      return;
+    }
+    if ((cpType == SeparatorType.UNKNOWN || cpType == SeparatorType.OTHER_GROUPING)
+        && cp != state.decimalCp1
+        && cp != state.decimalCp2) {
+      return;
+    }
+
+    // A match was found.
+    StateItem next = state.getNext().copyFrom(item);
+    next.name = nextName;
+  }
+
+  private static void acceptNan(int cp, StateName nextName, ParserState state, StateItem item) {
+    CharSequence nan = state.symbols.getNaN();
+    long added = acceptString(cp, nextName, null, state, item, nan, 0);
+
+    // Set state in the items that were added by the function call
+    for (int i = 0; (1L << i) <= added; i++) {
+      if (((1L << i) & added) != 0) {
+        state.getItem(i).sawNaN = true;
+      }
+    }
+  }
+
+  private static void acceptInfinity(
+      int cp, StateName nextName, ParserState state, StateItem item) {
+    CharSequence inf = state.symbols.getInfinity();
+    long added = acceptString(cp, nextName, null, state, item, inf, 0);
+
+    // Set state in the items that were added by the function call
+    for (int i = 0; (1L << i) <= added; i++) {
+      if (((1L << i) & added) != 0) {
+        state.getItem(i).sawInfinity = true;
+      }
+    }
+  }
+
+  private static void acceptExponentSeparator(
+      int cp, StateName nextName, ParserState state, StateItem item) {
+    CharSequence exp = state.symbols.getExponentSeparator();
+    acceptString(cp, nextName, null, state, item, exp, 0);
+  }
+
+  private static void acceptPrefix(int cp, StateName nextName, ParserState state, StateItem item) {
+    for (AffixHolder holder : state.affixHolders) {
+      acceptAffixHolder(cp, nextName, state, item, holder, true);
+    }
+  }
+
+  private static void acceptSuffix(int cp, StateName nextName, ParserState state, StateItem item) {
+    if (item.affix != null) {
+      acceptAffixHolder(cp, nextName, state, item, item.affix, false);
+    } else {
+      for (AffixHolder holder : state.affixHolders) {
+        acceptAffixHolder(cp, nextName, state, item, holder, false);
+      }
+    }
+  }
+
+  private static void acceptAffixHolder(
+      int cp,
+      StateName nextName,
+      ParserState state,
+      StateItem item,
+      AffixHolder holder,
+      boolean prefix) {
+    if (holder == null) return;
+    String str = prefix ? holder.p : holder.s;
+    if (holder.strings) {
+      long added = acceptString(cp, nextName, null, state, item, str, 0);
+      // At most one item can be added upon consuming a string.
+      if (added != 0) {
+        int i = state.lastInsertedIndex();
+        // The following four lines are duplicated above; not enough for their own function.
+        state.getItem(i).affix = holder;
+        if (prefix) state.getItem(i).sawPrefix = true;
+        else state.getItem(i).sawSuffix = true;
+        if (holder.negative) state.getItem(i).sawNegative = true;
+      }
+    } else {
+      long added = acceptAffixPattern(cp, nextName, state, item, str, 0);
+      // Multiple items can be added upon consuming an affix pattern.
+      for (int i = 0; (1L << i) <= added; i++) {
+        if (((1L << i) & added) != 0) {
+          // The following four lines are duplicated above; not enough for their own function.
+          state.getItem(i).affix = holder;
+          if (prefix) state.getItem(i).sawPrefix = true;
+          else state.getItem(i).sawSuffix = true;
+          if (holder.negative) state.getItem(i).sawNegative = true;
+        }
+      }
+    }
+  }
+
+  private static void acceptStringOffset(int cp, ParserState state, StateItem item) {
+    acceptString(
+        cp, item.returnTo1, item.returnTo2, state, item, item.currentString, item.currentOffset);
+  }
+
+  /**
+   * Accepts a code point if the code point is compatible with the string at the given offset.
+   *
+   * <p>This method will add no more than one {@link StateItem} to the {@link ParserState}, which
+   * means that at most one bit will be set in the return value, corresponding to the return value
+   * of {@link ParserState#lastInsertedIndex()}.
+   *
+   * @param cp The current code point, which will be checked for a match to the string.
+   * @param returnTo1 The state to return to after reaching the end of the string.
+   * @param returnTo2 The state to save in <code>returnTo1</code> after reaching the end of the
+   *     string. Set to null if returning to the main state loop.
+   * @param state The current {@link ParserState}
+   * @param item The current {@link StateItem}
+   * @param str The string against which to check for a match.
+   * @param offset The number of chars into the string. Initial value should be 0.
+   * @return A bitmask where the bits correspond to the items that were added. Set to 0L if no items
+   *     were added.
+   */
+  private static long acceptString(
+      int cp,
+      StateName returnTo1,
+      StateName returnTo2,
+      ParserState state,
+      StateItem item,
+      CharSequence str,
+      int offset) {
+    if (str == null || str.length() == 0) return 0L;
+    int referenceCp = Character.codePointAt(str, offset);
+    if (codePointEquals(cp, referenceCp, state)) {
+      // Matches first code point of the string
+      StateItem next = state.getNext().copyFrom(item);
+      if (str.length() != offset + Character.charCount(cp)) {
+        // String has more code points.
+        next.name = StateName.INSIDE_STRING;
+        next.returnTo1 = returnTo1;
+        next.returnTo2 = returnTo2;
+        next.currentString = str;
+        next.currentOffset = offset + Character.charCount(cp);
+      } else {
+        // We've reached the end of the string.
+        next.name = returnTo1;
+        next.returnTo1 = returnTo2;
+        next.returnTo2 = null;
+      }
+      return 1L << state.lastInsertedIndex();
+    }
+    return 0L;
+  }
+
+  private static void acceptAffixPatternOffset(int cp, ParserState state, StateItem item) {
+    acceptAffixPattern(
+        cp, item.returnTo1, state, item, item.currentAffixPattern, item.currentStepwiseParserTag);
+  }
+
+  /**
+   * Accepts a code point if the code point is compatible with the affix pattern at the offset
+   * encoded in the tag argument.
+   *
+   * @param cp The current code point, which will be checked for a match to the string.
+   * @param returnTo The state to return to after reaching the end of the string.
+   * @param state The current {@link ParserState}
+   * @param item The current {@link StateItem}
+   * @param str The string containing the affix pattern.
+   * @param tag The current state of the stepwise parser. Initial value should be 0L.
+   * @return A bitmask where the bits correspond to the items that were added. Set to 0L if no items
+   *     were added.
+   */
+  private static long acceptAffixPattern(
+      int cp, StateName returnTo, ParserState state, StateItem item, CharSequence str, long tag) {
+    if (str == null || str.length() == 0) return 0L;
+    final long newTag = LiteralString.LiteralStringStepwiseParser.step(tag, str);
+    if (newTag == -1) return 0L;
+    int typeOrCp = LiteralString.LiteralStringStepwiseParser.getTypeOrCp(newTag);
+    boolean hasNext = LiteralString.LiteralStringStepwiseParser.hasNext(newTag, str);
+
+    // Convert from the returned tag to a code point, string, or currency to check
+    int resolvedCp = -1;
+    CharSequence resolvedStr = null;
+    boolean resolvedCurrency = false;
+    if (typeOrCp < 0) {
+      // Symbol
+      switch (typeOrCp) {
+        case LiteralString.LiteralStringStepwiseParser.INT_TYPE_MINUS_SIGN:
+          resolvedStr = state.symbols.getMinusSignString();
+          break;
+        case LiteralString.LiteralStringStepwiseParser.INT_TYPE_PLUS_SIGN:
+          resolvedStr = state.symbols.getPlusSignString();
+          break;
+        case LiteralString.LiteralStringStepwiseParser.INT_TYPE_PERCENT:
+          resolvedStr = state.symbols.getPercentString();
+          break;
+        case LiteralString.LiteralStringStepwiseParser.INT_TYPE_PERMILLE:
+          resolvedStr = state.symbols.getPerMillString();
+          break;
+        case LiteralString.LiteralStringStepwiseParser.INT_TYPE_CURRENCY_SINGLE:
+        case LiteralString.LiteralStringStepwiseParser.INT_TYPE_CURRENCY_DOUBLE:
+        case LiteralString.LiteralStringStepwiseParser.INT_TYPE_CURRENCY_TRIPLE:
+          resolvedCurrency = true;
+          break;
+        default:
+          throw new AssertionError();
+      }
+    } else {
+      resolvedCp = typeOrCp;
+    }
+
+    long addedNormal = 0L;
+    long addedCurrencyNeeded = 0L;
+    if (resolvedCp >= 0) {
+      // Code point
+      if (!codePointEquals(cp, resolvedCp, state)) return 0L;
+      StateItem next = state.getNext().copyFrom(item);
+      if (hasNext) {
+        // Additional tokens in affix string.
+        next.name = StateName.INSIDE_AFFIX_PATTERN;
+        next.returnTo1 = returnTo;
+      } else {
+        // Reached last token in affix string.
+        next.name = returnTo;
+        next.returnTo1 = null;
+      }
+      addedNormal |= 1L << state.lastInsertedIndex();
+    } else if (resolvedStr != null) {
+      // String symbol
+      if (hasNext) {
+        addedNormal |=
+            acceptString(cp, StateName.INSIDE_AFFIX_PATTERN, returnTo, state, item, resolvedStr, 0);
+      } else {
+        addedNormal |= acceptString(cp, returnTo, null, state, item, resolvedStr, 0);
+      }
+    } else if (resolvedCurrency) {
+      // Currency
+      if (item.sawCurrency) return 0L;
+      CharSequence str1 = state.symbols.getCurrencySymbol();
+      CharSequence str2 = state.symbols.getInternationalCurrencySymbol();
+      ULocale uloc = state.symbols.getULocale();
+      TextTrieMap<Currency.CurrencyStringInfo>.ParseState trie1 =
+          Currency.openParseState(uloc, cp, Currency.LONG_NAME);
+      TextTrieMap<Currency.CurrencyStringInfo>.ParseState trie2 =
+          Currency.openParseState(uloc, cp, Currency.SYMBOL_NAME);
+      if (hasNext) {
+        // Accept from local currency information
+        addedCurrencyNeeded |=
+            acceptString(cp, StateName.INSIDE_AFFIX_PATTERN, returnTo, state, item, str1, 0);
+        addedCurrencyNeeded |=
+            acceptString(cp, StateName.INSIDE_AFFIX_PATTERN, returnTo, state, item, str2, 0);
+        // Accept from CLDR currency data
+        addedNormal |=
+            acceptCurrencyHelper(cp, StateName.INSIDE_AFFIX_PATTERN, returnTo, state, item, trie1);
+        addedNormal |=
+            acceptCurrencyHelper(cp, StateName.INSIDE_AFFIX_PATTERN, returnTo, state, item, trie2);
+      } else {
+        // Accept from local currency information
+        addedCurrencyNeeded |= acceptString(cp, returnTo, null, state, item, str1, 0);
+        addedCurrencyNeeded |= acceptString(cp, returnTo, null, state, item, str2, 0);
+        // Accept from CLDR currency data
+        addedNormal |= acceptCurrencyHelper(cp, returnTo, null, state, item, trie1);
+        addedNormal |= acceptCurrencyHelper(cp, returnTo, null, state, item, trie2);
+      }
+    } else {
+      // Nothing interesting in the affix pattern.
+    }
+
+    // Set state in the items that were added by the function calls
+    long added = addedNormal | addedCurrencyNeeded;
+    for (int i = 0; (1L << i) <= added; i++) {
+      if (((1L << i) & addedNormal) != 0) {
+        state.getItem(i).currentAffixPattern = str;
+        state.getItem(i).currentStepwiseParserTag = newTag;
+      }
+      if (((1L << i) & addedCurrencyNeeded) != 0) {
+        // Save the currency from symbols.
+        state.getItem(i).sawCurrency = true;
+        state.getItem(i).isoCode = state.symbols.getCurrency().getCurrencyCode();
+      }
+    }
+    return added;
   }
 
   /**
@@ -1249,41 +1641,17 @@ public class Parse {
    * @param item The old state leading into the code point.
    */
   private static void acceptCurrency(
-      int cp, StateName nextName, ParserState state, ParserStateItem item) {
+      int cp, StateName nextName, ParserState state, StateItem item) {
     if (item.sawCurrency) return;
-    acceptCurrencyHelper(
-        Currency.openParseState(state.uLocale, cp, Currency.LONG_NAME), cp, nextName, state, item);
-    acceptCurrencyHelper(
-        Currency.openParseState(state.uLocale, cp, Currency.SYMBOL_NAME),
-        cp,
-        nextName,
-        state,
-        item);
+    ULocale uloc = state.symbols.getULocale();
+    TextTrieMap<Currency.CurrencyStringInfo>.ParseState trie1 =
+        Currency.openParseState(uloc, cp, Currency.LONG_NAME);
+    TextTrieMap<Currency.CurrencyStringInfo>.ParseState trie2 =
+        Currency.openParseState(uloc, cp, Currency.SYMBOL_NAME);
+    acceptCurrencyHelper(cp, nextName, null, state, item, trie1);
+    acceptCurrencyHelper(cp, nextName, null, state, item, trie2);
   }
 
-  private static void acceptCurrencyHelper(
-      TextTrieMap<Currency.CurrencyStringInfo>.ParseState trieState,
-      int cp,
-      StateName nextName,
-      ParserState state,
-      ParserStateItem item) {
-    if (trieState == null) return;
-    if (trieState.getCurrentMatches() != null) {
-      // Match on first code point
-      ParserStateItem next = state.getNext().copyFrom(item);
-      // TODO: What should happen with multiple currency matches?
-      next.isoCode = trieState.getCurrentMatches().next().getISOCode();
-      next.name = nextName;
-      next.sawCurrency = true;
-    }
-    if (!trieState.atEnd()) {
-      // Prepare for matches on future code points
-      ParserStateItem next = state.getNext().copyFrom(item);
-      next.name = StateName.INSIDE_CURRENCY;
-      next.returnTo = nextName;
-      next.trieState = trieState;
-    }
-  }
   /**
    * If <code>cp</code> is the next code point of any currency, copies <code>item</code> to the new
    * list in <code>state</code> along with an instance of {@link TextTrieMap.ParseState} for
@@ -1295,197 +1663,58 @@ public class Parse {
    * @param state The state object to update.
    * @param item The old state leading into the code point.
    */
-  private static void acceptCurrencyOffset(int cp, ParserState state, ParserStateItem item) {
-    item.trieState.accept(cp);
-    if (item.trieState.getCurrentMatches() != null) {
-      ParserStateItem next = state.getNext().copyFrom(item);
+  private static void acceptCurrencyOffset(int cp, ParserState state, StateItem item) {
+    acceptCurrencyHelper(cp, item.returnTo1, item.returnTo2, state, item, item.currentTrieState);
+  }
+
+  private static long acceptCurrencyHelper(
+      int cp,
+      StateName returnTo1,
+      StateName returnTo2,
+      ParserState state,
+      StateItem item,
+      TextTrieMap<Currency.CurrencyStringInfo>.ParseState trieState) {
+    if (trieState == null) return 0L;
+    trieState.accept(cp);
+    long added = 0L;
+    if (trieState.getCurrentMatches() != null) {
+      // Match on first code point
       // TODO: What should happen with multiple currency matches?
-      next.isoCode = item.trieState.getCurrentMatches().next().getISOCode();
-      next.name = item.returnTo;
+      StateItem next = state.getNext().copyFrom(item);
+      next.name = returnTo1;
+      next.returnTo1 = returnTo2;
+      next.returnTo2 = null;
       next.sawCurrency = true;
+      next.isoCode = trieState.getCurrentMatches().next().getISOCode();
+      added |= 1L << state.lastInsertedIndex();
     }
-    if (!item.trieState.atEnd()) {
-      state.getNext().copyFrom(item);
+    if (!trieState.atEnd()) {
+      // Prepare for matches on future code points
+      StateItem next = state.getNext().copyFrom(item);
+      next.name = StateName.INSIDE_CURRENCY;
+      next.returnTo1 = returnTo1;
+      next.returnTo2 = returnTo2;
+      next.currentTrieState = trieState;
+      added |= 1L << state.lastInsertedIndex();
     }
+    return added;
   }
 
   /**
-   * If <code>cp</code> is a digit character (as determined by either {@link UCharacter#digit} or
-   * {@link ParserState#digitCps}), copies <code>item</code> to the new list in <code>state</code>
-   * and sets its state name to one determined by <code>type</code>. Also copies the digit into a
-   * field in the new item determined by <code>type</code>.
+   * Checks whether the two given codepoints are equal after applying case mapping as requested in
+   * the ParserState.
    *
-   * @param cp The code point to check.
-   * @param type The digit type, which determines the next state and the field into which to insert
-   *     the digit.
-   * @param state The state object to update.
-   * @param item The old state leading into the code point.
+   * @see #acceptString
+   * @see #acceptStringOffset
+   * @see #acceptLiteral
+   * @see #acceptLiteralOffset
    */
-  private static void acceptDigit(int cp, DigitType type, ParserState state, ParserStateItem item)
-      throws ParseException {
-    int digit = -1;
-
-    // Check the Unicode digit character property
-    digit = UCharacter.digit(cp, 10);
-
-    // Check custom digits from DecimalFormatSymbols
-    // This is done after checking the Unicode digit property because of performance.  Benchmarks
-    // on an x86-64 machine show a ~10% overall performance drop for if this branch is evaluated
-    // before the UCharacter.digit() branch.
-    if (digit < 0) {
-      for (int i = 0; i < 10; i++) {
-        if (cp == state.digitCps[i]) {
-          digit = i;
-          break;
-        }
-      }
+  private static boolean codePointEquals(int cp1, int cp2, ParserState state) {
+    if (!state.caseSensitive) {
+      cp1 = UCharacter.foldCase(cp1, true);
+      cp2 = UCharacter.foldCase(cp2, true);
     }
-
-    if (digit >= 0) {
-      // Code point is a number
-      ParserStateItem next = state.getNext().copyFrom(item);
-      switch (type) {
-        case INTEGER:
-          next.name = StateName.AFTER_INTEGER_DIGIT;
-          break;
-        case FRACTION:
-          next.name = StateName.AFTER_FRACTION_DIGIT;
-          break;
-        case EXPONENT:
-          next.name = StateName.AFTER_EXPONENT_DIGIT;
-          break;
-      }
-      next.appendDigit(digit, type);
-    }
-  }
-
-  /**
-   * If <code>cp</code> is a plus sign (as determined by the unicode set {@link #UNISET_PLUS}),
-   * copies <code>item</code> to the new list in <code>state</code>. Loops back to the same state
-   * name.
-   *
-   * @param cp The code point to check.
-   * @param state The state object to update.
-   * @param item The old state leading into the code point.
-   */
-  private static void acceptPlusSign(int cp, ParserState state, ParserStateItem item) {
-    if (UNISET_PLUS.contains(cp)) {
-      // Code point is a plus sign
-      // Loop back to the same state
-      state.getNext().copyFrom(item);
-    }
-  }
-
-  /**
-   * If <code>cp</code> is a minus sign (as determined by the unicode set {@link #UNISET_MINUS}),
-   * copies <code>item</code> to the new list in <code>state</code>. Loops back to the same state
-   * name. Also sets the {@link ParserStateItem#sawNegative} or {@link
-   * ParserStateItem#sawNegativeExponent} flag based on <code>type</code>.
-   *
-   * @param cp The code point to check.
-   * @param type The digit type, which determines which negative flag to set.
-   * @param state The state object to update.
-   * @param item The old state leading into the code point.
-   */
-  private static void acceptMinusSign(
-      int cp, DigitType type, ParserState state, ParserStateItem item) {
-    if (UNISET_MINUS.contains(cp)) {
-      // Code point is a minus sign
-      // Loop back to the same state and set negative flags
-      ParserStateItem next = state.getNext().copyFrom(item);
-      if (type == DigitType.INTEGER) {
-        next.sawNegative = true;
-      } else {
-        assert type == DigitType.EXPONENT;
-        next.sawNegativeExponent = true;
-      }
-    }
-  }
-
-  /**
-   * If <code>cp</code> is a grouping separator (as determined by the unicode set {@link
-   * #UNISET_GROUPING}), copies <code>item</code> to the new list in <code>state</code> and loops
-   * back to the same state. Also accepts if <code>cp</code> is the locale-specific grouping
-   * separator in {@link ParserState#groupingCp}, in which case the {@link
-   * ParserStateItem#usesLocaleSymbols} flag is also set.
-   *
-   * @param cp The code point to check.
-   * @param state The state object to update.
-   * @param item The old state leading into the code point.
-   */
-  private static void acceptGrouping(int cp, ParserState state, ParserStateItem item) {
-    // Do not accept mixed grouping separators in the same string.
-    if (item.groupingCp == -1) {
-      // First time seeing a grouping separator.
-      SeparatorType cpType = SeparatorType.fromCp(cp, state.mode == ParseMode.STRICT);
-
-      // Accept separators in UNKNOWN only if they exactly match the locale.
-      // Accept all other separators as long as they are not exactly the same as the decimal.
-      if (cp == state.decimalCp1 || cp == state.decimalCp2) {
-        return;
-      }
-      if (cpType == SeparatorType.UNKNOWN && cp != state.groupingCp1 && cp != state.groupingCp2) {
-        return;
-      }
-
-      // A match was found.
-      ParserStateItem next = state.getNext().copyFrom(item);
-      next.groupingCp = cp;
-
-      // If this path uses the custom symbols, give a 5-point reward for priority in the selection
-      // process if there are multiple possible parse paths.
-      if (cpType == state.groupingType1 || cpType == state.groupingType2) {
-        next.score += 5;
-      }
-    } else {
-      // Have already seen a grouping separator.
-      if (cp == item.groupingCp) {
-        state.getNext().copyFrom(item);
-      }
-    }
-  }
-
-  /**
-   * If <code>cp</code> is a decimal (as determined by the unicode set {@link #UNISET_DECIMAL}),
-   * copies <code>item</code> to the new list in <code>state</code> and goes to {@link
-   * StateName#AFTER_FRACTION_DIGIT}. Also accepts if <code>cp</code> is the locale-specific decimal
-   * point in {@link ParserState#decimalCp}, in which case the {@link
-   * ParserStateItem#usesLocaleSymbols} flag is also set.
-   *
-   * @param cp The code point to check.
-   * @param state The state object to update.
-   * @param item The old state leading into the code point.
-   */
-  private static void acceptDecimalPoint(int cp, ParserState state, ParserStateItem item) {
-    if (cp == item.groupingCp) {
-      // Don't accept a decimal point that is the same as the grouping separator
-      return;
-    }
-
-    SeparatorType cpType = SeparatorType.fromCp(cp, state.mode == ParseMode.STRICT);
-
-    // Accept separators in COMMA_LIKE or PERIOD_LIKE strictly according to the locale.
-    // Accept separators in OTHER_GROUPING or UNKNOWN only if they exactly match the locale.
-    if (cpType != state.decimalType1 && cpType != state.decimalType2) {
-      // No match.
-      return;
-    }
-    if ((cpType == SeparatorType.OTHER_GROUPING || cpType == SeparatorType.UNKNOWN)
-        && cp != state.decimalCp1
-        && cp != state.decimalCp2) {
-      // No match.
-      return;
-    }
-
-    // A match was found.
-    ParserStateItem next = state.getNext().copyFrom(item);
-    next.name = StateName.AFTER_FRACTION_DIGIT;
-
-    // If this path uses the custom symbols, give a 5-point reward for priority in the selection
-    // process if there are multiple possible parse paths.
-    if (cpType == state.decimalType1 || cpType == state.decimalType2) {
-      next.score += 5;
-    }
+    return cp1 == cp2;
   }
 
   /** Utility method to check for CharSequence length with null safety. */

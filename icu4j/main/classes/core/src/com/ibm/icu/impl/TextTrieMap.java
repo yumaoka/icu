@@ -123,9 +123,7 @@ public class TextTrieMap<V> {
         return null;
       }
 
-      ParseState parseState = new ParseState(_root);
-      parseState.accept(startingCp);
-      return parseState;
+      return new ParseState(_root);
     }
 
     /**

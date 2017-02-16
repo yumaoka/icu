@@ -341,10 +341,14 @@ public class FormatQuantity1 implements FormatQuantity {
   }
 
   @Override
-  public void roundToInterval(BigDecimal roundingInterval, MathContext roundingMode) {
-    divideBy(roundingInterval, scaleBigDecimal(roundingInterval), roundingMode);
-    roundToMagnitude(0, roundingMode);
-    multiplyBy(roundingInterval);
+  public void roundToInterval(BigDecimal roundingInterval, MathContext mathContext) {
+    BigDecimal d =
+        (primary == -1) ? fallback : new BigDecimal(primary).scaleByPowerOfTen(primaryScale);
+    if (isNegative()) d = d.negate();
+    d = d.divide(roundingInterval, 0, mathContext.getRoundingMode()).multiply(roundingInterval);
+    if (isNegative()) d = d.negate();
+    fallback = d;
+    primary = -1;
   }
 
   @Override
@@ -416,7 +420,7 @@ public class FormatQuantity1 implements FormatQuantity {
   private void divideBy(BigDecimal divisor, int scale, MathContext mathContext) {
     convertToBigDecimal();
     // Negate the scale because BigDecimal's scale is defined as the inverse of our scale
-    fallback = fallback.setScale(-scale, mathContext.getRoundingMode()).divide(divisor, mathContext);
+    fallback = fallback.divide(divisor, -scale, mathContext.getRoundingMode());
     if (fallback.compareTo(BigDecimal.ZERO) < 0) {
       setNegative(!isNegative());
       fallback = fallback.negate();

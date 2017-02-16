@@ -60,7 +60,8 @@ public class NumberStringBuilder implements CharSequence {
     int count = Character.charCount(codePoint);
     int position = prepareForInsert(index, count);
     Character.toChars(codePoint, chars, position);
-    Arrays.fill(fields, position, position + count, field);
+    fields[position] = field;
+    if (count == 2) fields[position + 1] = field;
     return count;
   }
 
@@ -125,13 +126,13 @@ public class NumberStringBuilder implements CharSequence {
    * @return The number of chars added, which is the length of the char array.
    */
   public int insert(int index, char[] chars, Field[] fields) {
-    assert chars.length == fields.length;
+    assert fields == null || chars.length == fields.length;
     int count = chars.length;
     if (count == 0) return 0; // nothing to insert
     int position = prepareForInsert(index, count);
     for (int i = 0; i < count; i++) {
       this.chars[position + i] = chars[i];
-      this.fields[position + i] = fields[i];
+      this.fields[position + i] = fields == null ? null : fields[i];
     }
     return count;
   }
@@ -154,6 +155,7 @@ public class NumberStringBuilder implements CharSequence {
    *     NumberStringBuilder}.
    */
   public int insert(int index, NumberStringBuilder other) {
+    assert this != other;
     int count = other.length;
     if (count == 0) return 0; // nothing to insert
     int position = prepareForInsert(index, count);
@@ -164,6 +166,13 @@ public class NumberStringBuilder implements CharSequence {
     return count;
   }
 
+  /**
+   * Shifts around existing data if necessary to make room for new characters.
+   *
+   * @param index The location in the string where the operation is to take place.
+   * @param count The number of chars (UTF-16 code units) to be inserted at that location.
+   * @return The position in the char array to insert the chars.
+   */
   private int prepareForInsert(int index, int count) {
     if (index == 0 && zero - count >= 0) {
       // Append to start
@@ -176,29 +185,34 @@ public class NumberStringBuilder implements CharSequence {
       return zero + length - count;
     } else {
       // Move chars around and/or allocate more space
-      if (length + count > chars.length) {
-        char[] newChars = new char[(length + count) * 2];
-        Field[] newFields = new Field[(length + count) * 2];
-        int newZero = newChars.length / 2 - (length + count) / 2;
-        System.arraycopy(chars, zero, newChars, newZero, index);
-        System.arraycopy(chars, zero + index, newChars, newZero + index + count, length - index);
-        System.arraycopy(fields, zero, newFields, newZero, index);
-        System.arraycopy(fields, zero + index, newFields, newZero + index + count, length - index);
-        chars = newChars;
-        fields = newFields;
-        zero = newZero;
-        length += count;
-      } else {
-        int newZero = chars.length / 2 - (length + count) / 2;
-        System.arraycopy(chars, zero, chars, newZero, length);
-        System.arraycopy(chars, newZero + index, chars, newZero + index + count, length - index);
-        System.arraycopy(fields, zero, fields, newZero, length);
-        System.arraycopy(fields, newZero + index, fields, newZero + index + count, length - index);
-        zero = newZero;
-        length += count;
-      }
-      return zero + index;
+      return prepareForInsertHelper(index, count);
     }
+  }
+
+  private int prepareForInsertHelper(int index, int count) {
+    // Keeping this code out of prepareForInsert() increases the speed of append operations.
+    if (length + count > chars.length) {
+      char[] newChars = new char[(length + count) * 2];
+      Field[] newFields = new Field[(length + count) * 2];
+      int newZero = newChars.length / 2 - (length + count) / 2;
+      System.arraycopy(chars, zero, newChars, newZero, index);
+      System.arraycopy(chars, zero + index, newChars, newZero + index + count, length - index);
+      System.arraycopy(fields, zero, newFields, newZero, index);
+      System.arraycopy(fields, zero + index, newFields, newZero + index + count, length - index);
+      chars = newChars;
+      fields = newFields;
+      zero = newZero;
+      length += count;
+    } else {
+      int newZero = chars.length / 2 - (length + count) / 2;
+      System.arraycopy(chars, zero, chars, newZero, length);
+      System.arraycopy(chars, newZero + index, chars, newZero + index + count, length - index);
+      System.arraycopy(fields, zero, fields, newZero, length);
+      System.arraycopy(fields, newZero + index, fields, newZero + index + count, length - index);
+      zero = newZero;
+      length += count;
+    }
+    return zero + index;
   }
 
   @Override
@@ -284,6 +298,19 @@ public class NumberStringBuilder implements CharSequence {
     for (int i = 0; i < length; i++) {
       if (this.chars[zero + i] != chars[i]) return false;
       if (this.fields[zero + i] != fields[i]) return false;
+    }
+    return true;
+  }
+
+  /**
+   * @param other The instance to compare.
+   * @return Whether the contents of this instance is currently equal to the given instance.
+   */
+  public boolean contentEquals(NumberStringBuilder other) {
+    if (length != other.length) return false;
+    for (int i = 0; i < length; i++) {
+      if (chars[zero + i] != other.chars[other.zero + i]) return false;
+      if (fields[zero + i] != other.fields[other.zero + i]) return false;
     }
     return true;
   }

@@ -3,7 +3,6 @@
 package com.ibm.icu.impl.number;
 
 import java.math.BigDecimal;
-import java.text.ParseException;
 
 import com.ibm.icu.impl.number.formatters.PaddingFormat.PaddingLocation;
 import com.ibm.icu.text.DecimalFormatSymbols;
@@ -18,9 +17,9 @@ public class PatternString {
    *
    * @param pattern The pattern string, like "#,##0.00"
    * @return A property bag object.
-   * @throws ParseException If there is a syntax error in the pattern string.
+   * @throws IllegalArgumentException If there is a syntax error in the pattern string.
    */
-  public static Properties parseToProperties(String pattern) throws ParseException {
+  public static Properties parseToProperties(String pattern) {
     Properties properties = new Properties();
     LdmlDecimalPatternParser.parse(pattern, properties);
     return properties;
@@ -34,10 +33,9 @@ public class PatternString {
    *
    * @param pattern The pattern string, like "#,##0.00"
    * @param properties The property bag object to overwrite.
-   * @throws ParseException If there was a syntax error in the pattern string.
+   * @throws IllegalArgumentException If there was a syntax error in the pattern string.
    */
-  public static void parseToExistingProperties(String pattern, Properties properties)
-      throws ParseException {
+  public static void parseToExistingProperties(String pattern, Properties properties) {
     LdmlDecimalPatternParser.parse(pattern, properties);
   }
 
@@ -489,7 +487,7 @@ public class PatternString {
         return codePoint;
       }
 
-      ParseException toParseException(String message) {
+      IllegalArgumentException toParseException(String message) {
         StringBuilder sb = new StringBuilder();
         sb.append("Unexpected character in decimal format pattern: ");
         sb.append(message);
@@ -501,11 +499,11 @@ public class PatternString {
           sb.append(Character.toChars(peek()));
           sb.append("'");
         }
-        return new ParseException(sb.toString(), offset);
+        return new IllegalArgumentException(sb.toString());
       }
     }
 
-    static void parse(String pattern, Properties properties) throws ParseException {
+    static void parse(String pattern, Properties properties) {
       if (pattern.isEmpty()) return;
       // TODO: Use whitespace characters from PatternProps
       ParserState state = new ParserState(pattern);
@@ -514,8 +512,7 @@ public class PatternString {
       result.saveToProperties(properties);
     }
 
-    private static void consumePattern(ParserState state, PatternParseResult result)
-        throws ParseException {
+    private static void consumePattern(ParserState state, PatternParseResult result) {
       // pattern := subpattern (';' subpattern)?
       consumeSubpattern(state, result.positive);
       if (state.peek() == ';') {
@@ -528,8 +525,7 @@ public class PatternString {
       }
     }
 
-    private static void consumeSubpattern(ParserState state, SubpatternParseResult result)
-        throws ParseException {
+    private static void consumeSubpattern(ParserState state, SubpatternParseResult result) {
       // subpattern := literals? number exponent? literals?
       consumePadding(state, result, PaddingLocation.BEFORE_PREFIX);
       consumeAffix(state, result, result.prefix);
@@ -542,8 +538,7 @@ public class PatternString {
     }
 
     private static void consumePadding(
-        ParserState state, SubpatternParseResult result, PaddingLocation paddingLocation)
-        throws ParseException {
+        ParserState state, SubpatternParseResult result, PaddingLocation paddingLocation) {
       if (state.peek() != '*') {
         return;
       }
@@ -553,8 +548,7 @@ public class PatternString {
     }
 
     private static void consumeAffix(
-        ParserState state, SubpatternParseResult result, StringBuilder destination)
-        throws ParseException {
+        ParserState state, SubpatternParseResult result, StringBuilder destination) {
       // literals := { literal }
       while (true) {
         switch (state.peek()) {
@@ -594,8 +588,7 @@ public class PatternString {
       }
     }
 
-    private static void consumeLiteral(ParserState state, StringBuilder destination)
-        throws ParseException {
+    private static void consumeLiteral(ParserState state, StringBuilder destination) {
       if (state.peek() == -1) {
         throw state.toParseException("expected unquoted literal but found end of string");
       } else if (state.peek() == '\'') {
@@ -614,8 +607,7 @@ public class PatternString {
       }
     }
 
-    private static void consumeFormat(ParserState state, SubpatternParseResult result)
-        throws ParseException {
+    private static void consumeFormat(ParserState state, SubpatternParseResult result) {
       consumeIntegerFormat(state, result);
       if (state.peek() == '.') {
         state.next(); // consume the decimal point
@@ -625,8 +617,7 @@ public class PatternString {
       }
     }
 
-    private static void consumeIntegerFormat(ParserState state, SubpatternParseResult result)
-        throws ParseException {
+    private static void consumeIntegerFormat(ParserState state, SubpatternParseResult result) {
       boolean seenSignificantDigitMarker = false;
 
       while (true) {
@@ -686,8 +677,7 @@ public class PatternString {
       }
     }
 
-    private static void consumeFractionFormat(ParserState state, SubpatternParseResult result)
-        throws ParseException {
+    private static void consumeFractionFormat(ParserState state, SubpatternParseResult result) {
       int zeroCounter = 0;
       while (true) {
         switch (state.peek()) {

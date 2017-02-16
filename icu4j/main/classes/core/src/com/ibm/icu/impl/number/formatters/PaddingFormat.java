@@ -69,7 +69,7 @@ public class PaddingFormat implements AfterFormat {
      */
     public IProperties setPaddingWidth(int paddingWidth);
 
-    static CharSequence DEFAULT_PADDING_STRING = "\u0020";
+    static CharSequence DEFAULT_PADDING_STRING = null;
 
     /** @see #setPaddingString */
     public CharSequence getPaddingString();
@@ -89,7 +89,7 @@ public class PaddingFormat implements AfterFormat {
      */
     public IProperties setPaddingString(CharSequence paddingString);
 
-    static PaddingLocation DEFAULT_PADDING_LOCATION = PaddingLocation.BEFORE_PREFIX;
+    static PaddingLocation DEFAULT_PADDING_LOCATION = null;
 
     /** @see #setPaddingLocation */
     public PaddingLocation getPaddingLocation();
@@ -112,15 +112,9 @@ public class PaddingFormat implements AfterFormat {
   }
 
   public static AfterFormat getInstance(IProperties properties) {
-    if (properties.getPaddingWidth() <= 0) {
-      throw new IllegalArgumentException("Padding width must be greater than zero");
-    }
-    if (properties.getPaddingString() == null) {
-      throw new IllegalArgumentException("Padding string must be specified");
-    }
     return new PaddingFormat(
         properties.getPaddingWidth(),
-        properties.getPaddingString().toString(),
+        properties.getPaddingString(),
         properties.getPaddingLocation());
   }
 
@@ -129,15 +123,15 @@ public class PaddingFormat implements AfterFormat {
   private final String paddingString;
   private final PaddingLocation paddingLocation;
 
-  private PaddingFormat(int paddingWidth, String paddingString, PaddingLocation paddingLocation) {
-    this.paddingWidth = paddingWidth;
-    this.paddingString = paddingString;
-    this.paddingLocation = paddingLocation;
+  private PaddingFormat(int paddingWidth, CharSequence paddingString, PaddingLocation paddingLocation) {
+    this.paddingWidth = paddingWidth > 0 ? paddingWidth : 10; // TODO: Is this a sensible default?
+    this.paddingString = paddingString != null ? paddingString.toString() : "\u0020";
+    this.paddingLocation =
+        paddingLocation != null ? paddingLocation : PaddingLocation.BEFORE_PREFIX;
   }
 
   @Override
-  public int after(
-      ModifierHolder mods, NumberStringBuilder string, int leftIndex, int rightIndex) {
+  public int after(ModifierHolder mods, NumberStringBuilder string, int leftIndex, int rightIndex) {
 
     // TODO: Count code points instead of code units?
     int requiredPadding = paddingWidth - (rightIndex - leftIndex) - mods.totalLength();

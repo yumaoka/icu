@@ -72,13 +72,10 @@ public class NumberFormatDataDrivenTest {
           ParsePosition ppos = new ParsePosition(0);
           Number actual = fmt.parse(tuple.parse, ppos);
           if (ppos.getIndex() == 0) {
-            if (!tuple.output.equals("fail")) {
-              return "Got parse error, but expected " + tuple.output;
-            }
-            return null;
+            return "Parse failed; got " + actual + ", but expected " + tuple.output;
           }
           if (tuple.output.equals("fail")) {
-            return "Parse succeeded: " + actual + ", but was expected to fail.";
+            return null;
           }
           Number expected = toNumber(tuple.output);
           // number types cannot be compared, this is the best we can do.
@@ -96,13 +93,10 @@ public class NumberFormatDataDrivenTest {
           ParsePosition ppos = new ParsePosition(0);
           CurrencyAmount currAmt = fmt.parseCurrency(tuple.parse, ppos);
           if (ppos.getIndex() == 0) {
-            if (!tuple.output.equals("fail")) {
-              return "Got parse error, but expected " + tuple.output;
-            }
-            return null;
+            return "Parse failed; got " + currAmt + ", but expected " + tuple.output;
           }
           if (tuple.output.equals("fail")) {
-            return "Parse succeeded: " + currAmt + ", but was expected to fail.";
+            return null;
           }
           Number expected = toNumber(tuple.output);
           Number actual = currAmt.getNumber();
@@ -284,13 +278,10 @@ public class NumberFormatDataDrivenTest {
           ParsePosition ppos = new ParsePosition(0);
           Number actual = fmt.parse(tuple.parse, ppos);
           if (ppos.getIndex() == 0) {
-            if (!tuple.output.equals("fail")) {
-              return "Got parse error, but expected " + tuple.output;
-            }
-            return null;
+            return "Parse failed; got " + actual + ", but expected " + tuple.output;
           }
           if (tuple.output.equals("fail")) {
-            return "Parse succeeded: " + actual + ", but was expected to fail.";
+            return null;
           }
           Number expected = toNumber(tuple.output);
           // number types cannot be compared, this is the best we can do.

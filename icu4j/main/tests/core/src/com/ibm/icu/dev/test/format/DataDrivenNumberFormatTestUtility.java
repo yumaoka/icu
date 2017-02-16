@@ -47,6 +47,7 @@ public class DataDrivenNumberFormatTestUtility {
          *  @param tuple contains the parameters of the format test.
          */
         public String format(DataDrivenNumberFormatTestData tuple) {
+            if (tuple.output != null && tuple.output.equals("fail")) return "fail";
             return null;
         }
 
@@ -57,6 +58,7 @@ public class DataDrivenNumberFormatTestUtility {
          *  @param tuple contains the parameters of the format test.
          */
         public String toPattern(DataDrivenNumberFormatTestData tuple) {
+            if (tuple.output != null && tuple.output.equals("fail")) return "fail";
             return null;
         }
 
@@ -67,6 +69,7 @@ public class DataDrivenNumberFormatTestUtility {
          *  @param tuple contains the parameters of the format test.
          */
         public String parse(DataDrivenNumberFormatTestData tuple) {
+            if (tuple.output != null && tuple.output.equals("fail")) return "fail";
             return null;
         }
 
@@ -77,6 +80,7 @@ public class DataDrivenNumberFormatTestUtility {
          *  @param tuple contains the parameters of the format test.
          */
         public String parseCurrency(DataDrivenNumberFormatTestData tuple) {
+            if (tuple.output != null && tuple.output.equals("fail")) return "fail";
             return null;
         }
 
@@ -87,6 +91,7 @@ public class DataDrivenNumberFormatTestUtility {
          * @param tuple contains the parameters of the format test.
          */
         public String select(DataDrivenNumberFormatTestData tuple) {
+            if (tuple.output != null && tuple.output.equals("fail")) return "fail";
             return null;
         }
     }
@@ -202,15 +207,18 @@ public class DataDrivenNumberFormatTestUtility {
                     if (runMode == RunMode.INCLUDE_KNOWN_FAILURES || !breaks(codeUnderTestId)) {
                         String errorMessage;
                         Exception err = null;
+                        boolean shouldFail = (tuple.output != null && tuple.output.equals("fail"))
+                                ? !breaks(codeUnderTestId)
+                                : breaks(codeUnderTestId);
                         try {
                             errorMessage = isPass(tuple);
                         } catch (Exception e) {
                             err = e;
                             errorMessage = "Exception: " + e + ": " + e.getCause();
                         }
-                        if (breaks(codeUnderTestId) && errorMessage == null) {
+                        if (shouldFail && errorMessage == null) {
                             showError("Expected failure, but passed");
-                        } else if (!breaks(codeUnderTestId) && errorMessage != null) {
+                        } else if (!shouldFail && errorMessage != null) {
                             if (err != null) {
                                 ByteArrayOutputStream os = new ByteArrayOutputStream();
                                 PrintStream ps = new PrintStream(os);
@@ -226,8 +234,11 @@ public class DataDrivenNumberFormatTestUtility {
                 fileLine = null;
             }
         } catch (Exception e) {
-            showError(e.toString());
-            e.printStackTrace();
+            ByteArrayOutputStream os = new ByteArrayOutputStream();
+            PrintStream ps = new PrintStream(os);
+            e.printStackTrace(ps);
+            String stackTrace = os.toString();
+            showError("MAJOR ERROR: " + e.toString() + "     Stack trace: " + stackTrace.substring(0,500));
         } finally {
             try {
                 if (in != null) {
@@ -286,7 +297,7 @@ public class DataDrivenNumberFormatTestUtility {
     }
 
     private List<String> splitBy(int max, char delimiter) {
-        ArrayList<String> result = new ArrayList<String>();
+        ArrayList<String> result = new ArrayList<>();
         int colIdx = 0;
         int colStart = 0;
         int len = fileLine.length();

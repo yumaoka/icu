@@ -85,6 +85,24 @@ pattern	format	output	breaks
 ,##0	1234.56	1,235
 '#',##	3456	#34,56
 
+test patterns with valid and invalid quote marks
+set locale et
+begin
+pattern	format	output	breaks
+'#	1	fail
+''#	1	'1
+'''#	1	fail
+''''#	1	''1
+'''''#	1	fail
+'-''-'#	1	-'-1
+// K doesn't know the locale symbol for et
+-'-'#	1	−-1	K
+'#'#	1	#1
+''#''	1	'1'
+''#-	1	'1−	K
+'-'#-	1	-1−	K
+-#'-'	1	−1-	K
+
 test int64
 set locale en
 begin
@@ -633,7 +651,7 @@ parse	output	breaks
 // J requires prefix and suffix for lenient parsing, but C doesn't
 5,347.25	5347.25	JK
 (5,347.25	-5347.25	J
-// S is successful at parsing this as -5347.25
+// S is successful at parsing this as -5347.25 in lenient mode
 -5,347.25	fail	S
 +3.52E4	35200
 (34.8E-3)	-0.0348
@@ -714,50 +732,53 @@ parse	output	breaks
 
 test parse strict
 set locale en
-set pattern +#,##0.0###;(#)
+set pattern +#,##,##0.0###;(#)
 set lenient 0
+set minGroupingDigits 2
 begin
 parse	output	breaks
 +123d5	123
 +5347.25	5347.25
 // separators in wrong place cause failure, no separators ok.
-+5,347.25	5347.25
-(5347.25)	-5347.25
-(5,347.25)	-5347.25
++65,347.25	65347.25
+(65347.25)	-65347.25
+(65,347.25)	-65347.25
 // JDK does allow separators in the wrong place and parses as -5347.25
-// S adopts JDK's behavior here
-(53,47.25)	fail	KS
+(53,47.25)	fail	K
 // strict requires prefix or suffix
-5,347.25	fail
+65,347.25	fail
 +3.52E4	35200
 (34.8E-3)	-0.0348
 (3425E-1)	-342.5
 // Strict doesn't allow separators in sci notation.
-(3,425)	-3425
-// JDK allows separators in sci notation and parses as -342.5
-(3,425E-1)	fail	KS
+(63,425)	-63425
+// JDK and S allow separators in sci notation and parses as -342.5
+(63,425E-1)	fail	KS
 // Both prefix and suffix needed for strict.
 // JDK accepts this and parses as -342.5
 (3425E-1	fail	K
 +3.52EE4	3.52
-+1,234,567.8901	1234567.8901
++12,34,567.8901	1234567.8901
 // With strict digit separators don't have to be the right type
 // JDK doesn't acknowledge space as a separator
-+1 234 567.8901	1234567.8901	K
++12 34 567.8901	1234567.8901	K
 // In general the grouping separators have to match their expected
 // location exactly. The only exception is when string being parsed
 // have no separators at all.
-+1,234,567.8901	1234567.8901
-// JDK doesn't require separators to be in the right place
-+1,23,4567.8901	fail	KS
-+1234,567.8901	fail	KS
-+1,234567.8901	fail	KS
++12,345.67	12345.67
+// JDK doesn't require separators to be in the right place.
++1,23,4567.8901	fail	K
++1,234,567.8901	fail	K
++1234,567.8901	fail	K
++1,234567.8901	fail	K
 +1234567.8901	1234567.8901
+// Minimum grouping is not satisfied below.
+// ICU58 does not check for this.
++1,234.5	fail	JK
 // Comma after decimal means parse to a comma
-+123,456.78,9	123456.78
-// A decimal after a decimal means bail
-// JDK parses as 123456.78
-+123,456.78.9	fail	KS
++1,23,456.78,9	123456.78
+// J fails upon seeing the second decimal point
++1,23,456.78.9	123456.78	J
 +79	79
 +79	79
 + 79	fail
@@ -840,6 +861,13 @@ parse	output
 8245	45
 2845	-45
 
+test parse pattern with quotes
+set locale en
+set pattern '-'#y
+begin
+parse	output
+-45y	45
+
 test parse with locale symbols
 // The grouping separator in it_CH is an apostrophe
 set locale it_CH
@@ -904,7 +932,8 @@ USD53.45	53.45	USD
 (USD 7.926)	-7.926	USD	CJ
 USD (7.926)	-7.926	USD	CJ
 USD (7.92)	-7.92	USD	CJ
-(7.92)USD	-7.92	USD	CJ
+// S fails this one because the ')' is an incomplete suffix.
+(7.92)USD	-7.92	USD	CJS
 USD(7.92)	-7.92	USD	CJ
 (8) USD	-8	USD
 -8 USD	-8	USD	CJ
@@ -925,10 +954,12 @@ US Dollars (53.45)	-53.45	USD	CJ
 US Dollar (53.45)	-53.45	USD	CJ
 (53.45) US Dollar	-53.45	USD
 US Dollars(53.45)	-53.45	USD	CJ
-(53.45)US Dollars	-53.45	USD	CJ
+// S fails this one because the ')' is an incomplete suffix.
+(53.45)US Dollars	-53.45	USD	CJS
 US Dollar(53.45)	-53.45	USD	CJ
 US Dollat(53.45)	fail	USD
-(53.45)US Dollar	-53.45	USD	CJ
+// S fails this one because the ')' is an incomplete suffix.
+(53.45)US Dollar	-53.45	USD	CJS
 
 
 test parse currency ISO negative
@@ -970,7 +1001,7 @@ set locale en_GB
 begin
 parse	output	outputCurrency	breaks
 // J throws a NullPointerException on the first case
-53.45	fail	GBP	J
+53.45	fail	GBP
 £53.45	53.45	GBP
 $53.45	fail	USD
 53.45 USD	53.45	USD
@@ -985,13 +1016,14 @@ USD53.45	53.45	USD
 (USD 7.926)	-7.926	USD	CJ
 USD (7.926)	-7.926	USD	CJ
 USD (7.92)	-7.92	USD	CJ
-(7.92)USD	-7.92	USD	CJ
+// S fails this one because the ')' is an incomplete suffix.
+(7.92)USD	-7.92	USD	CJS
 USD(7.92)	-7.92	USD	CJ
 (8) USD	-8	USD
 -8 USD	-8	USD	CJ
 67 USD	67	USD
 // J throws a NullPointerException on the next case
-53.45$	fail	USD	J
+53.45$	fail	USD
 US Dollars 53.45	53.45	USD	J
 53.45 US Dollars	53.45	USD
 US Dollar 53.45	53.45	USD	J
@@ -1023,7 +1055,8 @@ USD53.45	53.45	USD
 (USD 7.926)	-7.926	USD	CJ
 USD (7.926)	-7.926	USD	CJ
 USD (7.92)	-7.92	USD	CJ
-(7.92)USD	-7.92	USD	CJ
+// S fails this one because the ')' is an incomplete suffix.
+(7.92)USD	-7.92	USD	CJS
 USD(7.92)	-7.92	USD	CJ
 (8) USD	-8	USD
 -8 USD	-8	USD	CJ
@@ -1053,16 +1086,17 @@ $53.45	fail	USD
 USD 53.45	53.45	USD	J
 53.45USD	53.45	USD	CJ
 USD53.45	53.45	USD
-(7.92) USD	-7.92	USD	CJ
-(7.92) GBP	-7.92	GBP	CJ
-(7.926) USD	-7.926	USD	CJ
-(7.926 USD)	-7.926	USD	CJ
+// S fails these because the '(' is an incomplete prefix.
+(7.92) USD	-7.92	USD	CJS
+(7.92) GBP	-7.92	GBP	CJS
+(7.926) USD	-7.926	USD	CJS
+(7.926 USD)	-7.926	USD	CJS
 (USD 7.926)	-7.926	USD	J
-USD (7.926)	-7.926	USD	CJ
-USD (7.92)	-7.92	USD	CJ
-(7.92)USD	-7.92	USD	CJ
-USD(7.92)	-7.92	USD	CJ
-(8) USD	-8	USD	CJ
+USD (7.926)	-7.926	USD	CJS
+USD (7.92)	-7.92	USD	CJS
+(7.92)USD	-7.92	USD	CJS
+USD(7.92)	-7.92	USD	CJS
+(8) USD	-8	USD	CJS
 -8 USD	-8	USD	CJ
 67 USD	67	USD	CJ
 53.45$	fail	USD
@@ -1157,41 +1191,40 @@ begin
 parse	output	outputCurrency	breaks
 $53.45	53.45	USD
 53.45 USD	53.45	USD
-// S doesn't support strict currency parsing
-USD 53.45	fail	USD	S
-53.45USD	fail	USD	S
+USD 53.45	fail	USD
+53.45USD	fail	USD
 USD53.45	53.45	USD
 (7.92) USD	-7.92	USD
 (7.92) EUR	-7.92	EUR
 (7.926) USD	-7.926	USD
-(7.926 USD)	fail	USD	S
+(7.926 USD)	fail	USD
 (USD 7.926)	fail	USD
-USD (7.926)	fail	USD	S
-USD (7.92)	fail	USD	S
-(7.92)USD	fail	USD	S
-USD(7.92)	fail	USD	S
+USD (7.926)	fail	USD
+USD (7.92)	fail	USD
+(7.92)USD	fail	USD
+USD(7.92)	fail	USD
 (8) USD	-8	USD
--8 USD	fail	USD	S
+-8 USD	fail	USD
 67 USD	67	USD
-53.45$	fail	USD	S
-US Dollars 53.45	fail	USD	S
+53.45$	fail	USD
+US Dollars 53.45	fail	USD
 53.45 US Dollars	53.45	USD
-US Dollar 53.45	fail	USD	S
+US Dollar 53.45	fail	USD
 53.45 US Dollar	53.45	USD
 US Dollars53.45	53.45	USD
-53.45US Dollars	fail	USD	S
+53.45US Dollars	fail	USD
 US Dollar53.45	53.45	USD
 US Dollat53.45	fail	USD
-53.45US Dollar	fail	USD	S
-US Dollars (53.45)	fail	USD	S
+53.45US Dollar	fail	USD
+US Dollars (53.45)	fail	USD
 (53.45) US Dollars	-53.45	USD
-US Dollar (53.45)	fail	USD	S
+US Dollar (53.45)	fail	USD
 (53.45) US Dollar	-53.45	USD
-US Dollars(53.45)	fail	USD	S
-(53.45)US Dollars	fail	USD	S
-US Dollar(53.45)	fail	USD	S
+US Dollars(53.45)	fail	USD
+(53.45)US Dollars	fail	USD
+US Dollar(53.45)	fail	USD
 US Dollat(53.45)	fail	USD
-(53.45)US Dollar	fail	USD	S
+(53.45)US Dollar	fail	USD
 
 test ticket 10436
 set locale en

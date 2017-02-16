@@ -13,7 +13,7 @@ public class PositiveDecimalFormat implements Format.TargetFormat {
 
   public static interface IProperties extends CurrencyFormat.IProperties {
 
-    static int DEFAULT_GROUPING_SIZE = Integer.MAX_VALUE;
+    static int DEFAULT_GROUPING_SIZE = -1;
 
     /** @see #setGroupingSize */
     public int getGroupingSize();
@@ -28,7 +28,7 @@ public class PositiveDecimalFormat implements Format.TargetFormat {
      */
     public IProperties setGroupingSize(int groupingSize);
 
-    static int DEFAULT_SECONDARY_GROUPING_SIZE = Integer.MAX_VALUE;
+    static int DEFAULT_SECONDARY_GROUPING_SIZE = -1;
 
     /** @see #setSecondaryGroupingSize */
     public int getSecondaryGroupingSize();
@@ -100,11 +100,11 @@ public class PositiveDecimalFormat implements Format.TargetFormat {
 
   public PositiveDecimalFormat(DecimalFormatSymbols symbols, IProperties properties) {
     groupingSize =
-        (properties.getGroupingSize() == Integer.MAX_VALUE)
+        (properties.getGroupingSize() < 0)
             ? properties.getSecondaryGroupingSize()
             : properties.getGroupingSize();
     secondaryGroupingSize =
-        (properties.getSecondaryGroupingSize() == Integer.MAX_VALUE)
+        (properties.getSecondaryGroupingSize() < 0)
             ? properties.getGroupingSize()
             : properties.getSecondaryGroupingSize();
 

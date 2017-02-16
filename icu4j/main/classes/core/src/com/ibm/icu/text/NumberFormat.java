@@ -1451,8 +1451,11 @@ public abstract class NumberFormat extends UFormat {
      * @param choice the pattern format.
      * @return the pattern
      * @stable ICU 3.2
+     * @internal
+     * @deprecated This API is ICU internal only.
      */
-    protected static String getPattern(ULocale forLocale, int choice) {
+    @Deprecated
+    public static String getPattern(ULocale forLocale, int choice) {
         /* for ISOCURRENCYSTYLE and PLURALCURRENCYSTYLE,
          * the pattern is the same as the pattern of CURRENCYSTYLE
          * but by replacing the single currency sign with

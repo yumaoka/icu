@@ -14,6 +14,7 @@ import com.ibm.icu.impl.number.FormatQuantity;
 import com.ibm.icu.impl.number.FormatQuantity1;
 import com.ibm.icu.impl.number.FormatQuantity2;
 import com.ibm.icu.impl.number.FormatQuantity3;
+import com.ibm.icu.impl.number.FormatQuantity4;
 import com.ibm.icu.impl.number.Parse;
 import com.ibm.icu.impl.number.Parse.ParseMode;
 import com.ibm.icu.impl.number.PatternString;
@@ -72,25 +73,25 @@ public class ShanesDataDrivenTester extends CodeUnderTest {
       if (d.precision() <= 16) {
         q1 = new FormatQuantity1(d);
         q2 = new FormatQuantity1(Double.parseDouble(tuple.format));
-        q3 = new FormatQuantity2(d);
+        q3 = new FormatQuantity4(d);
       } else {
         q1 = new FormatQuantity1(d);
         q2 = new FormatQuantity3(d);
-        q3 = new FormatQuantity3(d); // duplicate values so no null
+        q3 = new FormatQuantity4(d); // duplicate values so no null
       }
     }
     String expected = tuple.output;
     String actual1 = fmt.format(q1);
     if (!expected.equals(actual1)) {
-      return "Expected \"" + expected + "\", got \"" + actual1 + "\" on BigDecimal";
+      return "Expected \"" + expected + "\", got \"" + actual1 + "\" on FormatQuantity1 BigDecimal";
     }
     String actual2 = fmt.format(q2);
     if (!expected.equals(actual2)) {
-      return "Expected \"" + expected + "\", got \"" + actual2 + "\" on double";
+      return "Expected \"" + expected + "\", got \"" + actual2 + "\" on FormatQuantity1 double";
     }
     String actual3 = fmt.format(q3);
     if (!expected.equals(actual3)) {
-      return "Expected \"" + expected + "\", got \"" + actual3 + "\" on double";
+      return "Expected \"" + expected + "\", got \"" + actual3 + "\" on FormatQuantity4 BigDecimal";
     }
     return null;
   }
@@ -109,7 +110,7 @@ public class ShanesDataDrivenTester extends CodeUnderTest {
       properties = PatternString.parseToProperties(pattern);
       propertiesFromTuple(tuple, properties);
       //      System.out.println(properties);
-    } catch (ParseException e) {
+    } catch (IllegalArgumentException e) {
       e.printStackTrace();
       return e.getLocalizedMessage();
     }
@@ -149,27 +150,27 @@ public class ShanesDataDrivenTester extends CodeUnderTest {
       actual =
           Parse.parse(
               tuple.parse, ppos, properties, DecimalFormatSymbols.getInstance(tuple.locale));
-    } catch (ParseException e) {
-      e.printStackTrace();
+    } catch (IllegalArgumentException e) {
       return "parse exception: " + e.getMessage();
     }
-    if (ppos.getIndex() == 0) {
-      if (!tuple.output.equals("fail")) {
-        return "Parse failed; got " + actual + ", but expected " + tuple.output;
-      }
-      return null;
+    if (actual == null && ppos.getIndex() != 0) {
+      throw new AssertionError("Error: value is null but parse position is not zero");
     }
-    if (tuple.output.equals("fail")) {
-      return "Parse succeeded: " + actual + ", but was expected to fail.";
+    if (ppos.getIndex() == 0) {
+      return "Parse failed; got " + actual + ", but expected " + tuple.output;
     }
     if (tuple.output.equals("NaN")) {
       if (!Double.isNaN(actual.doubleValue())) {
         return "Expected NaN, but got: " + actual;
       }
+      return null;
+    } else if (tuple.output.equals("fail")) {
+      return null;
     } else if (new BigDecimal(tuple.output).compareTo(new BigDecimal(actual.toString())) != 0) {
       return "Expected: " + tuple.output + ", got: " + actual;
+    } else {
+      return null;
     }
-    return null;
   }
 
   /**
@@ -195,13 +196,7 @@ public class ShanesDataDrivenTester extends CodeUnderTest {
       return "parse exception: " + e.getMessage();
     }
     if (ppos.getIndex() == 0 || actual.getCurrency().getCurrencyCode().equals("XXX")) {
-      if (!tuple.output.equals("fail")) {
-        return "Parse failed; got " + actual + ", but expected " + tuple.output;
-      }
-      return null;
-    }
-    if (tuple.output.equals("fail")) {
-      return "Parse succeeded: " + actual + ", but was expected to fail.";
+      return "Parse failed; got " + actual + ", but expected " + tuple.output;
     }
     BigDecimal expectedNumber = new BigDecimal(tuple.output);
     if (expectedNumber.compareTo(new BigDecimal(actual.getNumber().toString())) != 0) {
