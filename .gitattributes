@@ -1,0 +1,151 @@
+* text=auto !eol
+
+*.c text !eol
+*.cc text !eol
+*.classpath text !eol
+*.cpp text !eol
+*.css text !eol
+*.dsp text !eol
+*.dsw text !eol
+*.filters text !eol
+*.h text !eol
+*.htm text !eol
+*.html text !eol
+*.in text !eol
+*.java text !eol
+*.launch text !eol
+*.mak text !eol
+*.md text !eol
+*.MF text !eol
+*.mk text !eol
+*.pl text !eol
+*.pm text !eol
+*.project text !eol
+*.properties text !eol
+*.py text !eol
+*.rc text !eol
+*.sh text eol=lf
+*.sln text !eol
+*.stub text !eol
+*.txt text !eol
+*.ucm text !eol
+*.vcproj text !eol
+*.vcxproj text !eol
+*.xml text !eol
+*.xsl text !eol
+*.xslt text !eol
+Makefile text !eol
+configure text !eol
+LICENSE text !eol
+README text !eol
+
+*.bin -text
+*.brk -text
+*.cnv -text
+*.icu -text
+*.res -text
+*.nrm -text
+*.spp -text
+*.tri2 -text
+
+icu4c/icu4c.css -text
+icu4c/source/aclocal.m4 -text
+icu4c/source/allinone/icucheck.bat -text
+icu4c/source/config/m4/icu-conditional.m4 -text
+icu4c/source/data/curr/pool.res -text
+icu4c/source/data/in/coll/ucadata-implicithan.icu -text
+icu4c/source/data/in/coll/ucadata-unihan.icu -text
+icu4c/source/data/in/nfc.nrm -text
+icu4c/source/data/in/nfkc.nrm -text
+icu4c/source/data/in/nfkc_cf.nrm -text
+icu4c/source/data/in/pnames.icu -text
+icu4c/source/data/in/ubidi.icu -text
+icu4c/source/data/in/ucase.icu -text
+icu4c/source/data/in/unames.icu -text
+icu4c/source/data/in/uprops.icu -text
+icu4c/source/data/in/uts46.nrm -text
+icu4c/source/data/lang/pool.res -text
+icu4c/source/data/locales/pool.res -text
+icu4c/source/data/makedata.vcxproj -text
+icu4c/source/data/mappings/gsm-03.38-2009.ucm -text
+icu4c/source/data/region/pool.res -text
+icu4c/source/data/unit/pool.res -text
+icu4c/source/data/zone/pool.res -text
+icu4c/source/extra/uconv/uconv.vcxproj -text
+icu4c/source/samples/break/break.vcxproj -text
+icu4c/source/samples/case/case.vcxproj -text
+icu4c/source/samples/citer/citer.vcxproj -text
+icu4c/source/samples/coll/coll.vcxproj -text
+icu4c/source/samples/csdet/csdet.vcxproj -text
+icu4c/source/samples/date/date.vcxproj -text
+icu4c/source/samples/datefmt/datefmt.vcxproj -text
+icu4c/source/samples/dtitvfmtsample/dtitvfmtsample.vcxproj -text
+icu4c/source/samples/dtptngsample/dtptngsample.vcxproj -text
+icu4c/source/samples/layout/layout.vcxproj -text
+icu4c/source/samples/legacy/legacy.vcxproj -text
+icu4c/source/samples/msgfmt/msgfmt.vcxproj -text
+icu4c/source/samples/numfmt/numfmt.vcxproj -text
+icu4c/source/samples/plurfmtsample/plurfmtsample.vcxproj -text
+icu4c/source/samples/props/props.vcxproj -text
+icu4c/source/samples/strsrch/strsrch.vcxproj -text
+icu4c/source/samples/translit/translit.vcxproj -text
+icu4c/source/samples/uciter8/uciter8.vcxproj -text
+icu4c/source/samples/ucnv/data02.bin -text
+icu4c/source/samples/ucnv/ucnv.vcxproj -text
+icu4c/source/samples/udata/reader.vcxproj -text
+icu4c/source/samples/udata/writer.vcxproj -text
+icu4c/source/samples/ufortune/ufortune.vcxproj -text
+icu4c/source/samples/ugrep/ugrep.vcxproj -text
+icu4c/source/samples/uresb/resources.vcxproj -text
+icu4c/source/samples/uresb/uresb.vcxproj -text
+icu4c/source/samples/ustring/ustring.vcxproj -text
+icu4c/source/test/depstest/icu-dependencies-mode.el -text
+icu4c/source/test/letest/cletest.vcxproj -text
+icu4c/source/test/letest/gendata.vcxproj -text
+icu4c/source/test/letest/letest.vcxproj -text
+icu4c/source/test/perf/DateFmtPerf/DateFmtPerf.vcxproj -text
+icu4c/source/test/perf/README -text
+icu4c/source/test/perf/charperf/charperf.vcxproj -text
+icu4c/source/test/perf/collperf/collperf.vcxproj -text
+icu4c/source/test/perf/convperf/convperf.vcxproj -text
+icu4c/source/test/perf/icuperf2report.xsl -text
+icu4c/source/test/perf/normperf/normperf.vcxproj -text
+icu4c/source/test/perf/strsrchperf/strsrchperf.vcxproj -text
+icu4c/source/test/perf/ubrkperf/ubrkperf.vcxproj -text
+icu4c/source/test/perf/ucnvavailperf/ucnvavailperf.vcxproj -text
+icu4c/source/test/perf/unisetperf/unisetperf.vcxproj -text
+icu4c/source/test/perf/usetperf/usetperf.vcxproj -text
+icu4c/source/test/perf/ustrperf/stringperf.vcxproj -text
+icu4c/source/test/perf/utfperf/utfperf.vcxproj -text
+icu4c/source/test/perf/utrie2perf/utrie2perf.vcxproj -text
+icu4c/source/test/testdata/TestFont1.otf -text
+icu4c/source/test/testdata/encoded.utf16be -text
+icu4c/source/test/testdata/importtest.bin -text
+icu4c/source/test/testdata/old_e_testtypes.res -text
+icu4c/source/test/testdata/old_l_testtypes.res -text
+icu4c/source/test/testdata/uni-text.bin -text
+icu4c/source/tools/genbrk/genbrk.vcxproj -text
+icu4c/source/tools/genccode/genccode.vcxproj -text
+icu4c/source/tools/gencfu/gencfu.vcxproj -text
+icu4c/source/tools/gencmn/gencmn.vcxproj -text
+icu4c/source/tools/gencnval/gencnval.vcxproj -text
+icu4c/source/tools/gencolusb/README.md -text
+icu4c/source/tools/gendict/gendict.vcxproj -text
+icu4c/source/tools/gennorm2/gennorm2.vcxproj -text
+icu4c/source/tools/genrb/derb.vcxproj -text
+icu4c/source/tools/gensprep/gensprep.vcxproj -text
+icu4c/source/tools/gentest/gentest.vcxproj -text
+icu4c/source/tools/icuinfo/icuinfo.vcxproj -text
+icu4c/source/tools/icuinfo/testplug.vcxproj -text
+icu4c/source/tools/icupkg/icupkg.vcxproj -text
+icu4c/source/tools/pkgdata/pkgdata.vcxproj -text
+icu4c/source/tools/tzcode/icuregions -text
+
+# The following file types are stored in Git-LFS.
+*.jar filter=lfs diff=lfs merge=lfs -text
+*.dat filter=lfs diff=lfs merge=lfs -text
+*.zip filter=lfs diff=lfs merge=lfs -text
+*.gz filter=lfs diff=lfs merge=lfs -text
+*.bz2 filter=lfs diff=lfs merge=lfs -text
+*.gif filter=lfs diff=lfs merge=lfs -text
+
