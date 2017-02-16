@@ -414,7 +414,7 @@ public class NumberFormatTest extends TestFmwk {
         // the string to be parsed, parsed position, parsed error index
         String[][] DATA = {
                 {"$124", "4", "-1"},
-                {"$124 $124", "6", "-1"}, // TODO: Make parsing stop at 5 instead of 6
+                {"$124 $124", "5", "-1"},
                 {"$124 ", "5", "-1"},
                 {"$ 124 ", "6", "-1"},
                 {"$\u00A0124 ", "6", "-1"},
@@ -712,25 +712,20 @@ public class NumberFormatTest extends TestFmwk {
                 if (!strBuf.equals(formatResult)) {
                     errln("FAIL: localeID: " + localeString + ", expected(" + formatResult.length() + "): \"" + formatResult + "\", actual(" + strBuf.length() + "): \"" + strBuf + "\"");
                 }
-                try {
-                    // test parsing, and test parsing for all currency formats.
-                    for (int j = 3; j < 6; ++j) {
-                        // DATA[i][3] is the currency format result using
-                        // CURRENCYSTYLE formatter.
-                        // DATA[i][4] is the currency format result using
-                        // ISOCURRENCYSTYLE formatter.
-                        // DATA[i][5] is the currency format result using
-                        // PLURALCURRENCYSTYLE formatter.
-                        String oneCurrencyFormatResult = DATA[i][j];
-                        ParsePosition ppos = new ParsePosition(0);
-                        CurrencyAmount val = numFmt.parseCurrency(oneCurrencyFormatResult, ppos);
-                        if (val.getNumber().doubleValue() != numberToBeFormat.doubleValue()) {
-                            errln("FAIL: getCurrencyFormat of locale " + localeString + " failed roundtripping the number. val=" + val + "; expected: " + numberToBeFormat);
-                        }
+                // test parsing, and test parsing for all currency formats.
+                for (int j = 3; j < 6; ++j) {
+                    // DATA[i][3] is the currency format result using
+                    // CURRENCYSTYLE formatter.
+                    // DATA[i][4] is the currency format result using
+                    // ISOCURRENCYSTYLE formatter.
+                    // DATA[i][5] is the currency format result using
+                    // PLURALCURRENCYSTYLE formatter.
+                    String oneCurrencyFormatResult = DATA[i][j];
+                    ParsePosition ppos = new ParsePosition(0);
+                    CurrencyAmount val = numFmt.parseCurrency(oneCurrencyFormatResult, ppos);
+                    if (val == null || val.getNumber().doubleValue() != numberToBeFormat.doubleValue()) {
+                        errln("FAIL: getCurrencyFormat of locale " + localeString + " failed roundtripping the number. val=" + val + "; expected: " + numberToBeFormat + "; string: " + oneCurrencyFormatResult);
                     }
-                }
-                catch (Exception e) {
-                    errln("FAIL: " + e.getMessage());
                 }
             }
         }
@@ -745,7 +740,7 @@ public class NumberFormatTest extends TestFmwk {
                 {"1.00 UAE dirha", "0", "14"},
                 {"1.00 us dollar", "14", "-1"},
                 {"1.00 US DOLLAR", "14", "-1"},
-                {"1.00 usd", "0", "7"},
+                {"1.00 usd", "8", "-1"},
                 {"1.00 USD", "8", "-1"},
         };
         ULocale locale = new ULocale("en_US");
@@ -3400,13 +3395,13 @@ public class NumberFormatTest extends TestFmwk {
 
         try {
             ca = new CurrencyAmount(null, null);
-            errln("NullPointerException should have been thrown.");
-        } catch (NullPointerException ex) {
+            errln("IllegalArgumentException should have been thrown.");
+        } catch (IllegalArgumentException ex) {
         }
         try {
             ca = new CurrencyAmount(new Integer(0), null);
-            errln("NullPointerException should have been thrown.");
-        } catch (NullPointerException ex) {
+            errln("IllegalArgumentException should have been thrown.");
+        } catch (IllegalArgumentException ex) {
         }
 
         ca = new CurrencyAmount(new Integer(0), Currency.getInstance(new ULocale("ja_JP")));
@@ -4204,7 +4199,7 @@ public class NumberFormatTest extends TestFmwk {
     private void CompareAttributedCharacterFormatOutput(AttributedCharacterIterator iterator,
         List<FieldContainer> expected, String formattedOutput) {
 
-        List<FieldContainer> result = new ArrayList<FieldContainer>();
+        List<FieldContainer> result = new ArrayList<>();
         while (iterator.getIndex() != iterator.getEndIndex()) {
             int start = iterator.getRunStart();
             int end = iterator.getRunLimit();
@@ -4241,7 +4236,7 @@ public class NumberFormatTest extends TestFmwk {
     @Test
     public void TestNPEIssue11914() {
         // First test: Double value with grouping separators.
-        List<FieldContainer> v1 = new ArrayList<FieldContainer>(7);
+        List<FieldContainer> v1 = new ArrayList<>(7);
         v1.add(new FieldContainer(0, 3, NumberFormat.Field.INTEGER));
         v1.add(new FieldContainer(3, 4, NumberFormat.Field.GROUPING_SEPARATOR));
         v1.add(new FieldContainer(4, 7, NumberFormat.Field.INTEGER));
@@ -4261,7 +4256,7 @@ public class NumberFormatTest extends TestFmwk {
         CompareAttributedCharacterFormatOutput(iterator, v1, numFmtted);
 
         // Second test: Double with scientific notation formatting.
-        List<FieldContainer> v2 = new ArrayList<FieldContainer>(7);
+        List<FieldContainer> v2 = new ArrayList<>(7);
         v2.add(new FieldContainer(0, 1, NumberFormat.Field.INTEGER));
         v2.add(new FieldContainer(1, 2, NumberFormat.Field.DECIMAL_SEPARATOR));
         v2.add(new FieldContainer(2, 5, NumberFormat.Field.FRACTION));
@@ -4275,7 +4270,7 @@ public class NumberFormatTest extends TestFmwk {
         CompareAttributedCharacterFormatOutput(iterator, v2, numFmtted);
 
         // Third test. BigInteger with grouping separators.
-        List<FieldContainer> v3 = new ArrayList<FieldContainer>(7);
+        List<FieldContainer> v3 = new ArrayList<>(7);
         v3.add(new FieldContainer(0, 1, NumberFormat.Field.SIGN));
         v3.add(new FieldContainer(1, 2, NumberFormat.Field.INTEGER));
         v3.add(new FieldContainer(2, 3, NumberFormat.Field.GROUPING_SEPARATOR));
@@ -4297,7 +4292,7 @@ public class NumberFormatTest extends TestFmwk {
         CompareAttributedCharacterFormatOutput(iterator, v3, fmtNumberBigInt);
 
         // Fourth test: BigDecimal with exponential formatting.
-        List<FieldContainer> v4 = new ArrayList<FieldContainer>(7);
+        List<FieldContainer> v4 = new ArrayList<>(7);
         v4.add(new FieldContainer(0, 1, NumberFormat.Field.SIGN));
         v4.add(new FieldContainer(1, 2, NumberFormat.Field.INTEGER));
         v4.add(new FieldContainer(2, 3, NumberFormat.Field.DECIMAL_SEPARATOR));

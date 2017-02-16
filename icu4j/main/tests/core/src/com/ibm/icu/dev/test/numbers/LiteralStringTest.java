@@ -3,12 +3,11 @@
 package com.ibm.icu.dev.test.numbers;
 
 import static org.junit.Assert.assertEquals;
-
-import java.text.ParseException;
+import static org.junit.Assert.fail;
 
 import org.junit.Test;
 
-import com.ibm.icu.impl.number.LiteralString;
+import com.ibm.icu.impl.number.AffixPatternUtils;
 import com.ibm.icu.impl.number.NumberStringBuilder;
 import com.ibm.icu.text.DecimalFormatSymbols;
 import com.ibm.icu.util.ULocale;
@@ -17,7 +16,7 @@ import com.ibm.icu.util.ULocale;
 public class LiteralStringTest {
 
   @Test
-  public void test() throws ParseException {
+  public void test() {
     Object[][] cases = {
       {"", false, 0, ""},
       {"abc", false, 3, "abc"},
@@ -30,7 +29,6 @@ public class LiteralStringTest {
       {"-x", false, 2, "−x"},
       {"'-'x", false, 2, "-x"},
       {"'--''-'-x", false, 6, "--'-−x"},
-      {"'", false, 1, "'"},
       {"''", false, 1, "'"},
       {"''''", false, 2, "''"},
       {"''''''", false, 3, "'''"},
@@ -61,20 +59,40 @@ public class LiteralStringTest {
       int length = (Integer) cas[2];
       String output = (String) cas[3];
 
-      assertEquals("Currency on <" + input + ">", curr, LiteralString.hasCurrencySymbols(input));
-      assertEquals("Length on <" + input + ">", length, LiteralString.unescapedLength(input));
+      assertEquals("Currency on <" + input + ">", curr, AffixPatternUtils.hasCurrencySymbols(input));
+      assertEquals("Length on <" + input + ">", length, AffixPatternUtils.unescapedLength(input));
 
       sb.clear();
-      LiteralString.unescape(input, symbols, "$", "XXX", "long name", "−", sb);
+      AffixPatternUtils.unescape(input, symbols, "$", "XXX", "long name", "−", sb);
       assertEquals("Output on <" + input + ">", output, sb.toString());
+    }
+  }
 
-      sb.clear();
-      LiteralString.unescape2(input, symbols, "$", "XXX", "long name", "−", sb);
-      assertEquals("Output on <" + input + ">", output, sb.toString());
+  @Test
+  public void testInvalid() {
+    String[] invalidExamples = {"'", "x'", "'x", "'x''", "''x'"};
+    DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance(new ULocale("en_US"));
+    NumberStringBuilder sb = new NumberStringBuilder();
 
-      sb.clear();
-      LiteralString.unescape3(input, symbols, "$", "XXX", "long name", "−", sb);
-      assertEquals("Output on <" + input + ">", output, sb.toString());
+    for (String str : invalidExamples) {
+      try {
+        AffixPatternUtils.hasCurrencySymbols(str);
+        fail("No exception was thrown on an invalid string");
+      } catch (IllegalArgumentException e) {
+        // OK
+      }
+      try {
+          AffixPatternUtils.unescapedLength(str);
+          fail("No exception was thrown on an invalid string");
+        } catch (IllegalArgumentException e) {
+          // OK
+        }
+      try {
+        AffixPatternUtils.unescape(str, symbols, "$", "XXX", "long name", "−", sb);
+        fail("No exception was thrown on an invalid string");
+      } catch (IllegalArgumentException e) {
+        // OK
+      }
     }
   }
 }

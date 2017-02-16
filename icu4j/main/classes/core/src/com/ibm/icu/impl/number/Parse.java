@@ -41,7 +41,7 @@ import com.ibm.icu.util.ULocale;
 public class Parse {
 
   /** Controls the set of rules for parsing a string. */
-  public enum ParseMode {
+  public static enum ParseMode {
     /**
      * In Lenient mode, the parser attempts to recover from typographical errors. This includes
      * ignoring arbitrary whitespace in the middle of the string to be parsed. Most users should use
@@ -189,24 +189,15 @@ public class Parse {
     INSIDE_CURRENCY,
     INSIDE_STRING,
     INSIDE_AFFIX_PATTERN;
-
-    private static final StateName[] VALUES = values();
-
-    public static StateName valueOf(int ordinal) {
-      return VALUES[ordinal];
-    }
   }
 
-  /** @see #acceptDigit */
-  private static enum DigitType {
-    INTEGER,
-    FRACTION,
-    EXPONENT
-  }
-
-  // TODO: Include characters like U+200D ZERO-WIDTH JOINER in the whitespace set?
+  // TODO: Does this set make sense for the whitespace characters?
   private static final UnicodeSet UNISET_WHITESPACE =
-      new UnicodeSet("[[:whitespace:][\\u2000-\\u200F]]").freeze();
+      new UnicodeSet("[[:whitespace:][\\u2000-\\u200D]]").freeze();
+
+  // BiDi characters are skipped over and ignored at any point in the string, even in strict mode.
+  private static final UnicodeSet UNISET_BIDI =
+      new UnicodeSet("[[\\u200E\\u200F\\u061C]]").freeze();
 
   // TODO: Re-generate these sets from the database. They probably haven't been updated in a while.
   private static final UnicodeSet UNISET_PERIOD_LIKE =
@@ -467,6 +458,8 @@ public class Parse {
       if (name == StateName.INSIDE_AFFIX_PATTERN) {
         sb.append("{");
         sb.append(currentAffixPattern);
+        sb.append(":");
+        sb.append(AffixPatternUtils.getOffset(currentStepwiseParserTag));
         sb.append("}");
       }
       sb.append(" ");
@@ -515,11 +508,15 @@ public class Parse {
     boolean caseSensitive;
 
     // Other pre-computed fields:
-    public int decimalCp1;
-    public int decimalCp2;
-    public int groupingCp1;
-    public int groupingCp2;
-    public Set<AffixHolder> affixHolders = new HashSet<AffixHolder>();
+    int decimalCp1;
+    int decimalCp2;
+    int groupingCp1;
+    int groupingCp2;
+    SeparatorType decimalType1;
+    SeparatorType decimalType2;
+    SeparatorType groupingType1;
+    SeparatorType groupingType2;
+    Set<AffixHolder> affixHolders = new HashSet<AffixHolder>();
 
     ParserState() {
       for (int i = 0; i < items.length; i++) {
@@ -617,14 +614,26 @@ public class Parse {
     static final AffixHolder DEFAULT_NEGATIVE = new AffixHolder("-", "", false, true);
 
     static void addToState(ParserState state, IProperties properties) {
-      state.affixHolders.add(fromPropertiesPositivePattern(properties));
-      state.affixHolders.add(fromPropertiesNegativePattern(properties));
-      state.affixHolders.add(fromPropertiesPositiveString(properties));
-      state.affixHolders.add(fromPropertiesNegativeString(properties));
-      // TODO: Should consuming the plus sign depend on properties.getAlwaysShowPlusSign()?
-      state.affixHolders.add(DEFAULT_POSITIVE);
-      state.affixHolders.add(DEFAULT_NEGATIVE);
-      // TODO: Under what conditions should EMPTY_POSITIVE and EMPTY_NEGATIVE be added?
+      AffixHolder pp = fromPropertiesPositivePattern(properties);
+      AffixHolder np = fromPropertiesNegativePattern(properties);
+      AffixHolder ps = fromPropertiesPositiveString(properties);
+      AffixHolder ns = fromPropertiesNegativeString(properties);
+      if (pp == null && ps == null) {
+        if (properties.getAlwaysShowPlusSign()) {
+          state.affixHolders.add(DEFAULT_POSITIVE);
+        } else {
+          state.affixHolders.add(EMPTY_POSITIVE);
+        }
+      } else {
+        if (pp != null) state.affixHolders.add(pp);
+        if (ps != null) state.affixHolders.add(ps);
+      }
+      if (np == null && ns == null) {
+        state.affixHolders.add(DEFAULT_NEGATIVE);
+      } else {
+        if (np != null) state.affixHolders.add(np);
+        if (ns != null) state.affixHolders.add(ns);
+      }
     }
 
     static AffixHolder fromPropertiesPositivePattern(IProperties properties) {
@@ -865,8 +874,12 @@ public class Parse {
     state.decimalCp2 = Character.codePointAt(symbols.getMonetaryDecimalSeparatorString(), 0);
     state.groupingCp1 = Character.codePointAt(symbols.getGroupingSeparatorString(), 0);
     state.groupingCp2 = Character.codePointAt(symbols.getMonetaryGroupingSeparatorString(), 0);
-    StateItem initialHolder = state.getNext().clear();
-    initialHolder.name = StateName.BEFORE_PREFIX;
+    state.decimalType1 = SeparatorType.fromCp(state.decimalCp1, mode == ParseMode.STRICT);
+    state.decimalType2 = SeparatorType.fromCp(state.decimalCp1, mode == ParseMode.STRICT);
+    state.groupingType1 = SeparatorType.fromCp(state.groupingCp1, mode == ParseMode.STRICT);
+    state.groupingType2 = SeparatorType.fromCp(state.groupingCp1, mode == ParseMode.STRICT);
+    StateItem initialStateItem = state.getNext().clear();
+    initialStateItem.name = StateName.BEFORE_PREFIX;
 
     AffixHolder.addToState(state, properties);
     if (parseCurrency) {
@@ -893,6 +906,7 @@ public class Parse {
         switch (item.name) {
           case BEFORE_PREFIX:
             // Beginning of string
+            acceptBidi(cp, StateName.BEFORE_PREFIX, state, item);
             acceptWhitespace(cp, StateName.BEFORE_PREFIX, state, item);
             acceptPadding(cp, StateName.BEFORE_PREFIX, state, item);
             acceptNan(cp, StateName.BEFORE_SUFFIX, state, item);
@@ -912,6 +926,7 @@ public class Parse {
 
           case AFTER_PREFIX:
             // Prefix is consumed
+            acceptBidi(cp, StateName.AFTER_PREFIX, state, item);
             acceptPadding(cp, StateName.AFTER_PREFIX, state, item);
             acceptNan(cp, StateName.BEFORE_SUFFIX, state, item);
             acceptInfinity(cp, StateName.BEFORE_SUFFIX, state, item);
@@ -929,6 +944,7 @@ public class Parse {
 
           case AFTER_INTEGER_DIGIT:
             // Previous character was an integer digit (or grouping/whitespace)
+            acceptBidi(cp, StateName.AFTER_INTEGER_DIGIT, state, item);
             acceptPadding(cp, StateName.BEFORE_SUFFIX, state, item);
             acceptSuffix(cp, StateName.AFTER_SUFFIX, state, item);
             acceptGrouping(cp, StateName.AFTER_INTEGER_DIGIT, state, item);
@@ -949,6 +965,7 @@ public class Parse {
 
           case AFTER_FRACTION_DIGIT:
             // We encountered a decimal point
+            acceptBidi(cp, StateName.AFTER_FRACTION_DIGIT, state, item);
             acceptPadding(cp, StateName.BEFORE_SUFFIX, state, item);
             acceptSuffix(cp, StateName.AFTER_SUFFIX, state, item);
             acceptFractionDigit(cp, StateName.AFTER_FRACTION_DIGIT, state, item);
@@ -964,11 +981,13 @@ public class Parse {
             break;
 
           case AFTER_EXPONENT_SEPARATOR:
+            acceptBidi(cp, StateName.AFTER_EXPONENT_SEPARATOR, state, item);
             acceptMinusOrPlusSign(cp, StateName.AFTER_EXPONENT_SEPARATOR, state, item, true);
             acceptExponentDigit(cp, StateName.AFTER_EXPONENT_DIGIT, state, item);
             break;
 
           case AFTER_EXPONENT_DIGIT:
+            acceptBidi(cp, StateName.AFTER_EXPONENT_DIGIT, state, item);
             acceptPadding(cp, StateName.BEFORE_SUFFIX_SEEN_EXPONENT, state, item);
             acceptExponentDigit(cp, StateName.AFTER_EXPONENT_DIGIT, state, item);
             acceptSuffix(cp, StateName.AFTER_SUFFIX, state, item);
@@ -982,6 +1001,7 @@ public class Parse {
 
           case BEFORE_SUFFIX:
             // Accept whitespace, suffixes, and exponent separators
+            acceptBidi(cp, StateName.BEFORE_SUFFIX, state, item);
             acceptPadding(cp, StateName.BEFORE_SUFFIX, state, item);
             acceptSuffix(cp, StateName.AFTER_SUFFIX, state, item);
             if (!ignoreExponent) {
@@ -997,6 +1017,7 @@ public class Parse {
 
           case BEFORE_SUFFIX_SEEN_EXPONENT:
             // Accept whitespace and suffixes but not exponent separators
+            acceptBidi(cp, StateName.BEFORE_SUFFIX_SEEN_EXPONENT, state, item);
             acceptPadding(cp, StateName.BEFORE_SUFFIX_SEEN_EXPONENT, state, item);
             acceptSuffix(cp, StateName.AFTER_SUFFIX, state, item);
             if (mode == ParseMode.LENIENT) {
@@ -1008,6 +1029,7 @@ public class Parse {
             break;
 
           case AFTER_SUFFIX:
+            acceptBidi(cp, StateName.AFTER_SUFFIX, state, item);
             acceptPadding(cp, StateName.AFTER_SUFFIX, state, item);
             if (mode == ParseMode.LENIENT) {
               acceptWhitespace(cp, StateName.AFTER_SUFFIX, state, item);
@@ -1019,18 +1041,29 @@ public class Parse {
             break;
 
           case INSIDE_CURRENCY:
-            // Already read the first code point of a currency
             acceptCurrencyOffset(cp, state, item);
             break;
 
           case INSIDE_STRING:
-            // Already read the first code point of a string
             acceptStringOffset(cp, state, item);
+            // Accept arbitrary bidi and whitespace (if lenient) in the middle of strings.
+            if (state.length == 0) {
+              acceptBidi(cp, StateName.INSIDE_STRING, state, item);
+              if (mode == ParseMode.LENIENT) {
+                acceptWhitespace(cp, StateName.INSIDE_STRING, state, item);
+              }
+            }
             break;
 
           case INSIDE_AFFIX_PATTERN:
-            // Already read the first code point of an affix pattern
             acceptAffixPatternOffset(cp, state, item);
+            // Accept arbitrary bidi and whitespace (if lenient) in the middle of affixes.
+            if (state.length == 0) {
+              acceptBidi(cp, StateName.INSIDE_AFFIX_PATTERN, state, item);
+              if (mode == ParseMode.LENIENT) {
+                acceptWhitespace(cp, StateName.INSIDE_AFFIX_PATTERN, state, item);
+              }
+            }
             break;
         }
       }
@@ -1162,6 +1195,23 @@ public class Parse {
   private static void acceptWhitespace(
       int cp, StateName nextName, ParserState state, StateItem item) {
     if (UNISET_WHITESPACE.contains(cp)) {
+      StateItem next = state.getNext().copyFrom(item);
+      next.name = nextName;
+    }
+  }
+
+  /**
+   * If <code>cp</code> is a bidi control character (as determined by the unicode set {@link
+   * #UNISET_BIDI}), copies <code>item</code> to the new list in <code>state</code> and sets its
+   * state name to <code>nextName</code>.
+   *
+   * @param cp The code point to check.
+   * @param nextName The new state name if the check passes.
+   * @param state The state object to update.
+   * @param item The old state leading into the code point.
+   */
+  private static void acceptBidi(int cp, StateName nextName, ParserState state, StateItem item) {
+    if (UNISET_BIDI.contains(cp)) {
       StateItem next = state.getNext().copyFrom(item);
       next.name = nextName;
     }
@@ -1300,13 +1350,22 @@ public class Parse {
       // First time seeing a grouping separator.
       SeparatorType cpType = SeparatorType.fromCp(cp, state.mode == ParseMode.STRICT);
 
-      // Accept separators in UNKNOWN only if they exactly match the locale.
-      // Accept all other separators as long as they are not exactly the same as the decimal.
-      if (cp == state.decimalCp1 || cp == state.decimalCp2) {
-        return;
-      }
-      if (cpType == SeparatorType.UNKNOWN && cp != state.groupingCp1 && cp != state.groupingCp2) {
-        return;
+      // Always accept if exactly the same as the locale symbol.
+      // Otherwise, reject if UNKNOWN or in the same class as the decimal separator.
+      if (cp != state.groupingCp1 && cp != state.groupingCp2) {
+        if (cpType == SeparatorType.UNKNOWN) {
+          return;
+        }
+        if (cpType == SeparatorType.COMMA_LIKE
+            && (state.decimalType1 == SeparatorType.COMMA_LIKE
+                || state.decimalType2 == SeparatorType.COMMA_LIKE)) {
+          return;
+        }
+        if (cpType == SeparatorType.PERIOD_LIKE
+            && (state.decimalType1 == SeparatorType.PERIOD_LIKE
+                || state.decimalType2 == SeparatorType.PERIOD_LIKE)) {
+          return;
+        }
       }
 
       // A match was found.
@@ -1344,15 +1403,22 @@ public class Parse {
 
     SeparatorType cpType = SeparatorType.fromCp(cp, state.mode == ParseMode.STRICT);
 
-    // Accept separators in UNKNOWN or OTHER only if they exactly match the locale.
-    // Accept all other separators as long as they are not exactly the same as the grouping.
-    if (cp == state.groupingCp1 || cp == state.groupingCp2) {
-      return;
-    }
-    if ((cpType == SeparatorType.UNKNOWN || cpType == SeparatorType.OTHER_GROUPING)
-        && cp != state.decimalCp1
-        && cp != state.decimalCp2) {
-      return;
+    // Always accept if exactly the same as the locale symbol.
+    // Otherwise, reject if UNKNOWN, OTHER, the same class as the decimal separator.
+    if (cp != state.decimalCp1 && cp != state.decimalCp2) {
+      if (cpType == SeparatorType.UNKNOWN || cpType == SeparatorType.OTHER_GROUPING) {
+        return;
+      }
+      if (cpType == SeparatorType.COMMA_LIKE
+          && (state.groupingType1 == SeparatorType.COMMA_LIKE
+              || state.groupingType2 == SeparatorType.COMMA_LIKE)) {
+        return;
+      }
+      if (cpType == SeparatorType.PERIOD_LIKE
+          && (state.groupingType1 == SeparatorType.PERIOD_LIKE
+              || state.groupingType2 == SeparatorType.PERIOD_LIKE)) {
+        return;
+      }
     }
 
     // A match was found.
@@ -1475,16 +1541,46 @@ public class Parse {
       int offset) {
     if (str == null || str.length() == 0) return 0L;
     int referenceCp = Character.codePointAt(str, offset);
-    if (codePointEquals(cp, referenceCp, state)) {
+    int count = Character.charCount(referenceCp);
+    boolean equals = codePointEquals(cp, referenceCp, state);
+
+    // Optionally skip over BiDi characters in the string.
+    // If in lenient mode, optionally skip over whitespace characters in the string.
+    // This can be greedy because no information is being lost.
+    while (!equals
+        && offset + count < str.length()
+        && (UNISET_BIDI.contains(referenceCp)
+            || (state.mode == ParseMode.LENIENT && UNISET_WHITESPACE.contains(referenceCp)))) {
+      offset += count;
+      referenceCp = Character.codePointAt(str, offset);
+      count = Character.charCount(referenceCp);
+      equals = codePointEquals(cp, referenceCp, state);
+    }
+
+    if (equals) {
       // Matches first code point of the string
       StateItem next = state.getNext().copyFrom(item);
-      if (str.length() != offset + Character.charCount(cp)) {
+
+      // Check if the string has any more interesting characters.
+      // It is okay to ignore bidi/whitespace because they will be accepted in the main loop.
+      boolean hasAdditionalMaterial = false;
+      for (int j = offset + count; j < str.length(); ) {
+        int futureCp = Character.codePointAt(str, 0);
+        if (!UNISET_BIDI.contains(futureCp)
+            && (state.mode != ParseMode.LENIENT || !UNISET_WHITESPACE.contains(futureCp))) {
+          hasAdditionalMaterial = true;
+          break;
+        }
+        j += Character.charCount(futureCp);
+      }
+
+      if (hasAdditionalMaterial) {
         // String has more code points.
         next.name = StateName.INSIDE_STRING;
         next.returnTo1 = returnTo1;
         next.returnTo2 = returnTo2;
         next.currentString = str;
-        next.currentOffset = offset + Character.charCount(cp);
+        next.currentOffset = offset + count;
       } else {
         // We've reached the end of the string.
         next.name = returnTo1;
@@ -1517,10 +1613,22 @@ public class Parse {
   private static long acceptAffixPattern(
       int cp, StateName returnTo, ParserState state, StateItem item, CharSequence str, long tag) {
     if (str == null || str.length() == 0) return 0L;
-    final long newTag = LiteralString.LiteralStringStepwiseParser.step(tag, str);
-    if (newTag == -1) return 0L;
-    int typeOrCp = LiteralString.LiteralStringStepwiseParser.getTypeOrCp(newTag);
-    boolean hasNext = LiteralString.LiteralStringStepwiseParser.hasNext(newTag, str);
+    tag = AffixPatternUtils.nextToken(tag, str);
+    int typeOrCp = AffixPatternUtils.getTypeOrCp(tag);
+    boolean hasNext = AffixPatternUtils.hasNext(tag, str);
+
+    // Optionally skip over BiDi characters in the string.
+    // If in lenient mode, optionally skip over whitespace characters in the string.
+    // This can be greedy because no information is being lost.
+    while (typeOrCp >= 0
+        && cp != typeOrCp
+        && hasNext
+        && (UNISET_BIDI.contains(typeOrCp)
+            || (state.mode == ParseMode.LENIENT && UNISET_WHITESPACE.contains(typeOrCp)))) {
+      tag = AffixPatternUtils.nextToken(tag, str);
+      typeOrCp = AffixPatternUtils.getTypeOrCp(tag);
+      hasNext = AffixPatternUtils.hasNext(tag, str);
+    }
 
     // Convert from the returned tag to a code point, string, or currency to check
     int resolvedCp = -1;
@@ -1529,21 +1637,21 @@ public class Parse {
     if (typeOrCp < 0) {
       // Symbol
       switch (typeOrCp) {
-        case LiteralString.LiteralStringStepwiseParser.INT_TYPE_MINUS_SIGN:
+        case AffixPatternUtils.TYPE_MINUS_SIGN:
           resolvedStr = state.symbols.getMinusSignString();
           break;
-        case LiteralString.LiteralStringStepwiseParser.INT_TYPE_PLUS_SIGN:
+        case AffixPatternUtils.TYPE_PLUS_SIGN:
           resolvedStr = state.symbols.getPlusSignString();
           break;
-        case LiteralString.LiteralStringStepwiseParser.INT_TYPE_PERCENT:
+        case AffixPatternUtils.TYPE_PERCENT:
           resolvedStr = state.symbols.getPercentString();
           break;
-        case LiteralString.LiteralStringStepwiseParser.INT_TYPE_PERMILLE:
+        case AffixPatternUtils.TYPE_PERMILLE:
           resolvedStr = state.symbols.getPerMillString();
           break;
-        case LiteralString.LiteralStringStepwiseParser.INT_TYPE_CURRENCY_SINGLE:
-        case LiteralString.LiteralStringStepwiseParser.INT_TYPE_CURRENCY_DOUBLE:
-        case LiteralString.LiteralStringStepwiseParser.INT_TYPE_CURRENCY_TRIPLE:
+        case AffixPatternUtils.TYPE_CURRENCY_SINGLE:
+        case AffixPatternUtils.TYPE_CURRENCY_DOUBLE:
+        case AffixPatternUtils.TYPE_CURRENCY_TRIPLE:
           resolvedCurrency = true;
           break;
         default:
@@ -1569,7 +1677,8 @@ public class Parse {
         next.returnTo1 = null;
       }
       addedNormal |= 1L << state.lastInsertedIndex();
-    } else if (resolvedStr != null) {
+    }
+    if (resolvedStr != null) {
       // String symbol
       if (hasNext) {
         addedNormal |=
@@ -1577,7 +1686,8 @@ public class Parse {
       } else {
         addedNormal |= acceptString(cp, returnTo, null, state, item, resolvedStr, 0);
       }
-    } else if (resolvedCurrency) {
+    }
+    if (resolvedCurrency) {
       // Currency
       if (item.sawCurrency) return 0L;
       CharSequence str1 = state.symbols.getCurrencySymbol();
@@ -1606,8 +1716,6 @@ public class Parse {
         addedNormal |= acceptCurrencyHelper(cp, returnTo, null, state, item, trie1);
         addedNormal |= acceptCurrencyHelper(cp, returnTo, null, state, item, trie2);
       }
-    } else {
-      // Nothing interesting in the affix pattern.
     }
 
     // Set state in the items that were added by the function calls
@@ -1615,7 +1723,7 @@ public class Parse {
     for (int i = 0; (1L << i) <= added; i++) {
       if (((1L << i) & addedNormal) != 0) {
         state.getItem(i).currentAffixPattern = str;
-        state.getItem(i).currentStepwiseParserTag = newTag;
+        state.getItem(i).currentStepwiseParserTag = tag;
       }
       if (((1L << i) & addedCurrencyNeeded) != 0) {
         // Save the currency from symbols.
@@ -1701,13 +1809,11 @@ public class Parse {
   }
 
   /**
-   * Checks whether the two given codepoints are equal after applying case mapping as requested in
+   * Checks whether the two given code points are equal after applying case mapping as requested in
    * the ParserState.
    *
    * @see #acceptString
-   * @see #acceptStringOffset
-   * @see #acceptLiteral
-   * @see #acceptLiteralOffset
+   * @see #acceptAffixPattern
    */
   private static boolean codePointEquals(int cp1, int cp2, ParserState state) {
     if (!state.caseSensitive) {
@@ -1715,10 +1821,5 @@ public class Parse {
       cp2 = UCharacter.foldCase(cp2, true);
     }
     return cp1 == cp2;
-  }
-
-  /** Utility method to check for CharSequence length with null safety. */
-  private static boolean charSeqEmpty(CharSequence str) {
-    return str == null || str.length() == 0;
   }
 }

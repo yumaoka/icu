@@ -785,6 +785,17 @@ parse	output	breaks
 // JDK parses as -1945
 (1,945d1)	fail	K
 
+test parse strict without prefix/suffix
+set locale en
+set pattern #
+set lenient 0
+begin
+parse	output	breaks
+12.34	12.34
+-12.34	-12.34
++12.34	fail
+$12.34	fail
+
 test parse integer only
 set locale en
 set pattern 0.00
@@ -932,8 +943,7 @@ USD53.45	53.45	USD
 (USD 7.926)	-7.926	USD	CJ
 USD (7.926)	-7.926	USD	CJ
 USD (7.92)	-7.92	USD	CJ
-// S fails this one because the ')' is an incomplete suffix.
-(7.92)USD	-7.92	USD	CJS
+(7.92)USD	-7.92	USD	CJ
 USD(7.92)	-7.92	USD	CJ
 (8) USD	-8	USD
 -8 USD	-8	USD	CJ
@@ -954,12 +964,10 @@ US Dollars (53.45)	-53.45	USD	CJ
 US Dollar (53.45)	-53.45	USD	CJ
 (53.45) US Dollar	-53.45	USD
 US Dollars(53.45)	-53.45	USD	CJ
-// S fails this one because the ')' is an incomplete suffix.
-(53.45)US Dollars	-53.45	USD	CJS
+(53.45)US Dollars	-53.45	USD	CJ
 US Dollar(53.45)	-53.45	USD	CJ
 US Dollat(53.45)	fail	USD
-// S fails this one because the ')' is an incomplete suffix.
-(53.45)US Dollar	-53.45	USD	CJS
+(53.45)US Dollar	-53.45	USD	CJ
 
 
 test parse currency ISO negative
@@ -1016,8 +1024,7 @@ USD53.45	53.45	USD
 (USD 7.926)	-7.926	USD	CJ
 USD (7.926)	-7.926	USD	CJ
 USD (7.92)	-7.92	USD	CJ
-// S fails this one because the ')' is an incomplete suffix.
-(7.92)USD	-7.92	USD	CJS
+(7.92)USD	-7.92	USD	CJ
 USD(7.92)	-7.92	USD	CJ
 (8) USD	-8	USD
 -8 USD	-8	USD	CJ
@@ -1055,8 +1062,7 @@ USD53.45	53.45	USD
 (USD 7.926)	-7.926	USD	CJ
 USD (7.926)	-7.926	USD	CJ
 USD (7.92)	-7.92	USD	CJ
-// S fails this one because the ')' is an incomplete suffix.
-(7.92)USD	-7.92	USD	CJS
+(7.92)USD	-7.92	USD	CJ
 USD(7.92)	-7.92	USD	CJ
 (8) USD	-8	USD
 -8 USD	-8	USD	CJ
@@ -1086,7 +1092,7 @@ $53.45	fail	USD
 USD 53.45	53.45	USD	J
 53.45USD	53.45	USD	CJ
 USD53.45	53.45	USD
-// S fails these because the '(' is an incomplete prefix.
+// S fails these because '(' is an incomplete prefix.
 (7.92) USD	-7.92	USD	CJS
 (7.92) GBP	-7.92	GBP	CJS
 (7.926) USD	-7.926	USD	CJS

@@ -7,7 +7,7 @@ import java.text.ParseException;
 
 import com.ibm.icu.impl.StandardPlural;
 import com.ibm.icu.impl.number.Format;
-import com.ibm.icu.impl.number.LiteralString;
+import com.ibm.icu.impl.number.AffixPatternUtils;
 import com.ibm.icu.impl.number.PNAffixGenerator;
 import com.ibm.icu.impl.number.PatternString;
 import com.ibm.icu.impl.number.Properties;
@@ -109,10 +109,10 @@ public class CurrencyFormat {
    */
   public static boolean useCurrency(IProperties properties) {
     return ((properties.getCurrency() != null)
-        || LiteralString.hasCurrencySymbols(properties.getPositivePrefixPattern())
-        || LiteralString.hasCurrencySymbols(properties.getPositiveSuffixPattern())
-        || LiteralString.hasCurrencySymbols(properties.getNegativePrefixPattern())
-        || LiteralString.hasCurrencySymbols(properties.getNegativeSuffixPattern()));
+        || AffixPatternUtils.hasCurrencySymbols(properties.getPositivePrefixPattern())
+        || AffixPatternUtils.hasCurrencySymbols(properties.getPositiveSuffixPattern())
+        || AffixPatternUtils.hasCurrencySymbols(properties.getNegativePrefixPattern())
+        || AffixPatternUtils.hasCurrencySymbols(properties.getNegativeSuffixPattern()));
   }
 
   /**

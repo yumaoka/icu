@@ -128,8 +128,8 @@ public class PNAffixGenerator {
     // Set sb1/sb2 to the positive prefix/suffix.
     sb1.clear();
     sb2.clear();
-    LiteralString.unescape(ppp, symbols, curr1, curr2, curr3, null, sb1);
-    LiteralString.unescape(psp, symbols, curr1, curr2, curr3, null, sb2);
+    AffixPatternUtils.unescape(ppp, symbols, curr1, curr2, curr3, null, sb1);
+    AffixPatternUtils.unescape(psp, symbols, curr1, curr2, curr3, null, sb2);
     setPositiveResult(sb1, sb2, properties);
 
     // Set sb1/sb2 to the negative prefix/suffix.
@@ -140,8 +140,8 @@ public class PNAffixGenerator {
     } else {
       sb1.clear();
       sb2.clear();
-      LiteralString.unescape(npp, symbols, curr1, curr2, curr3, null, sb1);
-      LiteralString.unescape(nsp, symbols, curr1, curr2, curr3, null, sb2);
+      AffixPatternUtils.unescape(npp, symbols, curr1, curr2, curr3, null, sb1);
+      AffixPatternUtils.unescape(nsp, symbols, curr1, curr2, curr3, null, sb2);
     }
     setNegativeResult(sb1, sb2, properties);
 
@@ -180,10 +180,10 @@ public class PNAffixGenerator {
       sb2.clear();
       sb3.clear();
       sb4.clear();
-      LiteralString.unescape(npp, symbols, curr1, curr2, curr3, null, sb1);
-      LiteralString.unescape(nsp, symbols, curr1, curr2, curr3, null, sb2);
-      LiteralString.unescape(npp, symbols, curr1, curr2, curr3, symbols.getPlusSignString(), sb3);
-      LiteralString.unescape(nsp, symbols, curr1, curr2, curr3, symbols.getPlusSignString(), sb4);
+      AffixPatternUtils.unescape(npp, symbols, curr1, curr2, curr3, null, sb1);
+      AffixPatternUtils.unescape(nsp, symbols, curr1, curr2, curr3, null, sb2);
+      AffixPatternUtils.unescape(npp, symbols, curr1, curr2, curr3, symbols.getPlusSignString(), sb3);
+      AffixPatternUtils.unescape(nsp, symbols, curr1, curr2, curr3, symbols.getPlusSignString(), sb4);
       if (!charSequenceEquals(sb1, sb3) || !charSequenceEquals(sb2, sb4)) {
         // Case 3. The plus sign substitution was successful.
         setPositiveResult(sb3, sb4, properties);
@@ -198,8 +198,8 @@ public class PNAffixGenerator {
     // Case 1 or 2. Set sb1/sb2 to the positive prefix/suffix.
     sb1.clear();
     sb2.clear();
-    LiteralString.unescape(ppp, symbols, curr1, curr2, curr3, null, sb1);
-    LiteralString.unescape(psp, symbols, curr1, curr2, curr3, null, sb2);
+    AffixPatternUtils.unescape(ppp, symbols, curr1, curr2, curr3, null, sb1);
+    AffixPatternUtils.unescape(psp, symbols, curr1, curr2, curr3, null, sb2);
 
     if (npp == null && nsp == null) {
       // Case 1. Compute the negative result from the positive subpattern.
