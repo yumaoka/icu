@@ -4547,14 +4547,23 @@ public class NumberFormatTest extends TestFmwk {
     public void TestStringSymbols() {
         DecimalFormatSymbols symbols = new DecimalFormatSymbols(ULocale.US);
 
+        // Attempt digits with multiple code points.
         String[] customDigits = {"(0)", "(1)", "(2)", "(3)", "(4)", "(5)", "(6)", "(7)", "(8)", "(9)"};
         symbols.setDigitStrings(customDigits);
+        DecimalFormat fmt = new DecimalFormat("#,##0.0#", symbols);
+        expect2(fmt, 1234567.89, "(1),(2)(3)(4),(5)(6)(7).(8)(9)");
+
+        // Scientific notation should work.
+        fmt.applyPattern("@@@E0");
+        expect2(fmt, 1230000, "(1).(2)(3)E(6)");
+
+        // Grouping and decimal with multiple code points are not supported during parsing.
         symbols.setDecimalSeparatorString("~~");
         symbols.setGroupingSeparatorString("^^");
-        DecimalFormat fmt = new DecimalFormat("#,##0.0#", symbols);
-
-        // Parsing with multi-codepoint digits isn't supported.
-        assertEquals("Multi-codepoint digits", "(1)^^(2)(3)(4)^^(5)(6)(7)~~(8)(9)", fmt.format(1234567.89));
+        fmt.setDecimalFormatSymbols(symbols);
+        fmt.applyPattern("#,##0.0#");
+        assertEquals("Custom decimal and grouping separator string with multiple characters",
+                fmt.format(1234567.89), "(1)^^(2)(3)(4)^^(5)(6)(7)~~(8)(9)");
 
         // Digits starting at U+1D7CE MATHEMATICAL BOLD DIGIT ZERO
         // These are all single code points, so parsing will work.

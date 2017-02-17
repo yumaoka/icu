@@ -180,7 +180,7 @@ public class TextTrieMap<V> {
        * @return true if no more code points can be consumed; false otherwise.
        */
       public boolean atEnd() {
-        return node == null;
+        return node == null || (node.charCount() == offset && node._children == null);
       }
     }
 
