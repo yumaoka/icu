@@ -80,78 +80,25 @@ public final class FormatQuantity4 extends FormatQuantityBCD {
     }
   }
 
-  /**
-   * Appends a digit, optionally with one or more leading zeros, to the end of the value represented
-   * by this FormatQuantity.
-   *
-   * <p>The primary use of this method is to construct numbers during a parsing loop. It allows
-   * parsing to take advantage of the digit list infrastructure primarily designed for formatting.
-   *
-   * @param value The digit to append.
-   * @param leadingZeros The number of zeros to append before the digit. For example, if the value
-   *     in this instance starts as 12.3, and you append a 4 with 1 leading zero, the value becomes
-   *     12.304.
-   * @param appendAsInteger If true, increase the magnitude of existing digits to make room for the
-   *     new digit. If false, append to the end like a fraction digit. If true, there must not be
-   *     any fraction digits already in the number.
-   * @internal
-   * @deprecated This API is ICU internal only.
-   */
-  @Deprecated
-  public void appendDigit(byte value, int leadingZeros, boolean appendAsInteger) {
-    assert leadingZeros >= 0;
-
-    // Zero requires special handling to maintain the invariant that the least-significant digit
-    // in the BCD is nonzero.
-    if (value == 0) {
-      if (appendAsInteger && precision != 0) {
-        scale += leadingZeros + 1;
-      }
-      return;
+  @Override
+  protected void shiftLeft(int numDigits) {
+    if (!usingBytes && precision + numDigits > 16) {
+      switchStorage();
     }
-
-    // Adjust scale
-    if (appendAsInteger) {
-      if (scale < 0) {
-        throw new IllegalArgumentException(
-            "Can't append integer digit if fraction digit is already present");
-      } else if (scale > 0) {
-        // Integer digit appended against trailing zeros.
-        leadingZeros += scale;
-        scale = 0;
+    if (usingBytes) {
+      ensureCapacity(precision + numDigits);
+      int i = precision + numDigits - 1;
+      for (; i >= numDigits; i--) {
+        bcdBytes[i] = bcdBytes[i - numDigits];
+      }
+      for (; i >= 0; i--) {
+        bcdBytes[i] = 0;
       }
     } else {
-      if (scale > 0) {
-        // Fraction digit appended against trailing zeros.
-        int oldScale = scale;
-        scale = -leadingZeros - 1;
-        leadingZeros += oldScale;
-      } else {
-        scale -= leadingZeros + 1;
-      }
+      bcdLong <<= (numDigits * 4);
     }
-
-    // Append digit
-    if (precision == 0) {
-      bcdLong |= value;
-    } else if (precision + leadingZeros + 1 <= 16) {
-      assert !usingBytes;
-      bcdLong <<= (4 * (leadingZeros + 1));
-      bcdLong |= value;
-    } else {
-      if (!usingBytes) {
-        switchStorage();
-      }
-      ensureCapacity(precision + leadingZeros + 1);
-      for (int i = 0; i < precision; i++) {
-        bcdBytes[i + leadingZeros + 1] = bcdBytes[i];
-      }
-      for (int i = 0; i < leadingZeros; i++) {
-        bcdBytes[i + 1] = 0;
-      }
-      bcdBytes[0] = value;
-    }
-    precision += 1 + leadingZeros;
+    scale -= numDigits;
+    precision += numDigits;
   }
 
   @Override
@@ -337,7 +284,7 @@ public final class FormatQuantity4 extends FormatQuantityBCD {
       ensureCapacity();
       for (int i = 0; i < precision; i++) {
         bcdBytes[i] = (byte) (bcdLong & 0xf);
-        bcdLong >>>= 0;
+        bcdLong >>>= 4;
       }
       usingBytes = true;
     }
@@ -399,6 +346,18 @@ public final class FormatQuantity4 extends FormatQuantityBCD {
       }
     }
     return null;
+  }
+
+  /**
+   * Checks whether this FormatQuantity4 is using its internal byte array storage mechanism.
+   *
+   * @return true if an internal byte array is being used; false if a long is being used.
+   * @internal
+   * @deprecated This API is ICU internal only.
+   */
+  @Deprecated
+  public boolean usingBytes() {
+    return usingBytes;
   }
 
   @Override

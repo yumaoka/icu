@@ -174,6 +174,24 @@ pattern	format	output	breaks
 #E0	52413	5,2413E4	K
 0E0	52413	5E4
 
+test scientific with grouping
+set locale en
+set pattern #,##0.000E0
+begin
+format	output	breaks
+// J throws an IllegalArgumentException when parsing the pattern.
+1	1.000E0	J
+11	11.00E0	J
+111	111.0E0	J
+// K doesn't print the grouping separator ("1111E0")
+1111	1,111E0	JK
+// K prints too many digits ("1.1111E4")
+11111	1.111E4	JK
+111111	11.11E4	JK
+1111111	111.1E4	JK
+11111111	1,111E4	JK
+111111111	1.111E8	JK
+
 test percents
 set locale fr
 begin
@@ -677,29 +695,28 @@ parse	output	breaks
 +79  20,3	7920	K
 +79,,20 3	7920
 +  79	79	K
-// S doesn't accept a grouping separator without any leading digits
-+,79,,20,3	79203	S
++,79,,20,3	79203
 +7920d3	7920
 // Whitespace immediately after prefix doesn't count as digit separator
 // in C but is does in J
-+ ,79,,20,3	79203	JKS
++ ,79,,20,3	79203	JK
 (  19 45)	-1945	K
 // C allows trailing separators when there is a prefix and suffix.
 // J allows trailing separators only when there is just a prefix.
 // In this case, J just bails
 (  19 45 )	-1945	JK
-(,,19,45)	-1945	S
+(,,19,45)	-1945
 // C parses to the space, but J bails
-(,,19 45)	-19	JS
+(,,19 45)	-19	J
 // J bails b/c comma different separator than space. C doesn't treat leading spaces
 // as a separator.
 (  19,45)	-1945	JK
 // J bails. Doesn't allow trailing separators when there is prefix and suffix.
-(,,19,45,)	-1945	JS
+(,,19,45,)	-1945	J
 // J bails on next 4 because J doesn't allow letters inside prefix and suffix.
 // C will parse up to the letter.
-(,,19,45,d1)	-1945	JS
-(,,19,45d1)	-1945	JS
+(,,19,45,d1)	-1945	J
+(,,19,45d1)	-1945	J
 (  19 45 d1)	-1945	JK
 (  19 45d1)	-1945	JK
 // J does allow trailing separator before a decimal point
@@ -1188,6 +1205,22 @@ EUR 7.82	7.82	EUR
 \u20ac 7.82	7.82	EUR
 Euro 7.82	7.82	EUR
 Euros 7.82	7.82	EUR
+
+test parse currency without currency mode
+// Should accept a symbol associated with the currency specified by the API,
+// but should not traverse the full currency data.
+set locale en_US
+set pattern \u00a4#,##0.00
+begin
+parse	currency	output	breaks
+$52.41	USD	52.41
+USD52.41	USD	52.41	K
+\u20ac52.41	USD	fail
+EUR52.41	USD	fail
+$52.41	EUR	fail
+USD52.41	EUR	fail
+\u20ac52.41	EUR	52.41	K
+EUR52.41	EUR	52.41
 
 test parse currency ISO strict
 set pattern 0.00 \u00a4\u00a4;(#) \u00a4\u00a4

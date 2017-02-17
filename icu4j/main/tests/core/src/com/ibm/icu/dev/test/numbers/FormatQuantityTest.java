@@ -263,26 +263,62 @@ public class FormatQuantityTest extends TestFmwk {
   }
 
   @Test
+  public void testSwitchStorage() {
+    FormatQuantity4 fq = new FormatQuantity4();
+
+    fq.setToLong(1234123412341234L);
+    assertFalse("Should not be using byte array", fq.usingBytes());
+    assertBigDecimalEquals("Failed on initialize", "1234123412341234", fq.toBigDecimal());
+    assertNull("Failed health check", fq.checkHealth());
+    // Long -> Bytes
+    fq.appendDigit((byte) 5, 0, true);
+    assertTrue("Should be using byte array", fq.usingBytes());
+    assertBigDecimalEquals("Failed on multiply", "12341234123412345", fq.toBigDecimal());
+    assertNull("Failed health check", fq.checkHealth());
+    // Bytes -> Long
+    fq.roundToMagnitude(5, MATH_CONTEXT_HALF_EVEN);
+    assertFalse("Should not be using byte array", fq.usingBytes());
+    assertBigDecimalEquals("Failed on round", "12341234123400000", fq.toBigDecimal());
+    assertNull("Failed health check", fq.checkHealth());
+  }
+
+  @Test
   public void testAppend() {
     FormatQuantity4 fq = new FormatQuantity4();
     fq.appendDigit((byte) 1, 0, true);
     assertBigDecimalEquals("Failed on append", "1.", fq.toBigDecimal());
+    assertNull("Failed health check", fq.checkHealth());
     fq.appendDigit((byte) 2, 0, true);
     assertBigDecimalEquals("Failed on append", "12.", fq.toBigDecimal());
+    assertNull("Failed health check", fq.checkHealth());
     fq.appendDigit((byte) 3, 1, true);
     assertBigDecimalEquals("Failed on append", "1203.", fq.toBigDecimal());
+    assertNull("Failed health check", fq.checkHealth());
     fq.appendDigit((byte) 0, 1, true);
     assertBigDecimalEquals("Failed on append", "120300.", fq.toBigDecimal());
+    assertNull("Failed health check", fq.checkHealth());
     fq.appendDigit((byte) 4, 0, true);
     assertBigDecimalEquals("Failed on append", "1203004.", fq.toBigDecimal());
+    assertNull("Failed health check", fq.checkHealth());
     fq.appendDigit((byte) 0, 0, true);
     assertBigDecimalEquals("Failed on append", "12030040.", fq.toBigDecimal());
+    assertNull("Failed health check", fq.checkHealth());
     fq.appendDigit((byte) 5, 0, false);
     assertBigDecimalEquals("Failed on append", "12030040.5", fq.toBigDecimal());
+    assertNull("Failed health check", fq.checkHealth());
     fq.appendDigit((byte) 6, 0, false);
     assertBigDecimalEquals("Failed on append", "12030040.56", fq.toBigDecimal());
+    assertNull("Failed health check", fq.checkHealth());
     fq.appendDigit((byte) 7, 3, false);
     assertBigDecimalEquals("Failed on append", "12030040.560007", fq.toBigDecimal());
+    assertNull("Failed health check", fq.checkHealth());
+    StringBuilder expected = new StringBuilder("12030040.560007");
+    for (int i = 0; i < 10; i++) {
+      fq.appendDigit((byte) 8, 0, false);
+      expected.append("8");
+      assertBigDecimalEquals("Failed on append", expected.toString(), fq.toBigDecimal());
+      assertNull("Failed health check", fq.checkHealth());
+    }
   }
 
   static void assertDoubleEquals(String message, double d1, double d2) {

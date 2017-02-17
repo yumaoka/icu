@@ -59,6 +59,20 @@ public final class FormatQuantity3 extends FormatQuantityBCD {
   }
 
   @Override
+  protected void shiftLeft(int numDigits) {
+    ensureCapacity(precision + numDigits);
+    int i = precision + numDigits - 1;
+    for (; i >= numDigits; i--) {
+      bcd[i] = bcd[i - numDigits];
+    }
+    for (; i >= 0; i--) {
+      bcd[i] = 0;
+    }
+    scale -= numDigits;
+    precision += numDigits;
+  }
+
+  @Override
   protected void shiftRight(int numDigits) {
     int i = 0;
     for (; i < precision - numDigits; i++) {

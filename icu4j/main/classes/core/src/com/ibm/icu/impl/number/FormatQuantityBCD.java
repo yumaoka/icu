@@ -544,6 +544,54 @@ public abstract class FormatQuantityBCD implements FormatQuantity {
   }
 
   /**
+   * Appends a digit, optionally with one or more leading zeros, to the end of the value represented
+   * by this FormatQuantity.
+   *
+   * <p>The primary use of this method is to construct numbers during a parsing loop. It allows
+   * parsing to take advantage of the digit list infrastructure primarily designed for formatting.
+   *
+   * @param value The digit to append.
+   * @param leadingZeros The number of zeros to append before the digit. For example, if the value
+   *     in this instance starts as 12.3, and you append a 4 with 1 leading zero, the value becomes
+   *     12.304.
+   * @param appendAsInteger If true, increase the magnitude of existing digits to make room for the
+   *     new digit. If false, append to the end like a fraction digit. If true, there must not be
+   *     any fraction digits already in the number.
+   * @internal
+   * @deprecated This API is ICU internal only.
+   */
+  @Deprecated
+  public void appendDigit(byte value, int leadingZeros, boolean appendAsInteger) {
+    assert leadingZeros >= 0;
+
+    // Zero requires special handling to maintain the invariant that the least-significant digit
+    // in the BCD is nonzero.
+    if (value == 0) {
+      if (appendAsInteger && precision != 0) {
+        scale += leadingZeros + 1;
+      }
+      return;
+    }
+
+    // Deal with trailing zeros
+    if (scale > 0) {
+      leadingZeros += scale;
+      if (appendAsInteger) {
+        scale = 0;
+      }
+    }
+
+    // Append digit
+    shiftLeft(leadingZeros + 1);
+    setDigitPos(0, value);
+
+    // Fix scale if in integer mode
+    if (appendAsInteger) {
+      scale += leadingZeros + 1;
+    }
+  }
+
+  /**
    * Returns a single digit from the BCD list. No internal state is changed by calling this method.
    *
    * @param position The position of the digit to pop, counted in BCD units from the least
@@ -562,6 +610,14 @@ public abstract class FormatQuantityBCD implements FormatQuantity {
    * @param value The digit to set at the specified location.
    */
   protected abstract void setDigitPos(int position, byte value);
+
+  /**
+   * Adds zeros to the end of the BCD list. This will result in an invalid BCD representation; it is
+   * the caller's responsibility to do further manipulation and then call {@link #compact}.
+   *
+   * @param numDigits The number of zeros to add.
+   */
+  protected abstract void shiftLeft(int numDigits);
 
   protected abstract void shiftRight(int numDigits);
 

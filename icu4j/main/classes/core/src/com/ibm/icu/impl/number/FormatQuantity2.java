@@ -59,6 +59,14 @@ public final class FormatQuantity2 extends FormatQuantityBCD {
   }
 
   @Override
+  protected void shiftLeft(int numDigits) {
+    assert precision + numDigits <= 16;
+    bcd <<= (numDigits * 4);
+    scale -= numDigits;
+    precision += numDigits;
+  }
+
+  @Override
   protected void shiftRight(int numDigits) {
     bcd >>>= (numDigits * 4);
     scale += numDigits;

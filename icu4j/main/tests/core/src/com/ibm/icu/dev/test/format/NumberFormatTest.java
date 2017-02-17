@@ -36,7 +36,6 @@ import com.ibm.icu.impl.ICUConfig;
 import com.ibm.icu.impl.LocaleUtility;
 import com.ibm.icu.impl.data.ResourceReader;
 import com.ibm.icu.impl.data.TokenIterator;
-import com.ibm.icu.impl.number.Parse;
 import com.ibm.icu.math.BigDecimal;
 import com.ibm.icu.math.MathContext;
 import com.ibm.icu.text.CompactDecimalFormat;
@@ -578,7 +577,6 @@ public class NumberFormatTest extends TestFmwk {
             for (int i = 0; i < DATA.length; ++i) {
                 String stringToBeParsed = DATA[i][0];
                 double parsedResult = Double.parseDouble(DATA[i][1]);
-                Parse.DEBUGGING = true;
                 Number num = fmt.parse(stringToBeParsed);
                 if (num.doubleValue() != parsedResult) {
                     errln("FAIL parse: Expected " + parsedResult);
@@ -586,8 +584,6 @@ public class NumberFormatTest extends TestFmwk {
             }
         } catch (ParseException e) {
             errln("FAILED, DecimalFormat parse currency: " + e.toString());
-        } finally {
-            Parse.DEBUGGING = false;
         }
     }
 
@@ -795,26 +791,28 @@ public class NumberFormatTest extends TestFmwk {
             public int    getCurExpectVal()  { return curExpectVal; }
             public String getCurExpectCurr() { return curExpectCurr; }
         }
+        // Note: In cases where the number occurs before the currency sign, non-currency mode will parse the number
+        // and stop when it reaches the currency symbol.
         final ParseCurrencyItem[] parseCurrencyItems = {
                 new ParseCurrencyItem( "en_US", "dollars2", "$2.00",            5,  2,  5,  2,  "USD" ),
                 new ParseCurrencyItem( "en_US", "dollars4", "$4",               2,  4,  2,  4,  "USD" ),
-                new ParseCurrencyItem( "en_US", "dollars9", "9\u00A0$",         3,  9,  3,  9,  "USD" ),
+                new ParseCurrencyItem( "en_US", "dollars9", "9\u00A0$",         2,  9,  3,  9,  "USD" ),
                 new ParseCurrencyItem( "en_US", "pounds3",  "\u00A33.00",       0,  0,  5,  3,  "GBP" ),
                 new ParseCurrencyItem( "en_US", "pounds5",  "\u00A35",          0,  0,  2,  5,  "GBP" ),
-                new ParseCurrencyItem( "en_US", "pounds7",  "7\u00A0\u00A3",    0,  0,  0,  0,  ""    ),
+                new ParseCurrencyItem( "en_US", "pounds7",  "7\u00A0\u00A3",    2,  7,  3,  7,  "GBP" ),
                 new ParseCurrencyItem( "en_US", "euros8",   "\u20AC8",          0,  0,  2,  8,  "EUR" ),
 
                 new ParseCurrencyItem( "en_GB", "pounds3",  "\u00A33.00",       5,  3,  5,  3,  "GBP" ),
                 new ParseCurrencyItem( "en_GB", "pounds5",  "\u00A35",          2,  5,  2,  5,  "GBP" ),
-                new ParseCurrencyItem( "en_GB", "pounds7",  "7\u00A0\u00A3",    0,  0,  0,  0,  ""    ),
-                new ParseCurrencyItem( "en_GB", "euros4",   "4,00\u00A0\u20AC", 0,  0,  0,  0,  ""    ),
-                new ParseCurrencyItem( "en_GB", "euros6",   "6\u00A0\u20AC",    0,  0,  0,  0,  ""    ),
+                new ParseCurrencyItem( "en_GB", "pounds7",  "7\u00A0\u00A3",    2,  7,  3,  7,  "GBP" ),
+                new ParseCurrencyItem( "en_GB", "euros4",   "4,00\u00A0\u20AC", 5,400,  6,400,  "EUR" ),
+                new ParseCurrencyItem( "en_GB", "euros6",   "6\u00A0\u20AC",    2,  6,  3,  6,  "EUR" ),
                 new ParseCurrencyItem( "en_GB", "euros8",   "\u20AC8",          0,  0,  2,  8,  "EUR" ),
                 new ParseCurrencyItem( "en_GB", "dollars4", "US$4",             0,  0,  4,  4,  "USD" ),
 
                 new ParseCurrencyItem( "fr_FR", "euros4",   "4,00\u00A0\u20AC", 6,  4,  6,  4,  "EUR" ),
                 new ParseCurrencyItem( "fr_FR", "euros6",   "6\u00A0\u20AC",    3,  6,  3,  6,  "EUR" ),
-                new ParseCurrencyItem( "fr_FR", "euros8",   "\u20AC8",          0,  0,  0,  0,  ""    ),
+                new ParseCurrencyItem( "fr_FR", "euros8",   "\u20AC8",          0,  0,  2,  8,  "EUR" ),
                 new ParseCurrencyItem( "fr_FR", "dollars2", "$2.00",            0,  0,  0,  0,  ""    ),
                 new ParseCurrencyItem( "fr_FR", "dollars4", "$4",               0,  0,  0,  0,  ""    ),
         };
@@ -1499,7 +1497,8 @@ public class NumberFormatTest extends TestFmwk {
             errln("FAIL: isScientificNotation = true, expect false");
         }
 
-        df.applyPattern("0.00000");
+        // Create a new instance to flush out currency info
+        df = new DecimalFormat("0.00000", US);
         df.setScientificNotation(true);
         if (!df.isScientificNotation()) {
             errln("FAIL: isScientificNotation = false, expect true");
@@ -1558,6 +1557,18 @@ public class NumberFormatTest extends TestFmwk {
         int n = 1234;
         expect(fmt, "a b1234c ", n);
         expect(fmt, "a   b1234c   ", n);
+        expect(fmt, "ab1234", n);
+
+        fmt.applyPattern("a b #");
+        expect(fmt, "ab1234", n);
+        expect(fmt, "ab  1234", n);
+
+        fmt.applyPattern("#");
+        fmt.setPositivePrefix(" a b ");
+        expect(fmt, "a b1234", n);
+        expect(fmt, "a   b1234", n);
+        expect(fmt, "ab1234", n);
+        expect(fmt, "ab  1234", n);
     }
 
     /**
@@ -2601,6 +2612,14 @@ public class NumberFormatTest extends TestFmwk {
     }
 
     @Test
+    public void TestScientificWithGrouping() {
+        DecimalFormat df = new DecimalFormat("#,##0.000E0");
+        expect2(df, 123, "123.0E0");
+        expect2(df, 1234, "1,234E0");
+        expect2(df, 12340, "1.234E4");
+    }
+
+    @Test
     public void TestStrictParse() {
         String[] pass = {
                 "0",           // single zero before end of text is not leading
@@ -2645,7 +2664,6 @@ public class NumberFormatTest extends TestFmwk {
                 "00E2",     // leading zeroes now allowed in strict mode - see ticket #
         };
         String[] scientificFail = {
-                "1,234E2",  // group separators with exponent fail
         };
 
         nf = (DecimalFormat) NumberFormat.getInstance(Locale.ENGLISH);

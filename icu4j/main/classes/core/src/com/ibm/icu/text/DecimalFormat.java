@@ -158,24 +158,13 @@ public class DecimalFormat extends NumberFormat {
   /** @stable ICU 2.0 */
   @Override
   public Number parse(String text, ParsePosition parsePosition) {
-    try {
-      // Backwards compatibility: use currency parse mode if this is a currency instance
-      Number result;
-      if (com.ibm.icu.impl.number.formatters.CurrencyFormat.useCurrency(properties)) {
-        CurrencyAmount temp = Parse.parseCurrency(text, parsePosition, properties, symbols);
-        if (temp == null) return null;
-        result = temp.getNumber();
-      } else {
-        result = Parse.parse(text, parsePosition, properties, symbols);
-      }
-      // Backwards compatibility: return com.ibm.icu.math.BigDecimal
-      if (result instanceof java.math.BigDecimal) {
-        result = new com.ibm.icu.math.BigDecimal((java.math.BigDecimal) result);
-      }
-      return result;
-    } catch (ParseException e) {
-      return null;
+    // Backwards compatibility: use currency parse mode if this is a currency instance
+    Number result = Parse.parse(text, parsePosition, properties, symbols);
+    // Backwards compatibility: return com.ibm.icu.math.BigDecimal
+    if (result instanceof java.math.BigDecimal) {
+      result = new com.ibm.icu.math.BigDecimal((java.math.BigDecimal) result);
     }
+    return result;
   }
 
   /** @stable ICU 49 */
