@@ -63,7 +63,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "icuinfo", "..\tools\icuinfo
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testplug", "..\tools\icuinfo\testplug.vcxproj", "{659D0C08-D4ED-4BF3-B02B-2D8D4B5A7A7A}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "makedata UWP", "..\data\makedata UWP.vcxproj", "{B1D53358-37BD-48BC-B27C-68BAF1E78508}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "makedata_uwp", "..\data\makedata_uwp.vcxproj", "{B1D53358-37BD-48BC-B27C-68BAF1E78508}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
