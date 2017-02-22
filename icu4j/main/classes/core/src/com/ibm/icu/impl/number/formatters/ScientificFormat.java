@@ -91,6 +91,10 @@ public class ScientificFormat extends Format.BeforeFormat implements Rounder.Mul
         // Special case for the pattern "#E0" with no significant digits specified.
         rprops.setMinimumSignificantDigits(1);
         rprops.setMaximumSignificantDigits(Integer.MAX_VALUE);
+      } else if (minInt == 0 && minFrac == 0) {
+        // Special case for patterns like "#.##E0" with no significant digits specified.
+        rprops.setMinimumSignificantDigits(1);
+        rprops.setMaximumSignificantDigits(1 + maxFrac);
       } else {
         rprops.setMinimumSignificantDigits(minInt + minFrac);
         rprops.setMaximumSignificantDigits(minInt + maxFrac);

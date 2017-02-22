@@ -19,5 +19,6 @@ public final class NoRounder extends Rounder {
   @Override
   public void apply(FormatQuantity input) {
     applyDefaults(input);
+    input.roundToInfinity();
   }
 }

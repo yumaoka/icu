@@ -2,8 +2,6 @@
 // License & terms of use: http://www.unicode.org/copyright.html#License
 package com.ibm.icu.impl.number.formatters;
 
-import java.text.ParseException;
-
 import com.ibm.icu.impl.number.FormatQuantity;
 import com.ibm.icu.impl.number.ModifierHolder;
 import com.ibm.icu.impl.number.PNAffixGenerator;
@@ -235,8 +233,7 @@ public class PositiveNegativeAffixFormat {
     public IProperties setAlwaysShowPlusSign(boolean alwaysShowPlusSign);
   }
 
-  public static PositiveNegativeAffixModifier getInstance(DecimalFormatSymbols symbols, IProperties properties)
-      throws ParseException {
+  public static PositiveNegativeAffixModifier getInstance(DecimalFormatSymbols symbols, IProperties properties) {
     PNAffixGenerator pnag = PNAffixGenerator.getThreadLocalInstance();
     PNAffixGenerator.Result result = pnag.getModifiers(symbols, properties);
     return new PositiveNegativeAffixModifier(result.positive, result.negative);
@@ -247,8 +244,7 @@ public class PositiveNegativeAffixFormat {
       FormatQuantity input,
       ModifierHolder mods,
       DecimalFormatSymbols symbols,
-      IProperties properties)
-      throws ParseException {
+      IProperties properties) {
     PNAffixGenerator pnag = PNAffixGenerator.getThreadLocalInstance();
     PNAffixGenerator.Result result = pnag.getModifiers(symbols, properties);
     if (input.isNegative()) {

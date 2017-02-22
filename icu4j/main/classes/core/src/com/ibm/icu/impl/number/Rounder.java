@@ -166,9 +166,9 @@ public abstract class Rounder extends Format.BeforeFormat {
     int _maxFrac = properties.getMaximumFractionDigits();
     int _minFrac = properties.getMinimumFractionDigits();
     maxInt = _maxInt < 0 ? Integer.MAX_VALUE : _maxInt;
-    minInt = _minInt < 0 ? 0 : _minInt < maxInt ? _minInt : maxInt;
+    minInt = _minInt < 0 ? (1 < maxInt ? 1 : maxInt) : (_minInt < maxInt ? _minInt : maxInt);
     maxFrac = _maxFrac < 0 ? Integer.MAX_VALUE : _maxFrac;
-    minFrac = _minFrac < 0 ? 0 : _minFrac < maxFrac ? _minFrac : maxFrac;
+    minFrac = _minFrac < 0 ? 0 : (_minFrac < maxFrac ? _minFrac : maxFrac);
   }
 
   /**

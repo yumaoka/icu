@@ -213,7 +213,7 @@ public class NumberFormatTest extends TestFmwk {
         DecimalFormatSymbols sym = new DecimalFormatSymbols(Locale.US);
         final String pat[]    = { "#.#", "#.", ".#", "#" };
         int pat_length = pat.length;
-        final String newpat[] = { "0.#", "0.", "#.#", "#" };
+        final String newpat[] = { "0.#", "0.", "#.0", "0" };
         final String num[]    = { "0",   "0.", ".0", "0" };
         for (int i=0; i<pat_length; ++i)
         {
@@ -413,13 +413,16 @@ public class NumberFormatTest extends TestFmwk {
         // the string to be parsed, parsed position, parsed error index
         String[][] DATA = {
                 {"$124", "4", "-1"},
-                {"$124 $124", "5", "-1"},
-                {"$124 ", "5", "-1"},
-                {"$ 124 ", "6", "-1"},
-                {"$\u00A0124 ", "6", "-1"},
-                {" $ 124 ", "7", "-1"},
+                {"$124 $124", "4", "-1"},
+                {"$124 ", "4", "-1"},
+                {"$124  ", "4", "-1"},
+                {"$ 124 ", "5", "-1"},
+                {"$\u00A0124 ", "5", "-1"},
+                {" $ 124 ", "6", "-1"},
                 {"124$", "4", "-1"},
                 {"124 $", "5", "-1"},
+                {"$124\u200D", "4", "-1"},
+                {"$\u200D124", "5", "-1"},
         };
         NumberFormat foo = NumberFormat.getCurrencyInstance();
         for (int i = 0; i < DATA.length; ++i) {
@@ -428,14 +431,14 @@ public class NumberFormatTest extends TestFmwk {
             int parsedPosition = Integer.parseInt(DATA[i][1]);
             int errorIndex = Integer.parseInt(DATA[i][2]);
             try {
-                CurrencyAmount result = foo.parseCurrency(stringToBeParsed, parsePosition);
+                Number result = foo.parse(stringToBeParsed, parsePosition);
                 if (parsePosition.getIndex() != parsedPosition ||
                         parsePosition.getErrorIndex() != errorIndex) {
                     errln("FAILED parse " + stringToBeParsed + "; parse position: " + parsePosition.getIndex() + "; error position: " + parsePosition.getErrorIndex());
                 }
                 if (parsePosition.getErrorIndex() == -1 &&
-                        result.getNumber().doubleValue() != 124) {
-                    errln("FAILED parse " + stringToBeParsed + "; value " + result.getNumber().doubleValue());
+                        result.doubleValue() != 124) {
+                    errln("FAILED parse " + stringToBeParsed + "; value " + result.doubleValue());
                 }
             } catch (Exception e) {
                 errln("FAILED " + e.toString());
@@ -443,6 +446,34 @@ public class NumberFormatTest extends TestFmwk {
         }
     }
 
+    @Test
+    public void TestSpaceParsingStrict() {
+        // All trailing grouping separators should be ignored in strict mode, not just the first.
+        Object[][] cases = {
+                {"123 ", 3, -1},
+                {"123  ", 3, -1},
+                {"123  ,", 3, -1},
+                {"123,", 3, -1},
+                {"123, ", 3, -1},
+                {"123,,", 3, -1},
+                {"123,, ", 3, -1},
+                {"123 ,", 3, -1},
+                {"123, ", 3, -1},
+                {"123, 456", 3, -1},
+                {"123  456", 0, 8} // TODO: Does this behavior make sense?
+        };
+        DecimalFormat df = new DecimalFormat("#,###");
+        df.setParseStrict(true);
+        for (Object[] cas : cases) {
+            String input = (String) cas[0];
+            int expectedIndex = (Integer) cas[1];
+            int expectedErrorIndex = (Integer) cas[2];
+            ParsePosition ppos = new ParsePosition(0);
+            df.parse(input, ppos);
+            assertEquals("Failed on index: '" + input + "'", expectedIndex, ppos.getIndex());
+            assertEquals("Failed on error: '" + input + "'", expectedErrorIndex, ppos.getErrorIndex());
+        }
+    }
 
     @Test
     public void TestMultiCurrencySign() {
@@ -493,36 +524,24 @@ public class NumberFormatTest extends TestFmwk {
                 if (!s.equals(currencyFormatResult)) {
                     errln("FAIL format: Expected " + currencyFormatResult);
                 }
-
-                // Same-style parsing
-                // The new parser only allows long names in currency mode.
-                if (j < 3) {
-                    try {
-                        Number number = fmt.parse(currencyFormatResult);
-                        if (number.doubleValue() != numberToBeFormat.doubleValue()) {
-                            errln("FAILED same style parse " + currencyFormatResult);
+                try {
+                    // mix style parsing
+                    for (int k=3; k<=4; ++k) {
+                        // DATA[i][3] is the currency format result using a
+                        // single currency sign.
+                        // DATA[i][4] is the currency format result using
+                        // double currency sign.
+                        // DATA[i][5] is the currency format result using
+                        // triple currency sign.
+                        // ICU 59: long name parsing requires currency mode.
+                        String oneCurrencyFormat = DATA[i][k];
+                        if (fmt.parse(oneCurrencyFormat).doubleValue() !=
+                                numberToBeFormat.doubleValue()) {
+                            errln("FAILED parse " + oneCurrencyFormat);
                         }
-                    } catch(ParseException e) {
-                        errln("FAILED same style with exception: " + e);
                     }
-                }
-
-                // Mixed-style parsing
-                // The new parser does not currently allow mixed styles in normal mode.
-                // It allows mixed styles in currency mode.
-                for (int k=3; k<=5; ++k) {
-                    // DATA[i][3] is the currency format result using a
-                    // single currency sign.
-                    // DATA[i][4] is the currency format result using
-                    // double currency sign.
-                    // DATA[i][5] is the currency format result using
-                    // triple currency sign.
-                    String oneCurrencyFormat = DATA[i][k];
-                    ParsePosition ppos = new ParsePosition(0);
-                    CurrencyAmount amount = fmt.parseCurrency(oneCurrencyFormat, ppos);
-                    if (amount.getNumber().doubleValue() != numberToBeFormat.doubleValue()) {
-                        errln("FAILED mixed style parse " + oneCurrencyFormat);
-                    }
+                } catch (ParseException e) {
+                    errln("FAILED, DecimalFormat parse currency: " + e.toString());
                 }
             }
         }
@@ -708,20 +727,24 @@ public class NumberFormatTest extends TestFmwk {
                 if (!strBuf.equals(formatResult)) {
                     errln("FAIL: localeID: " + localeString + ", expected(" + formatResult.length() + "): \"" + formatResult + "\", actual(" + strBuf.length() + "): \"" + strBuf + "\"");
                 }
-                // test parsing, and test parsing for all currency formats.
-                for (int j = 3; j < 6; ++j) {
-                    // DATA[i][3] is the currency format result using
-                    // CURRENCYSTYLE formatter.
-                    // DATA[i][4] is the currency format result using
-                    // ISOCURRENCYSTYLE formatter.
-                    // DATA[i][5] is the currency format result using
-                    // PLURALCURRENCYSTYLE formatter.
-                    String oneCurrencyFormatResult = DATA[i][j];
-                    ParsePosition ppos = new ParsePosition(0);
-                    CurrencyAmount val = numFmt.parseCurrency(oneCurrencyFormatResult, ppos);
-                    if (val == null || val.getNumber().doubleValue() != numberToBeFormat.doubleValue()) {
-                        errln("FAIL: getCurrencyFormat of locale " + localeString + " failed roundtripping the number. val=" + val + "; expected: " + numberToBeFormat + "; string: " + oneCurrencyFormatResult);
+                try {
+                    // test parsing, and test parsing for all currency formats.
+                    for (int j = 3; j < 6; ++j) {
+                        // DATA[i][3] is the currency format result using
+                        // CURRENCYSTYLE formatter.
+                        // DATA[i][4] is the currency format result using
+                        // ISOCURRENCYSTYLE formatter.
+                        // DATA[i][5] is the currency format result using
+                        // PLURALCURRENCYSTYLE formatter.
+                        String oneCurrencyFormatResult = DATA[i][j];
+                        Number val = numFmt.parse(oneCurrencyFormatResult);
+                        if (val.doubleValue() != numberToBeFormat.doubleValue()) {
+                            errln("FAIL: getCurrencyFormat of locale " + localeString + " failed roundtripping the number. val=" + val + "; expected: " + numberToBeFormat);
+                        }
                     }
+                }
+                catch (ParseException e) {
+                    errln("FAIL: " + e.getMessage());
                 }
             }
         }
@@ -732,30 +755,42 @@ public class NumberFormatTest extends TestFmwk {
     public void TestMiscCurrencyParsing() {
         String[][] DATA = {
                 // each has: string to be parsed, parsed position, error position
-                {"1.00 ", "0", "5"},
-                {"1.00 UAE dirha", "0", "14"},
-                {"1.00 us dollar", "14", "-1"},
-                {"1.00 US DOLLAR", "14", "-1"},
-                {"1.00 usd", "8", "-1"},
-                {"1.00 USD", "8", "-1"},
+                {"1.00 ", "4", "-1", "0", "5"},
+                {"1.00 UAE dirha", "4", "-1", "0", "14"},
+                {"1.00 us dollar", "9", "-1", "14", "-1"}, // TODO: The parser stops after reading "us d" because that is the currency code. Does that behavior make sense?
+                {"1.00 US DOLLAR", "9", "-1", "14", "-1"},
+                {"1.00 usd", "8", "-1", "8", "-1"},
+                {"1.00 USD", "8", "-1", "8", "-1"},
         };
         ULocale locale = new ULocale("en_US");
         for (int i=0; i<DATA.length; ++i) {
             String stringToBeParsed = DATA[i][0];
             int parsedPosition = Integer.parseInt(DATA[i][1]);
             int errorIndex = Integer.parseInt(DATA[i][2]);
+            int currParsedPosition = Integer.parseInt(DATA[i][3]);
+            int currErrorIndex = Integer.parseInt(DATA[i][4]);
             NumberFormat numFmt = NumberFormat.getInstance(locale, NumberFormat.CURRENCYSTYLE);
             ParsePosition parsePosition = new ParsePosition(0);
-            // TODO: Mark/Andy, should the parser always use currency mode if it was created with CURRENCYSTYLE?
-            CurrencyAmount val = numFmt.parseCurrency(stringToBeParsed, parsePosition);
+            Number val = numFmt.parse(stringToBeParsed, parsePosition);
             if (parsePosition.getIndex() != parsedPosition ||
                     parsePosition.getErrorIndex() != errorIndex) {
-                errln("FAIL: parse failed on case " + i + ". expected error position: " + errorIndex + "; actual: " + parsePosition.getErrorIndex());
-                errln("FAIL: parse failed on case " + i + ". expected position: " + parsedPosition +"; actual: " + parsePosition.getIndex());
+                errln("FAIL: parse failed on case "+i+". expected position: " + parsedPosition +"; actual: " + parsePosition.getIndex());
+                errln("FAIL: parse failed on case "+i+". expected error position: " + errorIndex + "; actual: " + parsePosition.getErrorIndex());
             }
             if (parsePosition.getErrorIndex() == -1 &&
-                    val.getNumber().doubleValue() != 1.00) {
+                    val.doubleValue() != 1.00) {
                 errln("FAIL: parse failed. expected 1.00, actual:" + val);
+            }
+            parsePosition = new ParsePosition(0);
+            CurrencyAmount amt = numFmt.parseCurrency(stringToBeParsed, parsePosition);
+            if (parsePosition.getIndex() != currParsedPosition ||
+                    parsePosition.getErrorIndex() != currErrorIndex) {
+                errln("FAIL: parseCurrency failed on case "+i+". expected error position: " + currErrorIndex + "; actual: " + parsePosition.getErrorIndex());
+                errln("FAIL: parseCurrency failed on case "+i+". expected position: " + currParsedPosition +"; actual: " + parsePosition.getIndex());
+            }
+            if (parsePosition.getErrorIndex() == -1 &&
+                    amt.getNumber().doubleValue() != 1.00) {
+                errln("FAIL: parseCurrency failed. expected 1.00, actual:" + val);
             }
         }
     }
@@ -796,23 +831,23 @@ public class NumberFormatTest extends TestFmwk {
         final ParseCurrencyItem[] parseCurrencyItems = {
                 new ParseCurrencyItem( "en_US", "dollars2", "$2.00",            5,  2,  5,  2,  "USD" ),
                 new ParseCurrencyItem( "en_US", "dollars4", "$4",               2,  4,  2,  4,  "USD" ),
-                new ParseCurrencyItem( "en_US", "dollars9", "9\u00A0$",         2,  9,  3,  9,  "USD" ),
+                new ParseCurrencyItem( "en_US", "dollars9", "9\u00A0$",         3,  9,  3,  9,  "USD" ),
                 new ParseCurrencyItem( "en_US", "pounds3",  "\u00A33.00",       0,  0,  5,  3,  "GBP" ),
                 new ParseCurrencyItem( "en_US", "pounds5",  "\u00A35",          0,  0,  2,  5,  "GBP" ),
-                new ParseCurrencyItem( "en_US", "pounds7",  "7\u00A0\u00A3",    2,  7,  3,  7,  "GBP" ),
+                new ParseCurrencyItem( "en_US", "pounds7",  "7\u00A0\u00A3",    1,  7,  3,  7,  "GBP" ),
                 new ParseCurrencyItem( "en_US", "euros8",   "\u20AC8",          0,  0,  2,  8,  "EUR" ),
 
                 new ParseCurrencyItem( "en_GB", "pounds3",  "\u00A33.00",       5,  3,  5,  3,  "GBP" ),
                 new ParseCurrencyItem( "en_GB", "pounds5",  "\u00A35",          2,  5,  2,  5,  "GBP" ),
-                new ParseCurrencyItem( "en_GB", "pounds7",  "7\u00A0\u00A3",    2,  7,  3,  7,  "GBP" ),
-                new ParseCurrencyItem( "en_GB", "euros4",   "4,00\u00A0\u20AC", 5,400,  6,400,  "EUR" ),
-                new ParseCurrencyItem( "en_GB", "euros6",   "6\u00A0\u20AC",    2,  6,  3,  6,  "EUR" ),
+                new ParseCurrencyItem( "en_GB", "pounds7",  "7\u00A0\u00A3",    3,  7,  3,  7,  "GBP" ),
+                new ParseCurrencyItem( "en_GB", "euros4",   "4,00\u00A0\u20AC", 4,400,  6,400,  "EUR" ),
+                new ParseCurrencyItem( "en_GB", "euros6",   "6\u00A0\u20AC",    1,  6,  3,  6,  "EUR" ),
                 new ParseCurrencyItem( "en_GB", "euros8",   "\u20AC8",          0,  0,  2,  8,  "EUR" ),
                 new ParseCurrencyItem( "en_GB", "dollars4", "US$4",             0,  0,  4,  4,  "USD" ),
 
                 new ParseCurrencyItem( "fr_FR", "euros4",   "4,00\u00A0\u20AC", 6,  4,  6,  4,  "EUR" ),
                 new ParseCurrencyItem( "fr_FR", "euros6",   "6\u00A0\u20AC",    3,  6,  3,  6,  "EUR" ),
-                new ParseCurrencyItem( "fr_FR", "euros8",   "\u20AC8",          0,  0,  2,  8,  "EUR" ),
+                new ParseCurrencyItem( "fr_FR", "euros8",   "\u20AC8",          2,  8,  2,  8,  "EUR" ),
                 new ParseCurrencyItem( "fr_FR", "dollars2", "$2.00",            0,  0,  0,  0,  ""    ),
                 new ParseCurrencyItem( "fr_FR", "dollars4", "$4",               0,  0,  0,  0,  ""    ),
         };
@@ -1004,12 +1039,12 @@ public class NumberFormatTest extends TestFmwk {
         DecimalFormat f = new DecimalFormat("#,##,###", US);
 
         expect(f, 123456789L, "12,34,56,789");
-        expectPat(f, "#,##,###");
+        expectPat(f, "#,##,##0");
         f.applyPattern("#,###");
 
         f.setSecondaryGroupingSize(4);
         expect(f, 123456789L, "12,3456,789");
-        expectPat(f, "#,####,###");
+        expectPat(f, "#,####,##0");
         NumberFormat g = NumberFormat.getInstance(new Locale("hi", "IN"));
 
         String out = "";
@@ -1548,6 +1583,23 @@ public class NumberFormatTest extends TestFmwk {
             logln("PASS: " + allULocales.length +
                     " available locales returned by DecimalFormatSymbols.getAvailableULocales");
         }
+    }
+
+    @Test
+    public void TestParseNull() throws ParseException {
+        DecimalFormat df = new DecimalFormat();
+        try {
+            df.parse(null);
+            fail("df.parse(null) didn't throw an exception");
+        } catch (IllegalArgumentException e){}
+        try {
+            df.parse(null, null);
+            fail("df.parse(null) didn't throw an exception");
+        } catch (IllegalArgumentException e){}
+        try {
+            df.parseCurrency(null, null);
+            fail("df.parse(null) didn't throw an exception");
+        } catch (IllegalArgumentException e){}
     }
 
     @Test

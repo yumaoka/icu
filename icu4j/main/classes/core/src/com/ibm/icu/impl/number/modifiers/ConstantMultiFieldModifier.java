@@ -47,11 +47,6 @@ public class ConstantMultiFieldModifier extends Modifier.BaseModifier implements
     strong = false;
   }
 
-  public boolean contentEquals(NumberStringBuilder prefix, NumberStringBuilder suffix) {
-    return prefix.contentEquals(prefixChars, prefixFields)
-        && suffix.contentEquals(suffixChars, suffixFields);
-  }
-
   @Override
   public int apply(NumberStringBuilder output, int leftIndex, int rightIndex) {
     // Insert the suffix first since inserting the prefix will change the rightIndex
@@ -78,6 +73,11 @@ public class ConstantMultiFieldModifier extends Modifier.BaseModifier implements
   @Override
   public String getSuffix() {
     return suffix;
+  }
+
+  public boolean contentEquals(NumberStringBuilder prefix, NumberStringBuilder suffix) {
+    return prefix.contentEquals(prefixChars, prefixFields)
+        && suffix.contentEquals(suffixChars, suffixFields);
   }
 
   @Override

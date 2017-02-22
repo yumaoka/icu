@@ -17,7 +17,6 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.AttributedCharacterIterator;
 import java.text.FieldPosition;
-import java.text.ParseException;
 import java.text.ParsePosition;
 import java.util.Locale;
 
@@ -114,12 +113,7 @@ public class CompactDecimalFormat extends DecimalFormat {
   CompactDecimalFormat(ULocale locale, CompactStyle style) {
     Properties properties = new Properties();
     properties.setCompactStyle(style);
-    try {
-      formatter = Endpoint.fromBTA(properties, locale);
-    } catch (ParseException e) {
-      // Should never happen unless data is bad
-      throw new IllegalArgumentException(e);
-    }
+    formatter = Endpoint.fromBTA(properties, locale);
   }
 
   /**

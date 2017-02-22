@@ -3,11 +3,10 @@
 package com.ibm.icu.impl.number.formatters;
 
 import java.math.BigDecimal;
-import java.text.ParseException;
 
 import com.ibm.icu.impl.StandardPlural;
-import com.ibm.icu.impl.number.Format;
 import com.ibm.icu.impl.number.AffixPatternUtils;
+import com.ibm.icu.impl.number.Format;
 import com.ibm.icu.impl.number.PNAffixGenerator;
 import com.ibm.icu.impl.number.PatternString;
 import com.ibm.icu.impl.number.Properties;
@@ -62,7 +61,7 @@ public class CurrencyFormat {
      * An old enum that specifies how currencies should be rounded. It contains a subset of the
      * functionality supported by RoundingInterval.
      */
-    static Currency.CurrencyUsage DEFAULT_CURRENCY_USAGE = Currency.CurrencyUsage.STANDARD;
+    static Currency.CurrencyUsage DEFAULT_CURRENCY_USAGE = null;
 
     /** @see #setCurrencyUsage */
     public Currency.CurrencyUsage getCurrencyUsage();
@@ -189,7 +188,7 @@ public class CurrencyFormat {
   }
 
   public static Format.BeforeFormat getCurrencyModifier(
-      DecimalFormatSymbols symbols, IProperties properties) throws ParseException {
+      DecimalFormatSymbols symbols, IProperties properties) {
 
     PNAffixGenerator pnag = PNAffixGenerator.getThreadLocalInstance();
     String sym = getCurrencySymbol(symbols, properties);

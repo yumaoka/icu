@@ -2,11 +2,11 @@
 // License & terms of use: http://www.unicode.org/copyright.html#License
 package com.ibm.icu.dev.test.format;
 
+import java.math.BigDecimal;
 import java.text.ParsePosition;
 
 import org.junit.Test;
 
-import com.ibm.icu.math.BigDecimal;
 import com.ibm.icu.text.DecimalFormatSymbols;
 import com.ibm.icu.text.DecimalFormat_ICU58;
 import com.ibm.icu.util.CurrencyAmount;

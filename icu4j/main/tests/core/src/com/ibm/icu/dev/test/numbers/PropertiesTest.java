@@ -13,6 +13,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.HashSet;
 import java.util.Set;
@@ -54,7 +55,7 @@ public class PropertiesTest {
     Properties p3 = new Properties();
     Properties p4 = new Properties();
 
-    Set<Integer> hashCodes = new HashSet<Integer>();
+    Set<Integer> hashCodes = new HashSet<>();
     Field[] fields = Properties.class.getDeclaredFields();
     for (Field field : fields) {
       if (Modifier.isStatic(field.getModifiers())) {
@@ -96,6 +97,8 @@ public class PropertiesTest {
         // Check for getter, equals, and hash code behavior
         Object val0 = getSampleValueForType(field.getType(), 0);
         Object val1 = getSampleValueForType(field.getType(), 1);
+        Object val2 = getSampleValueForType(field.getType(), 2);
+        assertNotEquals(val0, val1);
         setter.invoke(p1, val0);
         setter.invoke(p2, val0);
         assertEquals(p1, p2);
@@ -109,11 +112,36 @@ public class PropertiesTest {
         assertNotEquals(getter.invoke(p1), getter.invoke(p2));
         assertNotEquals(getter.invoke(p1), val0);
         assertEquals(getter.invoke(p1), val1);
+        setter.invoke(p1, val0);
+        assertEquals("Field " + field + " setter might have side effects", p1, p2);
+        assertEquals(p1.hashCode(), p2.hashCode());
+        assertEquals(getter.invoke(p1), getter.invoke(p2));
+        setter.invoke(p1, val1);
         setter.invoke(p2, val1);
         assertEquals(p1, p2);
         assertEquals(p1.hashCode(), p2.hashCode());
         assertEquals(getter.invoke(p1), getter.invoke(p2));
+        setter.invoke(p1, val2);
+        setter.invoke(p1, val1);
+        assertEquals("Field " + field + " setter might have side effects", p1, p2);
+        assertEquals(p1.hashCode(), p2.hashCode());
+        assertEquals(getter.invoke(p1), getter.invoke(p2));
         hashCodes.add(p1.hashCode());
+
+        // Check for clone behavior
+        Properties copy = p1.clone();
+        assertEquals("Field " + field + " did not get copied in clone", p1, copy);
+        assertEquals(p1.hashCode(), copy.hashCode());
+        assertEquals(getter.invoke(p1), getter.invoke(copy));
+
+        // Check for copyFrom behavior
+        setter.invoke(p1, val0);
+        assertNotEquals(p1, p2);
+        assertNotEquals(getter.invoke(p1), getter.invoke(p2));
+        p2.copyFrom(p1);
+        assertEquals("Field " + field + " is missing from copyFrom()", p1, p2);
+        assertEquals(p1.hashCode(), p2.hashCode());
+        assertEquals(getter.invoke(p1), getter.invoke(p2));
 
         // Load values into p3 and p4 for clear() behavior test
         setter.invoke(p3, getSampleValueForType(field.getType(), 3));
@@ -144,6 +172,16 @@ public class PropertiesTest {
         hashCodes.size() >= fields.length);
   }
 
+  /**
+   * Creates a valid sample instance of the given type. Used to simulate getters and setters.
+   *
+   * @param type The type to generate.
+   * @param seed An integer seed, guaranteed to be positive. The same seed should generate two
+   *     instances that are equal. A different seed should in general generate two instances that
+   *     are not equal; this might not always be possible, such as with booleans or enums where
+   *     there are limited possible values.
+   * @return An instance of the specified type.
+   */
   Object getSampleValueForType(Class<?> type, int seed) {
     if (type == Integer.TYPE) {
       return seed * 1000001;
@@ -189,6 +227,11 @@ public class PropertiesTest {
       FormatWidth[] values = FormatWidth.values();
       return values[seed % values.length];
 
+    } else if (type == MathContext.class) {
+      if (seed == 0) return null;
+      RoundingMode[] modes = RoundingMode.values();
+      return new MathContext(seed, modes[seed % modes.length]);
+
     } else if (type == MeasureUnit.class) {
       if (seed == 0) return null;
       Object[] units = MeasureUnit.getAvailable().toArray();
@@ -210,7 +253,7 @@ public class PropertiesTest {
       return values[seed % values.length];
 
     } else {
-      fail("Don't know how to handle type " + type);
+      fail("Don't know how to handle type " + type + ". Please add it to getSampleValueForType().");
       return null;
     }
   }

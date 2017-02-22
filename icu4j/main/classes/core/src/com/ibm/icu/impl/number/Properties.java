@@ -7,7 +7,6 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
 
-import com.ibm.icu.impl.number.Parse.IProperties;
 import com.ibm.icu.impl.number.Parse.ParseMode;
 import com.ibm.icu.impl.number.formatters.BigDecimalMultiplier;
 import com.ibm.icu.impl.number.formatters.CompactDecimalFormat;
@@ -52,12 +51,16 @@ public class Properties
   // This would also require either retiring CurrencyPluralInfo or copying it upon receipt.
   // These two changes would make all fields in Properties immutable.
 
+  // The setters in this class should NOT have any side-effects or perform any validation.  It is
+  // up to the consumer of the property bag to deal with property validation.
+
   /*--------------------------------------------------------------------------------------------+/
   /| IMPORTANT!                                                                                 |/
-  /| WHEN ADDING A NEW PROPERTY, ADD IT HERE, IN #clear(), IN #equals(), AND IN #hashCode().    |/
+  /| WHEN ADDING A NEW PROPERTY, add it here, in #_clear(), in #_copyFrom(), in #equals(),      |/
+  /| and in #_hashCode().                                                                       |/
   /|                                                                                            |/
-  /| The unit test PropertiesTest will catch if you forget to add it to #clear() or #equals(),  |/
-  /| but it will NOT catch if you forget to add it to #hashCode().                              |/
+  /| The unit test PropertiesTest will catch if you forget to add it to #clear(), #copyFrom(),  |/
+  /| or #equals(), but it will NOT catch if you forget to add it to #hashCode().                |/
   /+--------------------------------------------------------------------------------------------*/
 
   private boolean alwaysShowDecimal;
@@ -107,10 +110,11 @@ public class Properties
 
   /*--------------------------------------------------------------------------------------------+/
   /| IMPORTANT!                                                                                 |/
-  /| WHEN ADDING A NEW PROPERTY, ADD IT HERE, IN #clear(), IN #equals(), AND IN #hashCode().    |/
+  /| WHEN ADDING A NEW PROPERTY, add it here, in #_clear(), in #_copyFrom(), in #equals(),      |/
+  /| and in #_hashCode().                                                                       |/
   /|                                                                                            |/
-  /| The unit test PropertiesTest will catch if you forget to add it to #clear() or #equals(),  |/
-  /| but it will NOT catch if you forget to add it to #hashCode().                              |/
+  /| The unit test PropertiesTest will catch if you forget to add it to #clear(), #copyFrom(),  |/
+  /| or #equals(), but it will NOT catch if you forget to add it to #hashCode().                |/
   /+--------------------------------------------------------------------------------------------*/
 
   public Properties() {
@@ -162,6 +166,53 @@ public class Properties
     roundingMode = DEFAULT_ROUNDING_MODE;
     secondaryGroupingSize = DEFAULT_SECONDARY_GROUPING_SIZE;
     significantDigitsOverride = DEFAULT_SIGNIFICANT_DIGITS_OVERRIDE_MAXIMUM_DIGITS;
+    return this;
+  }
+
+  private Properties _copyFrom(Properties other) {
+    alwaysShowDecimal = other.alwaysShowDecimal;
+    alwaysShowPlusSign = other.alwaysShowPlusSign;
+    compactStyle = other.compactStyle;
+    currency = other.currency;
+    currencyPluralInfo = other.currencyPluralInfo;
+    currencyStyle = other.currencyStyle;
+    currencyUsage = other.currencyUsage;
+    decimalPatternMatchRequired = other.decimalPatternMatchRequired;
+    exponentDigits = other.exponentDigits;
+    exponentShowPlusSign = other.exponentShowPlusSign;
+    groupingSize = other.groupingSize;
+    magnitudeMultiplier = other.magnitudeMultiplier;
+    mathContext = other.mathContext;
+    maximumFractionDigits = other.maximumFractionDigits;
+    maximumIntegerDigits = other.maximumIntegerDigits;
+    maximumSignificantDigits = other.maximumSignificantDigits;
+    measureFormatWidth = other.measureFormatWidth;
+    measureUnit = other.measureUnit;
+    minimumFractionDigits = other.minimumFractionDigits;
+    minimumGroupingDigits = other.minimumGroupingDigits;
+    minimumIntegerDigits = other.minimumIntegerDigits;
+    minimumSignificantDigits = other.minimumSignificantDigits;
+    multiplier = other.multiplier;
+    negativePrefix = other.negativePrefix;
+    negativePrefixPattern = other.negativePrefixPattern;
+    negativeSuffix = other.negativeSuffix;
+    negativeSuffixPattern = other.negativeSuffixPattern;
+    paddingLocation = other.paddingLocation;
+    paddingString = other.paddingString;
+    paddingWidth = other.paddingWidth;
+    parseCaseSensitive = other.parseCaseSensitive;
+    parseIgnoreExponent = other.parseIgnoreExponent;
+    parseIntegerOnly = other.parseIntegerOnly;
+    parseMode = other.parseMode;
+    parseToBigDecimal = other.parseToBigDecimal;
+    positivePrefix = other.positivePrefix;
+    positivePrefixPattern = other.positivePrefixPattern;
+    positiveSuffix = other.positiveSuffix;
+    positiveSuffixPattern = other.positiveSuffixPattern;
+    roundingInterval = other.roundingInterval;
+    roundingMode = other.roundingMode;
+    secondaryGroupingSize = other.secondaryGroupingSize;
+    significantDigitsOverride = other.significantDigitsOverride;
     return this;
   }
 
@@ -318,6 +369,16 @@ public class Properties
       // Should never happen since super is Object
       throw new UnsupportedOperationException(e);
     }
+  }
+
+  /**
+   * Shallow-copies the properties from the given property bag into this property bag.
+   *
+   * @param other The property bag from which to copy and which will not be modified.
+   * @return The current property bag (the one modified by this operation), for chaining.
+   */
+  public Properties copyFrom(Properties other) {
+    return _copyFrom(other);
   }
 
   @Override
@@ -751,7 +812,7 @@ public class Properties
   }
 
   @Override
-  public IProperties setParseCaseSensitive(boolean parseCaseSensitive) {
+  public Properties setParseCaseSensitive(boolean parseCaseSensitive) {
     this.parseCaseSensitive = parseCaseSensitive;
     return this;
   }

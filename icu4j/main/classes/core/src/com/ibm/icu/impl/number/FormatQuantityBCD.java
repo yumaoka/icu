@@ -48,6 +48,15 @@ public abstract class FormatQuantityBCD implements FormatQuantity {
   protected static final int INFINITY_FLAG = 2;
   protected static final int NAN_FLAG = 4;
 
+  /**
+   * The original number provided by the user and which is represented in BCD. Used when we need to
+   * re-compute the BCD for an exact double representation.
+   */
+  protected double origDouble;
+
+  protected int origDelta;
+  protected boolean isApproximate;
+
   // Four positions: left optional '(', left required '[', right required ']', right optional ')'.
   // These four positions determine which digits are displayed in the output string.  They do NOT
   // affect rounding.  These positions are internal-only and can be specified only by the public
@@ -90,6 +99,9 @@ public abstract class FormatQuantityBCD implements FormatQuantity {
     scale = other.scale;
     precision = other.precision;
     flags = other.flags;
+    origDouble = other.origDouble;
+    origDelta = other.origDelta;
+    isApproximate = other.isApproximate;
   }
 
   public FormatQuantityBCD clear() {
@@ -98,7 +110,7 @@ public abstract class FormatQuantityBCD implements FormatQuantity {
     rReqPos = 0;
     rOptPos = Integer.MIN_VALUE;
     flags = 0;
-    setBcdToZero();
+    setBcdToZero(); // sets scale, precision, hasDouble, origDouble, origDelta, and BCD data
     return this;
   }
 
@@ -145,7 +157,7 @@ public abstract class FormatQuantityBCD implements FormatQuantity {
   @Override
   public void roundToInterval(BigDecimal roundingInterval, MathContext mathContext) {
     // TODO: Avoid converting back and forth to BigDecimal.
-    BigDecimal temp = bcdToBigDecimal();
+    BigDecimal temp = toBigDecimal();
     temp =
         temp.divide(roundingInterval, 0, mathContext.getRoundingMode())
             .multiply(roundingInterval)
@@ -159,8 +171,7 @@ public abstract class FormatQuantityBCD implements FormatQuantity {
 
   @Override
   public void multiplyBy(BigDecimal multiplicand) {
-    // TODO: Perform the multiplication in BCD space.
-    BigDecimal temp = bcdToBigDecimal();
+    BigDecimal temp = toBigDecimal();
     temp = temp.multiply(multiplicand);
     setToBigDecimal(temp);
   }
@@ -177,6 +188,7 @@ public abstract class FormatQuantityBCD implements FormatQuantity {
   @Override
   public void adjustMagnitude(int delta) {
     scale += delta;
+    origDelta += delta;
   }
 
   @Override
@@ -353,23 +365,42 @@ public abstract class FormatQuantityBCD implements FormatQuantity {
       flags |= NAN_FLAG;
     } else if (Double.isInfinite(n)) {
       flags |= INFINITY_FLAG;
-    } else {
-      _setToDouble(n);
+    } else if (n != 0) {
+      _setToDoubleFast(n);
       compact();
     }
   }
 
-  private void _setToDouble(double n) {
+  /**
+   * Uses double multiplication and division to get the number into integer space before converting
+   * to digits. Since double arithmetic is inexact, the resulting digits may not be accurate.
+   */
+  private void _setToDoubleFast(double n) {
     long ieeeBits = Double.doubleToLongBits(n);
     int exponent = (int) ((ieeeBits & 0x7ff0000000000000L) >> 52) - 0x3ff;
+
+    // Not all integers can be represented exactly for exponent > 52
+    if (exponent <= 52 && (long)n == n) {
+      _setToLong((long) n);
+      return;
+    }
+
+    isApproximate = true;
+    origDouble = n;
+    origDelta = 0;
+
     int fracLength = (int) ((52 - exponent) / 3.32192809489);
     if (fracLength >= 0) {
       int i = fracLength;
+      // 1e22 is the largest exact double.
+      for (; i >= 22; i -= 22) n *= 1e22;
       for (; i >= 9; i -= 9) n *= 1000000000;
       for (; i >= 3; i -= 3) n *= 1000;
       for (; i >= 1; i -= 1) n *= 10;
     } else {
       int i = fracLength;
+      // 1e22 is the largest exact double.
+      for (; i <= -22; i += 22) n /= 1e22;
       for (; i <= -9; i += 9) n /= 1000000000;
       for (; i <= -3; i += 3) n /= 1000;
       for (; i <= -1; i += 1) n /= 10;
@@ -377,6 +408,53 @@ public abstract class FormatQuantityBCD implements FormatQuantity {
     _setToLong(Math.round(n));
     scale -= fracLength;
   }
+
+  /** Uses Double.toString() to obtain an exact accurate representation of the double. */
+  private void convertToAccurateDouble() {
+    double n = origDouble;
+    assert n != 0;
+    int delta = origDelta;
+    setBcdToZero();
+
+    // Call the slow oracle function
+    String temp = Double.toString(n);
+
+    if (temp.indexOf('E') != -1) {
+      // Case 1: Exponential notation.
+      assert temp.indexOf('.') == 1;
+      int expPos = temp.indexOf('E');
+      _setToLong(Long.parseLong(temp.charAt(0) + temp.substring(2, expPos)));
+      scale += Integer.parseInt(temp.substring(expPos + 1)) - (expPos - 1) + 1;
+    } else if (temp.charAt(0) == '0') {
+      // Case 2: Fraction-only number.
+      assert temp.indexOf('.') == 1;
+      _setToLong(Long.parseLong(temp.substring(2)));
+      scale += 2 - temp.length();
+    } else if (temp.charAt(temp.length() - 1) == '0') {
+      // Case 3: Integer-only number.
+      assert temp.indexOf('.') == temp.length() - 2;
+      assert temp.length() - 2 <= 18;
+      _setToLong(Long.parseLong(temp.substring(0, temp.length() - 2)));
+      // no need to adjust scale
+    } else {
+      // Case 4: Number with both a fraction and an integer.
+      int decimalPos = temp.indexOf('.');
+      _setToLong(Long.parseLong(temp.substring(0, decimalPos) + temp.substring(decimalPos + 1)));
+      scale += decimalPos - temp.length() + 1;
+    }
+    scale += delta;
+    compact();
+    explicitExactDouble = true;
+  }
+
+  /**
+   * Whether this {@link FormatQuantity4} has been explicitly converted to an exact double. true if
+   * backed by a double that was explicitly converted via convertToAccurateDouble; false otherwise.
+   *
+   * @internal
+   * @deprecated This API is ICU internal only.
+   */
+  @Deprecated public boolean explicitExactDouble = false;
 
   /**
    * Sets the internal BCD state to represent the value in the given BigDecimal.
@@ -443,8 +521,18 @@ public abstract class FormatQuantityBCD implements FormatQuantity {
    */
   @Override
   public double toDouble() {
+    if (isApproximate) {
+      return toDoubleFromOriginal();
+    }
+
+    if (isNaN()) {
+      return Double.NaN;
+    } else if (isInfinite()) {
+      return isNegative() ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY;
+    }
+
     long tempLong = 0L;
-    int lostDigits = precision - Math.min(precision, 15);
+    int lostDigits = precision - Math.min(precision, 17);
     for (int shift = precision - 1; shift >= lostDigits; shift--) {
       tempLong = tempLong * 10 + getDigitPos(shift);
     }
@@ -467,7 +555,27 @@ public abstract class FormatQuantityBCD implements FormatQuantity {
 
   @Override
   public BigDecimal toBigDecimal() {
+    if (isApproximate) {
+      // Converting to a BigDecimal requires Double.toString().
+      convertToAccurateDouble();
+    }
     return bcdToBigDecimal();
+  }
+
+  protected double toDoubleFromOriginal() {
+    double result = origDouble;
+    double delta = origDelta;
+    if (delta >= 0) {
+      for (; delta >= 9; delta -= 9) result *= 1000000000;
+      for (; delta >= 3; delta -= 3) result *= 1000;
+      for (; delta >= 1; delta -= 1) result *= 10;
+    } else {
+      for (; delta <= -9; delta += 9) result /= 1000000000;
+      for (; delta <= -3; delta += 3) result /= 1000;
+      for (; delta <= -1; delta += 1) result /= 10;
+    }
+    if (isNegative()) result *= -1;
+    return result;
   }
 
   @Override
@@ -478,11 +586,12 @@ public abstract class FormatQuantityBCD implements FormatQuantity {
 
     // Enforce the number of digits required by the MathContext.
     int _mcPrecision = mathContext.getPrecision();
-    if (_mcPrecision > 0 && precision - position > _mcPrecision) {
+    if (magnitude == Integer.MAX_VALUE
+        || (_mcPrecision > 0 && precision - position > _mcPrecision)) {
       position = precision - _mcPrecision;
     }
 
-    if (position <= 0) {
+    if (position <= 0 && !isApproximate) {
       // All digits are to the left of the rounding magnitude.
     } else if (precision == 0) {
       // No rounding for zero.
@@ -493,19 +602,89 @@ public abstract class FormatQuantityBCD implements FormatQuantity {
       byte leadingDigit = getDigitPos(position - 1);
       byte trailingDigit = getDigitPos(position);
 
-      // Compute which section (lower, half, or upper) of the number we are in
+      // Compute which section of the number we are in.
+      // EDGE means we are at the bottom or top edge, like 1.000 or 1.999 (used by doubles)
+      // LOWER means we are between the bottom edge and the midpoint, like 1.391
+      // MIDPOINT means we are exactly in the middle, like 1.500
+      // UPPER means we are between the midpoint and the top edge, like 1.916
       int section = RoundingUtils.SECTION_MIDPOINT;
-      if (leadingDigit < 5) {
-        section = RoundingUtils.SECTION_LOWER;
-      } else if (leadingDigit > 5) {
-        section = RoundingUtils.SECTION_UPPER;
-      } else {
-        for (int p = position - 2; p >= 0; p--) {
-          if (getDigitPos(p) != 0) {
-            section = RoundingUtils.SECTION_UPPER;
-            break;
+      if (!isApproximate) {
+        if (leadingDigit < 5) {
+          section = RoundingUtils.SECTION_LOWER;
+        } else if (leadingDigit > 5) {
+          section = RoundingUtils.SECTION_UPPER;
+        } else {
+          for (int p = position - 2; p >= 0; p--) {
+            if (getDigitPos(p) != 0) {
+              section = RoundingUtils.SECTION_UPPER;
+              break;
+            }
           }
         }
+      } else {
+        int p = position - 2;
+        int minP = Math.max(0, precision - 14);
+        if (leadingDigit == 0) {
+          section = -1;
+          for (; p >= minP; p--) {
+            if (getDigitPos(p) != 0) {
+              section = RoundingUtils.SECTION_LOWER;
+              break;
+            }
+          }
+        } else if (leadingDigit == 4) {
+          for (; p >= minP; p--) {
+            if (getDigitPos(p) != 9) {
+              section = RoundingUtils.SECTION_LOWER;
+              break;
+            }
+          }
+        } else if (leadingDigit == 5) {
+          for (; p >= minP; p--) {
+            if (getDigitPos(p) != 0) {
+              section = RoundingUtils.SECTION_UPPER;
+              break;
+            }
+          }
+        } else if (leadingDigit == 9) {
+          section = -2;
+          for (; p >= minP; p--) {
+            if (getDigitPos(p) != 9) {
+              section = RoundingUtils.SECTION_UPPER;
+              break;
+            }
+          }
+        } else if (leadingDigit < 5) {
+          section = RoundingUtils.SECTION_LOWER;
+        } else {
+          section = RoundingUtils.SECTION_UPPER;
+        }
+
+        boolean roundsAtMidpoint =
+            RoundingUtils.roundsAtMidpoint(mathContext.getRoundingMode().ordinal());
+        if (position - 1 < precision - 14
+            || (roundsAtMidpoint && section == RoundingUtils.SECTION_MIDPOINT)
+            || (!roundsAtMidpoint && section < 0 /* i.e. at upper or lower edge */)) {
+          // Oops! This means that we have to get the exact representation of the double, because
+          // the zone of uncertainty is along the rounding boundary.
+          convertToAccurateDouble();
+          roundToMagnitude(magnitude, mathContext); // start over
+          return;
+        }
+
+        // Turn off the approximate double flag, since the value is now confirmed to be exact.
+        isApproximate = false;
+        origDouble = 0.0;
+        origDelta = 0;
+
+        if (position <= 0) {
+          // All digits are to the left of the rounding magnitude.
+          return;
+        }
+
+        // Good to continue rounding.
+        if (section == -1) section = RoundingUtils.SECTION_LOWER;
+        if (section == -2) section = RoundingUtils.SECTION_UPPER;
       }
 
       boolean roundDown =
@@ -540,6 +719,13 @@ public abstract class FormatQuantityBCD implements FormatQuantity {
       }
 
       compact();
+    }
+  }
+
+  @Override
+  public void roundToInfinity() {
+    if (isApproximate) {
+      convertToAccurateDouble();
     }
   }
 
@@ -621,6 +807,10 @@ public abstract class FormatQuantityBCD implements FormatQuantity {
 
   protected abstract void shiftRight(int numDigits);
 
+  /**
+   * Sets the internal representation to zero. Clears any values stored in scale, precision,
+   * hasDouble, origDouble, origDelta, and BCD data.
+   */
   protected abstract void setBcdToZero();
 
   /**

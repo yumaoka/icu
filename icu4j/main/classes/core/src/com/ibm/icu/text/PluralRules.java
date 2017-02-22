@@ -418,10 +418,15 @@ public class PluralRules implements Serializable {
      */
     @Deprecated
     public static enum Operand {
+        /** The double value of the entire number. */
         n,
+        /** The integer value, with the fraction digits truncated off. */
         i,
+        /** All visible fraction digits as an integer, including trailing zeros. */
         f,
+        /** Visible fraction digits, not including trailing zeros. */
         t,
+        /** Number of visible fraction digits. */
         v,
         w,
         /* deprecated */

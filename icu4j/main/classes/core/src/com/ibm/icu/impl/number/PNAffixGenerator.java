@@ -2,11 +2,11 @@
 // License & terms of use: http://www.unicode.org/copyright.html#License
 package com.ibm.icu.impl.number;
 
-import java.text.ParseException;
-
+import com.ibm.icu.impl.number.Modifier.AffixModifier;
 import com.ibm.icu.impl.number.formatters.CompactDecimalFormat;
 import com.ibm.icu.impl.number.formatters.PositiveNegativeAffixFormat;
 import com.ibm.icu.impl.number.formatters.PositiveNegativeAffixFormat.IProperties;
+import com.ibm.icu.impl.number.modifiers.ConstantAffixModifier;
 import com.ibm.icu.impl.number.modifiers.ConstantMultiFieldModifier;
 import com.ibm.icu.text.DecimalFormatSymbols;
 import com.ibm.icu.text.NumberFormat.Field;
@@ -28,8 +28,8 @@ import com.ibm.icu.text.NumberFormat.Field;
  */
 public class PNAffixGenerator {
   public static class Result {
-    public ConstantMultiFieldModifier positive = null;
-    public ConstantMultiFieldModifier negative = null;
+    public AffixModifier positive = null;
+    public AffixModifier negative = null;
   }
 
   protected static final ThreadLocal<PNAffixGenerator> threadLocalInstance =
@@ -59,11 +59,9 @@ public class PNAffixGenerator {
    * @param symbols The symbols to interpolate for minus, plus, percent, permille, and currency.
    * @param properties The bag of properties to convert.
    * @return The positive and negative {@link Modifier}.
-   * @throws ParseException
    */
   public Result getModifiers(
-      DecimalFormatSymbols symbols, PositiveNegativeAffixFormat.IProperties properties)
-      throws ParseException {
+      DecimalFormatSymbols symbols, PositiveNegativeAffixFormat.IProperties properties) {
     // If this method is used, the user doesn't care about currencies. Default the currency symbols
     // to the information we can get from the DecimalFormatSymbols instance.
     return getModifiers(
@@ -82,13 +80,11 @@ public class PNAffixGenerator {
    * @param currencySymbol The currency symbol.
    * @param properties The bag of properties to convert.
    * @return The positive and negative {@link Modifier}.
-   * @throws ParseException
    */
   public Result getModifiers(
       DecimalFormatSymbols symbols,
       String currencySymbol,
-      PositiveNegativeAffixFormat.IProperties properties)
-      throws ParseException {
+      PositiveNegativeAffixFormat.IProperties properties) {
     // If this method is used, the user doesn't cares about currencies but doesn't care about
     // supporting all three sizes of currency placeholders.  Use the one provided string for all
     // three sizes of placeholders.
@@ -105,15 +101,13 @@ public class PNAffixGenerator {
    * @param curr3 The string to replace "¤¤¤".
    * @param properties The bag of properties to convert.
    * @return The positive and negative {@link Modifier}.
-   * @throws ParseException
    */
   public Result getModifiers(
       DecimalFormatSymbols symbols,
       String curr1,
       String curr2,
       String curr3,
-      PositiveNegativeAffixFormat.IProperties properties)
-      throws ParseException {
+      PositiveNegativeAffixFormat.IProperties properties) {
 
     // Use a different code path for handling affixes with "always show plus sign"
     if (properties.getAlwaysShowPlusSign()) {
@@ -153,8 +147,7 @@ public class PNAffixGenerator {
       String curr1,
       String curr2,
       String curr3,
-      IProperties properties)
-      throws ParseException {
+      IProperties properties) {
 
     CharSequence ppp = properties.getPositivePrefixPattern();
     CharSequence psp = properties.getPositiveSuffixPattern();
@@ -182,8 +175,10 @@ public class PNAffixGenerator {
       sb4.clear();
       AffixPatternUtils.unescape(npp, symbols, curr1, curr2, curr3, null, sb1);
       AffixPatternUtils.unescape(nsp, symbols, curr1, curr2, curr3, null, sb2);
-      AffixPatternUtils.unescape(npp, symbols, curr1, curr2, curr3, symbols.getPlusSignString(), sb3);
-      AffixPatternUtils.unescape(nsp, symbols, curr1, curr2, curr3, symbols.getPlusSignString(), sb4);
+      AffixPatternUtils.unescape(
+          npp, symbols, curr1, curr2, curr3, symbols.getPlusSignString(), sb3);
+      AffixPatternUtils.unescape(
+          nsp, symbols, curr1, curr2, curr3, symbols.getPlusSignString(), sb4);
       if (!charSequenceEquals(sb1, sb3) || !charSequenceEquals(sb2, sb4)) {
         // Case 3. The plus sign substitution was successful.
         setPositiveResult(sb3, sb4, properties);
@@ -218,38 +213,72 @@ public class PNAffixGenerator {
 
   private void setPositiveResult(
       NumberStringBuilder prefix, NumberStringBuilder suffix, IProperties properties) {
-    // Perform overrides.
-    if (properties.getPositivePrefix() != null)
-      prefix.clear().append(properties.getPositivePrefix(), null);
-    if (properties.getPositiveSuffix() != null)
-      suffix.clear().append(properties.getPositiveSuffix(), null);
-
-    // Construct the modifier.
-    if (prefix.length() == 0 && suffix.length() == 0) {
-      resultInstance.positive = ConstantMultiFieldModifier.EMPTY;
-    } else if (resultInstance.positive != null
-        && resultInstance.positive.contentEquals(prefix, suffix)) {
-      // Use the cached modifier
+    if (properties.getPositivePrefix() != null || properties.getPositiveSuffix() != null) {
+      // Override with custom affixes
+      CharSequence _prefix = properties.getPositivePrefix();
+      CharSequence _suffix = properties.getPositiveSuffix();
+      if (_prefix == null) _prefix = "";
+      if (_suffix == null) _suffix = "";
+      if (_prefix.length() == 0 && _suffix.length() == 0) {
+        resultInstance.positive = ConstantAffixModifier.EMPTY;
+        return;
+      }
+      if (resultInstance.positive != null
+          && (resultInstance.positive instanceof ConstantAffixModifier)
+          && ((ConstantAffixModifier) resultInstance.positive).contentEquals(_prefix, _suffix)) {
+        // Use the cached modifier
+        return;
+      }
+      resultInstance.positive =
+          new ConstantAffixModifier(_prefix.toString(), _suffix.toString(), null, false);
     } else {
+      // Use pattern affixes
+      if (prefix.length() == 0 && suffix.length() == 0) {
+        resultInstance.positive = ConstantAffixModifier.EMPTY;
+        return;
+      }
+      if (resultInstance.positive != null
+          && (resultInstance.positive instanceof ConstantMultiFieldModifier)
+          && ((ConstantMultiFieldModifier) resultInstance.positive).contentEquals(prefix, suffix)) {
+        // Use the cached modifier
+        return;
+      }
       resultInstance.positive = new ConstantMultiFieldModifier(prefix, suffix, false);
     }
   }
 
   private void setNegativeResult(
       NumberStringBuilder prefix, NumberStringBuilder suffix, IProperties properties) {
-    // Perform overrides.
-    if (properties.getNegativePrefix() != null)
-      prefix.clear().append(properties.getNegativePrefix(), null);
-    if (properties.getNegativeSuffix() != null)
-      suffix.clear().append(properties.getNegativeSuffix(), null);
-
-    // Construct the modifier.
-    if (prefix.length() == 0 && suffix.length() == 0) {
-      resultInstance.negative = ConstantMultiFieldModifier.EMPTY;
-    } else if (resultInstance.negative != null
-        && resultInstance.negative.contentEquals(prefix, suffix)) {
-      // Use the cached modifier
+    if (properties.getNegativePrefix() != null || properties.getNegativeSuffix() != null) {
+      // Override with custom affixes
+      CharSequence _prefix = properties.getNegativePrefix();
+      CharSequence _suffix = properties.getNegativeSuffix();
+      if (_prefix == null) _prefix = "";
+      if (_suffix == null) _suffix = "";
+      if (_prefix.length() == 0 && _suffix.length() == 0) {
+        resultInstance.negative = ConstantAffixModifier.EMPTY;
+        return;
+      }
+      if (resultInstance.negative != null
+          && (resultInstance.negative instanceof ConstantAffixModifier)
+          && ((ConstantAffixModifier) resultInstance.negative).contentEquals(_prefix, _suffix)) {
+        // Use the cached modifier
+        return;
+      }
+      resultInstance.negative =
+          new ConstantAffixModifier(_prefix.toString(), _suffix.toString(), null, false);
     } else {
+      // Use pattern affixes
+      if (prefix.length() == 0 && suffix.length() == 0) {
+        resultInstance.negative = ConstantAffixModifier.EMPTY;
+        return;
+      }
+      if (resultInstance.negative != null
+          && (resultInstance.negative instanceof ConstantMultiFieldModifier)
+          && ((ConstantMultiFieldModifier) resultInstance.negative).contentEquals(prefix, suffix)) {
+        // Use the cached modifier
+        return;
+      }
       resultInstance.negative = new ConstantMultiFieldModifier(prefix, suffix, false);
     }
   }

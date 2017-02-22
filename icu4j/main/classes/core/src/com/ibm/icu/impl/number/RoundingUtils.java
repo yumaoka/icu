@@ -9,9 +9,9 @@ import com.ibm.icu.math.MathContext;
 /** @author sffc */
 public class RoundingUtils {
 
-  public static final int SECTION_LOWER = 0;
-  public static final int SECTION_MIDPOINT = 1;
-  public static final int SECTION_UPPER = 2;
+  public static final int SECTION_LOWER = 1;
+  public static final int SECTION_MIDPOINT = 2;
+  public static final int SECTION_UPPER = 3;
 
   /**
    * Converts a rounding mode and metadata about the quantity being rounded to a boolean determining
@@ -36,15 +36,19 @@ public class RoundingUtils {
       boolean isEven, boolean isNegative, int section, int roundingMode, Object reference) {
     switch (roundingMode) {
       case MathContext.ROUND_UP:
+        // round away from zero
         return false;
 
       case MathContext.ROUND_DOWN:
+        // round toward zero
         return true;
 
       case MathContext.ROUND_CEILING:
+        // round toward positive infinity
         return isNegative;
 
       case MathContext.ROUND_FLOOR:
+        // round toward negative infinity
         return !isNegative;
 
       case MathContext.ROUND_HALF_UP:
@@ -83,5 +87,18 @@ public class RoundingUtils {
 
     // Rounding mode UNNECESSARY
     throw new ArithmeticException("Rounding is required on " + reference.toString());
+  }
+
+  public static boolean roundsAtMidpoint(int roundingMode) {
+    switch (roundingMode) {
+      case MathContext.ROUND_UP:
+      case MathContext.ROUND_DOWN:
+      case MathContext.ROUND_CEILING:
+      case MathContext.ROUND_FLOOR:
+        return false;
+
+      default:
+        return true;
+    }
   }
 }

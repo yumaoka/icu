@@ -2,7 +2,6 @@
 // License & terms of use: http://www.unicode.org/copyright.html#License
 package com.ibm.icu.impl.number;
 
-import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -46,38 +45,35 @@ public class Endpoint {
   //    return format;
   //  }
 
-  public static Format fromBTA(Properties properties) throws ParseException {
+  public static Format fromBTA(Properties properties) {
     return fromBTA(properties, getSymbols());
   }
 
-  public static SingularFormat fromBTA(Properties properties, Locale locale) throws ParseException {
+  public static SingularFormat fromBTA(Properties properties, Locale locale) {
     return fromBTA(properties, getSymbols(locale));
   }
 
-  public static SingularFormat fromBTA(Properties properties, ULocale uLocale)
-      throws ParseException {
+  public static SingularFormat fromBTA(Properties properties, ULocale uLocale) {
     return fromBTA(properties, getSymbols(uLocale));
   }
 
-  public static SingularFormat fromBTA(String pattern) throws ParseException {
+  public static SingularFormat fromBTA(String pattern) {
     return fromBTA(getProperties(pattern), getSymbols());
   }
 
-  public static SingularFormat fromBTA(String pattern, Locale locale) throws ParseException {
+  public static SingularFormat fromBTA(String pattern, Locale locale) {
     return fromBTA(getProperties(pattern), getSymbols(locale));
   }
 
-  public static SingularFormat fromBTA(String pattern, ULocale uLocale) throws ParseException {
+  public static SingularFormat fromBTA(String pattern, ULocale uLocale) {
     return fromBTA(getProperties(pattern), getSymbols(uLocale));
   }
 
-  public static SingularFormat fromBTA(String pattern, DecimalFormatSymbols symbols)
-      throws ParseException {
+  public static SingularFormat fromBTA(String pattern, DecimalFormatSymbols symbols) {
     return fromBTA(getProperties(pattern), symbols);
   }
 
-  public static SingularFormat fromBTA(Properties properties, DecimalFormatSymbols symbols)
-      throws ParseException {
+  public static SingularFormat fromBTA(Properties properties, DecimalFormatSymbols symbols) {
 
     if (symbols == null) throw new IllegalArgumentException("symbols must not be null");
 
@@ -141,43 +137,37 @@ public class Endpoint {
     }
   }
 
-  public static String staticFormat(FormatQuantity input, Properties properties)
-      throws ParseException {
+  public static String staticFormat(FormatQuantity input, Properties properties) {
     return staticFormat(input, properties, getSymbols());
   }
 
-  public static String staticFormat(FormatQuantity input, Properties properties, Locale locale)
-      throws ParseException {
+  public static String staticFormat(FormatQuantity input, Properties properties, Locale locale) {
     return staticFormat(input, properties, getSymbols(locale));
   }
 
-  public static String staticFormat(FormatQuantity input, Properties properties, ULocale uLocale)
-      throws ParseException {
+  public static String staticFormat(FormatQuantity input, Properties properties, ULocale uLocale) {
     return staticFormat(input, properties, getSymbols(uLocale));
   }
 
-  public static String staticFormat(FormatQuantity input, String pattern) throws ParseException {
+  public static String staticFormat(FormatQuantity input, String pattern) {
     return staticFormat(input, getProperties(pattern), getSymbols());
   }
 
-  public static String staticFormat(FormatQuantity input, String pattern, Locale locale)
-      throws ParseException {
+  public static String staticFormat(FormatQuantity input, String pattern, Locale locale) {
     return staticFormat(input, getProperties(pattern), getSymbols(locale));
   }
 
-  public static String staticFormat(FormatQuantity input, String pattern, ULocale uLocale)
-      throws ParseException {
+  public static String staticFormat(FormatQuantity input, String pattern, ULocale uLocale) {
     return staticFormat(input, getProperties(pattern), getSymbols(uLocale));
   }
 
   public static String staticFormat(
-      FormatQuantity input, String pattern, DecimalFormatSymbols symbols) throws ParseException {
+      FormatQuantity input, String pattern, DecimalFormatSymbols symbols) {
     return staticFormat(input, getProperties(pattern), symbols);
   }
 
   public static String staticFormat(
-      FormatQuantity input, Properties properties, DecimalFormatSymbols symbols)
-      throws ParseException {
+      FormatQuantity input, Properties properties, DecimalFormatSymbols symbols) {
     PluralRules rules = null;
     ModifierHolder mods = Format.threadLocalModifierHolder.get().clear();
     NumberStringBuilder sb = Format.threadLocalStringBuilder.get().clear();
@@ -261,7 +251,7 @@ public class Endpoint {
         }
       };
 
-  private static Properties getProperties(String pattern) throws ParseException {
+  private static Properties getProperties(String pattern) {
     if (pattern == null) pattern = "#";
     Properties properties = threadLocalPropertiesCache.get().get(pattern);
     if (properties == null) {

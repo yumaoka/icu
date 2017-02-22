@@ -11,6 +11,9 @@ import com.ibm.icu.text.NumberFormat.Field;
 /** The canonical implementation of {@link Modifier}, containing a prefix and suffix string. */
 public class ConstantAffixModifier extends Modifier.BaseModifier implements AffixModifier {
 
+  // TODO: Avoid making a new instance by default if prefix and suffix are empty
+  public static final AffixModifier EMPTY = new ConstantAffixModifier();
+
   private final String prefix;
   private final String suffix;
   private final Field field;
@@ -30,10 +33,18 @@ public class ConstantAffixModifier extends Modifier.BaseModifier implements Affi
    */
   public ConstantAffixModifier(String prefix, String suffix, Field field, boolean strong) {
     // Use an empty string instead of null if we are given null
+    // TODO: Consider returning a null modifier if both prefix and suffix are empty.
     this.prefix = (prefix == null ? "" : prefix);
     this.suffix = (suffix == null ? "" : suffix);
     this.field = field;
     this.strong = strong;
+  }
+
+  private ConstantAffixModifier() {
+    prefix = "";
+    suffix = "";
+    field = null;
+    strong = false;
   }
 
   @Override
@@ -62,6 +73,20 @@ public class ConstantAffixModifier extends Modifier.BaseModifier implements Affi
   @Override
   public String getSuffix() {
     return suffix;
+  }
+
+  public boolean contentEquals(CharSequence _prefix, CharSequence _suffix) {
+    if (_prefix == null && !prefix.isEmpty()) return false;
+    if (_suffix == null && !suffix.isEmpty()) return false;
+    if (prefix.length() != _prefix.length()) return false;
+    if (suffix.length() != _suffix.length()) return false;
+    for (int i = 0; i < prefix.length(); i++) {
+      if (prefix.charAt(i) != _prefix.charAt(i)) return false;
+    }
+    for (int i = 0; i < suffix.length(); i++) {
+      if (suffix.charAt(i) != _suffix.charAt(i)) return false;
+    }
+    return true;
   }
 
   @Override

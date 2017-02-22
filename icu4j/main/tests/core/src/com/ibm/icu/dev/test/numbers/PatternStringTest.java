@@ -3,10 +3,12 @@
 package com.ibm.icu.dev.test.numbers;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import org.junit.Test;
 
 import com.ibm.icu.impl.number.PatternString;
+import com.ibm.icu.impl.number.Properties;
 import com.ibm.icu.text.DecimalFormatSymbols;
 import com.ibm.icu.util.ULocale;
 
@@ -24,5 +26,76 @@ public class PatternStringTest {
 
     assertEquals(localized, PatternString.convertLocalized(standard, symbols, true));
     assertEquals(standard, PatternString.convertLocalized(localized, symbols, false));
+  }
+
+  @Test
+  public void testToPatternSimple() {
+    String[][] cases = {
+      {"#", "#"},
+      {"0", "0"},
+      {"#0", "0"},
+      {"###", "#"},
+      {"0.##", "0.##"},
+      {"0.00", "0.00"},
+      {"0.00#", "0.00#"},
+      {"#E0", "#E0"},
+      {"0E0", "0E0"},
+      {"#00E00", "#00E00"},
+      {"#,##0", "#,##0"},
+      {"#,##0E0", "#,##0E0"},
+      {"#;#", "#;#"},
+      {"#;-#", "#"}, // ignore a negative prefix pattern of '-' since that is the default
+    };
+
+    for (String[] cas : cases) {
+      String input = cas[0];
+      String output = cas[1];
+
+      Properties properties = PatternString.parseToProperties(input);
+      String actual = PatternString.propertiesToString(properties);
+      assertEquals(
+          "Failed on input pattern '" + input + "', properties " + properties, output, actual);
+    }
+  }
+
+  @Test
+  public void testToPatternWithProperties() {
+    Object[][] cases = {
+      {new Properties().setPositivePrefix("abc"), "'abc'#"},
+      {new Properties().setPositiveSuffix("abc"), "#'abc'"},
+      {new Properties().setPositivePrefixPattern("abc"), "abc#"},
+      {new Properties().setPositiveSuffixPattern("abc"), "#abc"},
+      {new Properties().setNegativePrefix("abc"), "#;'abc'#"},
+      {new Properties().setNegativeSuffix("abc"), "#;#'abc'"},
+      {new Properties().setNegativePrefixPattern("abc"), "#;abc#"},
+      {new Properties().setNegativeSuffixPattern("abc"), "#;#abc"},
+      {new Properties().setPositivePrefix("+"), "'+'#"},
+      {new Properties().setPositivePrefixPattern("+"), "+#"},
+      {new Properties().setPositivePrefix("+'"), "'+'''#"},
+      {new Properties().setPositivePrefix("'+"), "'''+'#"},
+      {new Properties().setPositivePrefix("'"), "''#"},
+      {new Properties().setPositivePrefixPattern("+''"), "+''#"},
+    };
+
+    for (Object[] cas : cases) {
+      Properties input = (Properties) cas[0];
+      String output = (String) cas[1];
+
+      String actual = PatternString.propertiesToString(input);
+      assertEquals("Failed on input properties " + input, output, actual);
+    }
+  }
+
+  @Test
+  public void testExceptionOnInvalid() {
+    String[] invalidPatterns = {"#.#.#", "0#", "0#.", ".#0", "0#.#0", "@0", "0@"};
+
+    for (String pattern : invalidPatterns) {
+      try {
+        PatternString.parseToProperties(pattern);
+        fail("Didn't throw IllegalArgumentException when parsing pattern: " + pattern);
+      } catch (IllegalArgumentException e) {
+      }
+    }
   }
 }

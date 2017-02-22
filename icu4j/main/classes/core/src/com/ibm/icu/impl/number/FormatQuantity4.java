@@ -129,6 +129,9 @@ public final class FormatQuantity4 extends FormatQuantityBCD {
     bcdLong = 0L;
     scale = 0;
     precision = 0;
+    isApproximate = false;
+    origDouble = 0;
+    origDelta = 0;
   }
 
   @Override
@@ -345,11 +348,12 @@ public final class FormatQuantity4 extends FormatQuantityBCD {
         if (getDigitPos(i) != 0) return "Nonzero digits outside of range in long";
       }
     }
+
     return null;
   }
 
   /**
-   * Checks whether this FormatQuantity4 is using its internal byte array storage mechanism.
+   * Checks whether this {@link FormatQuantity4} is using its internal byte array storage mechanism.
    *
    * @return true if an internal byte array is being used; false if a long is being used.
    * @internal
@@ -376,7 +380,7 @@ public final class FormatQuantity4 extends FormatQuantityBCD {
         lReqPos,
         rReqPos,
         (rOptPos < -1000 ? "min" : String.valueOf(rOptPos)),
-        (bcdLong < 0 ? "bytes" : "long"),
+        (usingBytes ? "bytes" : "long"),
         sb,
         "E",
         scale);

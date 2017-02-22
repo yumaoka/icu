@@ -48,16 +48,9 @@ public class ShanesDataDrivenTester extends CodeUnderTest {
   public String format(DataDrivenNumberFormatTestData tuple) {
     String pattern = (tuple.pattern == null) ? "0" : tuple.pattern;
     ULocale locale = (tuple.locale == null) ? ULocale.ENGLISH : tuple.locale;
-    Format fmt;
-    try {
-      Properties properties = PatternString.parseToProperties(pattern);
-      propertiesFromTuple(tuple, properties);
-      //      System.out.println(properties);
-      fmt = Endpoint.fromBTA(properties, locale);
-    } catch (ParseException e) {
-      e.printStackTrace();
-      return e.getLocalizedMessage();
-    }
+    Properties properties = PatternString.parseToProperties(pattern);
+    propertiesFromTuple(tuple, properties);
+    Format fmt = Endpoint.fromBTA(properties, locale);
     FormatQuantity q1, q2, q3;
     if (tuple.format.equals("NaN")) {
       q1 = q2 = new FormatQuantity1(Double.NaN);
@@ -162,6 +155,18 @@ public class ShanesDataDrivenTester extends CodeUnderTest {
     if (tuple.output.equals("NaN")) {
       if (!Double.isNaN(actual.doubleValue())) {
         return "Expected NaN, but got: " + actual;
+      }
+      return null;
+    } else if (tuple.output.equals("Inf")) {
+      if (!Double.isInfinite(actual.doubleValue())
+          || Double.compare(actual.doubleValue(), 0.0) < 0) {
+        return "Expected Inf, but got: " + actual;
+      }
+      return null;
+    } else if (tuple.output.equals("-Inf")) {
+      if (!Double.isInfinite(actual.doubleValue())
+          || Double.compare(actual.doubleValue(), 0.0) > 0) {
+        return "Expected -Inf, but got: " + actual;
       }
       return null;
     } else if (tuple.output.equals("fail")) {

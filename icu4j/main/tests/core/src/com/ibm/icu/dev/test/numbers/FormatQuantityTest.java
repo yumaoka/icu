@@ -8,6 +8,7 @@ import java.math.RoundingMode;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 import org.junit.Test;
 
@@ -72,50 +73,69 @@ public class FormatQuantityTest extends TestFmwk {
     };
 
     String[] hardCases = {
-      //      "512.0000000000017",
-      //      "4096.000000000001",
-      //      "4096.000000000004",
-      //      "4096.000000000005",
-      //      "4096.000000000006",
-      //      "4096.000000000007",
-      //      "9999999999999999.0",
       "9999999999999900.0",
       "789000000000000000000000.0",
       "789123123567853156372158.0",
       "987654321987654321987654321987654321987654311987654321.0",
     };
 
+    String[] doubleCases = {
+      "512.0000000000017",
+      "4095.9999999999977",
+      "4095.999999999998",
+      "4095.9999999999986",
+      "4095.999999999999",
+      "4095.9999999999995",
+      "4096.000000000001",
+      "4096.000000000002",
+      "4096.000000000003",
+      "4096.000000000004",
+      "4096.000000000005",
+      "4096.0000000000055",
+      "4096.000000000006",
+      "4096.000000000007",
+    };
+
     int i = 0;
     for (String str : cases) {
-      testFormatQuantity(i++, str, formats, false);
+      testFormatQuantity(i++, str, formats, 0);
     }
 
     i = 0;
     for (String str : hardCases) {
-      testFormatQuantity(i++, str, formats, true);
+      testFormatQuantity(i++, str, formats, 1);
+    }
+
+    i = 0;
+    for (String str : doubleCases) {
+      testFormatQuantity(i++, str, formats, 2);
     }
   }
 
-  static void testFormatQuantity(int t, String str, List<Format> formats, boolean bigOnly) {
+  static void testFormatQuantity(int t, String str, List<Format> formats, int mode) {
+    if (mode == 2) {
+      assertEquals("Double is not valid", Double.toString(Double.parseDouble(str)), str);
+    }
+
     List<FormatQuantity> qs = new ArrayList<>();
     BigDecimal d = new BigDecimal(str);
     qs.add(new FormatQuantity1(d));
-    if (!bigOnly) qs.add(new FormatQuantity2(d));
+    if (mode == 0) qs.add(new FormatQuantity2(d));
     qs.add(new FormatQuantity3(d));
     qs.add(new FormatQuantity4(d));
 
-    if (new BigDecimal(Double.toString(d.doubleValue())).equals(d)) {
+    if (new BigDecimal(Double.toString(d.doubleValue())).compareTo(d) == 0) {
       double dv = d.doubleValue();
       qs.add(new FormatQuantity1(dv));
-      if (!bigOnly) qs.add(new FormatQuantity2(dv));
+      if (mode == 0) qs.add(new FormatQuantity2(dv));
       qs.add(new FormatQuantity3(dv));
       qs.add(new FormatQuantity4(dv));
     }
 
-    if (new BigDecimal(Long.toString(d.longValue())).setScale(1).equals(d)) {
+    if (new BigDecimal(Long.toString(d.longValue())).compareTo(d) == 0) {
       double lv = d.longValue();
       qs.add(new FormatQuantity1(lv));
-      if (!bigOnly) qs.add(new FormatQuantity2(lv));
+      if (mode == 0) qs.add(new FormatQuantity2(lv));
       qs.add(new FormatQuantity3(lv));
       qs.add(new FormatQuantity4(lv));
     }
@@ -140,6 +160,8 @@ public class FormatQuantityTest extends TestFmwk {
   private static void testFormatQuantityExpectedOutput(FormatQuantity rq, String expected) {
     StringBuilder sb = new StringBuilder();
     FormatQuantity q0 = rq.clone();
+    // Force an accurate double
+    q0.roundToInfinity();
     q0.setIntegerFractionLength(1, Integer.MAX_VALUE, 1, Integer.MAX_VALUE);
     for (int m = q0.getUpperDisplayMagnitude(); m >= q0.getLowerDisplayMagnitude(); m--) {
       sb.append(q0.getDigit(m));
@@ -318,6 +340,122 @@ public class FormatQuantityTest extends TestFmwk {
       expected.append("8");
       assertBigDecimalEquals("Failed on append", expected.toString(), fq.toBigDecimal());
       assertNull("Failed health check", fq.checkHealth());
+    }
+  }
+
+  @Test
+  public void testConvertToAccurateDouble() {
+    // based on https://github.com/google/double-conversion/issues/28
+    double[] hardDoubles = {
+      1651087494906221570.0,
+      -5074790912492772E-327,
+      83602530019752571E-327,
+      2.207817077636718750000000000000,
+      1.818351745605468750000000000000,
+      3.941719055175781250000000000000,
+      3.738609313964843750000000000000,
+      3.967735290527343750000000000000,
+      1.328025817871093750000000000000,
+      3.920967102050781250000000000000,
+      1.015235900878906250000000000000,
+      1.335227966308593750000000000000,
+      1.344520568847656250000000000000,
+      2.879127502441406250000000000000,
+      3.695838928222656250000000000000,
+      1.845344543457031250000000000000,
+      3.793952941894531250000000000000,
+      3.211402893066406250000000000000,
+      2.565971374511718750000000000000,
+      0.965156555175781250000000000000,
+      2.700004577636718750000000000000,
+      0.767097473144531250000000000000,
+      1.780448913574218750000000000000,
+      2.624839782714843750000000000000,
+      1.305290222167968750000000000000,
+      3.834922790527343750000000000000,
+    };
+
+    double[] integerDoubles = {
+      51423,
+      51423e10,
+      4.503599627370496E15,
+      6.789512076111555E15,
+      9.007199254740991E15,
+      9.007199254740992E15
+    };
+
+    for (double d : hardDoubles) {
+      checkDoubleBehavior(d, true, "");
+    }
+
+    for (double d : integerDoubles) {
+      checkDoubleBehavior(d, false, "");
+    }
+
+    assertEquals("NaN check failed", Double.NaN, new FormatQuantity4(Double.NaN).toDouble());
+    assertEquals(
+        "Inf check failed",
+        Double.POSITIVE_INFINITY,
+        new FormatQuantity4(Double.POSITIVE_INFINITY).toDouble());
+    assertEquals(
+        "-Inf check failed",
+        Double.NEGATIVE_INFINITY,
+        new FormatQuantity4(Double.NEGATIVE_INFINITY).toDouble());
+
+    // Generate random doubles
+    String alert = "UNEXPECTED FAILURE: PLEASE REPORT THIS MESSAGE TO THE ICU TEAM: ";
+    for (int i = 0; i < 1000000; i++) {
+      double d = Double.longBitsToDouble(ThreadLocalRandom.current().nextLong());
+      if (Double.isNaN(d) || Double.isInfinite(d)) continue;
+      checkDoubleBehavior(d, false, alert);
+    }
+  }
+
+  private static void checkDoubleBehavior(double d, boolean explicitRequired, String alert) {
+    FormatQuantity4 fq = new FormatQuantity4(d);
+    if (explicitRequired)
+      assertTrue(alert + "Should be using approximate double", !fq.explicitExactDouble);
+    assertEquals(alert + "Initial construction from hard double", d, fq.toDouble());
+    fq.roundToInfinity();
+    if (explicitRequired)
+      assertTrue(alert + "Should not be using approximate double", fq.explicitExactDouble);
+    assertDoubleEquals(alert + "After conversion to exact BCD (double)", d, fq.toDouble());
+    assertBigDecimalEquals(
+        alert + "After conversion to exact BCD (BigDecimal)",
+        new BigDecimal(Double.toString(d)),
+        fq.toBigDecimal());
+  }
+
+  @Test
+  public void testUseApproximateDoubleWhenAble() {
+    Object[][] cases = {
+      {1.2345678, 1, MATH_CONTEXT_HALF_EVEN, false},
+      {1.2345678, 7, MATH_CONTEXT_HALF_EVEN, false},
+      {1.2345678, 12, MATH_CONTEXT_HALF_EVEN, false},
+      {1.2345678, 13, MATH_CONTEXT_HALF_EVEN, true},
+      {1.235, 1, MATH_CONTEXT_HALF_EVEN, false},
+      {1.235, 2, MATH_CONTEXT_HALF_EVEN, true},
+      {1.235, 3, MATH_CONTEXT_HALF_EVEN, false},
+      {1.000000000000001, 0, MATH_CONTEXT_HALF_EVEN, false},
+      {1.000000000000001, 0, MATH_CONTEXT_CEILING, true},
+      {1.235, 1, MATH_CONTEXT_CEILING, false},
+      {1.235, 2, MATH_CONTEXT_CEILING, false},
+      {1.235, 3, MATH_CONTEXT_CEILING, true}
+    };
+
+    for (Object[] cas : cases) {
+      double d = (Double) cas[0];
+      int maxFrac = (Integer) cas[1];
+      MathContext mc = (MathContext) cas[2];
+      boolean usesExact = (Boolean) cas[3];
+
+      FormatQuantity4 fq = new FormatQuantity4(d);
+      assertTrue("Should be using approximate double", !fq.explicitExactDouble);
+      fq.roundToMagnitude(-maxFrac, mc);
+      assertEquals(
+          "Using approximate double after rounding: " + d + " maxFrac=" + maxFrac + " " + mc,
+          usesExact,
+          fq.explicitExactDouble);
     }
   }
 

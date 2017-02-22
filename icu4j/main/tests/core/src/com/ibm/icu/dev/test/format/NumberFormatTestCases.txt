@@ -68,10 +68,9 @@ pat: "##,@@##" "#,@@##"
 pat: "##@@##"  "@@##"
 
 pat: "@@.@@"  err  # decimal sep. disallowed in sig. digits
-# The new implementation is more lenient with patterns;
-# The following cases no longer fail:
+# The new pattern parser treats this the same as "@@#"
 #pat: "@#@"    err  # only one cluster of sig. digits
-#pat: "@@0"    err  # either @ or 0, not both
+pat: "@@0"    err  # either @ or 0, not both
 
 # NumberRegression/Test4140009
 rt:  ""       123.456     "123.456"

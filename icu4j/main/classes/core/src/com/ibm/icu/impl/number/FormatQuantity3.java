@@ -92,6 +92,9 @@ public final class FormatQuantity3 extends FormatQuantityBCD {
     }
     scale = 0;
     precision = 0;
+    isApproximate = false;
+    origDouble = 0;
+    origDelta = 0;
   }
 
   @Override

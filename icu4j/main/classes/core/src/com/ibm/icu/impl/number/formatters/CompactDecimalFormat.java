@@ -2,7 +2,6 @@
 // License & terms of use: http://www.unicode.org/copyright.html#License
 package com.ibm.icu.impl.number.formatters;
 
-import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -58,12 +57,12 @@ public class CompactDecimalFormat extends Format.BeforeFormat {
   private final CompactStyle style; // retained for exporting only
 
   public static CompactDecimalFormat getInstance(
-      DecimalFormatSymbols symbols, IProperties properties) throws ParseException {
+      DecimalFormatSymbols symbols, IProperties properties) {
     return getInstance(symbols, getRounder(properties), properties);
   }
 
   public static CompactDecimalFormat getInstance(
-      DecimalFormatSymbols symbols, Rounder rounder, IProperties properties) throws ParseException {
+      DecimalFormatSymbols symbols, Rounder rounder, IProperties properties) {
     return new CompactDecimalFormat(
         getData(symbols, properties), rounder, properties.getCompactStyle());
   }
@@ -91,8 +90,7 @@ public class CompactDecimalFormat extends Format.BeforeFormat {
             }
           };
 
-  private static CompactDecimalData getData(DecimalFormatSymbols symbols, IProperties properties)
-      throws ParseException {
+  private static CompactDecimalData getData(DecimalFormatSymbols symbols, IProperties properties) {
     // See if we already have a data object based on the fingerprint
     CompactDecimalFingerprint fingerprint = new CompactDecimalFingerprint(symbols, properties);
     CompactDecimalData data = threadLocalDataCache.get().get(fingerprint);
@@ -109,8 +107,8 @@ public class CompactDecimalFormat extends Format.BeforeFormat {
     if (data.isEmpty() && !nsName.equals("latn")) {
       r.getAllItemsWithFallback("NumberElements/latn", sink);
     }
-    if (sink.parseException != null) {
-      throw sink.parseException;
+    if (sink.exception != null) {
+      throw sink.exception;
     }
     threadLocalDataCache.get().put(fingerprint, data);
     return data;
@@ -141,8 +139,7 @@ public class CompactDecimalFormat extends Format.BeforeFormat {
       ModifierHolder mods,
       PluralRules rules,
       DecimalFormatSymbols symbols,
-      IProperties properties)
-      throws ParseException {
+      IProperties properties) {
     Rounder rounder = getRounder(properties);
     CompactDecimalData data = getData(symbols, properties);
     apply(input, mods, rules, rounder, data);
@@ -284,7 +281,7 @@ public class CompactDecimalFormat extends Format.BeforeFormat {
     final CompactType compactType;
     final String currencySymbol;
     final PNAffixGenerator pnag;
-    ParseException parseException;
+    IllegalArgumentException exception;
 
     /*
      * NumberElements{              <-- top (numbering system table)
@@ -391,8 +388,8 @@ public class CompactDecimalFormat extends Format.BeforeFormat {
 
               data.setMultiplier(magnitude, multiplier);
 
-            } catch (ParseException e) {
-              parseException = e;
+            } catch (IllegalArgumentException e) {
+              exception = e;
               continue;
             }
           }

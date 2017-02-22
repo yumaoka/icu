@@ -39,8 +39,8 @@ public interface FormatQuantity extends PluralRules.IFixedDecimal {
    * <p>If rounding to a power of ten, use the more efficient {@link #roundToMagnitude} instead.
    *
    * @param roundingInterval The increment to which to round.
-   * @param mathContext The {@link MathContext} to use if rounding is necessary. Undefined
-   *     behavior if null.
+   * @param mathContext The {@link MathContext} to use if rounding is necessary. Undefined behavior
+   *     if null.
    */
   public void roundToInterval(BigDecimal roundingInterval, MathContext mathContext);
 
@@ -49,10 +49,16 @@ public interface FormatQuantity extends PluralRules.IFixedDecimal {
    *
    * @param roundingMagnitude The power of ten to which to round. For example, a value of -2 will
    *     round to 2 decimal places.
-   * @param mathContext The {@link MathContext} to use if rounding is necessary. Undefined
-   *     behavior if null.
+   * @param mathContext The {@link MathContext} to use if rounding is necessary. Undefined behavior
+   *     if null.
    */
   public void roundToMagnitude(int roundingMagnitude, MathContext mathContext);
+
+  /**
+   * Rounds the number to an infinite number of decimal points. This has no effect except for
+   * forcing the double in {@link FormatQuantityBCD} to adopt its exact representation.
+   */
+  public void roundToInfinity();
 
   /**
    * Multiply the internal value.

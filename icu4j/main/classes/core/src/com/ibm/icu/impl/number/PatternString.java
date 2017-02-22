@@ -80,7 +80,7 @@ public class PatternString {
 
     // Prefixes
     if (ppp != null) sb.append(ppp);
-    escape(pp, sb);
+    escapeAndAppendTo(pp, sb, true);
     int afterPrefixPos = sb.length();
 
     // Figure out the grouping sizes.
@@ -168,7 +168,7 @@ public class PatternString {
     // Suffixes
     int beforeSuffixPos = sb.length();
     if (psp != null) sb.append(psp);
-    escape(ps, sb);
+    escapeAndAppendTo(ps, sb, true);
 
     // Resolve Padding
     if (paddingWidth != Properties.DEFAULT_PADDING_WIDTH) {
@@ -179,50 +179,62 @@ public class PatternString {
       int addedLength;
       switch (paddingLocation) {
         case BEFORE_PREFIX:
-          addedLength = escape(paddingString, sb, 0);
+          addedLength = escapeAndInsertInto(paddingString, sb, 0, false);
           sb.insert(0, '*');
           afterPrefixPos += addedLength + 1;
           beforeSuffixPos += addedLength + 1;
           break;
         case AFTER_PREFIX:
-          addedLength = escape(paddingString, sb, afterPrefixPos);
+          addedLength = escapeAndInsertInto(paddingString, sb, afterPrefixPos, false);
           sb.insert(afterPrefixPos, '*');
           afterPrefixPos += addedLength + 1;
           beforeSuffixPos += addedLength + 1;
           break;
         case BEFORE_SUFFIX:
-          escape(paddingString, sb, beforeSuffixPos);
+          escapeAndInsertInto(paddingString, sb, beforeSuffixPos, false);
           sb.insert(beforeSuffixPos, '*');
           break;
         case AFTER_SUFFIX:
           sb.append('*');
-          escape(paddingString, sb);
+          escapeAndAppendTo(paddingString, sb, false);
           break;
       }
     }
 
     // Negative affixes
-    if (np != null || npp != null || ns != null || nsp != null) {
+    // Ignore if the negative prefix pattern is "-" and the negative suffix is empty
+    if (np != null
+        || ns != null
+        || (npp == null && nsp != null)
+        || (npp != null && (npp.length() != 1 || npp.charAt(0) != '-' || nsp.length() != 0))) {
       sb.append(';');
       if (npp != null) sb.append(npp);
-      escape(np, sb);
+      escapeAndAppendTo(np, sb, true);
       // Copy the positive digit format into the negative.
       // This is optional; the pattern is the same as if '#' were appended here instead.
       sb.append(sb, afterPrefixPos, beforeSuffixPos);
       if (nsp != null) sb.append(nsp);
-      escape(ns, sb);
+      escapeAndAppendTo(ns, sb, true);
     }
 
     return sb.toString();
   }
 
-  /** @return The number of chars inserted. */
-  private static int escape(CharSequence input, StringBuilder sb) {
+  /**
+   * Wraps the given string in quotes and appends it to the given string builder.
+   *
+   * @return The number of chars inserted.
+   */
+  private static int escapeAndAppendTo(CharSequence input, StringBuilder sb, boolean forceQuotes) {
     if (input == null) return 0;
     int length = input.length();
     if (length == 0) return 0;
     int startLength = sb.length();
-    if (length > 1) sb.append('\'');
+    if (length == 1 && input.charAt(0) == '\'') {
+      sb.append("''");
+      return 2;
+    }
+    if (forceQuotes || length > 1) sb.append('\'');
     for (int i = 0; i < length; i++) {
       char ch = input.charAt(i);
       if (ch == '\'') {
@@ -231,16 +243,17 @@ public class PatternString {
         sb.append(ch);
       }
     }
-    if (length > 1) sb.append('\'');
+    if (forceQuotes || length > 1) sb.append('\'');
     return sb.length() - startLength;
   }
 
   /** @return The number of chars inserted. */
-  private static int escape(CharSequence input, StringBuilder sb, int insertIndex) {
+  private static int escapeAndInsertInto(
+      CharSequence input, StringBuilder sb, int insertIndex, boolean forceQuotes) {
     // Although this triggers a new object creation, it reduces the number of calls to insert (and
     // therefore System.arraycopy).
     StringBuilder temp = new StringBuilder();
-    int length = escape(input, temp);
+    int length = escapeAndAppendTo(input, temp, forceQuotes);
     sb.insert(insertIndex, temp);
     return length;
   }
@@ -337,6 +350,21 @@ public class PatternString {
           properties.setSecondaryGroupingSize(Properties.DEFAULT_SECONDARY_GROUPING_SIZE);
         }
 
+        // For backwards compatibility, require that the pattern emit at least one min digit.
+        int minInt, minFrac;
+        if (positive.totalIntegerDigits == 0 && positive.maximumFractionDigits > 0) {
+          // patterns like ".##"
+          minInt = 0;
+          minFrac = Math.max(1, positive.minimumFractionDigits);
+        } else if (positive.minimumIntegerDigits == 0 && positive.minimumFractionDigits == 0) {
+          // patterns like "#.##"
+          minInt = 1;
+          minFrac = 0;
+        } else {
+          minInt = positive.minimumIntegerDigits;
+          minFrac = positive.minimumFractionDigits;
+        }
+
         // Rounding settings
         // Don't set basic rounding when there is a currency sign; defer to CurrencyUsage
         if (positive.minimumSignificantDigits > 0) {
@@ -349,7 +377,7 @@ public class PatternString {
           properties.setMaximumSignificantDigits(positive.maximumSignificantDigits);
         } else if (!positive.rounding.isZero()) {
           if (!positive.hasCurrencySign) {
-            properties.setMinimumFractionDigits(positive.minimumFractionDigits);
+            properties.setMinimumFractionDigits(minFrac);
             properties.setMaximumFractionDigits(positive.maximumFractionDigits);
             properties.setRoundingInterval(positive.rounding.toBigDecimal());
           }
@@ -357,22 +385,12 @@ public class PatternString {
           properties.setMaximumSignificantDigits(Properties.DEFAULT_MAXIMUM_SIGNIFICANT_DIGITS);
         } else {
           if (!positive.hasCurrencySign) {
-            properties.setMinimumFractionDigits(positive.minimumFractionDigits);
+            properties.setMinimumFractionDigits(minFrac);
             properties.setMaximumFractionDigits(positive.maximumFractionDigits);
             properties.setRoundingInterval(Properties.DEFAULT_ROUNDING_INTERVAL);
           }
           properties.setMinimumSignificantDigits(Properties.DEFAULT_MINIMUM_SIGNIFICANT_DIGITS);
           properties.setMaximumSignificantDigits(Properties.DEFAULT_MAXIMUM_SIGNIFICANT_DIGITS);
-        }
-
-        // Backwards compatibility:
-        // If the pattern starts with '.' or if it doesn't have '.' (and isn't sigdigit notation),
-        // then minInt can be zero. Otherwise, minInt needs to be at least 1.
-        if ((!positive.hasDecimal && positive.minimumSignificantDigits == 0)
-            || (positive.hasDecimal && positive.totalIntegerDigits == 0)) {
-          properties.setMinimumIntegerDigits(positive.minimumIntegerDigits);
-        } else {
-          properties.setMinimumIntegerDigits(Math.max(1, positive.minimumIntegerDigits));
         }
 
         // If the pattern ends with a '.' then force the decimal point.
@@ -388,14 +406,17 @@ public class PatternString {
           properties.setExponentDigits(positive.exponentDigits);
           if (positive.minimumSignificantDigits == 0) {
             // patterns without '@' can define max integer digits, used for engineering notation
+            properties.setMinimumIntegerDigits(positive.minimumIntegerDigits);
             properties.setMaximumIntegerDigits(positive.totalIntegerDigits);
           } else {
             // patterns with '@' cannot define max integer digits
+            properties.setMinimumIntegerDigits(1);
             properties.setMaximumIntegerDigits(Properties.DEFAULT_MAXIMUM_INTEGER_DIGITS);
           }
         } else {
           properties.setExponentShowPlusSign(Properties.DEFAULT_EXPONENT_SHOW_PLUS_SIGN);
           properties.setExponentDigits(Properties.DEFAULT_EXPONENT_DIGITS);
+          properties.setMinimumIntegerDigits(minInt);
           properties.setMaximumIntegerDigits(Properties.DEFAULT_MAXIMUM_INTEGER_DIGITS);
         }
 
@@ -489,7 +510,9 @@ public class PatternString {
 
       IllegalArgumentException toParseException(String message) {
         StringBuilder sb = new StringBuilder();
-        sb.append("Unexpected character in decimal format pattern: ");
+        sb.append("Unexpected character in decimal format pattern: '");
+        sb.append(pattern);
+        sb.append("': ");
         sb.append(message);
         sb.append(": ");
         if (peek() == -1) {
@@ -504,7 +527,7 @@ public class PatternString {
     }
 
     static void parse(String pattern, Properties properties) {
-      if (pattern.isEmpty()) return;
+      if (pattern == null || pattern.isEmpty()) return;
       // TODO: Use whitespace characters from PatternProps
       ParserState state = new ParserState(pattern);
       PatternParseResult result = new PatternParseResult();
@@ -619,6 +642,7 @@ public class PatternString {
 
     private static void consumeIntegerFormat(ParserState state, SubpatternParseResult result) {
       boolean seenSignificantDigitMarker = false;
+      boolean seenDigit = false;
 
       while (true) {
         switch (state.peek()) {
@@ -630,6 +654,7 @@ public class PatternString {
             break;
 
           case '#':
+            if (seenDigit) throw state.toParseException("# cannot follow 0 before decimal point");
             result.paddingWidth += 1;
             result.groupingSizes[0] += 1;
             result.totalIntegerDigits += (seenSignificantDigitMarker ? 0 : 1);
@@ -641,6 +666,7 @@ public class PatternString {
 
           case '@':
             seenSignificantDigitMarker = true;
+            if (seenDigit) throw state.toParseException("Can't mix @ and 0 in pattern");
             result.paddingWidth += 1;
             result.groupingSizes[0] += 1;
             result.totalIntegerDigits += 1;
@@ -660,6 +686,9 @@ public class PatternString {
           case '7':
           case '8':
           case '9':
+            seenDigit = true;
+            if (seenSignificantDigitMarker)
+              throw state.toParseException("Can't mix @ and 0 in pattern");
             // TODO: Crash here if we've seen the significant digit marker? See NumberFormatTestCases.txt
             result.paddingWidth += 1;
             result.groupingSizes[0] += 1;
@@ -679,9 +708,11 @@ public class PatternString {
 
     private static void consumeFractionFormat(ParserState state, SubpatternParseResult result) {
       int zeroCounter = 0;
+      boolean seenHash = false;
       while (true) {
         switch (state.peek()) {
           case '#':
+            seenHash = true;
             result.paddingWidth += 1;
             // no change to result.minimumFractionDigits
             result.maximumFractionDigits += 1;
@@ -698,6 +729,7 @@ public class PatternString {
           case '7':
           case '8':
           case '9':
+            if (seenHash) throw state.toParseException("0 cannot follow # after decimal point");
             result.paddingWidth += 1;
             result.minimumFractionDigits += 1;
             result.maximumFractionDigits += 1;
