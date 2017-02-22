@@ -122,8 +122,8 @@ enum {
     QUIET,
     WITHOUT_ASSEMBLY,
     PDS_BUILD,
-	UWP_BUILD,
-	UWP_ARM_BUILD
+    UWP_BUILD,
+    UWP_ARM_BUILD
 };
 
 /* This sets the modes that are available */
@@ -165,9 +165,9 @@ static UOption options[]={
     /*18*/    UOPTION_DEF( "libname", 'L', UOPT_REQUIRES_ARG),
     /*19*/    UOPTION_DEF( "quiet", 'q', UOPT_NO_ARG),
     /*20*/    UOPTION_DEF( "without-assembly", 'w', UOPT_NO_ARG),
-	/*21*/    UOPTION_DEF("zos-pds-build", 'z', UOPT_NO_ARG),
-	/*22*/    UOPTION_DEF("windows-uwp-build", 'u', UOPT_NO_ARG),
-	/*23*/    UOPTION_DEF("windows-uwp-arm-build", 'a', UOPT_NO_ARG)
+    /*21*/    UOPTION_DEF("zos-pds-build", 'z', UOPT_NO_ARG),
+    /*22*/    UOPTION_DEF("windows-uwp-build", 'u', UOPT_NO_ARG),
+    /*23*/    UOPTION_DEF("windows-uwp-arm-build", 'a', UOPT_NO_ARG)
 };
 
 /* This enum and the following char array should be kept in sync. */
