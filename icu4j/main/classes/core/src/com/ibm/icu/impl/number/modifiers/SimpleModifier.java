@@ -41,7 +41,14 @@ public class SimpleModifier extends Modifier.BaseModifier {
   }
 
   @Override
-  public void export(Properties properties) {
+  public String getPrefix() {
+    // TODO: Implement this when MeasureFormat is ready.
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public String getSuffix() {
+    // TODO: Implement this when MeasureFormat is ready.
     throw new UnsupportedOperationException();
   }
 
@@ -114,5 +121,10 @@ public class SimpleModifier extends Modifier.BaseModifier {
         assert expected.equals(actual);
       }
     }
+  }
+
+  @Override
+  public void export(Properties properties) {
+    throw new UnsupportedOperationException();
   }
 }

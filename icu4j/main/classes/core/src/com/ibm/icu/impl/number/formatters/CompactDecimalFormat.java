@@ -69,7 +69,7 @@ public class CompactDecimalFormat extends Format.BeforeFormat {
 
   private static Rounder getRounder(IProperties properties) {
     // Use rounding settings if they were specified, or else use the default CDF rounder.
-    Rounder rounder = RoundingFormat.getDefaultRounderOrNull(properties);
+    Rounder rounder = RoundingFormat.getDefaultOrNull(properties);
     if (rounder == null) {
       rounder =
           SignificantDigitsRounder.getInstance(

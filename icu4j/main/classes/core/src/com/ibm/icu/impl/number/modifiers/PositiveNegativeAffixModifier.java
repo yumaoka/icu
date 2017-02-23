@@ -16,8 +16,8 @@ public class PositiveNegativeAffixModifier extends Format.BeforeFormat
   private final AffixModifier negative;
 
   /**
-   * Constructs an instance using the two {@link ConstantMultiFieldModifier} classes for positive and
-   * negative.
+   * Constructs an instance using the two {@link ConstantMultiFieldModifier} classes for positive
+   * and negative.
    *
    * @param positive The positive-form Modifier.
    * @param negative The negative-form Modifier.
@@ -40,9 +40,14 @@ public class PositiveNegativeAffixModifier extends Format.BeforeFormat
 
   @Override
   public void export(Properties properties) {
-    properties.setPositivePrefix(positive.getPrefix());
-    properties.setPositiveSuffix(positive.getSuffix());
-    properties.setNegativePrefix(negative.getPrefix());
-    properties.setNegativeSuffix(negative.getSuffix());
+    exportPositiveNegative(properties, positive, negative);
+  }
+
+  /** Internal method used to export a positive and negative modifier to a property bag. */
+  static void exportPositiveNegative(Properties properties, Modifier positive, Modifier negative) {
+    properties.setPositivePrefix(positive.getPrefix().isEmpty() ? null : positive.getPrefix());
+    properties.setPositiveSuffix(positive.getSuffix().isEmpty() ? null : positive.getSuffix());
+    properties.setNegativePrefix(negative.getPrefix().isEmpty() ? null : negative.getPrefix());
+    properties.setNegativeSuffix(negative.getSuffix().isEmpty() ? null : negative.getSuffix());
   }
 }

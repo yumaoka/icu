@@ -4,11 +4,13 @@ package com.ibm.icu.impl.number.formatters;
 
 import java.util.Deque;
 
-import com.ibm.icu.impl.number.NumberStringBuilder;
 import com.ibm.icu.impl.number.Format;
 import com.ibm.icu.impl.number.FormatQuantity;
 import com.ibm.icu.impl.number.ModifierHolder;
+import com.ibm.icu.impl.number.NumberStringBuilder;
 import com.ibm.icu.impl.number.Properties;
+
+// TODO: This class isn't currently being used anywhere.  Consider removing it.
 
 /** Attaches all prefixes and suffixes at this point in the render tree without bubbling up. */
 public class StrongAffixFormat extends Format implements Format.AfterFormat {

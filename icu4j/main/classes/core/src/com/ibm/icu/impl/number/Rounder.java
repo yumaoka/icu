@@ -11,14 +11,26 @@ import com.ibm.icu.impl.number.formatters.ScientificFormat;
 /**
  * The base class for a Rounder used by ICU Decimal Format.
  *
- * <p>A Rounder must implement the method {@link #apply}. Most implementations should have the code
- * <code>applyDefaults(input);</code> in their apply function.
+ * <p>A Rounder must implement the method {@link #apply}. An implementation must:
+ *
+ * <ol>
+ *   <li>Either have the code <code>applyDefaults(input);</code> in its apply function, or otherwise
+ *       ensure that minFrac, maxFrac, minInt, and maxInt are obeyed, paying special attention to
+ *       the case when the input is zero.
+ *   <li>Call one of {@link FormatQuantity#roundToInterval}, {@link
+ *       FormatQuantity#roundToMagnitude}, or {@link FormatQuantity#roundToInfinity} on the input.
+ * </ol>
  *
  * <p>In order to be used by {@link CompactDecimalFormat} and {@link ScientificFormat}, among
  * others, your rounder must be stable upon <em>decreasing</em> the magnitude of the input number.
  * For example, if your rounder converts "999" to "1000", it must also convert "99.9" to "100" and
  * "0.999" to "1". (The opposite does not need to be the case: you can round "0.999" to "1" but keep
  * "999" as "999".)
+ *
+ * @see com.ibm.icu.impl.number.rounders.MagnitudeRounder
+ * @see com.ibm.icu.impl.number.rounders.IntervalRounder
+ * @see com.ibm.icu.impl.number.rounders.SignificantDigitsRounder
+ * @see com.ibm.icu.impl.number.rounders.NoRounder
  */
 public abstract class Rounder extends Format.BeforeFormat {
 
@@ -165,10 +177,23 @@ public abstract class Rounder extends Format.BeforeFormat {
     int _minInt = properties.getMinimumIntegerDigits();
     int _maxFrac = properties.getMaximumFractionDigits();
     int _minFrac = properties.getMinimumFractionDigits();
-    maxInt = _maxInt < 0 ? Integer.MAX_VALUE : _maxInt;
-    minInt = _minInt < 0 ? (1 < maxInt ? 1 : maxInt) : (_minInt < maxInt ? _minInt : maxInt);
-    maxFrac = _maxFrac < 0 ? Integer.MAX_VALUE : _maxFrac;
-    minFrac = _minFrac < 0 ? 0 : (_minFrac < maxFrac ? _minFrac : maxFrac);
+
+    // Validate min/max int/frac.
+    // For backwards compatibility, minimum overrides maximum if the two conflict.
+    // The following logic ensures that there is always a minimum of at least one digit.
+    if (_minInt == 0 && _maxFrac != 0) {
+      // Force a digit to the right of the decimal point.
+      minFrac = _minFrac <= 0 ? 1 : _minFrac;
+      maxFrac = _maxFrac < 0 ? Integer.MAX_VALUE : _maxFrac < minFrac ? minFrac : _maxFrac;
+      minInt = 0;
+      maxInt = _maxInt < 0 ? Integer.MAX_VALUE : _maxInt;
+    } else {
+      // Force a digit to the left of the decimal point.
+      minFrac = _minFrac < 0 ? 0 : _minFrac;
+      maxFrac = _maxFrac < 0 ? Integer.MAX_VALUE : _maxFrac < minFrac ? minFrac : _maxFrac;
+      minInt = _minInt <= 0 ? 1 : _minInt;
+      maxInt = _maxInt < 0 ? Integer.MAX_VALUE : _maxInt < minInt ? minInt : _maxInt;
+    }
   }
 
   /**
@@ -217,17 +242,7 @@ public abstract class Rounder extends Format.BeforeFormat {
    * @param input The digits being formatted.
    */
   protected void applyDefaults(FormatQuantity input) {
-    if (input.isZero()) {
-      if (minInt == 0 && maxFrac > 0) {
-        // Force zeros after the decimal point
-        input.setIntegerFractionLength(minInt, maxInt, Math.max(1, minFrac), maxFrac);
-      } else {
-        // Force zeros before the decimal point
-        input.setIntegerFractionLength(Math.max(1, minInt), Math.max(1, maxInt), minFrac, maxFrac);
-      }
-    } else {
-      input.setIntegerFractionLength(minInt, maxInt, minFrac, maxFrac);
-    }
+    input.setIntegerFractionLength(minInt, maxInt, minFrac, maxFrac);
   }
 
   private static final ThreadLocal<Properties> threadLocalProperties =

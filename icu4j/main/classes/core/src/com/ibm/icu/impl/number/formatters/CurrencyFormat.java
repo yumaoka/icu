@@ -40,7 +40,7 @@ public class CurrencyFormat {
      */
     public IProperties setCurrency(Currency currency);
 
-    static CurrencyStyle DEFAULT_CURRENCY_STYLE = CurrencyStyle.SYMBOL;
+    static CurrencyStyle DEFAULT_CURRENCY_STYLE = null;
 
     /** @see #setCurrencyStyle */
     public CurrencyStyle getCurrencyStyle();
@@ -227,6 +227,8 @@ public class CurrencyFormat {
         }
       };
 
+  private static final Currency DEFAULT_CURRENCY = Currency.getInstance("XXX");
+
   public static Rounder getCurrencyRounder(DecimalFormatSymbols symbols, IProperties properties) {
     Currency currency = properties.getCurrency();
     if (currency == null) {
@@ -235,7 +237,8 @@ public class CurrencyFormat {
     }
     if (currency == null) {
       // There is a currency symbol in the pattern, but we have no currency available to use.
-      return RoundingFormat.getDefaultRounder(properties);
+      // Use the default currency instead so that we can still apply currency usage rules.
+      currency = DEFAULT_CURRENCY;
     }
 
     Currency.CurrencyUsage currencyUsage = properties.getCurrencyUsage();

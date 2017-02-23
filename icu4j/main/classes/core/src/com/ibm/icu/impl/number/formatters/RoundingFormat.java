@@ -19,15 +19,15 @@ public class RoundingFormat {
           MagnitudeRounder.IProperties,
           SignificantDigitsRounder.IProperties {}
 
-  public static Rounder getDefaultRounder(IProperties properties) {
-    Rounder candidate = getDefaultRounderOrNull(properties);
+  public static Rounder getDefaultOrNoRounder(IProperties properties) {
+    Rounder candidate = getDefaultOrNull(properties);
     if (candidate == null) {
       candidate = NoRounder.getInstance(properties);
     }
     return candidate;
   }
 
-  public static Rounder getDefaultRounderOrNull(IProperties properties) {
+  public static Rounder getDefaultOrNull(IProperties properties) {
     if (SignificantDigitsRounder.useSignificantDigits(properties)) {
       return SignificantDigitsRounder.getInstance(properties);
     } else if (IntervalRounder.useRoundingInterval(properties)) {

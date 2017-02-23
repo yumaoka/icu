@@ -14,8 +14,8 @@ import com.ibm.icu.text.PluralRules;
 // Freezable or Builder could be used if necessary.
 
 /**
- * A basic implementation of {@link com.ibm.icu.impl.number.Modifier.PositiveNegativePluralModifier} that is built
- * on the fly using its <code>put</code> methods.
+ * A basic implementation of {@link com.ibm.icu.impl.number.Modifier.PositiveNegativePluralModifier}
+ * that is built on the fly using its <code>put</code> methods.
  */
 public class GeneralPluralModifier extends Format.BeforeFormat
     implements Modifier.PositiveNegativePluralModifier {
@@ -46,8 +46,14 @@ public class GeneralPluralModifier extends Format.BeforeFormat
 
   @Override
   public Modifier getModifier(StandardPlural plural, boolean isNegative) {
-    // TODO: Fall back to the "other" form.
-    return mods[plural.ordinal() * 2 + (isNegative ? 1 : 0)];
+    Modifier mod = mods[plural.ordinal() * 2 + (isNegative ? 1 : 0)];
+    if (mod == null) {
+      mod = mods[StandardPlural.OTHER.ordinal()*2 + (isNegative ? 1 : 0)];
+    }
+    if (mod == null) {
+      throw new UnsupportedOperationException();
+    }
+    return mod;
   }
 
   @Override
@@ -62,6 +68,9 @@ public class GeneralPluralModifier extends Format.BeforeFormat
 
   @Override
   public void export(Properties properties) {
-    throw new UnsupportedOperationException();
+    // Since we can export only one affix pair, do the one for "other".
+    Modifier positive = getModifier(StandardPlural.OTHER, false);
+    Modifier negative = getModifier(StandardPlural.OTHER, true);
+    PositiveNegativeAffixModifier.exportPositiveNegative(properties, positive, negative);
   }
 }

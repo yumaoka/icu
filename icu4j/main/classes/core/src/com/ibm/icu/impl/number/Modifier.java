@@ -50,6 +50,22 @@ public interface Modifier {
   public boolean isStrong();
 
   /**
+   * Gets the prefix string associated with this modifier, defined as the string that will be
+   * inserted at leftIndex when {@link #apply} is called.
+   *
+   * @return The prefix string. Will not be null.
+   */
+  public String getPrefix();
+
+  /**
+   * Gets the prefix string associated with this modifier, defined as the string that will be
+   * inserted at rightIndex when {@link #apply} is called.
+   *
+   * @return The suffix string. Will not be null.
+   */
+  public String getSuffix();
+
+  /**
    * An interface for a modifier that contains both a positive and a negative form. Note that a
    * class implementing {@link PositiveNegativeModifier} is not necessarily a {@link Modifier}
    * itself. Rather, it returns a {@link Modifier} when {@link #getModifier} is called.
@@ -84,31 +100,20 @@ public interface Modifier {
     public Modifier getModifier(StandardPlural plural, boolean isNegative);
   }
 
-  /** An interface for a modifier that is represented by a prefix string and a suffix string. */
-  public static interface AffixModifier extends Modifier, Exportable {
-    /**
-     * Gets the prefix string contained by this {@link AffixModifier}.
-     *
-     * @return The prefix string. Will not be null.
-     */
-    public String getPrefix();
-
-    /**
-     * Gets the suffix string contained by this {@link AffixModifier}.
-     *
-     * @return The suffix string. Will not be null.
-     */
-    public String getSuffix();
-  }
+  /**
+   * An interface for a modifier that is represented internally by a prefix string and a suffix
+   * string.
+   */
+  public static interface AffixModifier extends Modifier {}
 
   /**
    * A starter implementation with defaults for some of the basic methods.
    *
-   * <p>Implements {@link PositiveNegativeModifier} so that instances of this class can be used when
+   * <p>Implements {@link PositiveNegativeModifier} only so that instances of this class can be used when
    * a {@link PositiveNegativeModifier} is required.
    */
   public abstract static class BaseModifier extends Format.BeforeFormat
-      implements Modifier, PositiveNegativeModifier, Exportable {
+      implements Modifier, PositiveNegativeModifier {
 
     @Override
     public void before(FormatQuantity input, ModifierHolder mods) {

@@ -120,7 +120,7 @@ public class Endpoint {
         format.addBeforeFormat(ScientificFormat.getInstance(symbols, properties));
       } else {
         format.addBeforeFormat(PositiveNegativeAffixFormat.getInstance(symbols, properties));
-        format.addBeforeFormat(RoundingFormat.getDefaultRounder(properties));
+        format.addBeforeFormat(RoundingFormat.getDefaultOrNoRounder(properties));
       }
     }
     if (PaddingFormat.usePadding(properties)) {
@@ -130,7 +130,7 @@ public class Endpoint {
     if (canUseFastTrack) {
       return new Format.PositiveNegativeRounderTargetFormat(
           PositiveNegativeAffixFormat.getInstance(symbols, properties),
-          RoundingFormat.getDefaultRounder(properties),
+          RoundingFormat.getDefaultOrNoRounder(properties),
           target);
     } else {
       return format;
@@ -198,7 +198,7 @@ public class Endpoint {
         ScientificFormat.getInstance(symbols, properties).before(input, mods, rules);
       } else {
         PositiveNegativeAffixFormat.apply(input, mods, symbols, properties);
-        RoundingFormat.getDefaultRounder(properties).before(input, mods, rules);
+        RoundingFormat.getDefaultOrNoRounder(properties).before(input, mods, rules);
       }
     }
 

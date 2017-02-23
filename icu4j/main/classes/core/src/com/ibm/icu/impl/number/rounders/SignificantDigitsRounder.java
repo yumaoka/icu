@@ -154,5 +154,6 @@ public class SignificantDigitsRounder extends Rounder {
     super.export(properties);
     properties.setMinimumSignificantDigits(minSig);
     properties.setMaximumSignificantDigits(maxSig);
+    properties.setSignificantDigitsOverride(override);
   }
 }

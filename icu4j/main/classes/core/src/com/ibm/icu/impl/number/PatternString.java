@@ -368,11 +368,9 @@ public class PatternString {
         // Rounding settings
         // Don't set basic rounding when there is a currency sign; defer to CurrencyUsage
         if (positive.minimumSignificantDigits > 0) {
-          if (!positive.hasCurrencySign) {
-            properties.setMinimumFractionDigits(Properties.DEFAULT_MINIMUM_FRACTION_DIGITS);
-            properties.setMaximumFractionDigits(Properties.DEFAULT_MAXIMUM_FRACTION_DIGITS);
-            properties.setRoundingInterval(Properties.DEFAULT_ROUNDING_INTERVAL);
-          }
+          properties.setMinimumFractionDigits(Properties.DEFAULT_MINIMUM_FRACTION_DIGITS);
+          properties.setMaximumFractionDigits(Properties.DEFAULT_MAXIMUM_FRACTION_DIGITS);
+          properties.setRoundingInterval(Properties.DEFAULT_ROUNDING_INTERVAL);
           properties.setMinimumSignificantDigits(positive.minimumSignificantDigits);
           properties.setMaximumSignificantDigits(positive.maximumSignificantDigits);
         } else if (!positive.rounding.isZero()) {
@@ -380,6 +378,10 @@ public class PatternString {
             properties.setMinimumFractionDigits(minFrac);
             properties.setMaximumFractionDigits(positive.maximumFractionDigits);
             properties.setRoundingInterval(positive.rounding.toBigDecimal());
+          } else {
+            properties.setMinimumFractionDigits(Properties.DEFAULT_MINIMUM_FRACTION_DIGITS);
+            properties.setMaximumFractionDigits(Properties.DEFAULT_MAXIMUM_FRACTION_DIGITS);
+            properties.setRoundingInterval(Properties.DEFAULT_ROUNDING_INTERVAL);
           }
           properties.setMinimumSignificantDigits(Properties.DEFAULT_MINIMUM_SIGNIFICANT_DIGITS);
           properties.setMaximumSignificantDigits(Properties.DEFAULT_MAXIMUM_SIGNIFICANT_DIGITS);
@@ -387,6 +389,10 @@ public class PatternString {
           if (!positive.hasCurrencySign) {
             properties.setMinimumFractionDigits(minFrac);
             properties.setMaximumFractionDigits(positive.maximumFractionDigits);
+            properties.setRoundingInterval(Properties.DEFAULT_ROUNDING_INTERVAL);
+          } else {
+            properties.setMinimumFractionDigits(Properties.DEFAULT_MINIMUM_FRACTION_DIGITS);
+            properties.setMaximumFractionDigits(Properties.DEFAULT_MAXIMUM_FRACTION_DIGITS);
             properties.setRoundingInterval(Properties.DEFAULT_ROUNDING_INTERVAL);
           }
           properties.setMinimumSignificantDigits(Properties.DEFAULT_MINIMUM_SIGNIFICANT_DIGITS);

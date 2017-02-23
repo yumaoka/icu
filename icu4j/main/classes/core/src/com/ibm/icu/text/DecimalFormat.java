@@ -37,6 +37,7 @@ public class DecimalFormat extends NumberFormat {
   private Properties properties;
   private volatile DecimalFormatSymbols symbols;
   private transient volatile SingularFormat formatter;
+  private transient volatile Properties exportedProperties;
 
   /** @stable ICU 2.0 */
   public DecimalFormat() {
@@ -45,6 +46,7 @@ public class DecimalFormat extends NumberFormat {
     String pattern = getPattern(def, 0);
     symbols = getDefaultSymbols();
     properties = new Properties();
+    exportedProperties = new Properties();
     setPropertiesFromPattern(pattern);
     refreshFormatter();
   }
@@ -53,6 +55,7 @@ public class DecimalFormat extends NumberFormat {
   public DecimalFormat(String pattern) {
     symbols = getDefaultSymbols();
     properties = new Properties();
+    exportedProperties = new Properties();
     setPropertiesFromPattern(pattern);
     refreshFormatter();
   }
@@ -61,6 +64,7 @@ public class DecimalFormat extends NumberFormat {
   public DecimalFormat(String pattern, DecimalFormatSymbols symbols) {
     this.symbols = (DecimalFormatSymbols) symbols.clone();
     properties = new Properties();
+    exportedProperties = new Properties();
     setPropertiesFromPattern(pattern);
     refreshFormatter();
   }
@@ -70,6 +74,7 @@ public class DecimalFormat extends NumberFormat {
       String pattern, DecimalFormatSymbols symbols, CurrencyPluralInfo infoInput, int style) {
     this.symbols = (DecimalFormatSymbols) symbols.clone();
     properties = new Properties();
+    exportedProperties = new Properties();
     properties.setCurrencyPluralInfo(infoInput);
     refreshFormatter();
   }
@@ -78,6 +83,7 @@ public class DecimalFormat extends NumberFormat {
   DecimalFormat(String pattern, DecimalFormatSymbols symbols, int choice) {
     this.symbols = (DecimalFormatSymbols) symbols.clone();
     properties = new Properties();
+    exportedProperties = new Properties();
     setPropertiesFromPattern(pattern);
     // HACK: If choice is a currency type, unset the rounding information.
     if (choice == NumberFormat.CURRENCYSTYLE
@@ -87,12 +93,6 @@ public class DecimalFormat extends NumberFormat {
       properties.setMaximumFractionDigits(Properties.DEFAULT_MAXIMUM_FRACTION_DIGITS);
       properties.setRoundingInterval(Properties.DEFAULT_ROUNDING_INTERVAL);
     }
-    // FIXME: Deal with choice
-    //    switch (choice) {
-    //      case NumberFormat.PLURALCURRENCYSTYLE:
-    //        properties.setCurrencyStyle(CurrencyStyle.PLURAL);
-    //        break;
-    //    }
     refreshFormatter();
   }
 
@@ -102,6 +102,7 @@ public class DecimalFormat extends NumberFormat {
     DecimalFormat other = (DecimalFormat) super.clone();
     other.symbols = (DecimalFormatSymbols) symbols.clone();
     other.properties = properties.clone();
+    other.exportedProperties = new Properties();
     other.refreshFormatter();
     return other;
   }
@@ -247,7 +248,7 @@ public class DecimalFormat extends NumberFormat {
 
   /** @stable ICU 2.0 */
   public synchronized String getPositivePrefix() {
-    CharSequence result = properties.getPositivePrefix();
+    CharSequence result = exportedProperties.getPositivePrefix();
     return (result == null) ? "" : result.toString();
   }
 
@@ -259,7 +260,7 @@ public class DecimalFormat extends NumberFormat {
 
   /** @stable ICU 2.0 */
   public synchronized String getNegativePrefix() {
-    CharSequence result = properties.getNegativePrefix();
+    CharSequence result = exportedProperties.getNegativePrefix();
     return (result == null) ? "" : result.toString();
   }
 
@@ -271,7 +272,7 @@ public class DecimalFormat extends NumberFormat {
 
   /** @stable ICU 2.0 */
   public synchronized String getPositiveSuffix() {
-    CharSequence result = properties.getPositiveSuffix();
+    CharSequence result = exportedProperties.getPositiveSuffix();
     return (result == null) ? "" : result.toString();
   }
 
@@ -283,7 +284,7 @@ public class DecimalFormat extends NumberFormat {
 
   /** @stable ICU 2.0 */
   public synchronized String getNegativeSuffix() {
-    CharSequence result = properties.getNegativeSuffix();
+    CharSequence result = exportedProperties.getNegativeSuffix();
     return (result == null) ? "" : result.toString();
   }
 
@@ -330,7 +331,7 @@ public class DecimalFormat extends NumberFormat {
 
   /** @stable ICU 2.0 */
   public synchronized java.math.BigDecimal getRoundingIncrement() {
-    return properties.getRoundingInterval();
+    return exportedProperties.getRoundingInterval();
   }
 
   /** @stable ICU 2.0 */
@@ -361,7 +362,7 @@ public class DecimalFormat extends NumberFormat {
   /** @stable ICU 2.0 */
   @Override
   public synchronized int getRoundingMode() {
-    RoundingMode mode = properties.getRoundingMode();
+    RoundingMode mode = exportedProperties.getRoundingMode();
     return (mode == null) ? 0 : mode.ordinal();
   }
 
@@ -374,7 +375,7 @@ public class DecimalFormat extends NumberFormat {
 
   /** @stable ICU 2.0 */
   public synchronized int getFormatWidth() {
-    return properties.getPaddingWidth();
+    return exportedProperties.getPaddingWidth();
   }
 
   /** @stable ICU 2.0 */
@@ -385,7 +386,7 @@ public class DecimalFormat extends NumberFormat {
 
   /** @stable ICU 2.0 */
   public synchronized char getPadCharacter() {
-    CharSequence paddingString = properties.getPaddingString();
+    CharSequence paddingString = exportedProperties.getPaddingString();
     if (paddingString == null) {
       return '.'; // TODO: Is this the correct behavior?
     } else {
@@ -401,7 +402,7 @@ public class DecimalFormat extends NumberFormat {
 
   /** @stable ICU 2.0 */
   public synchronized int getPadPosition() {
-    PaddingLocation loc = properties.getPaddingLocation();
+    PaddingLocation loc = exportedProperties.getPaddingLocation();
     return (loc == null) ? PAD_BEFORE_PREFIX : loc.toOld();
   }
 
@@ -428,7 +429,7 @@ public class DecimalFormat extends NumberFormat {
 
   /** @stable ICU 2.0 */
   public synchronized byte getMinimumExponentDigits() {
-    return (byte) properties.getExponentDigits();
+    return (byte) exportedProperties.getExponentDigits();
   }
 
   /** @stable ICU 2.0 */
@@ -439,7 +440,7 @@ public class DecimalFormat extends NumberFormat {
 
   /** @stable ICU 2.0 */
   public synchronized boolean isExponentSignAlwaysShown() {
-    return properties.getExponentShowPlusSign();
+    return exportedProperties.getExponentShowPlusSign();
   }
 
   /** @stable ICU 2.0 */
@@ -450,7 +451,7 @@ public class DecimalFormat extends NumberFormat {
 
   /** @stable ICU 2.0 */
   public synchronized int getGroupingSize() {
-    return properties.getGroupingSize();
+    return exportedProperties.getGroupingSize();
   }
 
   /** @stable ICU 2.0 */
@@ -461,7 +462,7 @@ public class DecimalFormat extends NumberFormat {
 
   /** @stable ICU 2.0 */
   public synchronized int getSecondaryGroupingSize() {
-    return properties.getSecondaryGroupingSize();
+    return exportedProperties.getSecondaryGroupingSize();
   }
 
   /** @stable ICU 2.0 */
@@ -522,12 +523,9 @@ public class DecimalFormat extends NumberFormat {
 
   /** @stable ICU 4.2 */
   public synchronized java.math.MathContext getMathContext() {
-    java.math.MathContext mathContext = properties.getMathContext();
-    if (mathContext == null) {
-      return new java.math.MathContext(0, RoundingMode.HALF_EVEN);
-    } else {
-      return mathContext;
-    }
+    java.math.MathContext mathContext = exportedProperties.getMathContext();
+    assert mathContext != null;
+    return mathContext;
   }
 
   /** @stable ICU 4.2 */
@@ -549,7 +547,7 @@ public class DecimalFormat extends NumberFormat {
 
   /** @stable ICU 2.0 */
   public synchronized boolean isDecimalSeparatorAlwaysShown() {
-    return properties.getAlwaysShowDecimal();
+    return exportedProperties.getAlwaysShowDecimal();
   }
 
   /** @stable ICU 2.0 */
@@ -561,13 +559,13 @@ public class DecimalFormat extends NumberFormat {
   /** @stable ICU 2.0 */
   @Override
   public synchronized int getMaximumIntegerDigits() {
-    return properties.getMaximumIntegerDigits();
+    return exportedProperties.getMaximumIntegerDigits();
   }
 
   /** @stable ICU 2.0 */
   @Override
   public synchronized int getMinimumIntegerDigits() {
-    return properties.getMinimumIntegerDigits();
+    return exportedProperties.getMinimumIntegerDigits();
   }
 
   /** @stable ICU 2.0 */
@@ -587,13 +585,13 @@ public class DecimalFormat extends NumberFormat {
   /** @stable ICU 2.0 */
   @Override
   public synchronized int getMaximumFractionDigits() {
-    return properties.getMaximumFractionDigits();
+    return exportedProperties.getMaximumFractionDigits();
   }
 
   /** @stable ICU 2.0 */
   @Override
   public synchronized int getMinimumFractionDigits() {
-    return properties.getMinimumFractionDigits();
+    return exportedProperties.getMinimumFractionDigits();
   }
 
   /** @stable ICU 2.0 */
@@ -612,12 +610,12 @@ public class DecimalFormat extends NumberFormat {
 
   /** @stable ICU 3.0 */
   public synchronized int getMinimumSignificantDigits() {
-    return properties.getMinimumSignificantDigits();
+    return exportedProperties.getMinimumSignificantDigits();
   }
 
   /** @stable ICU 3.0 */
   public synchronized int getMaximumSignificantDigits() {
-    return properties.getMaximumSignificantDigits();
+    return exportedProperties.getMaximumSignificantDigits();
   }
 
   /** @stable ICU 3.0 */
@@ -671,11 +669,18 @@ public class DecimalFormat extends NumberFormat {
 
   /** @stable ICU 54 */
   public synchronized CurrencyUsage getCurrencyUsage() {
-    return properties.getCurrencyUsage();
+    // CurrencyUsage is not exported, so we have to get it from the input property bag.
+    // TODO: Should we export CurrencyUsage instead?
+    CurrencyUsage usage = properties.getCurrencyUsage();
+    if (usage == null) {
+      usage = CurrencyUsage.STANDARD;
+    }
+    return usage;
   }
 
   /** @stable ICU 4.2 */
   public CurrencyPluralInfo getCurrencyPluralInfo() {
+    // CurrencyPluralInfo also is not exported.
     return properties.getCurrencyPluralInfo();
   }
 
@@ -755,13 +760,13 @@ public class DecimalFormat extends NumberFormat {
 
   /** @stable ICU 2.0 */
   public synchronized String toPattern() {
-    // Since we keep the properties object around, use it to generate the pattern.
+    // Properties is used instead of exportedProperties here to keep the affix patterns intact.
     return PatternString.propertiesToString(properties);
   }
 
   /** @stable ICU 2.0 */
   public synchronized String toLocalizedPattern() {
-    String pattern = PatternString.propertiesToString(properties);
+    String pattern = PatternString.propertiesToString(exportedProperties);
     return PatternString.convertLocalized(pattern, symbols, true);
   }
 
@@ -778,6 +783,8 @@ public class DecimalFormat extends NumberFormat {
 
   private void refreshFormatter() {
     formatter = Endpoint.fromBTA(properties, symbols);
+    exportedProperties.clear();
+    formatter.export(exportedProperties);
   }
 
   private void setPropertiesFromPattern(String pattern) {

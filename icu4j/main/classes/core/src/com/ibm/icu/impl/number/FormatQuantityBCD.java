@@ -367,9 +367,21 @@ public abstract class FormatQuantityBCD implements FormatQuantity {
       flags |= INFINITY_FLAG;
     } else if (n != 0) {
       _setToDoubleFast(n);
+
+      // TODO: Remove this when finished testing.
+      //      isApproximate = true;
+      //      origDouble = n;
+      //      origDelta = 0;
+      //      convertToAccurateDouble();
+
       compact();
     }
   }
+
+  private static final double[] DOUBLE_MULTIPLIERS = {
+    1e0, 1e1, 1e2, 1e3, 1e4, 1e5, 1e6, 1e7, 1e8, 1e9, 1e10, 1e11, 1e12, 1e13, 1e14, 1e15, 1e16,
+    1e17, 1e18, 1e19, 1e20, 1e21
+  };
 
   /**
    * Uses double multiplication and division to get the number into integer space before converting
@@ -380,7 +392,7 @@ public abstract class FormatQuantityBCD implements FormatQuantity {
     int exponent = (int) ((ieeeBits & 0x7ff0000000000000L) >> 52) - 0x3ff;
 
     // Not all integers can be represented exactly for exponent > 52
-    if (exponent <= 52 && (long)n == n) {
+    if (exponent <= 52 && (long) n == n) {
       _setToLong((long) n);
       return;
     }
@@ -394,22 +406,22 @@ public abstract class FormatQuantityBCD implements FormatQuantity {
       int i = fracLength;
       // 1e22 is the largest exact double.
       for (; i >= 22; i -= 22) n *= 1e22;
-      for (; i >= 9; i -= 9) n *= 1000000000;
-      for (; i >= 3; i -= 3) n *= 1000;
-      for (; i >= 1; i -= 1) n *= 10;
+      n *= DOUBLE_MULTIPLIERS[i];
     } else {
       int i = fracLength;
       // 1e22 is the largest exact double.
       for (; i <= -22; i += 22) n /= 1e22;
-      for (; i <= -9; i += 9) n /= 1000000000;
-      for (; i <= -3; i += 3) n /= 1000;
-      for (; i <= -1; i += 1) n /= 10;
+      n /= DOUBLE_MULTIPLIERS[-i];
     }
     _setToLong(Math.round(n));
     scale -= fracLength;
   }
 
-  /** Uses Double.toString() to obtain an exact accurate representation of the double. */
+  /**
+   * Uses Double.toString() to obtain an exact accurate representation of the double, overwriting it
+   * into the BCD. This method can be called at any point after {@link #_setToDoubleFast} while
+   * {@link #isApproximate} is still true.
+   */
   private void convertToAccurateDouble() {
     double n = origDouble;
     assert n != 0;
@@ -432,6 +444,8 @@ public abstract class FormatQuantityBCD implements FormatQuantity {
       scale += 2 - temp.length();
     } else if (temp.charAt(temp.length() - 1) == '0') {
       // Case 3: Integer-only number.
+      // Note: this path should not normally happen, because integer-only numbers are captured
+      // before the approximate double logic is performed.
       assert temp.indexOf('.') == temp.length() - 2;
       assert temp.length() - 2 <= 18;
       _setToLong(Long.parseLong(temp.substring(0, temp.length() - 2)));
@@ -450,6 +464,7 @@ public abstract class FormatQuantityBCD implements FormatQuantity {
   /**
    * Whether this {@link FormatQuantity4} has been explicitly converted to an exact double. true if
    * backed by a double that was explicitly converted via convertToAccurateDouble; false otherwise.
+   * Used for testing.
    *
    * @internal
    * @deprecated This API is ICU internal only.

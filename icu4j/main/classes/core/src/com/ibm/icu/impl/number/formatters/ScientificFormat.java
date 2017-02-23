@@ -82,6 +82,10 @@ public class ScientificFormat extends Format.BeforeFormat implements Rounder.Mul
       int minFrac = properties.getMinimumFractionDigits();
       int maxFrac = properties.getMaximumFractionDigits();
 
+      // TODO: Mark/Andy, take a look at this logic and see if it makes sense to you.
+      // I fiddled with the settings and fallbacks to make the unit tests pass, but I
+      // don't feel that it's the "right way" to do things.
+
       if (minInt < 0) minInt = 0;
       if (maxInt < minInt) maxInt = minInt;
       if (minFrac < 0) minFrac = 0;

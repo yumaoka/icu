@@ -27,7 +27,7 @@ public class MeasureFormat {
      */
     public IProperties setMeasureUnit(MeasureUnit measureUnit);
 
-    static FormatWidth DEFAULT_MEASURE_FORMAT_WIDTH = FormatWidth.WIDE;
+    static FormatWidth DEFAULT_MEASURE_FORMAT_WIDTH = null;
 
     /** @see #setMeasureFormatWidth */
     public FormatWidth getMeasureFormatWidth();
@@ -56,7 +56,7 @@ public class MeasureFormat {
       throw new IllegalArgumentException("A measure unit is required for MeasureFormat");
     }
     if (width == null) {
-      throw new IllegalArgumentException("A format width is required for MeasureFormat");
+      width = FormatWidth.WIDE;
     }
 
     // Temporarily, create a MeasureFormat instance for its data loading capability

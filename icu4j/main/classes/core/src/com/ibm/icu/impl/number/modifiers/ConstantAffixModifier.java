@@ -97,7 +97,6 @@ public class ConstantAffixModifier extends Modifier.BaseModifier implements Affi
 
   @Override
   public void export(Properties properties) {
-    properties.setPositivePrefix(prefix);
-    properties.setPositiveSuffix(suffix);
+    throw new UnsupportedOperationException();
   }
 }

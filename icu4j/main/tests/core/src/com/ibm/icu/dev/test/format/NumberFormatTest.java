@@ -419,8 +419,8 @@ public class NumberFormatTest extends TestFmwk {
                 {"$ 124 ", "5", "-1"},
                 {"$\u00A0124 ", "5", "-1"},
                 {" $ 124 ", "6", "-1"},
-                {"124$", "4", "-1"},
-                {"124 $", "5", "-1"},
+                {"124$", "3", "-1"},
+                {"124 $", "3", "-1"},
                 {"$124\u200D", "4", "-1"},
                 {"$\u200D124", "5", "-1"},
         };
@@ -727,24 +727,19 @@ public class NumberFormatTest extends TestFmwk {
                 if (!strBuf.equals(formatResult)) {
                     errln("FAIL: localeID: " + localeString + ", expected(" + formatResult.length() + "): \"" + formatResult + "\", actual(" + strBuf.length() + "): \"" + strBuf + "\"");
                 }
-                try {
-                    // test parsing, and test parsing for all currency formats.
-                    for (int j = 3; j < 6; ++j) {
-                        // DATA[i][3] is the currency format result using
-                        // CURRENCYSTYLE formatter.
-                        // DATA[i][4] is the currency format result using
-                        // ISOCURRENCYSTYLE formatter.
-                        // DATA[i][5] is the currency format result using
-                        // PLURALCURRENCYSTYLE formatter.
-                        String oneCurrencyFormatResult = DATA[i][j];
-                        Number val = numFmt.parse(oneCurrencyFormatResult);
-                        if (val.doubleValue() != numberToBeFormat.doubleValue()) {
-                            errln("FAIL: getCurrencyFormat of locale " + localeString + " failed roundtripping the number. val=" + val + "; expected: " + numberToBeFormat);
-                        }
+                // test parsing, and test parsing for all currency formats.
+                for (int j = 3; j < 6; ++j) {
+                    // DATA[i][3] is the currency format result using
+                    // CURRENCYSTYLE formatter.
+                    // DATA[i][4] is the currency format result using
+                    // ISOCURRENCYSTYLE formatter.
+                    // DATA[i][5] is the currency format result using
+                    // PLURALCURRENCYSTYLE formatter.
+                    String oneCurrencyFormatResult = DATA[i][j];
+                    CurrencyAmount val = numFmt.parseCurrency(oneCurrencyFormatResult, null);
+                    if (val.getNumber().doubleValue() != numberToBeFormat.doubleValue()) {
+                        errln("FAIL: getCurrencyFormat of locale " + localeString + " failed roundtripping the number. val=" + val + "; expected: " + numberToBeFormat);
                     }
-                }
-                catch (ParseException e) {
-                    errln("FAIL: " + e.getMessage());
                 }
             }
         }
@@ -757,10 +752,10 @@ public class NumberFormatTest extends TestFmwk {
                 // each has: string to be parsed, parsed position, error position
                 {"1.00 ", "4", "-1", "0", "5"},
                 {"1.00 UAE dirha", "4", "-1", "0", "14"},
-                {"1.00 us dollar", "9", "-1", "14", "-1"}, // TODO: The parser stops after reading "us d" because that is the currency code. Does that behavior make sense?
-                {"1.00 US DOLLAR", "9", "-1", "14", "-1"},
-                {"1.00 usd", "8", "-1", "8", "-1"},
-                {"1.00 USD", "8", "-1", "8", "-1"},
+                {"1.00 us dollar", "4", "-1", "14", "-1"},
+                {"1.00 US DOLLAR", "4", "-1", "14", "-1"},
+                {"1.00 usd", "4", "-1", "8", "-1"},
+                {"1.00 USD", "4", "-1", "8", "-1"},
         };
         ULocale locale = new ULocale("en_US");
         for (int i=0; i<DATA.length; ++i) {
@@ -831,7 +826,7 @@ public class NumberFormatTest extends TestFmwk {
         final ParseCurrencyItem[] parseCurrencyItems = {
                 new ParseCurrencyItem( "en_US", "dollars2", "$2.00",            5,  2,  5,  2,  "USD" ),
                 new ParseCurrencyItem( "en_US", "dollars4", "$4",               2,  4,  2,  4,  "USD" ),
-                new ParseCurrencyItem( "en_US", "dollars9", "9\u00A0$",         3,  9,  3,  9,  "USD" ),
+                new ParseCurrencyItem( "en_US", "dollars9", "9\u00A0$",         1,  9,  3,  9,  "USD" ),
                 new ParseCurrencyItem( "en_US", "pounds3",  "\u00A33.00",       0,  0,  5,  3,  "GBP" ),
                 new ParseCurrencyItem( "en_US", "pounds5",  "\u00A35",          0,  0,  2,  5,  "GBP" ),
                 new ParseCurrencyItem( "en_US", "pounds7",  "7\u00A0\u00A3",    1,  7,  3,  7,  "GBP" ),
@@ -839,7 +834,7 @@ public class NumberFormatTest extends TestFmwk {
 
                 new ParseCurrencyItem( "en_GB", "pounds3",  "\u00A33.00",       5,  3,  5,  3,  "GBP" ),
                 new ParseCurrencyItem( "en_GB", "pounds5",  "\u00A35",          2,  5,  2,  5,  "GBP" ),
-                new ParseCurrencyItem( "en_GB", "pounds7",  "7\u00A0\u00A3",    3,  7,  3,  7,  "GBP" ),
+                new ParseCurrencyItem( "en_GB", "pounds7",  "7\u00A0\u00A3",    1,  7,  3,  7,  "GBP" ),
                 new ParseCurrencyItem( "en_GB", "euros4",   "4,00\u00A0\u20AC", 4,400,  6,400,  "EUR" ),
                 new ParseCurrencyItem( "en_GB", "euros6",   "6\u00A0\u20AC",    1,  6,  3,  6,  "EUR" ),
                 new ParseCurrencyItem( "en_GB", "euros8",   "\u20AC8",          0,  0,  2,  8,  "EUR" ),
@@ -847,7 +842,7 @@ public class NumberFormatTest extends TestFmwk {
 
                 new ParseCurrencyItem( "fr_FR", "euros4",   "4,00\u00A0\u20AC", 6,  4,  6,  4,  "EUR" ),
                 new ParseCurrencyItem( "fr_FR", "euros6",   "6\u00A0\u20AC",    3,  6,  3,  6,  "EUR" ),
-                new ParseCurrencyItem( "fr_FR", "euros8",   "\u20AC8",          2,  8,  2,  8,  "EUR" ),
+                new ParseCurrencyItem( "fr_FR", "euros8",   "\u20AC8",          0,  0,  2,  8,  "EUR" ),
                 new ParseCurrencyItem( "fr_FR", "dollars2", "$2.00",            0,  0,  0,  0,  ""    ),
                 new ParseCurrencyItem( "fr_FR", "dollars4", "$4",               0,  0,  0,  0,  ""    ),
         };
@@ -892,6 +887,14 @@ public class NumberFormatTest extends TestFmwk {
                 }
             }
         }
+    }
+
+    @Test
+    public void TestParseCurrencyWithWhitespace() {
+        DecimalFormat df = new DecimalFormat("#,##0.00 ¤¤");
+        ParsePosition ppos = new ParsePosition(0);
+        df.parseCurrency("1.00 us denmark", ppos);
+        assertEquals("Expected to fail on 'us denmark' string", 9, ppos.getErrorIndex());
     }
 
     @Test
@@ -954,12 +957,6 @@ public class NumberFormatTest extends TestFmwk {
         expectParseCurrency(fmt, Currency.getInstance(Locale.JAPAN), "\uFFE51,235"); // Yen full-wdith
     }
 
-    /*
-     * This test doesn't work against the new formatter because
-     * getMinimumFractionDigits() and getMaximumFractionDigits()
-     * return the user-specified value, not the values actually
-     * used in formatting.
-     *
     @Test
     public void TestCurrencyPatterns() {
         int i;
@@ -994,7 +991,6 @@ public class NumberFormatTest extends TestFmwk {
             }
         }
     }
-    */
 
     /**
      * Do rudimentary testing of parsing.
@@ -1139,6 +1135,7 @@ public class NumberFormatTest extends TestFmwk {
                 errln("FAIL Pattern rt \"" + pat + "\" . \"" + pat2 + "\"");
             }
             // Make sure digit counts match what we expect
+            if (i == 0) continue; // outputs to 1,1,0,0 since at least one min digit is required.
             if (df.getMinimumIntegerDigits() != DIGITS[4 * i]
                     || df.getMaximumIntegerDigits() != DIGITS[4 * i + 1]
                             || df.getMinimumFractionDigits() != DIGITS[4 * i + 2]
@@ -1614,13 +1611,8 @@ public class NumberFormatTest extends TestFmwk {
         fmt.applyPattern("a b #");
         expect(fmt, "ab1234", n);
         expect(fmt, "ab  1234", n);
-
-        fmt.applyPattern("#");
-        fmt.setPositivePrefix(" a b ");
         expect(fmt, "a b1234", n);
         expect(fmt, "a   b1234", n);
-        expect(fmt, "ab1234", n);
-        expect(fmt, "ab  1234", n);
     }
 
     /**
@@ -3284,17 +3276,21 @@ public class NumberFormatTest extends TestFmwk {
     public void TestSetMinimumIntegerDigits() {
         NumberFormat nf = NumberFormat.getInstance();
         // For valid array, it is displayed as {min value, max value}
-        // Since the property bag does pre-process values, the expression
-        // "if (getMinimumIntegerDigits() > getMaximumIntegerDigits())" might not always be true.
-        // int[][] cases = { { -1, 0 }, { 0, 1 }, { 1, 0 }, { 2, 0 }, { 2, 1 }, { 10, 0 } };
-        int[] expectedMax = { 0, 1, 1, 2, 2, 10 };
-        for (int i = 0; i < expectedMax.length; i++) {
-            nf.setMaximumIntegerDigits(expectedMax[i]);
-            // nf.setMinimumIntegerDigits(cases[i][0]);
-            if (nf.getMaximumIntegerDigits() != expectedMax[i]) {
-                errln("NumberFormat.setMinimumIntegerDigits(int newValue "
-                        + "did not return an expected result for parameter ; expected "
-                        + expectedMax[i] + " but got " + nf.getMaximumIntegerDigits());
+        // Tests when "if (minimumIntegerDigits > maximumIntegerDigits)" is true
+        int[][] cases = { { -1, 0 }, { 0, 1 }, { 1, 0 }, { 2, 0 }, { 2, 1 }, { 10, 0 } };
+        int[] expectedMax = { 1, 1, 1, 2, 2, 10 };
+        if (cases.length != expectedMax.length) {
+            errln("Can't continue test case method TestSetMinimumIntegerDigits "
+                    + "since the test case arrays are unequal.");
+        } else {
+            for (int i = 0; i < cases.length; i++) {
+                nf.setMinimumIntegerDigits(cases[i][0]);
+                nf.setMaximumIntegerDigits(cases[i][1]);
+                if (nf.getMaximumIntegerDigits() != expectedMax[i]) {
+                    errln("NumberFormat.setMinimumIntegerDigits(int newValue "
+                            + "did not return an expected result for parameter " + cases[i][0] + " and " + cases[i][1]
+                                    + " and expected " + expectedMax[i] + " but got " + nf.getMaximumIntegerDigits());
+                }
             }
         }
     }
@@ -4092,7 +4088,6 @@ public class NumberFormatTest extends TestFmwk {
 
     @Test
     public void TestCurrencyWithMinMaxFractionDigits() {
-        // FIXME: Figure out how to make this test case pass.
         DecimalFormat df = new DecimalFormat();
         df.applyPattern("¤#,##0.00");
         df.setCurrency(Currency.getInstance("USD"));

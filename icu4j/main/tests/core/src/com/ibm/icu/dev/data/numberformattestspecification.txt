@@ -394,7 +394,7 @@ set pattern #,##0.###
 begin
 format	maxIntegerDigits	output	breaks
 123	1	3	
-0	0	.0	CJK
+0	0	0
 // S ignores max integer if it is less than zero and prints "123"
 123	-2147483648	0	S
 12345	1	5	

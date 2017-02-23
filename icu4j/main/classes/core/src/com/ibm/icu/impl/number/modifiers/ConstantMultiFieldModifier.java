@@ -88,7 +88,6 @@ public class ConstantMultiFieldModifier extends Modifier.BaseModifier implements
 
   @Override
   public void export(Properties properties) {
-    properties.setPositivePrefix(prefix);
-    properties.setPositiveSuffix(suffix);
+    throw new UnsupportedOperationException();
   }
 }
