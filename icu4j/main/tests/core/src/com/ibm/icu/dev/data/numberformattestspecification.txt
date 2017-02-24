@@ -61,21 +61,27 @@ pattern	format	output	breaks
 #	514.23	514
 #	0.23	0
 #	0	0
+#	1	1
 ##.#	514.23	514.2
 ##.#	0.23	0.2
 ##.#	0	0
+##.#	1	1
 #.#	514.23	514.2
 #.#	0.23	0.2
 #.#	0	0
+#.#	1	1
 .#	514.23	514.2
 .#	0.23	.2
 .#	0	.0
+.#	1	1.0
 #.	514.23	514.
 #.	0.23	0.
 #.	0	0.
+#.	1	1.
 .	514.23	514.
 .	0.23	0.
 .	0	0.
+.	1	1.
 
 test behavior on numbers approaching zero
 set locale en
@@ -818,9 +824,9 @@ parse	output	breaks
 +1234,567.8901	fail	K
 +1,234567.8901	fail	K
 +1234567.8901	1234567.8901
-// Minimum grouping is not satisfied below.
-// ICU58 does not check for this.
-+1,234.5	fail	JK
+// Minimum grouping is not satisfied below, but that's ok
+// because minimum grouping is optional.
++1,234.5	1234.5
 // Comma after decimal means parse to a comma
 +1,23,456.78,9	123456.78
 // J fails upon seeing the second decimal point
@@ -839,7 +845,7 @@ begin
 parse	output	breaks
 12.34	12.34
 -12.34	-12.34
-+12.34	fail
++12.34	12.34	JK
 $12.34	fail
 
 test parse integer only

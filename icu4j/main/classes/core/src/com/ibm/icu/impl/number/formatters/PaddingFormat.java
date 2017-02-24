@@ -107,6 +107,8 @@ public class PaddingFormat implements AfterFormat {
     public IProperties setPaddingLocation(PaddingLocation paddingLocation);
   }
 
+  public static final String FALLBACK_PADDING_STRING = "\u0020"; // i.e. a space
+
   public static boolean usePadding(IProperties properties) {
     return properties.getPaddingWidth() != IProperties.DEFAULT_PADDING_WIDTH;
   }
@@ -123,9 +125,10 @@ public class PaddingFormat implements AfterFormat {
   private final String paddingString;
   private final PaddingLocation paddingLocation;
 
-  private PaddingFormat(int paddingWidth, CharSequence paddingString, PaddingLocation paddingLocation) {
+  private PaddingFormat(
+      int paddingWidth, CharSequence paddingString, PaddingLocation paddingLocation) {
     this.paddingWidth = paddingWidth > 0 ? paddingWidth : 10; // TODO: Is this a sensible default?
-    this.paddingString = paddingString != null ? paddingString.toString() : "\u0020";
+    this.paddingString = paddingString != null ? paddingString.toString() : FALLBACK_PADDING_STRING;
     this.paddingLocation =
         paddingLocation != null ? paddingLocation : PaddingLocation.BEFORE_PREFIX;
   }

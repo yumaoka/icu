@@ -3,6 +3,7 @@
 package com.ibm.icu.impl.number;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
 import java.text.ParseException;
 import java.text.ParsePosition;
 import java.util.HashSet;
@@ -528,12 +529,18 @@ public class Parse {
       }
       int delta = (sawNegativeExponent ? -1 : 1) * exponent;
 
+      // We need to use a math context in order to prevent non-terminating decimal expansions.
+      // This is only used when dividing by the multiplier.
+      MathContext mc = RoundingUtils.getMathContextOr16Digits(properties);
+
       // Construct the output number.
       // This is the only step during fast-mode parsing that incurs object creations.
       BigDecimal result = fq.toBigDecimal();
       if (sawNegative) result = result.negate();
       result = result.scaleByPowerOfTen(delta);
-      if (multiplier != null) result = result.divide(multiplier);
+      if (multiplier != null) {
+        result = result.divide(multiplier, mc);
+      }
       result = result.stripTrailingZeros();
       if (forceBigDecimal || result.scale() > 0) {
         return result;
@@ -1327,7 +1334,6 @@ public class Parse {
           int grouping2 = properties.getSecondaryGroupingSize();
           grouping1 = grouping1 > 0 ? grouping1 : grouping2;
           grouping2 = grouping2 > 0 ? grouping2 : grouping1;
-          int groupingMin = properties.getMinimumGroupingDigits();
           long groupingWidths = item.groupingWidths;
           int numGroupingRegions = 16 - Long.numberOfLeadingZeros(groupingWidths) / 4;
           // If the last grouping is zero, accept strings like "1," but reject string like "1,.23"
@@ -1348,12 +1354,6 @@ public class Parse {
           } else if ((groupingWidths & 0xf) != grouping1) {
             // First grouping size is invalid
             if (DEBUGGING) System.out.println("-> rejected due to first grouping violation");
-            continue;
-          } else if (numGroupingRegions == 2
-              && groupingMin > 0
-              && ((groupingWidths >>> 4) & 0xf) < groupingMin) {
-            // String like "1,234" with groupingMin == 2
-            if (DEBUGGING) System.out.println("-> rejected due to minGrouping violation");
             continue;
           } else if (((groupingWidths >>> ((numGroupingRegions - 1) * 4)) & 0xf) > grouping2) {
             // String like "1234,567" where the highest grouping is too large

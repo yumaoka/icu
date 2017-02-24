@@ -12,11 +12,36 @@ import com.ibm.icu.impl.number.NumberStringBuilder;
 import com.ibm.icu.text.DecimalFormatSymbols;
 import com.ibm.icu.util.ULocale;
 
-/** @author sffc */
-public class LiteralStringTest {
+public class AffixPatternUtilsTest {
 
   @Test
-  public void test() {
+  public void testEscape() {
+    Object[][] cases = {
+      {"", ""},
+      {"abc", "abc"},
+      {"-", "'-'"},
+      {"-!", "'-'!"},
+      {"−", "−"},
+      {"---", "'---'"},
+      {"-%-", "'-%-'"},
+      {"'", "''"},
+      {"-'", "'-'''"},
+      {"-'-", "'-''-'"},
+      {"a-'-", "a'-''-'"}
+    };
+
+    StringBuilder sb = new StringBuilder();
+    for (Object[] cas : cases) {
+      String input = (String) cas[0];
+      String expected = (String) cas[1];
+      sb.setLength(0);
+      AffixPatternUtils.escape(input, sb);
+      assertEquals(expected, sb.toString());
+    }
+  }
+
+  @Test
+  public void testUnescape() {
     Object[][] cases = {
       {"", false, 0, ""},
       {"abc", false, 3, "abc"},
@@ -59,7 +84,8 @@ public class LiteralStringTest {
       int length = (Integer) cas[2];
       String output = (String) cas[3];
 
-      assertEquals("Currency on <" + input + ">", curr, AffixPatternUtils.hasCurrencySymbols(input));
+      assertEquals(
+          "Currency on <" + input + ">", curr, AffixPatternUtils.hasCurrencySymbols(input));
       assertEquals("Length on <" + input + ">", length, AffixPatternUtils.unescapedLength(input));
 
       sb.clear();
@@ -82,11 +108,11 @@ public class LiteralStringTest {
         // OK
       }
       try {
-          AffixPatternUtils.unescapedLength(str);
-          fail("No exception was thrown on an invalid string");
-        } catch (IllegalArgumentException e) {
-          // OK
-        }
+        AffixPatternUtils.unescapedLength(str);
+        fail("No exception was thrown on an invalid string");
+      } catch (IllegalArgumentException e) {
+        // OK
+      }
       try {
         AffixPatternUtils.unescape(str, symbols, "$", "XXX", "long name", "−", sb);
         fail("No exception was thrown on an invalid string");

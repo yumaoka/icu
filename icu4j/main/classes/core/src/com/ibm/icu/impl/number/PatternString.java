@@ -4,6 +4,7 @@ package com.ibm.icu.impl.number;
 
 import java.math.BigDecimal;
 
+import com.ibm.icu.impl.number.formatters.PaddingFormat;
 import com.ibm.icu.impl.number.formatters.PaddingFormat.PaddingLocation;
 import com.ibm.icu.text.DecimalFormatSymbols;
 
@@ -80,23 +81,27 @@ public class PatternString {
 
     // Prefixes
     if (ppp != null) sb.append(ppp);
-    escapeAndAppendTo(pp, sb, true);
+    AffixPatternUtils.escape(pp, sb);
     int afterPrefixPos = sb.length();
 
     // Figure out the grouping sizes.
-    int grouping1, grouping2;
+    int grouping1, grouping2, grouping;
     if (groupingSize != Math.min(dosMax, Properties.DEFAULT_SECONDARY_GROUPING_SIZE)
         && firstGroupingSize != Math.min(dosMax, Properties.DEFAULT_GROUPING_SIZE)
         && groupingSize != firstGroupingSize) {
+      grouping = groupingSize;
       grouping1 = groupingSize;
       grouping2 = firstGroupingSize;
     } else if (groupingSize != Math.min(dosMax, Properties.DEFAULT_SECONDARY_GROUPING_SIZE)) {
+      grouping = groupingSize;
       grouping1 = 0;
       grouping2 = groupingSize;
     } else if (firstGroupingSize != Math.min(dosMax, Properties.DEFAULT_GROUPING_SIZE)) {
+      grouping = groupingSize;
       grouping1 = 0;
       grouping2 = firstGroupingSize;
     } else {
+      grouping = 0;
       grouping1 = 0;
       grouping2 = 0;
     }
@@ -145,7 +150,7 @@ public class PatternString {
       } else {
         sb.append(digitsString.charAt(di));
       }
-      if (magnitude > 0 && magnitude == grouping1 + grouping2) {
+      if (magnitude > grouping2 && grouping > 0 && (magnitude - grouping2) % grouping == 0) {
         sb.append(',');
       } else if (magnitude > 0 && magnitude == grouping2) {
         sb.append(',');
@@ -168,7 +173,7 @@ public class PatternString {
     // Suffixes
     int beforeSuffixPos = sb.length();
     if (psp != null) sb.append(psp);
-    escapeAndAppendTo(ps, sb, true);
+    AffixPatternUtils.escape(ps, sb);
 
     // Resolve Padding
     if (paddingWidth != Properties.DEFAULT_PADDING_WIDTH) {
@@ -179,24 +184,24 @@ public class PatternString {
       int addedLength;
       switch (paddingLocation) {
         case BEFORE_PREFIX:
-          addedLength = escapeAndInsertInto(paddingString, sb, 0, false);
+          addedLength = escapePaddingString(paddingString, sb, 0);
           sb.insert(0, '*');
           afterPrefixPos += addedLength + 1;
           beforeSuffixPos += addedLength + 1;
           break;
         case AFTER_PREFIX:
-          addedLength = escapeAndInsertInto(paddingString, sb, afterPrefixPos, false);
+          addedLength = escapePaddingString(paddingString, sb, afterPrefixPos);
           sb.insert(afterPrefixPos, '*');
           afterPrefixPos += addedLength + 1;
           beforeSuffixPos += addedLength + 1;
           break;
         case BEFORE_SUFFIX:
-          escapeAndInsertInto(paddingString, sb, beforeSuffixPos, false);
+          escapePaddingString(paddingString, sb, beforeSuffixPos);
           sb.insert(beforeSuffixPos, '*');
           break;
         case AFTER_SUFFIX:
           sb.append('*');
-          escapeAndAppendTo(paddingString, sb, false);
+          escapePaddingString(paddingString, sb, sb.length());
           break;
       }
     }
@@ -209,53 +214,37 @@ public class PatternString {
         || (npp != null && (npp.length() != 1 || npp.charAt(0) != '-' || nsp.length() != 0))) {
       sb.append(';');
       if (npp != null) sb.append(npp);
-      escapeAndAppendTo(np, sb, true);
+      AffixPatternUtils.escape(np, sb);
       // Copy the positive digit format into the negative.
       // This is optional; the pattern is the same as if '#' were appended here instead.
       sb.append(sb, afterPrefixPos, beforeSuffixPos);
       if (nsp != null) sb.append(nsp);
-      escapeAndAppendTo(ns, sb, true);
+      AffixPatternUtils.escape(ns, sb);
     }
 
     return sb.toString();
   }
 
-  /**
-   * Wraps the given string in quotes and appends it to the given string builder.
-   *
-   * @return The number of chars inserted.
-   */
-  private static int escapeAndAppendTo(CharSequence input, StringBuilder sb, boolean forceQuotes) {
-    if (input == null) return 0;
-    int length = input.length();
-    if (length == 0) return 0;
-    int startLength = sb.length();
-    if (length == 1 && input.charAt(0) == '\'') {
-      sb.append("''");
-      return 2;
-    }
-    if (forceQuotes || length > 1) sb.append('\'');
-    for (int i = 0; i < length; i++) {
-      char ch = input.charAt(i);
-      if (ch == '\'') {
-        sb.append("''");
-      } else {
-        sb.append(ch);
-      }
-    }
-    if (forceQuotes || length > 1) sb.append('\'');
-    return sb.length() - startLength;
-  }
-
   /** @return The number of chars inserted. */
-  private static int escapeAndInsertInto(
-      CharSequence input, StringBuilder sb, int insertIndex, boolean forceQuotes) {
-    // Although this triggers a new object creation, it reduces the number of calls to insert (and
-    // therefore System.arraycopy).
-    StringBuilder temp = new StringBuilder();
-    int length = escapeAndAppendTo(input, temp, forceQuotes);
-    sb.insert(insertIndex, temp);
-    return length;
+  private static int escapePaddingString(CharSequence input, StringBuilder output, int startIndex) {
+    if (input == null || input.length() == 0) input = PaddingFormat.FALLBACK_PADDING_STRING;
+    int startLength = output.length();
+    if (input.length() == 1) {
+      output.insert(startIndex, input);
+    } else {
+      output.insert(startIndex, '\'');
+      for (int i = 0; i < input.length(); i++) {
+        // it's okay to deal in chars here because the quote mark is the only interesting thing.
+        char ch = input.charAt(i);
+        if (ch == '\'') {
+          output.insert(startIndex, "''");
+        } else {
+          output.insert(startIndex, ch);
+        }
+      }
+      output.insert(startIndex, '\'');
+    }
+    return output.length() - startLength;
   }
 
   /**
@@ -434,7 +423,13 @@ public class PatternString {
                   + AffixPatternUtils.unescapedLength(positive.prefix)
                   + AffixPatternUtils.unescapedLength(positive.suffix);
           properties.setPaddingWidth(paddingWidth);
-          properties.setPaddingString(positive.padding.toString());
+          if (positive.padding.length() > 1) {
+            // TODO: What if the custom padding string has a quote character?
+            properties.setPaddingString(
+                positive.padding.subSequence(1, positive.padding.length() - 1).toString());
+          } else {
+            properties.setPaddingString(positive.padding.toString());
+          }
           assert positive.paddingLocation != null;
           properties.setPaddingLocation(positive.paddingLocation);
         } else {
@@ -533,7 +528,13 @@ public class PatternString {
     }
 
     static void parse(String pattern, Properties properties) {
-      if (pattern == null || pattern.isEmpty()) return;
+      if (pattern == null || pattern.length() == 0) {
+        // Backwards compatibility requires that we reset to the default values.
+        // TODO: Only overwrite the properties that "saveToProperties" normally touches?
+        properties.clear();
+        return;
+      }
+
       // TODO: Use whitespace characters from PatternProps
       ParserState state = new ParserState(pattern);
       PatternParseResult result = new PatternParseResult();

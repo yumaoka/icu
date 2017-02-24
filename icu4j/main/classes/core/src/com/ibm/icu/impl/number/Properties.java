@@ -22,6 +22,7 @@ import com.ibm.icu.impl.number.formatters.ScientificFormat;
 import com.ibm.icu.impl.number.rounders.IntervalRounder;
 import com.ibm.icu.impl.number.rounders.MagnitudeRounder;
 import com.ibm.icu.impl.number.rounders.SignificantDigitsRounder;
+import com.ibm.icu.impl.number.rounders.SignificantDigitsRounder.SignificantDigitsMode;
 import com.ibm.icu.text.CompactDecimalFormat.CompactStyle;
 import com.ibm.icu.text.CurrencyPluralInfo;
 import com.ibm.icu.text.MeasureFormat.FormatWidth;
@@ -106,7 +107,7 @@ public class Properties
   private BigDecimal roundingInterval;
   private RoundingMode roundingMode;
   private int secondaryGroupingSize;
-  private boolean significantDigitsOverride;
+  private SignificantDigitsMode significantDigitsMode;
 
   /*--------------------------------------------------------------------------------------------+/
   /| IMPORTANT!                                                                                 |/
@@ -165,7 +166,7 @@ public class Properties
     roundingInterval = DEFAULT_ROUNDING_INTERVAL;
     roundingMode = DEFAULT_ROUNDING_MODE;
     secondaryGroupingSize = DEFAULT_SECONDARY_GROUPING_SIZE;
-    significantDigitsOverride = DEFAULT_SIGNIFICANT_DIGITS_OVERRIDE_MAXIMUM_DIGITS;
+    significantDigitsMode = DEFAULT_SIGNIFICANT_DIGITS_MODE;
     return this;
   }
 
@@ -212,7 +213,7 @@ public class Properties
     roundingInterval = other.roundingInterval;
     roundingMode = other.roundingMode;
     secondaryGroupingSize = other.secondaryGroupingSize;
-    significantDigitsOverride = other.significantDigitsOverride;
+    significantDigitsMode = other.significantDigitsMode;
     return this;
   }
 
@@ -261,7 +262,7 @@ public class Properties
     eq = eq && _equalsHelper(roundingInterval, other.roundingInterval);
     eq = eq && _equalsHelper(roundingMode, other.roundingMode);
     eq = eq && _equalsHelper(secondaryGroupingSize, other.secondaryGroupingSize);
-    eq = eq && _equalsHelper(significantDigitsOverride, other.significantDigitsOverride);
+    eq = eq && _equalsHelper(significantDigitsMode, other.significantDigitsMode);
     return eq;
   }
 
@@ -338,7 +339,7 @@ public class Properties
     hashCode ^= _hashCodeHelper(roundingInterval);
     hashCode ^= _hashCodeHelper(roundingMode);
     hashCode ^= _hashCodeHelper(secondaryGroupingSize);
-    hashCode ^= _hashCodeHelper(significantDigitsOverride);
+    hashCode ^= _hashCodeHelper(significantDigitsMode);
     return hashCode;
   }
 
@@ -615,8 +616,8 @@ public class Properties
   }
 
   @Override
-  public boolean getSignificantDigitsOverride() {
-    return significantDigitsOverride;
+  public SignificantDigitsMode getSignificantDigitsMode() {
+    return significantDigitsMode;
   }
 
   @Override
@@ -893,8 +894,8 @@ public class Properties
   }
 
   @Override
-  public Properties setSignificantDigitsOverride(boolean significantDigitsOverrideMaximumDigits) {
-    this.significantDigitsOverride = significantDigitsOverrideMaximumDigits;
+  public Properties setSignificantDigitsMode(SignificantDigitsMode significantDigitsMode) {
+    this.significantDigitsMode = significantDigitsMode;
     return this;
   }
 

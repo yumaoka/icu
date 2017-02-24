@@ -353,6 +353,10 @@ public class FormatQuantity1 implements FormatQuantity {
 
   @Override
   public void roundToMagnitude(int roundingMagnitude, MathContext mathContext) {
+    if (roundingMagnitude < -1000) {
+      roundToInfinity();
+      return;
+    }
     if (primary == -1) {
       if (isNegative()) fallback = fallback.negate();
       fallback = fallback.setScale(-roundingMagnitude, mathContext.getRoundingMode());

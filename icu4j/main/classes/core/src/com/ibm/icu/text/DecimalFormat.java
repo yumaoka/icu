@@ -114,11 +114,13 @@ public class DecimalFormat extends NumberFormat {
   /** @stable ICU 2.0 */
   public synchronized void applyPattern(String pattern) {
     setPropertiesFromPattern(pattern);
-    // Backwards compatibility: clear out user-specified prefix and suffix
+    // Backwards compatibility: clear out user-specified prefix and suffix,
+    // as well as CurrencyPluralInfo.
     properties.setPositivePrefix(null);
     properties.setNegativePrefix(null);
     properties.setPositiveSuffix(null);
     properties.setNegativeSuffix(null);
+    properties.setCurrencyPluralInfo(null);
     refreshFormatter();
   }
 
@@ -766,7 +768,8 @@ public class DecimalFormat extends NumberFormat {
 
   /** @stable ICU 2.0 */
   public synchronized String toLocalizedPattern() {
-    String pattern = PatternString.propertiesToString(exportedProperties);
+    // Properties is used instead of exportedProperties here to keep the affix patterns intact.
+    String pattern = PatternString.propertiesToString(properties);
     return PatternString.convertLocalized(pattern, symbols, true);
   }
 

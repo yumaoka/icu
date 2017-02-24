@@ -18,6 +18,7 @@ import com.ibm.icu.impl.number.PatternString;
 import com.ibm.icu.impl.number.Properties;
 import com.ibm.icu.impl.number.Rounder;
 import com.ibm.icu.impl.number.rounders.SignificantDigitsRounder;
+import com.ibm.icu.impl.number.rounders.SignificantDigitsRounder.SignificantDigitsMode;
 import com.ibm.icu.text.CompactDecimalFormat.CompactStyle;
 import com.ibm.icu.text.DecimalFormatSymbols;
 import com.ibm.icu.text.NumberingSystem;
@@ -75,8 +76,8 @@ public class CompactDecimalFormat extends Format.BeforeFormat {
           SignificantDigitsRounder.getInstance(
               SignificantDigitsRounder.getThreadLocalProperties()
                   .setMinimumSignificantDigits(2)
-                  .setMaximumFractionDigits(1)
-                  .setSignificantDigitsOverride(false));
+                  .setMaximumFractionDigits(0)
+                  .setSignificantDigitsMode(SignificantDigitsMode.ENSURE_MINIMUM_SIGNIFICANT));
     }
     return rounder;
   }
@@ -86,7 +87,7 @@ public class CompactDecimalFormat extends Format.BeforeFormat {
           new ThreadLocal<Map<CompactDecimalFingerprint, CompactDecimalData>>() {
             @Override
             protected Map<CompactDecimalFingerprint, CompactDecimalData> initialValue() {
-              return new HashMap<CompactDecimalFingerprint, CompactDecimalData>();
+              return new HashMap<>();
             }
           };
 

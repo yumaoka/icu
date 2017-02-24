@@ -202,11 +202,70 @@ public class AffixPatternUtils {
   }
 
   /**
+   * Takes a string and escapes (quotes) characters that have special meaning in the affix pattern
+   * syntax. This function does not reverse-lookup symbols.
+   *
+   * <p>Example input: "-$x"; example output: "'-'$x"
+   *
+   * @param input The string to be escaped.
+   * @param output The string builder to which to append the escaped string.
+   * @return The number of chars (UTF-16 code units) appended to the output.
+   */
+  public static int escape(CharSequence input, StringBuilder output) {
+    if (input == null) return 0;
+    int state = STATE_BASE;
+    int offset = 0;
+    int startLength = output.length();
+    for (; offset < input.length(); ) {
+      int cp = Character.codePointAt(input, offset);
+
+      switch (cp) {
+        case '\'':
+          output.append("''");
+          break;
+
+        case '-':
+        case '+':
+        case '%':
+        case '‰':
+        case '¤':
+          if (state == STATE_BASE) {
+            output.append('\'');
+            output.appendCodePoint(cp);
+            state = STATE_INSIDE_QUOTE;
+          } else {
+            output.appendCodePoint(cp);
+          }
+          break;
+
+        default:
+          if (state == STATE_INSIDE_QUOTE) {
+            output.append('\'');
+            output.appendCodePoint(cp);
+            state = STATE_BASE;
+          } else {
+            output.appendCodePoint(cp);
+          }
+          break;
+      }
+      offset += Character.charCount(cp);
+    }
+
+    if (state == STATE_INSIDE_QUOTE) {
+      output.append('\'');
+    }
+
+    return output.length() - startLength;
+  }
+
+  /**
    * Executes the unescape state machine. Replaces the unquoted characters "-", "+", "%", and "‰"
    * with their localized equivalents. Replaces "¤", "¤¤", and "¤¤¤" with the three argument
    * strings.
    *
-   * @param literalString The original string to be unescaped.
+   * <p>Example input: "'-'¤x"; example output: "-$x"
+   *
+   * @param affixPattern The original string to be unescaped.
    * @param symbols An instance of {@link DecimalFormatSymbols} for the locale of interest.
    * @param currency1 The string to replace "¤".
    * @param currency2 The string to replace "¤¤".
@@ -215,18 +274,18 @@ public class AffixPatternUtils {
    * @param output The {@link NumberStringBuilder} to which the result will be appended.
    */
   public static void unescape(
-      CharSequence literalString,
+      CharSequence affixPattern,
       DecimalFormatSymbols symbols,
       String currency1,
       String currency2,
       String currency3,
       String minusSign,
       NumberStringBuilder output) {
-    if (literalString == null || literalString.length() == 0) return;
+    if (affixPattern == null || affixPattern.length() == 0) return;
     if (minusSign == null) minusSign = symbols.getMinusSignString();
     long tag = 0L;
-    while (hasNext(tag, literalString)) {
-      tag = nextToken(tag, literalString);
+    while (hasNext(tag, affixPattern)) {
+      tag = nextToken(tag, affixPattern);
       int typeOrCp = getTypeOrCp(tag);
       switch (typeOrCp) {
         case TYPE_MINUS_SIGN:

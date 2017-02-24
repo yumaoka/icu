@@ -1323,6 +1323,9 @@ public class NumberFormatTest extends TestFmwk {
           UnicodeString pattern(patternChars);
           expectPad(fmt, pattern , DecimalFormat.kPadBeforePrefix, 4, padString);
          */
+
+        // Test multi-char padding sequence specified via pattern
+        expect2(new DecimalFormat("*'😃'####.00", US), 1.1, "😃😃😃1.10");
     }
 
     /**

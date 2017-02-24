@@ -1252,7 +1252,9 @@ public class NumberRegressionTests extends TestFmwk {
         logln("Applying pattern \"" + pattern + "\"");
         sdf.applyPattern(pattern);
         int minIntDig = sdf.getMinimumIntegerDigits();
-        if (minIntDig != 0) {
+        // In ICU 58 and older, this case returned 0.
+        // Now it returns 1 instead, since the pattern parser enforces at least 1 min digit.
+        if (minIntDig != 1) {
             errln("Test failed");
             errln(" Minimum integer digits : " + minIntDig);
             errln(" new pattern: " + sdf.toPattern());
@@ -1301,9 +1303,7 @@ public class NumberRegressionTests extends TestFmwk {
             e.printStackTrace();
         }
         logln("The string " + s + " parsed as " + n);
-        if (n.doubleValue() != dbl) {
-            errln("Round trip failure");
-        }
+        assertEquals("Round trip failure", dbl, n.doubleValue());
     }
 
     /**
@@ -1385,15 +1385,15 @@ public class NumberRegressionTests extends TestFmwk {
     @Test
     public void Test4176114() {
         String[] DATA = {
-            "00", "#00",
-            "000", "#000", // No grouping
-            "#000", "#000", // No grouping
+            "00", "00",
+            "000", "000", // No grouping
+            "#000", "000", // No grouping
             "#,##0", "#,##0",
             "#,000", "#,000",
-            "0,000", "#0,000",
-            "00,000", "#00,000",
-            "000,000", "#,000,000",
-            "0,000,000,000,000.0000", "#0,000,000,000,000.0000", // Reported
+            "0,000", "0,000",
+            "00,000", "00,000",
+            "000,000", "000,000",
+            "0,000,000,000,000.0000", "0,000,000,000,000.0000", // Reported
         };
         for (int i=0; i<DATA.length; i+=2) {
             DecimalFormat df = new DecimalFormat(DATA[i]);

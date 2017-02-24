@@ -143,15 +143,6 @@ public abstract class Rounder extends Format.BeforeFormat {
     public int getMultiplier(int magnitude);
   }
 
-  private static final MathContext[] MATH_CONTEXT_BY_ROUNDING_MODE =
-      new MathContext[RoundingMode.values().length];
-
-  static {
-    for (int i = 0; i < MATH_CONTEXT_BY_ROUNDING_MODE.length; i++) {
-      MATH_CONTEXT_BY_ROUNDING_MODE[i] = new MathContext(0, RoundingMode.valueOf(i));
-    }
-  }
-
   // Properties available to all rounding strategies
   protected final MathContext mathContext;
   protected final int minInt;
@@ -165,13 +156,7 @@ public abstract class Rounder extends Format.BeforeFormat {
    * @param properties
    */
   protected Rounder(IBasicRoundingProperties properties) {
-    MathContext _mc = properties.getMathContext();
-    if (_mc == null) {
-      RoundingMode _rm = properties.getRoundingMode();
-      if (_rm == null) _rm = RoundingMode.HALF_EVEN;
-      _mc = MATH_CONTEXT_BY_ROUNDING_MODE[_rm.ordinal()];
-    }
-    mathContext = _mc;
+    mathContext = RoundingUtils.getMathContextOrUnlimited(properties);
 
     int _maxInt = properties.getMaximumIntegerDigits();
     int _minInt = properties.getMinimumIntegerDigits();

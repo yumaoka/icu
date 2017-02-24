@@ -520,8 +520,8 @@ public abstract class FormatQuantityBCD implements FormatQuantity {
     long result = 0L;
     int magnitude = -1;
     for (;
-        (magnitude >= scale || (includeTrailingZeros && magnitude >= lReqPos))
-            && magnitude >= lOptPos;
+        (magnitude >= scale || (includeTrailingZeros && magnitude >= rReqPos))
+            && magnitude >= rOptPos;
         magnitude--) {
       result = result * 10 + getDigitPos(magnitude - scale);
     }
@@ -593,11 +593,19 @@ public abstract class FormatQuantityBCD implements FormatQuantity {
     return result;
   }
 
+  private static int safeSubtract(int a, int b) {
+    if (b < 0 && a - b < a) return Integer.MAX_VALUE;
+    if (b > 0 && a - b > a) return Integer.MIN_VALUE;
+    return a - b;
+  }
+
   @Override
   public void roundToMagnitude(int magnitude, MathContext mathContext) {
     // The position in the BCD at which rounding will be performed; digits to the right of position
     // will be rounded away.
-    int position = magnitude - scale;
+    // TODO: Andy: There was a test failure because of integer overflow here. Should I do
+    // "safe subtraction" everywhere in the code?  What's the nicest way to do it?
+    int position = safeSubtract(magnitude, scale);
 
     // Enforce the number of digits required by the MathContext.
     int _mcPrecision = mathContext.getPrecision();
@@ -614,7 +622,7 @@ public abstract class FormatQuantityBCD implements FormatQuantity {
       // Perform rounding logic.
       // "leading" = most significant digit to the right of rounding
       // "trailing" = least significant digit to the left of rounding
-      byte leadingDigit = getDigitPos(position - 1);
+      byte leadingDigit = getDigitPos(safeSubtract(position, 1));
       byte trailingDigit = getDigitPos(position);
 
       // Compute which section of the number we are in.
@@ -629,7 +637,7 @@ public abstract class FormatQuantityBCD implements FormatQuantity {
         } else if (leadingDigit > 5) {
           section = RoundingUtils.SECTION_UPPER;
         } else {
-          for (int p = position - 2; p >= 0; p--) {
+          for (int p = safeSubtract(position, 2); p >= 0; p--) {
             if (getDigitPos(p) != 0) {
               section = RoundingUtils.SECTION_UPPER;
               break;
@@ -637,7 +645,7 @@ public abstract class FormatQuantityBCD implements FormatQuantity {
           }
         }
       } else {
-        int p = position - 2;
+        int p = safeSubtract(position, 2);
         int minP = Math.max(0, precision - 14);
         if (leadingDigit == 0) {
           section = -1;
@@ -677,7 +685,7 @@ public abstract class FormatQuantityBCD implements FormatQuantity {
 
         boolean roundsAtMidpoint =
             RoundingUtils.roundsAtMidpoint(mathContext.getRoundingMode().ordinal());
-        if (position - 1 < precision - 14
+        if (safeSubtract(position, 1) < precision - 14
             || (roundsAtMidpoint && section == RoundingUtils.SECTION_MIDPOINT)
             || (!roundsAtMidpoint && section < 0 /* i.e. at upper or lower edge */)) {
           // Oops! This means that we have to get the exact representation of the double, because

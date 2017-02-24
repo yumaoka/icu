@@ -108,6 +108,7 @@ public class CurrencyFormat {
    */
   public static boolean useCurrency(IProperties properties) {
     return ((properties.getCurrency() != null)
+        || properties.getCurrencyPluralInfo() != null
         || AffixPatternUtils.hasCurrencySymbols(properties.getPositivePrefixPattern())
         || AffixPatternUtils.hasCurrencySymbols(properties.getPositiveSuffixPattern())
         || AffixPatternUtils.hasCurrencySymbols(properties.getNegativePrefixPattern())
