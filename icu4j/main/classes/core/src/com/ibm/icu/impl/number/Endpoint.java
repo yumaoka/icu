@@ -219,7 +219,7 @@ public class Endpoint {
       new ThreadLocal<Map<ULocale, DecimalFormatSymbols>>() {
         @Override
         protected Map<ULocale, DecimalFormatSymbols> initialValue() {
-          return new HashMap<ULocale, DecimalFormatSymbols>();
+          return new HashMap<>();
         }
       };
 
@@ -247,7 +247,7 @@ public class Endpoint {
       new ThreadLocal<Map<String, Properties>>() {
         @Override
         protected Map<String, Properties> initialValue() {
-          return new HashMap<String, Properties>();
+          return new HashMap<>();
         }
       };
 
@@ -265,7 +265,7 @@ public class Endpoint {
       new ThreadLocal<Map<ULocale, PluralRules>>() {
         @Override
         protected Map<ULocale, PluralRules> initialValue() {
-          return new HashMap<ULocale, PluralRules>();
+          return new HashMap<>();
         }
       };
 

@@ -258,7 +258,7 @@ $**####,##0	1234	$***1\u00a0234	K
 // In J ICU adds padding as if 'EUR' is only 2 chars (2 * 0xa4)
 \u00a4\u00a4 **####0.00	433.0	EUR *433,00	JK
 // In J ICU adds padding as if 'EUR' is only 2 chars (2 * 0xa4)
-\u00a4\u00a4 **#######0	433.0	EUR *433,00	JK
+\u00a4\u00a4 **#######0	433.0	EUR ****433	JK
 
 test padding and currencies
 begin
@@ -545,7 +545,7 @@ set locale en
 set currency USD
 begin
 pattern	format	output	breaks
-#	123	123
+#	123	123	S
 // Currency rounding should always override the pattern.
 // K prints the currency in ISO format for some reason.
 \u00a4#	123	$123.00	K
@@ -1169,6 +1169,7 @@ US Dollar53.45	53.45	USD
 
 test format foreign currency
 set locale fa_IR
+set currency IRR
 begin
 pattern	format	output	breaks
 \u00a4\u00a4\u00a4 0.00;\u00a4\u00a4\u00a4 #	1235	\u0631\u06cc\u0627\u0644 \u0627\u06cc\u0631\u0627\u0646 \u06F1\u06F2\u06F3\u06F5	K

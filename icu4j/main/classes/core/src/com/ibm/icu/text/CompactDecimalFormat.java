@@ -20,9 +20,7 @@ import java.text.FieldPosition;
 import java.text.ParsePosition;
 import java.util.Locale;
 
-import com.ibm.icu.impl.number.Endpoint;
-import com.ibm.icu.impl.number.Format.SingularFormat;
-import com.ibm.icu.impl.number.FormatQuantitySelector;
+import com.ibm.icu.impl.number.FormatQuantity4;
 import com.ibm.icu.impl.number.Properties;
 import com.ibm.icu.util.CurrencyAmount;
 import com.ibm.icu.util.ULocale;
@@ -78,8 +76,6 @@ public class CompactDecimalFormat extends DecimalFormat {
     LONG
   }
 
-  private final SingularFormat formatter;
-
   /**
    * Create a CompactDecimalFormat appropriate for a locale. The result may be affected by the
    * number system in the locale, such as ar-u-nu-latn.
@@ -111,9 +107,17 @@ public class CompactDecimalFormat extends DecimalFormat {
    * @param style the compact style
    */
   CompactDecimalFormat(ULocale locale, CompactStyle style) {
-    Properties properties = new Properties();
+    // Use the locale's default pattern
+    String pattern = getPattern(locale, 0);
+    symbols = DecimalFormatSymbols.getInstance(locale);
+    properties = new Properties();
     properties.setCompactStyle(style);
-    formatter = Endpoint.fromBTA(properties, locale);
+    exportedProperties = new Properties();
+    setPropertiesFromPattern(pattern, true);
+    if (style == CompactStyle.SHORT) {
+      setGroupingUsed(false);
+    }
+    refreshFormatter();
   }
 
   /**
@@ -123,8 +127,7 @@ public class CompactDecimalFormat extends DecimalFormat {
    */
   @Override
   public boolean equals(Object obj) {
-    // TODO(sffc)
-    throw new UnsupportedOperationException();
+    return super.equals(obj);
   }
 
   /**
@@ -134,8 +137,9 @@ public class CompactDecimalFormat extends DecimalFormat {
    */
   @Override
   public StringBuffer format(double number, StringBuffer toAppendTo, FieldPosition pos) {
-    // TODO(sffc): Implement FieldPosition
-    formatter.format(FormatQuantitySelector.from(number), toAppendTo);
+    FormatQuantity4 fq = new FormatQuantity4(number);
+    formatter.format(fq, toAppendTo, pos);
+    fq.populateUFieldPosition(pos);
     return toAppendTo;
   }
 
@@ -146,8 +150,11 @@ public class CompactDecimalFormat extends DecimalFormat {
    */
   @Override
   public AttributedCharacterIterator formatToCharacterIterator(Object obj) {
-    // TODO(sffc)
-    throw new UnsupportedOperationException();
+    if (!(obj instanceof Number)) throw new IllegalArgumentException();
+    Number number = (Number) obj;
+    FormatQuantity4 fq = new FormatQuantity4(number);
+    AttributedCharacterIterator result = formatter.formatToCharacterIterator(fq);
+    return result;
   }
 
   /**
@@ -157,8 +164,9 @@ public class CompactDecimalFormat extends DecimalFormat {
    */
   @Override
   public StringBuffer format(long number, StringBuffer toAppendTo, FieldPosition pos) {
-    // TODO(sffc): Implement FieldPosition
-    formatter.format(FormatQuantitySelector.from(number), toAppendTo);
+    FormatQuantity4 fq = new FormatQuantity4(number);
+    formatter.format(fq, toAppendTo, pos);
+    fq.populateUFieldPosition(pos);
     return toAppendTo;
   }
 
@@ -169,8 +177,9 @@ public class CompactDecimalFormat extends DecimalFormat {
    */
   @Override
   public StringBuffer format(BigInteger number, StringBuffer toAppendTo, FieldPosition pos) {
-    // TODO(sffc): Implement FieldPosition
-    formatter.format(FormatQuantitySelector.from(number), toAppendTo);
+    FormatQuantity4 fq = new FormatQuantity4(number);
+    formatter.format(fq, toAppendTo, pos);
+    fq.populateUFieldPosition(pos);
     return toAppendTo;
   }
 
@@ -181,8 +190,9 @@ public class CompactDecimalFormat extends DecimalFormat {
    */
   @Override
   public StringBuffer format(BigDecimal number, StringBuffer toAppendTo, FieldPosition pos) {
-    // TODO(sffc): Implement FieldPosition
-    formatter.format(FormatQuantitySelector.from(number), toAppendTo);
+    FormatQuantity4 fq = new FormatQuantity4(number);
+    formatter.format(fq, toAppendTo, pos);
+    fq.populateUFieldPosition(pos);
     return toAppendTo;
   }
 
@@ -194,8 +204,9 @@ public class CompactDecimalFormat extends DecimalFormat {
   @Override
   public StringBuffer format(
       com.ibm.icu.math.BigDecimal number, StringBuffer toAppendTo, FieldPosition pos) {
-    // TODO(sffc): Implement FieldPosition
-    formatter.format(FormatQuantitySelector.from(number), toAppendTo);
+    FormatQuantity4 fq = new FormatQuantity4(number.toBigDecimal());
+    formatter.format(fq, toAppendTo, pos);
+    fq.populateUFieldPosition(pos);
     return toAppendTo;
   }
 

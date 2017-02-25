@@ -212,7 +212,7 @@ public class CurrencyFormat {
       } else {
         // CurrencyPluralInfo is available. Use it to generate affixes for long name support.
         String pluralPattern = info.getCurrencyPluralPattern(plural.getKeyword());
-        PatternString.parseToExistingProperties(pluralPattern, temp);
+        PatternString.parseToExistingProperties(pluralPattern, temp, true);
         result = pnag.getModifiers(symbols, sym, iso, longName, temp);
       }
       mod.put(plural, result.positive, result.negative);

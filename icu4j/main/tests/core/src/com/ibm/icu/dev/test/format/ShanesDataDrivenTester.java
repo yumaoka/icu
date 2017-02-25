@@ -48,7 +48,7 @@ public class ShanesDataDrivenTester extends CodeUnderTest {
   public String format(DataDrivenNumberFormatTestData tuple) {
     String pattern = (tuple.pattern == null) ? "0" : tuple.pattern;
     ULocale locale = (tuple.locale == null) ? ULocale.ENGLISH : tuple.locale;
-    Properties properties = PatternString.parseToProperties(pattern);
+    Properties properties = PatternString.parseToProperties(pattern, tuple.currency != null);
     propertiesFromTuple(tuple, properties);
     Format fmt = Endpoint.fromBTA(properties, locale);
     FormatQuantity q1, q2, q3;
@@ -100,7 +100,7 @@ public class ShanesDataDrivenTester extends CodeUnderTest {
     String pattern = (tuple.pattern == null) ? "0" : tuple.pattern;
     Properties properties;
     try {
-      properties = PatternString.parseToProperties(pattern);
+      properties = PatternString.parseToProperties(pattern, tuple.currency != null);
       propertiesFromTuple(tuple, properties);
       //      System.out.println(properties);
     } catch (IllegalArgumentException e) {
@@ -138,7 +138,7 @@ public class ShanesDataDrivenTester extends CodeUnderTest {
     ParsePosition ppos = new ParsePosition(0);
     Number actual;
     try {
-      properties = PatternString.parseToProperties(pattern);
+      properties = PatternString.parseToProperties(pattern, tuple.currency != null);
       propertiesFromTuple(tuple, properties);
       actual =
           Parse.parse(
@@ -191,7 +191,7 @@ public class ShanesDataDrivenTester extends CodeUnderTest {
     ParsePosition ppos = new ParsePosition(0);
     CurrencyAmount actual;
     try {
-      properties = PatternString.parseToProperties(pattern);
+      properties = PatternString.parseToProperties(pattern, tuple.currency != null);
       propertiesFromTuple(tuple, properties);
       actual =
           Parse.parseCurrency(

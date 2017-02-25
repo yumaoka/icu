@@ -17,13 +17,20 @@ public class PatternString {
    * Parses a pattern string into a new property bag.
    *
    * @param pattern The pattern string, like "#,##0.00"
+   * @param ignoreRounding Whether to leave out rounding information (minFrac, maxFrac, and rounding
+   *     increment) when parsing the pattern. This may be desirable if a custom rounding mode, such
+   *     as CurrencyUsage, is to be used instead.
    * @return A property bag object.
    * @throws IllegalArgumentException If there is a syntax error in the pattern string.
    */
-  public static Properties parseToProperties(String pattern) {
+  public static Properties parseToProperties(String pattern, boolean ignoreRounding) {
     Properties properties = new Properties();
-    LdmlDecimalPatternParser.parse(pattern, properties);
+    LdmlDecimalPatternParser.parse(pattern, properties, ignoreRounding);
     return properties;
+  }
+
+  public static Properties parseToProperties(String pattern) {
+    return parseToProperties(pattern, false);
   }
 
   /**
@@ -34,10 +41,18 @@ public class PatternString {
    *
    * @param pattern The pattern string, like "#,##0.00"
    * @param properties The property bag object to overwrite.
+   * @param ignoreRounding Whether to leave out rounding information (minFrac, maxFrac, and rounding
+   *     increment) when parsing the pattern. This may be desirable if a custom rounding mode, such
+   *     as CurrencyUsage, is to be used instead.
    * @throws IllegalArgumentException If there was a syntax error in the pattern string.
    */
+  public static void parseToExistingProperties(
+      String pattern, Properties properties, boolean ignoreRounding) {
+    LdmlDecimalPatternParser.parse(pattern, properties, ignoreRounding);
+  }
+
   public static void parseToExistingProperties(String pattern, Properties properties) {
-    LdmlDecimalPatternParser.parse(pattern, properties);
+    parseToExistingProperties(pattern, properties, false);
   }
 
   /**
@@ -323,7 +338,7 @@ public class PatternString {
       SubpatternParseResult negative = null;
 
       /** Finalizes the temporary data stored in the PatternParseResult to the Builder. */
-      void saveToProperties(Properties properties) {
+      void saveToProperties(Properties properties, boolean ignoreRounding) {
         // Translate from PatternState to Properties.
         // Note that most data from "negative" is ignored per the specification of DecimalFormat.
 
@@ -363,7 +378,7 @@ public class PatternString {
           properties.setMinimumSignificantDigits(positive.minimumSignificantDigits);
           properties.setMaximumSignificantDigits(positive.maximumSignificantDigits);
         } else if (!positive.rounding.isZero()) {
-          if (!positive.hasCurrencySign) {
+          if (!ignoreRounding) {
             properties.setMinimumFractionDigits(minFrac);
             properties.setMaximumFractionDigits(positive.maximumFractionDigits);
             properties.setRoundingInterval(positive.rounding.toBigDecimal());
@@ -375,7 +390,7 @@ public class PatternString {
           properties.setMinimumSignificantDigits(Properties.DEFAULT_MINIMUM_SIGNIFICANT_DIGITS);
           properties.setMaximumSignificantDigits(Properties.DEFAULT_MAXIMUM_SIGNIFICANT_DIGITS);
         } else {
-          if (!positive.hasCurrencySign) {
+          if (!ignoreRounding) {
             properties.setMinimumFractionDigits(minFrac);
             properties.setMaximumFractionDigits(positive.maximumFractionDigits);
             properties.setRoundingInterval(Properties.DEFAULT_ROUNDING_INTERVAL);
@@ -527,7 +542,7 @@ public class PatternString {
       }
     }
 
-    static void parse(String pattern, Properties properties) {
+    static void parse(String pattern, Properties properties, boolean ignoreRounding) {
       if (pattern == null || pattern.length() == 0) {
         // Backwards compatibility requires that we reset to the default values.
         // TODO: Only overwrite the properties that "saveToProperties" normally touches?
@@ -539,7 +554,7 @@ public class PatternString {
       ParserState state = new ParserState(pattern);
       PatternParseResult result = new PatternParseResult();
       consumePattern(state, result);
-      result.saveToProperties(properties);
+      result.saveToProperties(properties, ignoreRounding);
     }
 
     private static void consumePattern(ParserState state, PatternParseResult result) {

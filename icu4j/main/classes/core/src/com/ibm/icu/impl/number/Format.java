@@ -31,7 +31,7 @@ public abstract class Format {
 
   public String format(FormatQuantity... inputs) {
     // Setup
-    Deque<FormatQuantity> inputDeque = new ArrayDeque<FormatQuantity>();
+    Deque<FormatQuantity> inputDeque = new ArrayDeque<>();
     inputDeque.addAll(Arrays.asList(inputs));
     ModifierHolder modDeque = threadLocalModifierHolder.get().clear();
     NumberStringBuilder sb = threadLocalStringBuilder.get().clear();

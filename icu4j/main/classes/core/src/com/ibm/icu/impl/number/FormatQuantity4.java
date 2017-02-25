@@ -53,6 +53,25 @@ public final class FormatQuantity4 extends FormatQuantityBCD {
     copyFrom(other);
   }
 
+  public FormatQuantity4(Number number) {
+    if (number instanceof Long) {
+      setToLong(number.longValue());
+    } else if (number instanceof Integer) {
+      setToInt(number.intValue());
+    } else if (number instanceof Double) {
+      setToDouble(number.doubleValue());
+    } else if (number instanceof BigInteger) {
+      setToBigInteger((BigInteger) number);
+    } else if (number instanceof BigDecimal) {
+      setToBigDecimal((BigDecimal) number);
+    } else if (number instanceof com.ibm.icu.math.BigDecimal) {
+      setToBigDecimal(((com.ibm.icu.math.BigDecimal) number).toBigDecimal());
+    } else {
+      throw new IllegalArgumentException(
+          "Number is of an unsupported type: " + number.getClass().getName());
+    }
+  }
+
   @Override
   protected byte getDigitPos(int position) {
     if (usingBytes) {

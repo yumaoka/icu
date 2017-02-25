@@ -11,9 +11,7 @@ import java.text.ParsePosition;
 
 import com.ibm.icu.impl.number.Endpoint;
 import com.ibm.icu.impl.number.Format.SingularFormat;
-import com.ibm.icu.impl.number.FormatQuantity;
 import com.ibm.icu.impl.number.FormatQuantity4;
-import com.ibm.icu.impl.number.FormatQuantitySelector;
 import com.ibm.icu.impl.number.Parse;
 import com.ibm.icu.impl.number.PatternString;
 import com.ibm.icu.impl.number.Properties;
@@ -24,7 +22,6 @@ import com.ibm.icu.impl.number.rounders.SignificantDigitsRounder;
 import com.ibm.icu.math.BigDecimal;
 import com.ibm.icu.math.MathContext;
 import com.ibm.icu.text.PluralRules.IFixedDecimal;
-import com.ibm.icu.text.PluralRules.Operand;
 import com.ibm.icu.util.Currency;
 import com.ibm.icu.util.Currency.CurrencyUsage;
 import com.ibm.icu.util.CurrencyAmount;
@@ -34,10 +31,11 @@ import com.ibm.icu.util.ULocale;
 public class DecimalFormat extends NumberFormat {
 
   // properties should be final, but clone won't work if we make it final.
-  private Properties properties;
-  private volatile DecimalFormatSymbols symbols;
-  private transient volatile SingularFormat formatter;
-  private transient volatile Properties exportedProperties;
+  // Access level: package-private, so that subclasses can call them.
+  Properties properties;
+  volatile DecimalFormatSymbols symbols;
+  transient volatile SingularFormat formatter;
+  transient volatile Properties exportedProperties;
 
   /** @stable ICU 2.0 */
   public DecimalFormat() {
@@ -47,7 +45,7 @@ public class DecimalFormat extends NumberFormat {
     symbols = getDefaultSymbols();
     properties = new Properties();
     exportedProperties = new Properties();
-    setPropertiesFromPattern(pattern);
+    setPropertiesFromPattern(pattern, false);
     refreshFormatter();
   }
 
@@ -56,7 +54,7 @@ public class DecimalFormat extends NumberFormat {
     symbols = getDefaultSymbols();
     properties = new Properties();
     exportedProperties = new Properties();
-    setPropertiesFromPattern(pattern);
+    setPropertiesFromPattern(pattern, false);
     refreshFormatter();
   }
 
@@ -65,7 +63,7 @@ public class DecimalFormat extends NumberFormat {
     this.symbols = (DecimalFormatSymbols) symbols.clone();
     properties = new Properties();
     exportedProperties = new Properties();
-    setPropertiesFromPattern(pattern);
+    setPropertiesFromPattern(pattern, false);
     refreshFormatter();
   }
 
@@ -84,14 +82,16 @@ public class DecimalFormat extends NumberFormat {
     this.symbols = (DecimalFormatSymbols) symbols.clone();
     properties = new Properties();
     exportedProperties = new Properties();
-    setPropertiesFromPattern(pattern);
-    // HACK: If choice is a currency type, unset the rounding information.
-    if (choice == NumberFormat.CURRENCYSTYLE
-        || choice == NumberFormat.ISOCURRENCYSTYLE
-        || choice == NumberFormat.PLURALCURRENCYSTYLE){
-      properties.setMinimumFractionDigits(Properties.DEFAULT_MINIMUM_FRACTION_DIGITS);
-      properties.setMaximumFractionDigits(Properties.DEFAULT_MAXIMUM_FRACTION_DIGITS);
-      properties.setRoundingInterval(Properties.DEFAULT_ROUNDING_INTERVAL);
+    // If choice is a currency type, ignore the rounding information.
+    if (choice == CURRENCYSTYLE
+        || choice == ISOCURRENCYSTYLE
+        || choice == ACCOUNTINGCURRENCYSTYLE
+        || choice == CASHCURRENCYSTYLE
+        || choice == STANDARDCURRENCYSTYLE
+        || choice == PLURALCURRENCYSTYLE){
+      setPropertiesFromPattern(pattern, true);
+    } else {
+      setPropertiesFromPattern(pattern, false);
     }
     refreshFormatter();
   }
@@ -107,13 +107,13 @@ public class DecimalFormat extends NumberFormat {
     return other;
   }
 
-  private static DecimalFormatSymbols getDefaultSymbols() {
+  static DecimalFormatSymbols getDefaultSymbols() {
     return DecimalFormatSymbols.getInstance();
   }
 
   /** @stable ICU 2.0 */
   public synchronized void applyPattern(String pattern) {
-    setPropertiesFromPattern(pattern);
+    setPropertiesFromPattern(pattern, false);
     // Backwards compatibility: clear out user-specified prefix and suffix,
     // as well as CurrencyPluralInfo.
     properties.setPositivePrefix(null);
@@ -137,27 +137,27 @@ public class DecimalFormat extends NumberFormat {
    */
   @Override
   public StringBuffer format(double number, StringBuffer result, FieldPosition fieldPosition) {
-    FormatQuantity fq = new FormatQuantity4(number);
+    FormatQuantity4 fq = new FormatQuantity4(number);
     formatter.format(fq, result, fieldPosition);
-    populateUFieldPosition(fq, fieldPosition);
+    fq.populateUFieldPosition(fieldPosition);
     return result;
   }
 
   /** @stable ICU 2.0 */
   @Override
   public StringBuffer format(long number, StringBuffer result, FieldPosition fieldPosition) {
-    FormatQuantity fq = new FormatQuantity4(number);
+    FormatQuantity4 fq = new FormatQuantity4(number);
     formatter.format(fq, result, fieldPosition);
-    populateUFieldPosition(fq, fieldPosition);
+    fq.populateUFieldPosition(fieldPosition);
     return result;
   }
 
   /** @stable ICU 2.0 */
   @Override
   public StringBuffer format(BigInteger number, StringBuffer result, FieldPosition fieldPosition) {
-    FormatQuantity fq = new FormatQuantity4(number);
+    FormatQuantity4 fq = new FormatQuantity4(number);
     formatter.format(fq, result, fieldPosition);
-    populateUFieldPosition(fq, fieldPosition);
+    fq.populateUFieldPosition(fieldPosition);
     return result;
   }
 
@@ -165,18 +165,28 @@ public class DecimalFormat extends NumberFormat {
   @Override
   public StringBuffer format(
       java.math.BigDecimal number, StringBuffer result, FieldPosition fieldPosition) {
-    FormatQuantity fq = new FormatQuantity4(number);
+    FormatQuantity4 fq = new FormatQuantity4(number);
     formatter.format(fq, result, fieldPosition);
-    populateUFieldPosition(fq, fieldPosition);
+    fq.populateUFieldPosition(fieldPosition);
     return result;
   }
 
   /** @stable ICU 2.0 */
   @Override
   public StringBuffer format(BigDecimal number, StringBuffer result, FieldPosition fieldPosition) {
-    FormatQuantity fq = new FormatQuantity4(number.toBigDecimal());
+    FormatQuantity4 fq = new FormatQuantity4(number.toBigDecimal());
     formatter.format(fq, result, fieldPosition);
-    populateUFieldPosition(fq, fieldPosition);
+    fq.populateUFieldPosition(fieldPosition);
+    return result;
+  }
+
+  /** @stable ICU 3.6 */
+  @Override
+  public AttributedCharacterIterator formatToCharacterIterator(Object obj) {
+    if (!(obj instanceof Number)) throw new IllegalArgumentException();
+    Number number = (Number) obj;
+    FormatQuantity4 fq = new FormatQuantity4(number);
+    AttributedCharacterIterator result = formatter.formatToCharacterIterator(fq);
     return result;
   }
 
@@ -190,12 +200,6 @@ public class DecimalFormat extends NumberFormat {
       result = new com.ibm.icu.math.BigDecimal((java.math.BigDecimal) result);
     }
     return result;
-  }
-
-  private static void populateUFieldPosition(FormatQuantity fq, FieldPosition fp) {
-    if (fp instanceof UFieldPosition) {
-      ((UFieldPosition) fp).setFractionDigits((int)fq.getPluralOperand(Operand.v), (long)fq.getPluralOperand(Operand.f));
-    }
   }
 
   /** @stable ICU 49 */
@@ -214,14 +218,6 @@ public class DecimalFormat extends NumberFormat {
     } catch (ParseException e) {
       return null;
     }
-  }
-
-  /** @stable ICU 3.6 */
-  @Override
-  public AttributedCharacterIterator formatToCharacterIterator(Object obj) {
-    if (!(obj instanceof Number)) throw new IllegalArgumentException();
-    Number number = (Number) obj;
-    return formatter.formatToCharacterIterator(FormatQuantitySelector.from(number));
   }
 
   /**
@@ -779,20 +775,22 @@ public class DecimalFormat extends NumberFormat {
    */
   @Deprecated
   public IFixedDecimal getFixedDecimal(double number) {
-    FormatQuantity fq = FormatQuantitySelector.from(number);
+    FormatQuantity4 fq = new FormatQuantity4(number);
     formatter.format(fq);
     return fq;
   }
 
-  private void refreshFormatter() {
+  /**
+   * Rebuilds the formatter object from the property bag.
+   */
+  void refreshFormatter() {
     formatter = Endpoint.fromBTA(properties, symbols);
     exportedProperties.clear();
     formatter.export(exportedProperties);
   }
 
-  private void setPropertiesFromPattern(String pattern) {
-    PatternString.parseToExistingProperties(pattern, properties);
-    formatter = Endpoint.fromBTA(properties, symbols);
+  void setPropertiesFromPattern(String pattern, boolean ignoreRounding) {
+    PatternString.parseToExistingProperties(pattern, properties, ignoreRounding);
   }
 
   /**

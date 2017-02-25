@@ -5,10 +5,12 @@ package com.ibm.icu.impl.number;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
+import java.text.FieldPosition;
 
 import com.ibm.icu.impl.StandardPlural;
 import com.ibm.icu.text.PluralRules;
 import com.ibm.icu.text.PluralRules.Operand;
+import com.ibm.icu.text.UFieldPosition;
 
 /**
  * Represents numbers and digit display properties using Binary Coded Decimal (BCD).
@@ -218,6 +220,20 @@ public abstract class FormatQuantityBCD implements FormatQuantity {
         return fractionCountWithoutTrailingZeros();
       default:
         return Math.abs(toDouble());
+    }
+  }
+
+  /**
+   * If the given {@link FieldPosition} is a {@link UFieldPosition}, populates it with the fraction
+   * length and fraction long value. If the argument is not a {@link UFieldPosition}, nothing
+   * happens.
+   *
+   * @param fp The {@link UFieldPosition} to populate.
+   */
+  public void populateUFieldPosition(FieldPosition fp) {
+    if (fp instanceof UFieldPosition) {
+      ((UFieldPosition) fp)
+          .setFractionDigits((int) getPluralOperand(Operand.v), (long) getPluralOperand(Operand.f));
     }
   }
 

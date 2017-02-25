@@ -159,8 +159,8 @@ public class CompactDecimalFormat extends Format.BeforeFormat {
       magnitude = 0;
       rounder.apply(input);
     } else {
-      magnitude = input.getMagnitude();
-      rounder.chooseMultiplierAndApply(input, data);
+      int multiplier = rounder.chooseMultiplierAndApply(input, data);
+      magnitude = input.getMagnitude() - multiplier;
     }
 
     StandardPlural plural = input.getStandardPlural(rules);
@@ -171,17 +171,20 @@ public class CompactDecimalFormat extends Format.BeforeFormat {
   @Override
   public void export(Properties properties) {
     properties.setCompactStyle(style);
+    rounder.export(properties);
   }
 
   static class CompactDecimalData implements Rounder.MultiplierGenerator {
     final Modifier[] mods;
     final byte[] multipliers;
     boolean isEmpty;
+    int largestMagnitude;
 
     CompactDecimalData() {
       mods = new Modifier[(MAX_DIGITS + 1) * StandardPlural.COUNT * 2];
       multipliers = new byte[MAX_DIGITS + 1];
       isEmpty = true;
+      largestMagnitude = -1;
     }
 
     boolean isEmpty() {
@@ -190,8 +193,11 @@ public class CompactDecimalFormat extends Format.BeforeFormat {
 
     @Override
     public int getMultiplier(int magnitude) {
-      if (magnitude < 0 || magnitude >= MAX_DIGITS + 1) {
+      if (magnitude < 0) {
         return 0;
+      }
+      if (magnitude > largestMagnitude) {
+        magnitude = largestMagnitude;
       }
       return multipliers[magnitude];
     }
@@ -199,12 +205,17 @@ public class CompactDecimalFormat extends Format.BeforeFormat {
     CompactDecimalData setMultiplier(int magnitude, byte multiplier) {
       multipliers[magnitude] = multiplier;
       isEmpty = false;
+      if (magnitude > largestMagnitude) largestMagnitude = magnitude;
       return this;
     }
 
     Modifier getModifier(int magnitude, StandardPlural plural, boolean isNegative) {
-      if (magnitude < 0 || magnitude >= MAX_DIGITS + 1) {
+      // TODO: Should this fall back to the OTHER plural?
+      if (magnitude < 0) {
         return null;
+      }
+      if (magnitude > largestMagnitude) {
+        magnitude = largestMagnitude;
       }
       return mods[modIndex(magnitude, plural, isNegative)];
     }
@@ -214,6 +225,7 @@ public class CompactDecimalFormat extends Format.BeforeFormat {
       mods[modIndex(magnitude, plural, false)] = positive;
       mods[modIndex(magnitude, plural, true)] = negative;
       isEmpty = false;
+      if (magnitude > largestMagnitude) largestMagnitude = magnitude;
       return this;
     }
 
@@ -355,6 +367,10 @@ public class CompactDecimalFormat extends Format.BeforeFormat {
               // Iterate over the plural variants ("one", "other", etc)
               UResource.Table pluralVariantsTable = value.getTable();
               for (int i4 = 0; pluralVariantsTable.getKeyAndValue(i4, key, value); ++i4) {
+                // Spec: Skip if the value is just '0'
+                String patternString = value.toString();
+                if (patternString.equals("0")) continue;
+
                 StandardPlural plural = StandardPlural.fromString(key.toString());
                 Properties properties = PatternString.parseToProperties(value.toString());
 
@@ -376,15 +392,6 @@ public class CompactDecimalFormat extends Format.BeforeFormat {
                 PNAffixGenerator.Result result =
                     pnag.getModifiers(symbols, currencySymbol, properties);
                 data.setModifiers(result.positive, result.negative, magnitude, plural);
-              }
-
-              if (!seenOther) {
-                throw new IllegalArgumentException(
-                    String.format(
-                        "Did not find 'other' variant in compact decimal format data for locale '%s', style '%s', type '%s'",
-                        symbols.getULocale().toString(),
-                        compactStyle.toString(),
-                        compactType.toString()));
               }
 
               data.setMultiplier(magnitude, multiplier);

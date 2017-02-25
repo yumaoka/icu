@@ -310,12 +310,13 @@ public class CompactDecimalFormatTest extends TestFmwk {
 
     @Test
     public void TestDefaultSignificantDigits() {
-        // We are expecting two significant digits as default.
+        // We are expecting two significant digits for compact formats with one or two zeros,
+        // and rounded to the unit for compact formats with three or more zeros.
         CompactDecimalFormat cdf =
                 CompactDecimalFormat.getInstance(ULocale.ENGLISH, CompactStyle.SHORT);
         assertEquals("Default significant digits", "12K", cdf.format(12345));
         assertEquals("Default significant digits", "1.2K", cdf.format(1234));
-        assertEquals("Default significant digits", "120", cdf.format(123));
+        assertEquals("Default significant digits", "123", cdf.format(123));
     }
 
     @Test
@@ -428,10 +429,10 @@ public class CompactDecimalFormatTest extends TestFmwk {
         CompactDecimalFormat cdf = CompactDecimalFormat.getInstance(
                 ULocale.ENGLISH, CompactStyle.LONG);
         BigInteger source_int = new BigInteger("31415926535897932384626433");
-        assertEquals("BigInteger format wrong: ", "31,000,000,000,000 trillion",
+        assertEquals("BigInteger format wrong: ", "31,415,926,535,898 trillion",
                      cdf.format(source_int));
         BigDecimal source_dec = new BigDecimal(source_int);
-        assertEquals("BigDecimal format wrong: ", "31,000,000,000,000 trillion",
+        assertEquals("BigDecimal format wrong: ", "31,415,926,535,898 trillion",
                      cdf.format(source_dec));
     }
 
