@@ -1891,6 +1891,12 @@ public class MeasureUnitTest extends TestFmwk {
             }
         }
     }
+    
+    @Test
+    public void testBug11966() {
+        Locale locale = new Locale("en", "AU");
+        MeasureFormat.getInstance(locale, MeasureFormat.FormatWidth.WIDE);
+    }
 
     // DO NOT DELETE THIS FUNCTION! It may appear as dead code, but we use this to generate code
     // for MeasureFormat during the release process.
