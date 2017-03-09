@@ -127,40 +127,60 @@ public class SignificantDigitsRounder extends Rounder {
   @Override
   public void apply(FormatQuantity input) {
 
-    int magnitude;
+    int magnitude, effectiveMag, magMinSig, magMaxSig;
+
     if (input.isZero()) {
       // Treat zero as if magnitude corresponded to the minimum number of zeros
       magnitude = minInt - 1;
     } else {
       magnitude = input.getMagnitude();
     }
+    effectiveMag = Math.min(magnitude + 1, maxInt);
+    magMinSig = effectiveMag - minSig;
+    magMaxSig = effectiveMag - maxSig;
 
-    int magMinSig = magnitude - minSig + 1;
-    int magMaxSig = magnitude - maxSig + 1;
-    int magMinFrac = -minFrac;
-    int magMaxFrac = -maxFrac;
-    int magMaxInt = maxInt - maxSig; // maxSig digits to the right of maxInt
+    // Step 1: pick the rounding magnitude and apply.
     int roundingMagnitude;
     switch (mode) {
       case OVERRIDE_MAXIMUM_FRACTION:
         // Always round to maxSig.
+        // Of the six possible orders:
+        //    Case 1: minSig, maxSig, minFrac, maxFrac -- maxSig wins
+        //    Case 2: minSig, minFrac, maxSig, maxFrac -- maxSig wins
+        //    Case 3: minSig, minFrac, maxFrac, maxSig -- maxSig wins
+        //    Case 4: minFrac, minSig, maxSig, maxFrac -- maxSig wins
+        //    Case 5: minFrac, minSig, maxFrac, maxSig -- maxSig wins
+        //    Case 6: minFrac, maxFrac, minSig, maxSig -- maxSig wins
         roundingMagnitude = magMaxSig;
         break;
       case RESPECT_MAXIMUM_FRACTION:
         // Round to the strongest of maxFrac, maxInt, and maxSig.
+        // Of the six possible orders:
+        //    Case 1: minSig, maxSig, minFrac, maxFrac -- maxSig wins
+        //    Case 2: minSig, minFrac, maxSig, maxFrac -- maxSig wins
+        //    Case 3: minSig, minFrac, maxFrac, maxSig -- maxFrac wins --> differs from default
+        //    Case 4: minFrac, minSig, maxSig, maxFrac -- maxSig wins
+        //    Case 5: minFrac, minSig, maxFrac, maxSig -- maxFrac wins --> differs from default
+        //    Case 6: minFrac, maxFrac, minSig, maxSig -- maxFrac wins --> differs from default
+        //
         // Math.max() picks the rounding magnitude farthest to the left (most significant).
         // Math.min() picks the rounding magnitude farthest to the right (least significant).
-        roundingMagnitude = Math.max(magMaxFrac, Math.min(magMaxInt, magMaxSig));
+        roundingMagnitude = Math.max(-maxFrac, magMaxSig);
         break;
       case ENSURE_MINIMUM_SIGNIFICANT:
         // Round to the strongest of maxFrac and maxSig, and always ensure minSig.
-        roundingMagnitude =
-            Math.min(magMinFrac, Math.min(magMinSig, Math.max(magMaxFrac, magMaxSig)));
+        // Of the six possible orders:
+        //    Case 1: minSig, maxSig, minFrac, maxFrac -- maxSig wins
+        //    Case 2: minSig, minFrac, maxSig, maxFrac -- maxSig wins
+        //    Case 3: minSig, minFrac, maxFrac, maxSig -- maxFrac wins --> differs from default
+        //    Case 4: minFrac, minSig, maxSig, maxFrac -- maxSig wins
+        //    Case 5: minFrac, minSig, maxFrac, maxSig -- maxFrac wins --> differs from default
+        //    Case 6: minFrac, maxFrac, minSig, maxSig -- minSig wins --> differs from default
+        roundingMagnitude = Math.min(magMinSig, Math.max(-maxFrac, magMaxSig));
         break;
       default:
         throw new AssertionError();
     }
-
     input.roundToMagnitude(roundingMagnitude, mathContext);
 
     // In case magnitude changed:
@@ -169,27 +189,31 @@ public class SignificantDigitsRounder extends Rounder {
     } else {
       magnitude = input.getMagnitude();
     }
+    effectiveMag = Math.min(magnitude + 1, maxInt);
+    magMinSig = effectiveMag - minSig;
+    magMaxSig = effectiveMag - maxSig;
 
+    // Step 2: pick the number of visible digits.
     switch (mode) {
       case OVERRIDE_MAXIMUM_FRACTION:
         // Ensure minSig is always displayed.
         input.setIntegerFractionLength(
-            Math.max(minInt, magnitude),
-            Integer.MAX_VALUE,
-            Math.max(minFrac, minSig - magnitude - 1),
+            minInt,
+            maxInt,
+            Math.max(minFrac, -magMinSig),
             Integer.MAX_VALUE);
         break;
       case RESPECT_MAXIMUM_FRACTION:
-        // Ensure minSig is displayed, unless doing so is in violation of maxInt or maxFrac.
+        // Ensure minSig is displayed, unless doing so is in violation of maxFrac.
         input.setIntegerFractionLength(
-            Math.min(maxInt, Math.max(minInt, magnitude)),
+            minInt,
             maxInt,
-            Math.min(maxFrac, Math.max(minFrac, minSig - magnitude - 1)),
+            Math.min(maxFrac, Math.max(minFrac, -magMinSig)),
             maxFrac);
         break;
       case ENSURE_MINIMUM_SIGNIFICANT:
         // Follow minInt/minFrac, but ensure all digits are allowed to be visible.
-        input.setIntegerFractionLength(minInt, Integer.MAX_VALUE, minFrac, Integer.MAX_VALUE);
+        input.setIntegerFractionLength(minInt, maxInt, minFrac, Integer.MAX_VALUE);
         break;
     }
   }

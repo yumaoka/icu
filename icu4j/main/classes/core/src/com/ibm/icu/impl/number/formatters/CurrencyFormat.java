@@ -274,7 +274,7 @@ public class CurrencyFormat {
       if (_roundingIncrement != null) {
         incrementBigDecimal = _roundingIncrement;
       } else {
-        incrementBigDecimal = new BigDecimal(Double.toString(incrementDouble));
+        incrementBigDecimal = BigDecimal.valueOf(incrementDouble);
       }
       cprops.setRoundingInterval(incrementBigDecimal);
       return IntervalRounder.getInstance(cprops);

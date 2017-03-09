@@ -55,7 +55,7 @@ public class PropertiesTest {
     Properties p3 = new Properties();
     Properties p4 = new Properties();
 
-    Set<Integer> hashCodes = new HashSet<>();
+    Set<Integer> hashCodes = new HashSet<Integer>();
     Field[] fields = Properties.class.getDeclaredFields();
     for (Field field : fields) {
       if (Modifier.isStatic(field.getModifiers())) {

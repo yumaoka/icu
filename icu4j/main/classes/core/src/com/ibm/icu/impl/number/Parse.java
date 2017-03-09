@@ -639,7 +639,7 @@ public class Parse {
     SeparatorType groupingType1;
     SeparatorType groupingType2;
     TextTrieMap<Byte> digitTrie;
-    Set<AffixHolder> affixHolders = new HashSet<>();
+    Set<AffixHolder> affixHolders = new HashSet<AffixHolder>();
 
     ParserState() {
       for (int i = 0; i < items.length; i++) {
@@ -837,10 +837,10 @@ public class Parse {
    * the parser to accept currencies in any format that are valid for the locale.
    */
   private static class CurrencyAffixPatterns {
-    private final Set<AffixHolder> set = new HashSet<>();
+    private final Set<AffixHolder> set = new HashSet<AffixHolder>();
 
     private static final ConcurrentHashMap<ULocale, CurrencyAffixPatterns> currencyAffixPatterns =
-        new ConcurrentHashMap<>();
+        new ConcurrentHashMap<ULocale, CurrencyAffixPatterns>();
 
     static void addToState(ULocale uloc, ParserState state) {
       if (!currencyAffixPatterns.contains(uloc)) {
@@ -906,7 +906,7 @@ public class Parse {
     }
     if (!requiresTrie) return null;
 
-    TextTrieMap<Byte> trieMap = new TextTrieMap<>(false);
+    TextTrieMap<Byte> trieMap = new TextTrieMap<Byte>(false);
     for (int i = 0; i < 10; i++) {
       trieMap.put(digitStrings[i], (byte) i);
     }
@@ -1370,8 +1370,9 @@ public class Parse {
           }
         }
 
-        // Optionally require that a decimal point be present.
-        if (properties.getDecimalPatternMatchRequired() && !item.sawDecimalPoint) {
+        // Optionally require that the presence of a decimal point matches the pattern.
+        if (properties.getDecimalPatternMatchRequired()
+            && item.sawDecimalPoint != PositiveDecimalFormat.allowsDecimalPoint(properties)) {
           if (DEBUGGING) System.out.println("-> rejected due to decimal point violation");
           continue;
         }

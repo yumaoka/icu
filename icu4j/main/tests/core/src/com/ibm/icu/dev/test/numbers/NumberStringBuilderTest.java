@@ -6,11 +6,12 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.text.FieldPosition;
+import java.text.Format.Field;
 
 import org.junit.Test;
 
 import com.ibm.icu.impl.number.NumberStringBuilder;
-import com.ibm.icu.text.NumberFormat.Field;
+import com.ibm.icu.text.NumberFormat;
 
 /** @author sffc */
 public class NumberStringBuilderTest {
@@ -91,26 +92,26 @@ public class NumberStringBuilderTest {
     for (String str : EXAMPLE_STRINGS) {
       NumberStringBuilder sb = new NumberStringBuilder();
       sb.append(str, null);
-      sb.append(str, Field.CURRENCY);
+      sb.append(str, NumberFormat.Field.CURRENCY);
       Field[] fields = sb.toFieldArray();
       assertEquals(str.length() * 2, fields.length);
       for (int i = 0; i < str.length(); i++) {
         assertEquals(null, fields[i]);
-        assertEquals(Field.CURRENCY, fields[i + str.length()]);
+        assertEquals(NumberFormat.Field.CURRENCY, fields[i + str.length()]);
       }
 
       // Very basic FieldPosition test. More robust tests happen in NumberFormatTest.
       // Let NumberFormatTest also take care of AttributedCharacterIterator material.
-      FieldPosition fp = new FieldPosition(Field.CURRENCY);
+      FieldPosition fp = new FieldPosition(NumberFormat.Field.CURRENCY);
       sb.populateFieldPosition(fp, 0);
       assertEquals(str.length(), fp.getBeginIndex());
       assertEquals(str.length() * 2, fp.getEndIndex());
 
       if (str.length() > 0) {
-        sb.insertCodePoint(2, 100, Field.INTEGER);
+        sb.insertCodePoint(2, 100, NumberFormat.Field.INTEGER);
         fields = sb.toFieldArray();
         assertEquals(str.length() * 2 + 1, fields.length);
-        assertEquals(fields[2], Field.INTEGER);
+        assertEquals(fields[2], NumberFormat.Field.INTEGER);
       }
 
       sb.append(sb.clone());
@@ -123,8 +124,8 @@ public class NumberStringBuilderTest {
       for (int i = 0; i < sb.length(); i++) {
         assertEquals(oldFields[i % oldFields.length], fields[i]);
         if (fields[i] == null) numNull++;
-        else if (fields[i] == Field.CURRENCY) numCurr++;
-        else if (fields[i] == Field.INTEGER) numInt++;
+        else if (fields[i] == NumberFormat.Field.CURRENCY) numCurr++;
+        else if (fields[i] == NumberFormat.Field.INTEGER) numInt++;
         else throw new AssertionError("Encountered unknown field in " + str);
       }
       assertEquals(str.length() * 4, numNull);
@@ -136,7 +137,7 @@ public class NumberStringBuilderTest {
       assertTrue(sb.contentEquals(sb2));
       assertTrue(sb.contentEquals(sb2.toCharArray(), sb2.toFieldArray()));
 
-      sb2.insertCodePoint(0, 50, Field.FRACTION);
+      sb2.insertCodePoint(0, 50, NumberFormat.Field.FRACTION);
       assertTrue(!sb.contentEquals(sb2));
       assertTrue(!sb.contentEquals(sb2.toCharArray(), sb2.toFieldArray()));
     }

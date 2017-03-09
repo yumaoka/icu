@@ -2199,7 +2199,7 @@ public class DecimalFormat_ICU58 extends NumberFormat {
         if (currencyPluralInfo == null) {
             currencyPluralInfo = new CurrencyPluralInfo(symbols.getULocale());
         }
-        affixPatternsForCurrency = new HashSet<>();
+        affixPatternsForCurrency = new HashSet<AffixForCurrency>();
 
         // save the current pattern, since it will be changed by
         // applyPatternWithoutExpandAffix
@@ -2217,7 +2217,7 @@ public class DecimalFormat_ICU58 extends NumberFormat {
 
         // add plural pattern
         Iterator<String> iter = currencyPluralInfo.pluralPatternIterator();
-        Set<String> currencyUnitPatternSet = new HashSet<>();
+        Set<String> currencyUnitPatternSet = new HashSet<String>();
         while (iter.hasNext()) {
             String pluralCount = iter.next();
             String currencyPattern = currencyPluralInfo.getCurrencyPluralPattern(pluralCount);
@@ -3981,7 +3981,7 @@ public class DecimalFormat_ICU58 extends NumberFormat {
             if (currencyPluralInfo != null) {
                 other.currencyPluralInfo = (CurrencyPluralInfo) currencyPluralInfo.clone();
             }
-            other.attributes = new ArrayList<>(); // #9240
+            other.attributes = new ArrayList<FieldPosition>(); // #9240
             other.currencyUsage = currencyUsage;
 
             // TODO: We need to figure out whether we share a single copy of DigitList by
@@ -6048,7 +6048,7 @@ public class DecimalFormat_ICU58 extends NumberFormat {
     // Proclaim JDK 1.1 serial compatibility.
     private static final long serialVersionUID = 864413376551465018L;
 
-    private ArrayList<FieldPosition> attributes = new ArrayList<>();
+    private ArrayList<FieldPosition> attributes = new ArrayList<FieldPosition>();
 
     // The following are used in currency format
 

@@ -36,7 +36,7 @@ public class demo {
             DecimalFormatSymbols.getInstance()));
     System.out.println(ppos);
 
-    List<Format> formats = new ArrayList<>();
+    List<Format> formats = new ArrayList<Format>();
 
     Properties properties = new Properties();
     Format ndf = Endpoint.fromBTA(properties);

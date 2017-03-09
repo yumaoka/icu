@@ -2,12 +2,14 @@
 // License & terms of use: http://www.unicode.org/copyright.html#License
 package com.ibm.icu.impl.number.formatters;
 
+import java.text.Format.Field;
+
 import com.ibm.icu.impl.number.Format;
 import com.ibm.icu.impl.number.FormatQuantity;
 import com.ibm.icu.impl.number.NumberStringBuilder;
 import com.ibm.icu.impl.number.Properties;
 import com.ibm.icu.text.DecimalFormatSymbols;
-import com.ibm.icu.text.NumberFormat.Field;
+import com.ibm.icu.text.NumberFormat;
 
 public class PositiveDecimalFormat implements Format.TargetFormat {
 
@@ -79,9 +81,13 @@ public class PositiveDecimalFormat implements Format.TargetFormat {
     public IProperties setMinimumGroupingDigits(int minimumGroupingDigits);
   }
 
-  public static boolean useGrouping(Properties properties) {
+  public static boolean useGrouping(IProperties properties) {
     return properties.getGroupingSize() != IProperties.DEFAULT_GROUPING_SIZE
         || properties.getSecondaryGroupingSize() != IProperties.DEFAULT_SECONDARY_GROUPING_SIZE;
+  }
+
+  public static boolean allowsDecimalPoint(IProperties properties) {
+    return properties.getAlwaysShowDecimal() || properties.getMaximumFractionDigits() != 0;
   }
 
   // Properties
@@ -151,10 +157,10 @@ public class PositiveDecimalFormat implements Format.TargetFormat {
     int length = 0;
 
     if (input.isInfinite()) {
-      length += string.insert(startIndex, infinityString, Field.INTEGER);
+      length += string.insert(startIndex, infinityString, NumberFormat.Field.INTEGER);
 
     } else if (input.isNaN()) {
-      length += string.insert(startIndex, nanString, Field.INTEGER);
+      length += string.insert(startIndex, nanString, NumberFormat.Field.INTEGER);
 
     } else {
       // Add the integer digits
@@ -162,7 +168,7 @@ public class PositiveDecimalFormat implements Format.TargetFormat {
 
       // Add the decimal point
       if (input.getLowerDisplayMagnitude() < 0 || alwaysShowDecimal) {
-        length += string.insert(startIndex + length, decimalSeparator, Field.DECIMAL_SEPARATOR);
+        length += string.insert(startIndex + length, decimalSeparator, NumberFormat.Field.DECIMAL_SEPARATOR);
       }
 
       // Add the fraction digits
@@ -178,16 +184,16 @@ public class PositiveDecimalFormat implements Format.TargetFormat {
     for (int i = 0; i < integerCount; i++) {
       // Add grouping separator
       if (groupingSize > 0 && i == groupingSize && integerCount - i >= minimumGroupingDigits) {
-        length += string.insert(startIndex, groupingSeparator, Field.GROUPING_SEPARATOR);
+        length += string.insert(startIndex, groupingSeparator, NumberFormat.Field.GROUPING_SEPARATOR);
       } else if (secondaryGroupingSize > 0
           && i > groupingSize
           && (i - groupingSize) % secondaryGroupingSize == 0) {
-        length += string.insert(startIndex, groupingSeparator, Field.GROUPING_SEPARATOR);
+        length += string.insert(startIndex, groupingSeparator, NumberFormat.Field.GROUPING_SEPARATOR);
       }
 
       // Get and append the next digit value
       byte nextDigit = input.getDigit(i);
-      length += addDigit(nextDigit, string, startIndex, Field.INTEGER);
+      length += addDigit(nextDigit, string, startIndex, NumberFormat.Field.INTEGER);
     }
 
     return length;
@@ -199,7 +205,7 @@ public class PositiveDecimalFormat implements Format.TargetFormat {
     for (int i = 0; i < fractionCount; i++) {
       // Get and append the next digit value
       byte nextDigit = input.getDigit(-i - 1);
-      length += addDigit(nextDigit, string, index + length, Field.FRACTION);
+      length += addDigit(nextDigit, string, index + length, NumberFormat.Field.FRACTION);
     }
     return length;
   }

@@ -87,7 +87,7 @@ public class CompactDecimalFormat extends Format.BeforeFormat {
           new ThreadLocal<Map<CompactDecimalFingerprint, CompactDecimalData>>() {
             @Override
             protected Map<CompactDecimalFingerprint, CompactDecimalData> initialValue() {
-              return new HashMap<>();
+              return new HashMap<CompactDecimalFingerprint, CompactDecimalData>();
             }
           };
 

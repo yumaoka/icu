@@ -20,6 +20,8 @@ import com.ibm.icu.impl.number.Parse.ParseMode;
 import com.ibm.icu.impl.number.PatternString;
 import com.ibm.icu.impl.number.Properties;
 import com.ibm.icu.impl.number.formatters.PaddingFormat.PaddingLocation;
+import com.ibm.icu.text.DecimalFormat;
+import com.ibm.icu.text.DecimalFormat.PropertySetter;
 import com.ibm.icu.text.DecimalFormatSymbols;
 import com.ibm.icu.util.CurrencyAmount;
 import com.ibm.icu.util.ULocale;
@@ -98,11 +100,20 @@ public class ShanesDataDrivenTester extends CodeUnderTest {
   @Override
   public String toPattern(DataDrivenNumberFormatTestData tuple) {
     String pattern = (tuple.pattern == null) ? "0" : tuple.pattern;
-    Properties properties;
+    final Properties properties;
+    DecimalFormat df;
     try {
       properties = PatternString.parseToProperties(pattern, tuple.currency != null);
       propertiesFromTuple(tuple, properties);
-      //      System.out.println(properties);
+      // TODO: Use PatternString.propertiesToString() directly. (How to deal with CurrencyUsage?)
+      df = new DecimalFormat();
+      df.setProperties(
+          new PropertySetter() {
+            @Override
+            public void set(Properties props) {
+              props.copyFrom(properties);
+            }
+          });
     } catch (IllegalArgumentException e) {
       e.printStackTrace();
       return e.getLocalizedMessage();
@@ -110,7 +121,7 @@ public class ShanesDataDrivenTester extends CodeUnderTest {
 
     if (tuple.toPattern != null) {
       String expected = tuple.toPattern;
-      String actual = PatternString.propertiesToString(properties);
+      String actual = df.toPattern();
       if (!expected.equals(actual)) {
         return "Expected toPattern='" + expected + "'; got '" + actual + "'";
       }

@@ -16,6 +16,7 @@ package com.ibm.icu.dev.test.format;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.math.RoundingMode;
 import java.text.AttributedCharacterIterator;
 import java.text.FieldPosition;
 import java.text.Format;
@@ -49,6 +50,7 @@ import com.ibm.icu.text.NumberFormat.SimpleNumberFormatFactory;
 import com.ibm.icu.text.NumberingSystem;
 import com.ibm.icu.text.RuleBasedNumberFormat;
 import com.ibm.icu.util.Currency;
+import com.ibm.icu.util.Currency.CurrencyUsage;
 import com.ibm.icu.util.CurrencyAmount;
 import com.ibm.icu.util.ULocale;
 
@@ -2419,38 +2421,38 @@ public class NumberFormatTest extends TestFmwk {
     // Support methods
     //------------------------------------------------------------------
 
-    // Format-Parse test
+    /** Format-Parse test */
     public void expect2(NumberFormat fmt, Number n, String exp) {
         // Don't round-trip format test, since we explicitly do it
         expect(fmt, n, exp, false);
         expect(fmt, exp, n);
     }
-    // Format-Parse test
+    /** Format-Parse test */
     public void expect3(NumberFormat fmt, Number n, String exp) {
         // Don't round-trip format test, since we explicitly do it
         expect_rbnf(fmt, n, exp, false);
         expect_rbnf(fmt, exp, n);
     }
 
-    // Format-Parse test (convenience)
+    /** Format-Parse test (convenience) */
     public void expect2(NumberFormat fmt, double n, String exp) {
         expect2(fmt, new Double(n), exp);
     }
-    // Format-Parse test (convenience)
+    /** RBNF Format-Parse test (convenience) */
     public void expect3(NumberFormat fmt, double n, String exp) {
         expect3(fmt, new Double(n), exp);
     }
 
-    // Format-Parse test (convenience)
+    /** Format-Parse test (convenience) */
     public void expect2(NumberFormat fmt, long n, String exp) {
         expect2(fmt, new Long(n), exp);
     }
-    // Format-Parse test (convenience)
+    /** RBNF Format-Parse test (convenience) */
     public void expect3(NumberFormat fmt, long n, String exp) {
         expect3(fmt, new Long(n), exp);
     }
 
-    // Format test
+    /** Format test */
     public void expect(NumberFormat fmt, Number n, String exp, boolean rt) {
         StringBuffer saw = new StringBuffer();
         FieldPosition pos = new FieldPosition(0);
@@ -2483,7 +2485,7 @@ public class NumberFormatTest extends TestFmwk {
                     ", FAIL " + n + " x " + pat + " = \"" + saw + "\", expected \"" + exp + "\"");
         }
     }
-    // Format test
+    /** RBNF format test */
     public void expect_rbnf(NumberFormat fmt, Number n, String exp, boolean rt) {
         StringBuffer saw = new StringBuffer();
         FieldPosition pos = new FieldPosition(0);
@@ -2515,22 +2517,22 @@ public class NumberFormatTest extends TestFmwk {
         }
     }
 
-    // Format test (convenience)
+    /** Format test (convenience) */
     public void expect(NumberFormat fmt, Number n, String exp) {
         expect(fmt, n, exp, true);
     }
 
-    // Format test (convenience)
+    /** Format test (convenience) */
     public void expect(NumberFormat fmt, double n, String exp) {
         expect(fmt, new Double(n), exp);
     }
 
-    // Format test (convenience)
+    /** Format test (convenience) */
     public void expect(NumberFormat fmt, long n, String exp) {
         expect(fmt, new Long(n), exp);
     }
 
-    // Parse test
+    /** Parse test */
     public void expect(NumberFormat fmt, String str, Number n) {
         Number num = null;
         try {
@@ -2552,7 +2554,7 @@ public class NumberFormatTest extends TestFmwk {
         }
     }
 
-    // Parse test
+    /** RBNF Parse test */
     public void expect_rbnf(NumberFormat fmt, String str, Number n) {
         Number num = null;
         try {
@@ -2572,12 +2574,12 @@ public class NumberFormatTest extends TestFmwk {
         }
     }
 
-    // Parse test (convenience)
+    /** Parse test (convenience) */
     public void expect(NumberFormat fmt, String str, double n) {
         expect(fmt, str, new Double(n));
     }
 
-    // Parse test (convenience)
+    /** Parse test (convenience) */
     public void expect(NumberFormat fmt, String str, long n) {
         expect(fmt, str, new Long(n));
     }
@@ -2685,6 +2687,10 @@ public class NumberFormatTest extends TestFmwk {
                 "00",          // leading zero before zero - used to be error - see ticket #7913
                 "012",         // leading zero before digit - used to be error - see ticket #7913
                 "0,456",       // leading zero before group separator - used to be error - see ticket #7913
+                "999,999",     // see ticket #6863
+                "-99,999",     // see ticket #6863
+                "-999,999",    // see ticket #6863
+                "-9,999,999",  // see ticket #6863
         };
         String[] fail = {
                 "1,2",       // wrong number of digits after group separator
@@ -4267,7 +4273,7 @@ public class NumberFormatTest extends TestFmwk {
     private void CompareAttributedCharacterFormatOutput(AttributedCharacterIterator iterator,
         List<FieldContainer> expected, String formattedOutput) {
 
-        List<FieldContainer> result = new ArrayList<>();
+        List<FieldContainer> result = new ArrayList<FieldContainer>();
         while (iterator.getIndex() != iterator.getEndIndex()) {
             int start = iterator.getRunStart();
             int end = iterator.getRunLimit();
@@ -4295,16 +4301,14 @@ public class NumberFormatTest extends TestFmwk {
                 result.get(i).value);
           }
         }
-        // TODO: restore when #11914 is fixed.
-        // assertTrue("Comparing vector results for " + formattedOutput,
-        //    expected.containsAll(result));
+        assertTrue("Comparing vector results for " + formattedOutput, expected.containsAll(result));
     }
 
     // Testing for Issue 11914, missing FieldPositions for some field types.
     @Test
     public void TestNPEIssue11914() {
         // First test: Double value with grouping separators.
-        List<FieldContainer> v1 = new ArrayList<>(7);
+        List<FieldContainer> v1 = new ArrayList<FieldContainer>(7);
         v1.add(new FieldContainer(0, 3, NumberFormat.Field.INTEGER));
         v1.add(new FieldContainer(3, 4, NumberFormat.Field.GROUPING_SEPARATOR));
         v1.add(new FieldContainer(4, 7, NumberFormat.Field.INTEGER));
@@ -4324,7 +4328,7 @@ public class NumberFormatTest extends TestFmwk {
         CompareAttributedCharacterFormatOutput(iterator, v1, numFmtted);
 
         // Second test: Double with scientific notation formatting.
-        List<FieldContainer> v2 = new ArrayList<>(7);
+        List<FieldContainer> v2 = new ArrayList<FieldContainer>(7);
         v2.add(new FieldContainer(0, 1, NumberFormat.Field.INTEGER));
         v2.add(new FieldContainer(1, 2, NumberFormat.Field.DECIMAL_SEPARATOR));
         v2.add(new FieldContainer(2, 5, NumberFormat.Field.FRACTION));
@@ -4338,7 +4342,7 @@ public class NumberFormatTest extends TestFmwk {
         CompareAttributedCharacterFormatOutput(iterator, v2, numFmtted);
 
         // Third test. BigInteger with grouping separators.
-        List<FieldContainer> v3 = new ArrayList<>(7);
+        List<FieldContainer> v3 = new ArrayList<FieldContainer>(7);
         v3.add(new FieldContainer(0, 1, NumberFormat.Field.SIGN));
         v3.add(new FieldContainer(1, 2, NumberFormat.Field.INTEGER));
         v3.add(new FieldContainer(2, 3, NumberFormat.Field.GROUPING_SEPARATOR));
@@ -4360,7 +4364,7 @@ public class NumberFormatTest extends TestFmwk {
         CompareAttributedCharacterFormatOutput(iterator, v3, fmtNumberBigInt);
 
         // Fourth test: BigDecimal with exponential formatting.
-        List<FieldContainer> v4 = new ArrayList<>(7);
+        List<FieldContainer> v4 = new ArrayList<FieldContainer>(7);
         v4.add(new FieldContainer(0, 1, NumberFormat.Field.SIGN));
         v4.add(new FieldContainer(1, 2, NumberFormat.Field.INTEGER));
         v4.add(new FieldContainer(2, 3, NumberFormat.Field.DECIMAL_SEPARATOR));
@@ -4640,5 +4644,236 @@ public class NumberFormatTest extends TestFmwk {
         if (currAcctPatn==null || currAcctPatn.length() == 0) {
             errln("locale ar, toPattern for ACCOUNTINGCURRENCYSTYLE returns null or 0-length string");
         }
+    }
+
+    @Test
+    public void Test10436() {
+        DecimalFormat df = (DecimalFormat) NumberFormat.getInstance(Locale.ENGLISH);
+        df.setRoundingMode(MathContext.ROUND_CEILING);
+        df.setMinimumFractionDigits(0);
+        df.setMaximumFractionDigits(0);
+        assertEquals("-.99 should round toward infinity", "-0", df.format(-0.99));
+    }
+
+    @Test
+    public void Test10765() {
+        NumberFormat fmt = NumberFormat.getInstance(new ULocale("en"));
+        fmt.setMinimumIntegerDigits(10);
+        FieldPosition pos = new FieldPosition(NumberFormat.Field.GROUPING_SEPARATOR);
+        fmt.format(1234, new StringBuffer(), pos);
+        assertEquals("FieldPosition should report the first occurence", 1, pos.getBeginIndex());
+        assertEquals("FieldPosition should report the first occurence", 2, pos.getEndIndex());
+    }
+
+    @Test
+    public void Test10997() {
+        NumberFormat fmt = NumberFormat.getCurrencyInstance(new ULocale("en-US"));
+        fmt.setMinimumFractionDigits(4);
+        fmt.setMaximumFractionDigits(4);
+        String str1 = fmt.format(new CurrencyAmount(123.45, Currency.getInstance("USD")));
+        String str2 = fmt.format(new CurrencyAmount(123.45, Currency.getInstance("EUR")));
+        assertEquals("minFrac 4 should be respected in default currency", "$123.4500", str1);
+        assertEquals("minFrac 4 should be respected in different currency", "€123.4500", str2);
+    }
+
+    @Test
+    public void Test11020() {
+        DecimalFormatSymbols sym = new DecimalFormatSymbols(ULocale.FRANCE);
+        DecimalFormat fmt = new DecimalFormat("0.05E0", sym);
+        String result = fmt.format(12301.2).replace('\u00a0', ' ');
+        assertEquals("Rounding increment should be applied after magnitude scaling", "1,25E4", result);
+    }
+
+    @Test
+    public void Test11025() {
+        String pattern = "¤¤ **####0.00";
+        DecimalFormatSymbols sym = new DecimalFormatSymbols(ULocale.FRANCE);
+        DecimalFormat fmt = new DecimalFormat(pattern, sym);
+        String result = fmt.format(433.0);
+        assertEquals("Number should be padded to 11 characters", "EUR *433,00", result);
+    }
+
+    @Test
+    public void Test11640() {
+        DecimalFormat df = (DecimalFormat) NumberFormat.getInstance();
+        df.applyPattern("¤¤¤ 0");
+        String result = df.getPositivePrefix();
+        assertEquals("Triple-currency should give long name on getPositivePrefix", "US dollars ", result);
+    }
+
+    @Test
+    public void Test11645() {
+        String pattern = "#,##0.0#";
+        DecimalFormat fmt = (DecimalFormat) NumberFormat.getInstance();
+        fmt.applyPattern(pattern);
+        DecimalFormat fmtCopy;
+
+        fmtCopy = (DecimalFormat) fmt.clone();
+        fmtCopy.setMultiplier(37);
+        fmtCopy.applyPattern(pattern);
+        assertFalse("multiplier", fmt.equals(fmtCopy));
+
+        fmtCopy = (DecimalFormat) fmt.clone();
+        fmtCopy.setRoundingMode(RoundingMode.CEILING.ordinal());
+        fmtCopy.applyPattern(pattern);
+        assertFalse("roundingMode", fmt.equals(fmtCopy));
+
+        fmtCopy = (DecimalFormat) fmt.clone();
+        fmtCopy.setCurrency(Currency.getInstance("EAT"));
+        fmtCopy.applyPattern(pattern);
+        assertFalse("currency", fmt.equals(fmtCopy));
+
+        fmtCopy = (DecimalFormat) fmt.clone();
+        fmtCopy.setCurrencyUsage(CurrencyUsage.CASH);
+        fmtCopy.applyPattern(pattern);
+        assertFalse("currencyUsage", fmt.equals(fmtCopy));
+    }
+
+    @Test
+    public void Test11646() {
+        DecimalFormatSymbols symbols = new DecimalFormatSymbols(new ULocale("en_US"));
+        String pattern = "\u00a4\u00a4\u00a4 0.00 %\u00a4\u00a4";
+        DecimalFormat fmt = new DecimalFormat(pattern, symbols);
+
+        // Test equality with affixes. set affix methods can't capture special
+        // characters which is why equality should fail.
+        {
+          DecimalFormat fmtCopy = (DecimalFormat) fmt.clone();
+          assertEquals("", fmt, fmtCopy);
+          fmtCopy.setPositivePrefix(fmtCopy.getPositivePrefix());
+          assertNotEquals("", fmt, fmtCopy);
+        }
+        {
+          DecimalFormat fmtCopy = (DecimalFormat) fmt.clone();
+          assertEquals("", fmt, fmtCopy);
+          fmtCopy.setPositiveSuffix(fmtCopy.getPositiveSuffix());
+          assertNotEquals("", fmt, fmtCopy);
+        }
+        {
+          DecimalFormat fmtCopy = (DecimalFormat) fmt.clone();
+          assertEquals("", fmt, fmtCopy);
+          fmtCopy.setNegativePrefix(fmtCopy.getNegativePrefix());
+          assertNotEquals("", fmt, fmtCopy);
+        }
+        {
+          DecimalFormat fmtCopy = (DecimalFormat) fmt.clone();
+          assertEquals("", fmt, fmtCopy);
+          fmtCopy.setNegativeSuffix(fmtCopy.getNegativeSuffix());
+          assertNotEquals("", fmt, fmtCopy);
+        }
+    }
+
+    @Test
+    public void Test11648() {
+        DecimalFormat df = new DecimalFormat("0.00");
+        df.setScientificNotation(true);
+        String pat = df.toPattern();
+        assertEquals("A valid scientific notation pattern should be produced", "0.00E0", pat);
+    }
+
+    @Test
+    public void Test11649() {
+        String pattern = "\u00a4\u00a4\u00a4 0.00";
+        DecimalFormat fmt = new DecimalFormat(pattern);
+        fmt.setCurrency(Currency.getInstance("USD"));
+        assertEquals("Triple currency sign should format long name", "US dollars 12.34", fmt.format(12.34));
+
+        String newPattern = fmt.toPattern();
+        assertEquals("Should produce a valid pattern", pattern, newPattern);
+
+        DecimalFormat fmt2 = new DecimalFormat(newPattern);
+        fmt2.setCurrency(Currency.getInstance("USD"));
+        assertEquals("Triple currency sign pattern should round-trip", "US dollars 12.34", fmt2.format(12.34));
+    }
+
+    @Test
+    public void Test11686() {
+        DecimalFormat df = new DecimalFormat();
+        df.setPositiveSuffix("0K");
+        df.setNegativeSuffix("0N");
+        expect2(df, 123, "1230K");
+        expect2(df, -123, "1230N");
+    }
+
+    @Test
+    public void Test11839() {
+        DecimalFormatSymbols dfs = new DecimalFormatSymbols(ULocale.ENGLISH);
+        dfs.setMinusSign('∸');
+        dfs.setPlusSign('∔'); //  ∔  U+2214 DOT PLUS
+        DecimalFormat df = new DecimalFormat("0.00+;0.00-", dfs);
+        String result = df.format(-1.234);
+        assertEquals("Locale-specific minus sign should be used", "1.23∸", result);
+        result = df.format(1.234);
+        assertEquals("Locale-specific plus sign should be used", "1.23∔", result);
+    }
+
+    @Test
+    public void Test12753() {
+        ULocale locale = new ULocale("en-US");
+        DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance(locale);
+        symbols.setDecimalSeparator('*');
+        DecimalFormat df = new DecimalFormat("0.00", symbols);
+        df.setDecimalPatternMatchRequired(true);
+        try {
+            df.parse("123");
+            fail("Parsing integer succeeded even though setDecimalPatternMatchRequired was set");
+        } catch (ParseException e) {
+            // Parse failed (expected)
+        }
+    }
+
+    @Test
+    public void Test12962() {
+        String pat = "**0.00";
+        DecimalFormat df = new DecimalFormat(pat);
+        String newPat = df.toPattern();
+        assertEquals("Format width changed upon calling applyPattern", pat.length(), newPat.length());
+    }
+
+    @Test
+    public void Test10354() {
+        DecimalFormatSymbols dfs = new DecimalFormatSymbols();
+        dfs.setNaN("");
+        DecimalFormat df = new DecimalFormat();
+        df.setDecimalFormatSymbols(dfs);
+        try {
+            df.formatToCharacterIterator(Double.NaN);
+            // pass
+        } catch (IllegalArgumentException e) {
+            throw new AssertionError(e);
+        }
+    }
+
+    @Test
+    public void Test11913() {
+        NumberFormat df = DecimalFormat.getInstance();
+        String result = df.format(new BigDecimal("1.23456789E400"));
+        assertEquals("Should format more than 309 digits", "12,345,678", result.substring(0, 10));
+        assertEquals("Should format more than 309 digits", 534, result.length());
+    }
+
+    @Test
+    public void Test12045() {
+        if (logKnownIssue("12045", "XSU is missing from fr")) { return; }
+
+        NumberFormat nf = NumberFormat.getInstance(new ULocale("fr"), NumberFormat.PLURALCURRENCYSTYLE);
+        ParsePosition ppos = new ParsePosition(0);
+        try {
+            CurrencyAmount result = nf.parseCurrency("2,34 XSU", ppos);
+            assertEquals("Parsing should succeed on XSU",
+                         new CurrencyAmount(2.34, Currency.getInstance("XSU")), result);
+            // pass
+        } catch (Exception e) {
+            throw new AssertionError("Should have been able to parse XSU", e);
+        }
+    }
+
+    @Test
+    public void Test11739() {
+        NumberFormat nf = NumberFormat.getCurrencyInstance(new ULocale("sr_BA"));
+        ((DecimalFormat) nf).applyPattern("0.0 ¤¤¤");
+        ParsePosition ppos = new ParsePosition(0);
+        CurrencyAmount result = nf.parseCurrency("1.500 амерички долар", ppos);
+        assertEquals("Should parse to 1500 USD", new CurrencyAmount(1500, Currency.getInstance("USD")), result);
     }
 }

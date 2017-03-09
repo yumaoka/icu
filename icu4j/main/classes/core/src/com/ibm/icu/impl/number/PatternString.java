@@ -265,7 +265,9 @@ public class PatternString {
   /**
    * Converts a pattern between standard notation and localized notation. Localized notation means
    * that instead of using generic placeholders in the pattern, you use the corresponding
-   * locale-specific characters instead.
+   * locale-specific characters instead. For example, in locale <em>fr-FR</em>, the period in the
+   * pattern "0.000" means "decimal" in standard notation (as it does in every other locale), but it
+   * means "grouping" in localized notation.
    *
    * @param input The pattern to convert.
    * @param symbols The symbols corresponding to the localized pattern.

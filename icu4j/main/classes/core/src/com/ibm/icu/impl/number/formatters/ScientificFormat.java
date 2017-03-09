@@ -13,7 +13,7 @@ import com.ibm.icu.impl.number.modifiers.PositiveNegativeAffixModifier;
 import com.ibm.icu.impl.number.rounders.IntervalRounder;
 import com.ibm.icu.impl.number.rounders.SignificantDigitsRounder;
 import com.ibm.icu.text.DecimalFormatSymbols;
-import com.ibm.icu.text.NumberFormat.Field;
+import com.ibm.icu.text.NumberFormat;
 
 public class ScientificFormat extends Format.BeforeFormat implements Rounder.MultiplierGenerator {
 
@@ -147,15 +147,17 @@ public class ScientificFormat extends Format.BeforeFormat implements Rounder.Mul
     digitStrings = symbols.getDigitStrings(); // makes a copy
 
     separatorMod =
-        new ConstantAffixModifier("", symbols.getExponentSeparator(), Field.EXPONENT_SYMBOL, true);
+        new ConstantAffixModifier(
+            "", symbols.getExponentSeparator(), NumberFormat.Field.EXPONENT_SYMBOL, true);
     signMod =
         new PositiveNegativeAffixModifier(
             new ConstantAffixModifier(
                 "",
                 exponentShowPlusSign ? symbols.getPlusSignString() : "",
-                Field.EXPONENT_SIGN,
+                NumberFormat.Field.EXPONENT_SIGN,
                 true),
-            new ConstantAffixModifier("", symbols.getMinusSignString(), Field.EXPONENT_SIGN, true));
+            new ConstantAffixModifier(
+                "", symbols.getMinusSignString(), NumberFormat.Field.EXPONENT_SIGN, true));
   }
 
   private static final ThreadLocal<StringBuilder> threadLocalStringBuilder =
@@ -190,7 +192,8 @@ public class ScientificFormat extends Format.BeforeFormat implements Rounder.Mul
     }
 
     // Add modifiers from the outside in.
-    mods.add(new ConstantAffixModifier("", exponentSB.toString(), Field.EXPONENT, true));
+    mods.add(
+        new ConstantAffixModifier("", exponentSB.toString(), NumberFormat.Field.EXPONENT, true));
     mods.add(signMod.getModifier(exponent < 0));
     mods.add(separatorMod);
   }

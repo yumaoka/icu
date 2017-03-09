@@ -297,7 +297,7 @@ public class DataDrivenNumberFormatTestUtility {
     }
 
     private List<String> splitBy(int max, char delimiter) {
-        ArrayList<String> result = new ArrayList<>();
+        ArrayList<String> result = new ArrayList<String>();
         int colIdx = 0;
         int colStart = 0;
         int len = fileLine.length();

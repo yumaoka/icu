@@ -30,7 +30,7 @@ public class FormatQuantityTest extends TestFmwk {
   public void testBehavior() throws ParseException {
 
     // Make a list of several formatters to test the behavior of FormatQuantity.
-    List<Format> formats = new ArrayList<>();
+    List<Format> formats = new ArrayList<Format>();
 
     Properties properties = new Properties();
     Format ndf = Endpoint.fromBTA(properties);
@@ -117,7 +117,7 @@ public class FormatQuantityTest extends TestFmwk {
       assertEquals("Double is not valid", Double.toString(Double.parseDouble(str)), str);
     }
 
-    List<FormatQuantity> qs = new ArrayList<>();
+    List<FormatQuantity> qs = new ArrayList<FormatQuantity>();
     BigDecimal d = new BigDecimal(str);
     qs.add(new FormatQuantity1(d));
     if (mode == 0) qs.add(new FormatQuantity2(d));

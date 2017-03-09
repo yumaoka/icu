@@ -27,6 +27,7 @@ import org.junit.Test;
 import com.ibm.icu.dev.test.TestFmwk;
 import com.ibm.icu.text.CompactDecimalFormat;
 import com.ibm.icu.text.CompactDecimalFormat.CompactStyle;
+import com.ibm.icu.text.DecimalFormat;
 import com.ibm.icu.text.NumberFormat;
 import com.ibm.icu.util.Currency;
 import com.ibm.icu.util.CurrencyAmount;
@@ -589,5 +590,35 @@ public class CompactDecimalFormatTest extends TestFmwk {
         cdf = CompactDecimalFormat.getInstance(ULocale.forLanguageTag("it"), CompactStyle.SHORT);
         result = cdf.format(new CurrencyAmount(123000, Currency.getInstance("EUR")));
         assertEquals("CDF should correctly format 123000 with currency in 'it'", "120000 €", result);
+    }
+
+    @Test
+    public void TestBug11319() {
+        if (logKnownIssue("11319", "CDF does not fall back from zh-Hant-HK to zh-Hant")) {
+            return;
+        }
+
+        CompactDecimalFormat cdf = CompactDecimalFormat.getInstance(new ULocale("zh-Hant-HK"), CompactStyle.SHORT);
+        String result = cdf.format(958000000L);
+        assertEquals("CDF should correctly format 958 million in zh-Hant-HK", "9.6億", result);
+    }
+
+    @Test
+    public void TestBug12975() {
+        ULocale locale = new ULocale("it");
+        CompactDecimalFormat cdf = CompactDecimalFormat.getInstance(locale, CompactStyle.SHORT);
+        String resultCdf = cdf.format(120000);
+        DecimalFormat df = (DecimalFormat) DecimalFormat.getInstance(locale);
+        String resultDefault = df.format(120000);
+        assertEquals("CompactDecimalFormat should use default pattern when compact pattern is unavailable",
+                     resultDefault, resultCdf);
+    }
+
+    @Test
+    public void TestBug11534() {
+        ULocale locale = new ULocale("pt_PT");
+        CompactDecimalFormat cdf = CompactDecimalFormat.getInstance(locale, CompactStyle.SHORT);
+        String result = cdf.format(1000);
+        assertEquals("pt_PT should fall back to pt", "1 mil", result);
     }
 }

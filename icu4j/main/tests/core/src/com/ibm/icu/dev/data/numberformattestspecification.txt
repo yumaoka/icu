@@ -328,6 +328,8 @@ set pattern #E0
 set format 299792458.0
 begin
 minIntegerDigits	maxIntegerDigits	minFractionDigits	maxFractionDigits	output	breaks
+// JDK gives 2.99792458E8 (maxInt + maxFrac instead of minInt + maxFrac)
+1	1000	0	5	2.99792E8	K
 // JDK gives .3E9 instead of unlimited precision.
 0	1	0	0	2.99792458E8	K
 1	1	0	0	3E8
@@ -529,16 +531,27 @@ format	roundingMode	output	breaks
 -1.49	floor	-1.5
 
 test currency usage setters
-// TODO: Find a country and currency where standard and cash differ
 set locale CH
-set currency CHF
 set pattern \u00a4\u00a4 0
 begin
-format	currencyUsage	output	breaks
-0.37	standard	CHF 0.37	K
-// TODO: Get the rounding data into ICU4C and ICU4J
-// Update (January 2017): this passes ICU4J
-0.37	cash	CHF 0.35	CK
+format	currency	currencyUsage	output	breaks
+0.37	CHF	standard	CHF 0.37	K
+0.37	CHF	cash	CHF 0.35	CK
+1.234	CZK	standard	CZK 1.23	K
+1.234	CZK	cash	CZK 1
+
+test currency usage to pattern
+set locale en
+begin
+currency	currencyUsage	toPattern	breaks
+// These work in J, but it prepends an extra hash sign to the pattern.
+// K does not support this feature.
+USD	standard	0.00	JK
+CHF	standard	0.00	JK
+CZK	standard	0.00	JK
+USD	cash	0.00	JK
+CHF	cash	0.05	JK
+CZK	cash	0	JK
 
 test currency rounding
 set locale en
@@ -658,9 +671,9 @@ test toPattern
 set locale en
 begin
 pattern	toPattern	breaks
+// All of the "S" failures in this section are because of functionally equivalent patterns
 // JDK doesn't support any patterns with padding or both negative prefix and suffix
 // Breaks ICU4J See ticket 11671
-// All of the "S" failures in this section are because of functionally equivalent patterns
 **0,000	**0,000		JK
 **##0,000	**##0,000	K
 **###0,000	**###0,000	K
@@ -1310,6 +1323,25 @@ begin
 format	output	breaks
 -0.99	-0	JK
 
+test parse decimalPatternMatchRequired
+set locale en
+set decimalPatternMatchRequired 1
+begin
+pattern	parse	output	breaks
+// K doesn't support this feature.
+0	123	123
+0	123.	fail	JK
+0	1.23	fail	JK
+0	-513	-513
+0	-513.	fail	JK
+0	-5.13	fail	JK
+0.0	123	fail	K
+0.0	123.	123
+0.0	1.23	1.23
+0.0	-513	fail	K
+0.0	-513.	-513
+0.0	-5.13	-5.13
+
 test parse minus sign
 set locale en
 set pattern #
@@ -1375,10 +1407,22 @@ maxFractionDigits	format	output	breaks
 100	987654321.987654321	987654321.987654321
 100	9999999999999.9950000000001	9999999999999.9950000000001
 2	9999999999999.9950000000001	10000000000000.00
-2	9999999.995000001	10000000.00
+2	9999999.99499999	9999999.99
+2	9999999.995	10000000.00
+2	9999999.99500001	10000000.00
 100	56565656565656565656565656565656565656565656565656565656565656	56565656565656565656565656565656565656565656565656565656565656.00
 100	454545454545454545454545454545.454545454545454545454545454545	454545454545454545454545454545.454545454545454545454545454545
 100	0.0000000000000000000123	0.0000000000000000000123
 100	-78787878787878787878787878787878	-78787878787878787878787878787878.00
 100	-8989898989898989898989.8989898989898989	-8989898989898989898989.8989898989898989
+
+test ticket 11230
+set locale en
+set pattern ###
+begin
+parse	output	breaks
+// K and J return null; S returns 99
+ 9 9	9	JKS
+// K and J return null
+ 9 999	9999	JK
 

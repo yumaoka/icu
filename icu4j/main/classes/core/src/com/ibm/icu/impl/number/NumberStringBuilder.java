@@ -239,17 +239,17 @@ public class NumberStringBuilder implements CharSequence {
   private static final Map<Field, Character> fieldToDebugChar = new HashMap<Field, Character>();
 
   static {
-    fieldToDebugChar.put(Field.SIGN, '-');
-    fieldToDebugChar.put(Field.INTEGER, 'i');
-    fieldToDebugChar.put(Field.FRACTION, 'f');
-    fieldToDebugChar.put(Field.EXPONENT, 'e');
-    fieldToDebugChar.put(Field.EXPONENT_SIGN, '+');
-    fieldToDebugChar.put(Field.EXPONENT_SYMBOL, 'E');
-    fieldToDebugChar.put(Field.DECIMAL_SEPARATOR, '.');
-    fieldToDebugChar.put(Field.GROUPING_SEPARATOR, ',');
-    fieldToDebugChar.put(Field.PERCENT, '%');
-    fieldToDebugChar.put(Field.PERMILLE, '‰');
-    fieldToDebugChar.put(Field.CURRENCY, '$');
+    fieldToDebugChar.put(NumberFormat.Field.SIGN, '-');
+    fieldToDebugChar.put(NumberFormat.Field.INTEGER, 'i');
+    fieldToDebugChar.put(NumberFormat.Field.FRACTION, 'f');
+    fieldToDebugChar.put(NumberFormat.Field.EXPONENT, 'e');
+    fieldToDebugChar.put(NumberFormat.Field.EXPONENT_SIGN, '+');
+    fieldToDebugChar.put(NumberFormat.Field.EXPONENT_SYMBOL, 'E');
+    fieldToDebugChar.put(NumberFormat.Field.DECIMAL_SEPARATOR, '.');
+    fieldToDebugChar.put(NumberFormat.Field.GROUPING_SEPARATOR, ',');
+    fieldToDebugChar.put(NumberFormat.Field.PERCENT, '%');
+    fieldToDebugChar.put(NumberFormat.Field.PERMILLE, '‰');
+    fieldToDebugChar.put(NumberFormat.Field.CURRENCY, '$');
   }
 
   /**
@@ -322,13 +322,18 @@ public class NumberStringBuilder implements CharSequence {
    * @param offset An offset to add to the field position index; can be zero.
    */
   public void populateFieldPosition(FieldPosition fp, int offset) {
-    Field field = (Field) fp.getFieldAttribute();
+    if (!(fp.getFieldAttribute() instanceof com.ibm.icu.text.NumberFormat.Field)) {
+      throw new IllegalArgumentException(
+          "You must pass an instance of com.ibm.icu.text.NumberFormat.Field as your FieldPosition attribute.");
+    }
+
+    /* com.ibm.icu.text.NumberFormat. */ Field field = (Field) fp.getFieldAttribute();
     if (field == null) {
       // Backwards compatibility: read from fp.getField()
       if (fp.getField() == NumberFormat.INTEGER_FIELD) {
-        field = Field.INTEGER;
+        field = NumberFormat.Field.INTEGER;
       } else if (fp.getField() == NumberFormat.FRACTION_FIELD) {
-        field = Field.FRACTION;
+        field = NumberFormat.Field.FRACTION;
       } else {
         // No field is set
         return;
@@ -341,20 +346,21 @@ public class NumberStringBuilder implements CharSequence {
       Field _field = (i < zero + length) ? fields[i] : null;
       if (seenStart && field != _field) {
         // Special case: GROUPING_SEPARATOR counts as an INTEGER.
-        if (field == Field.INTEGER && _field == Field.GROUPING_SEPARATOR) continue;
+        if (field == NumberFormat.Field.INTEGER && _field == NumberFormat.Field.GROUPING_SEPARATOR)
+          continue;
         fp.setEndIndex(i - zero + offset);
         break;
       } else if (!seenStart && field == _field) {
         fp.setBeginIndex(i - zero + offset);
         seenStart = true;
       }
-      if (_field == Field.INTEGER || _field == Field.DECIMAL_SEPARATOR) {
+      if (_field == NumberFormat.Field.INTEGER || _field == NumberFormat.Field.DECIMAL_SEPARATOR) {
         fractionStart = i - zero + 1;
       }
     }
 
     // Backwards compatibility: FRACTION needs to start after INTEGER if empty
-    if (field == Field.FRACTION && !seenStart) {
+    if (field == NumberFormat.Field.FRACTION && !seenStart) {
       fp.setBeginIndex(fractionStart);
       fp.setEndIndex(fractionStart);
     }
@@ -366,9 +372,10 @@ public class NumberStringBuilder implements CharSequence {
     int currentStart = -1;
     for (int i = 0; i < length; i++) {
       Field field = fields[i + zero];
-      if (current == Field.INTEGER && field == Field.GROUPING_SEPARATOR) {
+      if (current == NumberFormat.Field.INTEGER && field == NumberFormat.Field.GROUPING_SEPARATOR) {
         // Special case: GROUPING_SEPARATOR counts as an INTEGER.
-        as.addAttribute(Field.GROUPING_SEPARATOR, Field.GROUPING_SEPARATOR, i, i + 1);
+        as.addAttribute(
+            NumberFormat.Field.GROUPING_SEPARATOR, NumberFormat.Field.GROUPING_SEPARATOR, i, i + 1);
       } else if (current != field) {
         if (current != null) {
           as.addAttribute(current, current, currentStart, i);
