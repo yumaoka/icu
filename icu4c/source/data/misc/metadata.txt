@@ -1279,6 +1279,14 @@ metadata:table(nofallback){
                 reason{"overlong"}
                 replacement{"yo"}
             }
+            yue_CN{
+                reason{"legacy"}
+                replacement{"yue_Hans_CN"}
+            }
+            yue_HK{
+                reason{"legacy"}
+                replacement{"yue_Hant_HK"}
+            }
             zai{
                 reason{"macrolanguage"}
                 replacement{"zap"}
@@ -4255,6 +4263,7 @@ metadata:table(nofallback){
         "bez_TZ",
         "bg_BG",
         "bgn_PK",
+        "blt_Tavt_VN",
         "bm_ML",
         "bm_Nkoo_ML",
         "bn_BD",

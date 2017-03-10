@@ -13,6 +13,7 @@
 #include "unicode/uchar.h"
 #include "unicode/ustring.h"
 #include "unicode/locid.h"
+#include "unicode/strenum.h"
 #include "unicode/ucnv.h"
 #include "unicode/uenum.h"
 #include "unicode/utf16.h"
@@ -29,11 +30,13 @@ using namespace std;
 
 UnicodeStringTest::~UnicodeStringTest() {}
 
+extern IntlTest *createStringCaseTest();
+
 void UnicodeStringTest::runIndexedTest( int32_t index, UBool exec, const char* &name, char *par)
 {
     if (exec) logln("TestSuite UnicodeStringTest: ");
     TESTCASE_AUTO_BEGIN;
-    TESTCASE_AUTO_CLASS(StringCaseTest);
+    TESTCASE_AUTO_CREATE_CLASS(StringCaseTest);
     TESTCASE_AUTO(TestBasicManipulation);
     TESTCASE_AUTO(TestCompare);
     TESTCASE_AUTO(TestExtract);
@@ -1885,13 +1888,11 @@ UnicodeStringTest::TestUTF8() {
     if(from8 != expected) {
         errln("UnicodeString::fromUTF8(StringPiece) did not create the expected string.");
     }
-#if U_HAVE_STD_STRING
     std::string utf8_string((const char *)utf8, sizeof(utf8));
     UnicodeString from8b = UnicodeString::fromUTF8(utf8_string);
     if(from8b != expected) {
         errln("UnicodeString::fromUTF8(std::string) did not create the expected string.");
     }
-#endif
 
     static const UChar utf16[] = {
         0x41, 0xd900, 0x61, 0xdc00, 0x5a, 0xd900, 0xdc00, 0x7a, 0xd800, 0xdc00, 0xdbff, 0xdfff
@@ -1913,7 +1914,6 @@ UnicodeStringTest::TestUTF8() {
     if(!sink.calledFlush) {
         errln("UnicodeString::toUTF8(sink) did not sink.Flush().");
     }
-#if U_HAVE_STD_STRING
     // Initial contents for testing that toUTF8String() appends.
     std::string result8 = "-->";
     std::string expected8 = "-->" + std::string((const char *)expected_utf8, sizeof(expected_utf8));
@@ -1922,7 +1922,6 @@ UnicodeStringTest::TestUTF8() {
     if(result8r != expected8 || &result8r != &result8) {
         errln("UnicodeString::toUTF8String() did not create the expected string.");
     }
-#endif
 }
 
 // Test if this compiler supports Return Value Optimization of unnamed temporary objects.
