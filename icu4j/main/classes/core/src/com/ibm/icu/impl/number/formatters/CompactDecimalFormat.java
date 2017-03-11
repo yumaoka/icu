@@ -74,9 +74,9 @@ public class CompactDecimalFormat extends Format.BeforeFormat {
       rounder =
           SignificantDigitsRounder.getInstance(
               SignificantDigitsRounder.getThreadLocalProperties()
-                  .setMinimumSignificantDigits(2)
-                  .setMaximumFractionDigits(0)
-                  .setSignificantDigitsMode(SignificantDigitsMode.ENSURE_MINIMUM_SIGNIFICANT));
+                  .setMinimumSignificantDigits(1)
+                  .setMaximumSignificantDigits(2)
+                  .setSignificantDigitsMode(SignificantDigitsMode.OVERRIDE_MAXIMUM_FRACTION));
     }
     return rounder;
   }
