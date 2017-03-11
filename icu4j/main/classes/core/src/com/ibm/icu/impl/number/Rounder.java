@@ -103,7 +103,7 @@ public abstract class Rounder extends Format.BeforeFormat {
      */
     public IBasicRoundingProperties setMaximumFractionDigits(int maximumFractionDigits);
 
-    static RoundingMode DEFAULT_ROUNDING_MODE = RoundingMode.HALF_EVEN;
+    static RoundingMode DEFAULT_ROUNDING_MODE = null;
 
     /** @see #setRoundingMode */
     public RoundingMode getRoundingMode();

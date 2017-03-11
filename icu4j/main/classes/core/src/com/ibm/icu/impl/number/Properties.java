@@ -2,10 +2,16 @@
 // License & terms of use: http://www.unicode.org/copyright.html#License
 package com.ibm.icu.impl.number;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
+import java.util.ArrayList;
 
 import com.ibm.icu.impl.number.Parse.ParseMode;
 import com.ibm.icu.impl.number.formatters.BigDecimalMultiplier;
@@ -32,6 +38,7 @@ import com.ibm.icu.util.MeasureUnit;
 
 public class Properties
     implements Cloneable,
+        Serializable,
         PositiveDecimalFormat.IProperties,
         PositiveNegativeAffixFormat.IProperties,
         MagnitudeMultiplier.IProperties,
@@ -46,14 +53,15 @@ public class Properties
         MagnitudeRounder.IProperties,
         SignificantDigitsRounder.IProperties {
 
-  private static final Properties DEFAULT = new Properties();
+  /** Auto-generated. */
+  private static final long serialVersionUID = 4095518955889349243L;
 
-  // TODO: Change all the CharSequence types to immutable Strings?
-  // This would also require either retiring CurrencyPluralInfo or copying it upon receipt.
-  // These two changes would make all fields in Properties immutable.
+  private static final Properties DEFAULT = new Properties();
 
   // The setters in this class should NOT have any side-effects or perform any validation.  It is
   // up to the consumer of the property bag to deal with property validation.
+
+  // The fields are all marked "transient" because custom serialization is being used.
 
   /*--------------------------------------------------------------------------------------------+/
   /| IMPORTANT!                                                                                 |/
@@ -64,50 +72,49 @@ public class Properties
   /| or #equals(), but it will NOT catch if you forget to add it to #hashCode().                |/
   /+--------------------------------------------------------------------------------------------*/
 
-  private boolean alwaysShowDecimal;
-  private boolean alwaysShowPlusSign;
-  private CompactStyle compactStyle;
-  private Currency currency;
-  private CurrencyPluralInfo currencyPluralInfo;
-  private CurrencyStyle currencyStyle;
-  private CurrencyUsage currencyUsage;
-  private boolean decimalPatternMatchRequired;
-  private int exponentDigits;
-  private boolean exponentShowPlusSign;
-  private int groupingSize;
-  private int magnitudeMultiplier;
-  private MathContext mathContext;
-  private int maximumFractionDigits;
-  private int maximumIntegerDigits;
-  private int maximumSignificantDigits;
-  private FormatWidth measureFormatWidth;
-  private MeasureUnit measureUnit;
-  private int minimumFractionDigits;
-  private int minimumGroupingDigits;
-  private int minimumIntegerDigits;
-  private int minimumSignificantDigits;
-  private BigDecimal multiplier;
-  private CharSequence negativePrefix;
-  private CharSequence negativePrefixPattern;
-  private CharSequence negativeSuffix;
-  private CharSequence negativeSuffixPattern;
-  private PaddingLocation paddingLocation;
-  private CharSequence paddingString;
-  private int paddingWidth;
-  //  private boolean parseCurrency;
-  private boolean parseCaseSensitive;
-  private boolean parseIgnoreExponent;
-  private boolean parseIntegerOnly;
-  private ParseMode parseMode;
-  private boolean parseToBigDecimal;
-  private CharSequence positivePrefix;
-  private CharSequence positivePrefixPattern;
-  private CharSequence positiveSuffix;
-  private CharSequence positiveSuffixPattern;
-  private BigDecimal roundingInterval;
-  private RoundingMode roundingMode;
-  private int secondaryGroupingSize;
-  private SignificantDigitsMode significantDigitsMode;
+  private transient boolean alwaysShowDecimal;
+  private transient boolean alwaysShowPlusSign;
+  private transient CompactStyle compactStyle;
+  private transient Currency currency;
+  private transient CurrencyPluralInfo currencyPluralInfo;
+  private transient CurrencyStyle currencyStyle;
+  private transient CurrencyUsage currencyUsage;
+  private transient boolean decimalPatternMatchRequired;
+  private transient int exponentDigits;
+  private transient boolean exponentShowPlusSign;
+  private transient int groupingSize;
+  private transient int magnitudeMultiplier;
+  private transient MathContext mathContext;
+  private transient int maximumFractionDigits;
+  private transient int maximumIntegerDigits;
+  private transient int maximumSignificantDigits;
+  private transient FormatWidth measureFormatWidth;
+  private transient MeasureUnit measureUnit;
+  private transient int minimumFractionDigits;
+  private transient int minimumGroupingDigits;
+  private transient int minimumIntegerDigits;
+  private transient int minimumSignificantDigits;
+  private transient BigDecimal multiplier;
+  private transient String negativePrefix;
+  private transient String negativePrefixPattern;
+  private transient String negativeSuffix;
+  private transient String negativeSuffixPattern;
+  private transient PaddingLocation paddingLocation;
+  private transient String paddingString;
+  private transient int paddingWidth;
+  private transient boolean parseCaseSensitive;
+  private transient boolean parseIgnoreExponent;
+  private transient boolean parseIntegerOnly;
+  private transient ParseMode parseMode;
+  private transient boolean parseToBigDecimal;
+  private transient String positivePrefix;
+  private transient String positivePrefixPattern;
+  private transient String positiveSuffix;
+  private transient String positiveSuffixPattern;
+  private transient BigDecimal roundingInterval;
+  private transient RoundingMode roundingMode;
+  private transient int secondaryGroupingSize;
+  private transient SignificantDigitsMode significantDigitsMode;
 
   /*--------------------------------------------------------------------------------------------+/
   /| IMPORTANT!                                                                                 |/
@@ -153,7 +160,6 @@ public class Properties
     paddingLocation = DEFAULT_PADDING_LOCATION;
     paddingString = DEFAULT_PADDING_STRING;
     paddingWidth = DEFAULT_PADDING_WIDTH;
-    //    parseCurrency = DEFAULT_PARSE_CURRENCY;
     parseCaseSensitive = DEFAULT_PARSE_CASE_SENSITIVE;
     parseIgnoreExponent = DEFAULT_PARSE_IGNORE_EXPONENT;
     parseIntegerOnly = DEFAULT_PARSE_INTEGER_ONLY;
@@ -249,7 +255,6 @@ public class Properties
     eq = eq && _equalsHelper(paddingLocation, other.paddingLocation);
     eq = eq && _equalsHelper(paddingString, other.paddingString);
     eq = eq && _equalsHelper(paddingWidth, other.paddingWidth);
-    //    eq = eq && _equalsHelper(parseCurrency, other.parseCurrency);
     eq = eq && _equalsHelper(parseCaseSensitive, other.parseCaseSensitive);
     eq = eq && _equalsHelper(parseIgnoreExponent, other.parseIgnoreExponent);
     eq = eq && _equalsHelper(parseIntegerOnly, other.parseIntegerOnly);
@@ -268,20 +273,6 @@ public class Properties
 
   private boolean _equalsHelper(boolean mine, boolean theirs) {
     return mine == theirs;
-  }
-
-  private boolean _equalsHelper(CharSequence mine, CharSequence theirs) {
-    // We have to write this helper separately from Object because the CharSequence interface
-    // doesn't require the #equals() method to work as one would expect.
-    // This also allows a null CharSequence to equal an empty CharSequence.
-    if (mine == theirs) return true;
-    if (mine == null && theirs.length() != 0) return false;
-    if (theirs == null && mine.length() != 0) return false;
-    if (mine.length() != theirs.length()) return false;
-    for (int i = 0; i < mine.length(); i++) {
-      if (mine.charAt(i) != theirs.charAt(i)) return false;
-    }
-    return true;
   }
 
   private boolean _equalsHelper(int mine, int theirs) {
@@ -326,7 +317,6 @@ public class Properties
     hashCode ^= _hashCodeHelper(paddingLocation);
     hashCode ^= _hashCodeHelper(paddingString);
     hashCode ^= _hashCodeHelper(paddingWidth);
-    //    hashCode ^= _hashCodeHelper(parseCurrency);
     hashCode ^= _hashCodeHelper(parseCaseSensitive);
     hashCode ^= _hashCodeHelper(parseIgnoreExponent);
     hashCode ^= _hashCodeHelper(parseIntegerOnly);
@@ -389,6 +379,104 @@ public class Properties
     if (!(other instanceof Properties)) return false;
     return _equals((Properties) other);
   }
+
+  /**
+   * Custom serialization: save fields along with their name, so that fields can be easily added in
+   * the future in any order. Only save fields that differ from their default value.
+   */
+  private void writeObject(ObjectOutputStream oos) throws IOException {
+    oos.defaultWriteObject();
+
+    // Extra int for possible future use
+    oos.writeInt(0);
+
+    ArrayList<Field> fieldsToSerialize = new ArrayList<Field>();
+    ArrayList<Object> valuesToSerialize = new ArrayList<Object>();
+    Field[] fields = Properties.class.getDeclaredFields();
+    for (Field field : fields) {
+      if (Modifier.isStatic(field.getModifiers())) {
+        continue;
+      }
+      try {
+        Object myValue = field.get(this);
+        if (myValue == null) {
+          // All *Object* values default to null; no need to serialize.
+          continue;
+        }
+        Object defaultValue = field.get(DEFAULT);
+        if (!myValue.equals(defaultValue)) {
+          fieldsToSerialize.add(field);
+          valuesToSerialize.add(myValue);
+        }
+      } catch (IllegalArgumentException e) {
+        // Should not happen
+        throw new AssertionError(e);
+      } catch (IllegalAccessException e) {
+        // Should not happen
+        throw new AssertionError(e);
+      }
+    }
+
+    // 1) How many fields are to be serialized?
+    int count = fieldsToSerialize.size();
+    oos.writeInt(count);
+
+    // 2) Write each field with its name and value
+    for (int i = 0; i < count; i++) {
+      Field field = fieldsToSerialize.get(i);
+      Object value = valuesToSerialize.get(i);
+      oos.writeObject(field.getName());
+      oos.writeObject(value);
+    }
+  }
+
+  /** Custom serialization: re-create object from serialized properties. */
+  private void readObject(ObjectInputStream ois) throws IOException, ClassNotFoundException {
+    ois.defaultReadObject();
+
+    // Initialize to empty
+    clear();
+
+    // Extra int for possible future use
+    ois.readInt();
+
+    // 1) How many fields were serialized?
+    int count = ois.readInt();
+
+    // 2) Read each field by its name and value
+    for (int i=0; i<count; i++) {
+      String name = (String) ois.readObject();
+      Object value = ois.readObject();
+
+      // Get the field reference
+      Field field = null;
+      try {
+        field = Properties.class.getDeclaredField(name);
+      } catch (NoSuchFieldException e) {
+        // The field name does not exist! Possibly corrupted serialization. Ignore this entry.
+        continue;
+      } catch (SecurityException e) {
+        // Should not happen
+        throw new AssertionError(e);
+      }
+
+      // NOTE: If the type of a field were changed in the future, this would be the place to check:
+      // If the variable `value` is the old type, perform any conversions necessary.
+
+      // Save value into the field
+      try {
+        field.set(this, value);
+      } catch (IllegalArgumentException e) {
+        // Should not happen
+        throw new AssertionError(e);
+      } catch (IllegalAccessException e) {
+        // Should not happen
+        throw new AssertionError(e);
+      }
+    }
+  }
+
+  /// BEGIN GETTERS/SETTERS ///
 
   @Override
   public boolean getAlwaysShowDecimal() {
@@ -507,29 +595,24 @@ public class Properties
   }
 
   @Override
-  public CharSequence getNegativePrefix() {
+  public String getNegativePrefix() {
     return negativePrefix;
   }
 
   @Override
-  public CharSequence getNegativePrefixPattern() {
+  public String getNegativePrefixPattern() {
     return negativePrefixPattern;
   }
 
   @Override
-  public CharSequence getNegativeSuffix() {
+  public String getNegativeSuffix() {
     return negativeSuffix;
   }
 
   @Override
-  public CharSequence getNegativeSuffixPattern() {
+  public String getNegativeSuffixPattern() {
     return negativeSuffixPattern;
   }
-
-  //  @Override
-  //  public boolean getParseCurrency() {
-  //    return parseCurrency;
-  //  }
 
   @Override
   public PaddingLocation getPaddingLocation() {
@@ -537,7 +620,7 @@ public class Properties
   }
 
   @Override
-  public CharSequence getPaddingString() {
+  public String getPaddingString() {
     return paddingString;
   }
 
@@ -551,25 +634,16 @@ public class Properties
     return parseCaseSensitive;
   }
 
-  /* (non-Javadoc)
-   * @see com.ibm.icu.impl.number.Parse.IProperties#getParseIgnoreExponent()
-   */
   @Override
   public boolean getParseIgnoreExponent() {
     return parseIgnoreExponent;
   }
 
-  /* (non-Javadoc)
-   * @see com.ibm.icu.impl.number.Parse.IProperties#getParseIntegerOnly()
-   */
   @Override
   public boolean getParseIntegerOnly() {
     return parseIntegerOnly;
   }
 
-  /* (non-Javadoc)
-   * @see com.ibm.icu.impl.number.Parse.IProperties#getParseMode()
-   */
   @Override
   public ParseMode getParseMode() {
     return parseMode;
@@ -581,22 +655,22 @@ public class Properties
   }
 
   @Override
-  public CharSequence getPositivePrefix() {
+  public String getPositivePrefix() {
     return positivePrefix;
   }
 
   @Override
-  public CharSequence getPositivePrefixPattern() {
+  public String getPositivePrefixPattern() {
     return positivePrefixPattern;
   }
 
   @Override
-  public CharSequence getPositiveSuffix() {
+  public String getPositiveSuffix() {
     return positiveSuffix;
   }
 
   @Override
-  public CharSequence getPositiveSuffixPattern() {
+  public String getPositiveSuffixPattern() {
     return positiveSuffixPattern;
   }
 
@@ -652,6 +726,11 @@ public class Properties
   @Override
   @Deprecated
   public Properties setCurrencyPluralInfo(CurrencyPluralInfo currencyPluralInfo) {
+    // TODO: In order to maintain immutability, we have to perform a clone here.
+    // It would be better to just retire CurrencyPluralInfo entirely.
+    if (currencyPluralInfo != null) {
+      currencyPluralInfo = (CurrencyPluralInfo) currencyPluralInfo.clone();
+    }
     this.currencyPluralInfo = currencyPluralInfo;
     return this;
   }
@@ -764,32 +843,26 @@ public class Properties
     return this;
   }
 
-  //  @Override
-  //  public Properties setParseCurrency(boolean parseCurrency) {
-  //    this.parseCurrency = parseCurrency;
-  //    return this;
-  //  }
-
   @Override
-  public Properties setNegativePrefix(CharSequence negativePrefix) {
+  public Properties setNegativePrefix(String negativePrefix) {
     this.negativePrefix = negativePrefix;
     return this;
   }
 
   @Override
-  public Properties setNegativePrefixPattern(CharSequence negativePrefixPattern) {
+  public Properties setNegativePrefixPattern(String negativePrefixPattern) {
     this.negativePrefixPattern = negativePrefixPattern;
     return this;
   }
 
   @Override
-  public Properties setNegativeSuffix(CharSequence negativeSuffix) {
+  public Properties setNegativeSuffix(String negativeSuffix) {
     this.negativeSuffix = negativeSuffix;
     return this;
   }
 
   @Override
-  public Properties setNegativeSuffixPattern(CharSequence negativeSuffixPattern) {
+  public Properties setNegativeSuffixPattern(String negativeSuffixPattern) {
     this.negativeSuffixPattern = negativeSuffixPattern;
     return this;
   }
@@ -801,7 +874,7 @@ public class Properties
   }
 
   @Override
-  public Properties setPaddingString(CharSequence paddingString) {
+  public Properties setPaddingString(String paddingString) {
     this.paddingString = paddingString;
     return this;
   }
@@ -852,25 +925,25 @@ public class Properties
   }
 
   @Override
-  public Properties setPositivePrefix(CharSequence positivePrefix) {
+  public Properties setPositivePrefix(String positivePrefix) {
     this.positivePrefix = positivePrefix;
     return this;
   }
 
   @Override
-  public Properties setPositivePrefixPattern(CharSequence positivePrefixPattern) {
+  public Properties setPositivePrefixPattern(String positivePrefixPattern) {
     this.positivePrefixPattern = positivePrefixPattern;
     return this;
   }
 
   @Override
-  public Properties setPositiveSuffix(CharSequence positiveSuffix) {
+  public Properties setPositiveSuffix(String positiveSuffix) {
     this.positiveSuffix = positiveSuffix;
     return this;
   }
 
   @Override
-  public Properties setPositiveSuffixPattern(CharSequence positiveSuffixPattern) {
+  public Properties setPositiveSuffixPattern(String positiveSuffixPattern) {
     this.positiveSuffixPattern = positiveSuffixPattern;
     return this;
   }

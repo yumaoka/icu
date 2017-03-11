@@ -56,11 +56,13 @@ public class CompactDecimalFormatTest extends TestFmwk {
             {1234567890123f, "1.2T"},
             {12345678901234f, "12T"},
             {123456789012345f, "120T"},
-            {12345678901234567890f, "12000000T"},
+            {12345678901234567890f, "12,000,000T"},
     };
 
     Object[][] SerbianTestDataShort = {
-            {1234, "1,2\u00A0\u0445\u0438\u0459."},
+            {1, "1"},
+            {12, "12"},
+            {123, "120"},
             {12345, "12\u00a0хиљ."},
             {20789, "21\u00a0хиљ."},
             {123456, "120\u00a0хиљ."},
@@ -77,6 +79,9 @@ public class CompactDecimalFormatTest extends TestFmwk {
     };
 
     Object[][] SerbianTestDataLong = {
+            {1, "1"},
+            {12, "12"},
+            {123, "120"},
             {1234, "1,2 хиљаде"},
             {12345, "12 хиљада"},
             {21789, "22 хиљаде"},
@@ -97,6 +102,9 @@ public class CompactDecimalFormatTest extends TestFmwk {
     };
 
     Object[][] SerbianTestDataLongNegative = {
+            {-1, "-1"},
+            {-12, "-12"},
+            {-123, "-120"},
             {-1234, "-1,2 хиљаде"},
             {-12345, "-12 хиљада"},
             {-21789, "-22 хиљаде"},
@@ -117,6 +125,9 @@ public class CompactDecimalFormatTest extends TestFmwk {
     };
 
     Object[][] JapaneseTestData = {
+            {1f, "1"},
+            {12f, "12"},
+            {123f, "120"},
             {1234f, "1200"},
             {12345f, "1.2万"},
             {123456f, "12万"},
@@ -132,9 +143,9 @@ public class CompactDecimalFormatTest extends TestFmwk {
     };
 
     Object[][] ChineseCurrencyTestData = {
-            // The first one should really have a ￥ in front, but the CLDR data is
-            // incorrect.  See http://unicode.org/cldr/trac/ticket/9298 and update
-            // this test case when the CLDR ticket is fixed.
+            {new CurrencyAmount(1f, Currency.getInstance("CNY")), "￥1"},
+            {new CurrencyAmount(12f, Currency.getInstance("CNY")), "￥12"},
+            {new CurrencyAmount(123f, Currency.getInstance("CNY")), "￥120"},
             {new CurrencyAmount(1234f, Currency.getInstance("CNY")), "￥1.2千"},
             {new CurrencyAmount(12345f, Currency.getInstance("CNY")), "￥1.2万"},
             {new CurrencyAmount(123456f, Currency.getInstance("CNY")), "￥12万"},
@@ -149,6 +160,9 @@ public class CompactDecimalFormatTest extends TestFmwk {
             {new CurrencyAmount(123456789012345f, Currency.getInstance("CNY")), "￥120兆"},
     };
     Object[][] GermanCurrencyTestData = {
+            {new CurrencyAmount(1f, Currency.getInstance("EUR")), "1 €"},
+            {new CurrencyAmount(12f, Currency.getInstance("EUR")), "12 €"},
+            {new CurrencyAmount(123f, Currency.getInstance("EUR")), "120 €"},
             {new CurrencyAmount(1234f, Currency.getInstance("EUR")), "1,2 Tsd. €"},
             {new CurrencyAmount(12345f, Currency.getInstance("EUR")), "12 Tsd. €"},
             {new CurrencyAmount(123456f, Currency.getInstance("EUR")), "120 Tsd. €"},
@@ -163,6 +177,9 @@ public class CompactDecimalFormatTest extends TestFmwk {
             {new CurrencyAmount(123456789012345f, Currency.getInstance("EUR")), "120 Bio. €"},
     };
     Object[][] EnglishCurrencyTestData = {
+            {new CurrencyAmount(1f, Currency.getInstance("USD")), "$1"},
+            {new CurrencyAmount(12f, Currency.getInstance("USD")), "$12"},
+            {new CurrencyAmount(123f, Currency.getInstance("USD")), "$120"},
             {new CurrencyAmount(1234f, Currency.getInstance("USD")), "$1.2K"},
             {new CurrencyAmount(12345f, Currency.getInstance("USD")), "$12K"},
             {new CurrencyAmount(123456f, Currency.getInstance("USD")), "$120K"},
@@ -178,6 +195,9 @@ public class CompactDecimalFormatTest extends TestFmwk {
     };
 
     Object[][] SwahiliTestData = {
+            {1f, "1"},
+            {12f, "12"},
+            {123f, "120"},
             {1234f, "elfu\u00a01.2"},
             {12345f, "elfu\u00a012"},
             {123456f, "elfu\u00A0120"},
@@ -189,10 +209,13 @@ public class CompactDecimalFormatTest extends TestFmwk {
             {123456789012f, "B120"},
             {1234567890123f, "T1.2"},
             {12345678901234f, "T12"},
-            {12345678901234567890f, "T12000000"},
+            {12345678901234567890f, "T12,000,000"},
     };
 
     Object[][] CsTestDataShort = {
+            {1, "1"},
+            {12, "12"},
+            {123, "120"},
             {1000, "1\u00a0tis."},
             {1500, "1,5\u00a0tis."},
             {5000, "5\u00a0tis."},
@@ -216,18 +239,21 @@ public class CompactDecimalFormatTest extends TestFmwk {
     };
 
     Object[][] SwahiliTestDataNegative = {
-            {-1234f, "elfu\u00a0-1.2"},
-            {-12345f, "elfu\u00a0-12"},
-            {-123456f, "elfu\u00A0-120"},
-            {-1234567f, "M-1.2"},
-            {-12345678f, "M-12"},
-            {-123456789f, "M-120"},
-            {-1234567890f, "B-1.2"},
-            {-12345678901f, "B-12"},
-            {-123456789012f, "B-120"},
-            {-1234567890123f, "T-1.2"},
-            {-12345678901234f, "T-12"},
-            {-12345678901234567890f, "T-12000000"},
+            {-1f, "-1"},
+            {-12f, "-12"},
+            {-123f, "-120"},
+            {-1234f, "-elfu\u00a01.2"},
+            {-12345f, "-elfu\u00a012"},
+            {-123456f, "-elfu\u00A0120"},
+            {-1234567f, "-M1.2"},
+            {-12345678f, "-M12"},
+            {-123456789f, "-M120"},
+            {-1234567890f, "-B1.2"},
+            {-12345678901f, "-B12"},
+            {-123456789012f, "-B120"},
+            {-1234567890123f, "-T1.2"},
+            {-12345678901234f, "-T12"},
+            {-12345678901234567890f, "-T12,000,000"},
     };
 
     Object[][] TestACoreCompactFormatList = {
@@ -549,7 +575,7 @@ public class CompactDecimalFormatTest extends TestFmwk {
         result = cdf.format(new CurrencyAmount(43000f, Currency.getInstance("USD")));
         assertEquals("CDF should correctly format 43000 with currency in 'ar'", "US$ ٤٣ ألف", result);
         result = cdf.format(new CurrencyAmount(-43000f, Currency.getInstance("USD")));
-        assertEquals("CDF should correctly format -43000 with currency in 'ar'", "US$ ؜-٤٣ ألف", result);
+        assertEquals("CDF should correctly format -43000 with currency in 'ar'", "؜-US$ ٤٣ ألف", result);
 
         // Extra locale with different positive/negative formats
         cdf = CompactDecimalFormat.getInstance(new ULocale("fi"), CompactDecimalFormat.CompactStyle.SHORT);
@@ -619,6 +645,6 @@ public class CompactDecimalFormatTest extends TestFmwk {
         ULocale locale = new ULocale("pt_PT");
         CompactDecimalFormat cdf = CompactDecimalFormat.getInstance(locale, CompactStyle.SHORT);
         String result = cdf.format(1000);
-        assertEquals("pt_PT should fall back to pt", "1 mil", result);
+        assertEquals("pt_PT should fall back to pt", "1 mil", result);
     }
 }

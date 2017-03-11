@@ -20,14 +20,14 @@ import com.ibm.icu.text.DecimalFormatSymbols;
  * format pattern. Properties are set using the following methods:
  *
  * <ul>
- *   <li>{@link IProperties#setPositivePrefix(CharSequence)}
- *   <li>{@link IProperties#setPositiveSuffix(CharSequence)}
- *   <li>{@link IProperties#setNegativePrefix(CharSequence)}
- *   <li>{@link IProperties#setNegativeSuffix(CharSequence)}
- *   <li>{@link IProperties#setPositivePrefixPattern(CharSequence)}
- *   <li>{@link IProperties#setPositiveSuffixPattern(CharSequence)}
- *   <li>{@link IProperties#setNegativePrefixPattern(CharSequence)}
- *   <li>{@link IProperties#setNegativeSuffixPattern(CharSequence)}
+ *   <li>{@link IProperties#setPositivePrefix(String)}
+ *   <li>{@link IProperties#setPositiveSuffix(String)}
+ *   <li>{@link IProperties#setNegativePrefix(String)}
+ *   <li>{@link IProperties#setNegativeSuffix(String)}
+ *   <li>{@link IProperties#setPositivePrefixPattern(String)}
+ *   <li>{@link IProperties#setPositiveSuffixPattern(String)}
+ *   <li>{@link IProperties#setNegativePrefixPattern(String)}
+ *   <li>{@link IProperties#setNegativeSuffixPattern(String)}
  * </ul>
  *
  * If one of the first four methods is used (those of the form <code>setXxxYyy</code>), the value
@@ -54,10 +54,10 @@ public class PositiveNegativeAffixFormat {
 
   public static interface IProperties {
 
-    static CharSequence DEFAULT_POSITIVE_PREFIX = null;
+    static String DEFAULT_POSITIVE_PREFIX = null;
 
     /** @see #setPositivePrefix */
-    public CharSequence getPositivePrefix();
+    public String getPositivePrefix();
 
     /**
      * Sets the prefix to prepend to positive numbers. The prefix will be interpreted literally. For
@@ -71,12 +71,12 @@ public class PositiveNegativeAffixFormat {
      * @see PositiveNegativeAffixFormat
      * @see #setPositivePrefixPattern
      */
-    public IProperties setPositivePrefix(CharSequence positivePrefix);
+    public IProperties setPositivePrefix(String positivePrefix);
 
-    static CharSequence DEFAULT_POSITIVE_SUFFIX = null;
+    static String DEFAULT_POSITIVE_SUFFIX = null;
 
     /** @see #setPositiveSuffix */
-    public CharSequence getPositiveSuffix();
+    public String getPositiveSuffix();
 
     /**
      * Sets the suffix to append to positive numbers. The suffix will be interpreted literally. For
@@ -90,12 +90,12 @@ public class PositiveNegativeAffixFormat {
      * @see PositiveNegativeAffixFormat
      * @see #setPositiveSuffixPattern
      */
-    public IProperties setPositiveSuffix(CharSequence positiveSuffix);
+    public IProperties setPositiveSuffix(String positiveSuffix);
 
-    static CharSequence DEFAULT_NEGATIVE_PREFIX = null;
+    static String DEFAULT_NEGATIVE_PREFIX = null;
 
     /** @see #setNegativePrefix */
-    public CharSequence getNegativePrefix();
+    public String getNegativePrefix();
 
     /**
      * Sets the prefix to prepend to negative numbers. The prefix will be interpreted literally. For
@@ -110,12 +110,12 @@ public class PositiveNegativeAffixFormat {
      * @see PositiveNegativeAffixFormat
      * @see #setNegativePrefixPattern
      */
-    public IProperties setNegativePrefix(CharSequence negativePrefix);
+    public IProperties setNegativePrefix(String negativePrefix);
 
-    static CharSequence DEFAULT_NEGATIVE_SUFFIX = null;
+    static String DEFAULT_NEGATIVE_SUFFIX = null;
 
     /** @see #setNegativeSuffix */
-    public CharSequence getNegativeSuffix();
+    public String getNegativeSuffix();
 
     /**
      * Sets the suffix to append to negative numbers. The suffix will be interpreted literally. For
@@ -131,12 +131,12 @@ public class PositiveNegativeAffixFormat {
      * @see PositiveNegativeAffixFormat
      * @see #setNegativeSuffixPattern
      */
-    public IProperties setNegativeSuffix(CharSequence negativeSuffix);
+    public IProperties setNegativeSuffix(String negativeSuffix);
 
-    static CharSequence DEFAULT_POSITIVE_PREFIX_PATTERN = null;
+    static String DEFAULT_POSITIVE_PREFIX_PATTERN = null;
 
     /** @see #setPositivePrefixPattern */
-    public CharSequence getPositivePrefixPattern();
+    public String getPositivePrefixPattern();
 
     /**
      * Sets the prefix to prepend to positive numbers. Locale-specific symbols will be substituted
@@ -150,12 +150,12 @@ public class PositiveNegativeAffixFormat {
      * @see PositiveNegativeAffixFormat
      * @see #setPositivePrefix
      */
-    public IProperties setPositivePrefixPattern(CharSequence positivePrefixPattern);
+    public IProperties setPositivePrefixPattern(String positivePrefixPattern);
 
-    static CharSequence DEFAULT_POSITIVE_SUFFIX_PATTERN = null;
+    static String DEFAULT_POSITIVE_SUFFIX_PATTERN = null;
 
     /** @see #setPositiveSuffixPattern */
-    public CharSequence getPositiveSuffixPattern();
+    public String getPositiveSuffixPattern();
 
     /**
      * Sets the suffix to append to positive numbers. Locale-specific symbols will be substituted
@@ -169,12 +169,12 @@ public class PositiveNegativeAffixFormat {
      * @see PositiveNegativeAffixFormat
      * @see #setPositiveSuffix
      */
-    public IProperties setPositiveSuffixPattern(CharSequence positiveSuffixPattern);
+    public IProperties setPositiveSuffixPattern(String positiveSuffixPattern);
 
-    static CharSequence DEFAULT_NEGATIVE_PREFIX_PATTERN = null;
+    static String DEFAULT_NEGATIVE_PREFIX_PATTERN = null;
 
     /** @see #setNegativePrefixPattern */
-    public CharSequence getNegativePrefixPattern();
+    public String getNegativePrefixPattern();
 
     /**
      * Sets the prefix to prepend to negative numbers. Locale-specific symbols will be substituted
@@ -188,12 +188,12 @@ public class PositiveNegativeAffixFormat {
      * @see PositiveNegativeAffixFormat
      * @see #setNegativePrefix
      */
-    public IProperties setNegativePrefixPattern(CharSequence negativePrefixPattern);
+    public IProperties setNegativePrefixPattern(String negativePrefixPattern);
 
-    static CharSequence DEFAULT_NEGATIVE_SUFFIX_PATTERN = null;
+    static String DEFAULT_NEGATIVE_SUFFIX_PATTERN = null;
 
     /** @see #setNegativeSuffixPattern */
-    public CharSequence getNegativeSuffixPattern();
+    public String getNegativeSuffixPattern();
 
     /**
      * Sets the suffix to append to negative numbers. Locale-specific symbols will be substituted
@@ -207,7 +207,7 @@ public class PositiveNegativeAffixFormat {
      * @see PositiveNegativeAffixFormat
      * @see #setNegativeSuffix
      */
-    public IProperties setNegativeSuffixPattern(CharSequence negativeSuffixPattern);
+    public IProperties setNegativeSuffixPattern(String negativeSuffixPattern);
 
     static boolean DEFAULT_ALWAYS_SHOW_PLUS_SIGN = false;
 

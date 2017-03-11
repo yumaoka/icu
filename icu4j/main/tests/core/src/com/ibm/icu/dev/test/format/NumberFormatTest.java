@@ -14,7 +14,11 @@
 
 package com.ibm.icu.dev.test.format;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.text.AttributedCharacterIterator;
@@ -4875,5 +4879,43 @@ public class NumberFormatTest extends TestFmwk {
         ParsePosition ppos = new ParsePosition(0);
         CurrencyAmount result = nf.parseCurrency("1.500 амерички долар", ppos);
         assertEquals("Should parse to 1500 USD", new CurrencyAmount(1500, Currency.getInstance("USD")), result);
+    }
+
+    @Test
+    public void TestBasicSerializationRoundTrip() throws IOException, ClassNotFoundException {
+        DecimalFormat df0 = new DecimalFormat("A-**#####,#00.00b¤");
+
+        // Write to byte stream
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ObjectOutputStream oos = new ObjectOutputStream(baos);
+        oos.writeObject(df0);
+        oos.flush();
+        baos.close();
+        byte[] bytes = baos.toByteArray();
+
+        // Read from byte stream
+        ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(bytes));
+        Object obj = ois.readObject();
+        ois.close();
+        DecimalFormat df1 = (DecimalFormat) obj;
+
+        // Test equality
+        assertEquals("Did not round-trip through serialization", df0, df1);
+
+        // Test basic functionality
+        String str0 = df0.format(12345.67);
+        String str1 = df1.format(12345.67);
+        assertEquals("Serialized formatter does not produce same output", str0, str1);
+    }
+
+    @Test
+    public void testGetSetCurrency() {
+        DecimalFormat df = new DecimalFormat("¤#");
+        assertEquals("Currency should start out null", null, df.getCurrency());
+        Currency curr = Currency.getInstance("EUR");
+        df.setCurrency(curr);
+        assertEquals("Currency should equal EUR after set", curr, df.getCurrency());
+        String result = df.format(123);
+        assertEquals("Currency should format as expected in EUR", "€123.00", result);
     }
 }

@@ -2,6 +2,9 @@
 // License & terms of use: http://www.unicode.org/copyright.html#License
 package com.ibm.icu.text;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.text.AttributedCharacterIterator;
@@ -31,12 +34,41 @@ import com.ibm.icu.util.ULocale;
 /** @author sffc */
 public class DecimalFormat extends NumberFormat {
 
+  /**
+   * New serialization in ICU 59: declare different version from ICU 58.
+   */
+  private static final long serialVersionUID = 864413376551465019L;
+
+  /// INSTANCE VARIABLES ///
+  // Access level: package-private, so that subclasses can use them.
   // properties should be final, but clone won't work if we make it final.
-  // Access level: package-private, so that subclasses can call them.
-  Properties properties;
-  volatile DecimalFormatSymbols symbols;
-  transient volatile SingularFormat formatter;
-  transient volatile Properties exportedProperties;
+  // All fields are transient because custom serialization is used.
+
+  /**
+   * The property bag corresponding to user-specified settings and settings from the pattern
+   * string.  In principle this should be final, but serialize and clone won't work if it is
+   * final.  Does not need to be volatile because the reference never changes.
+   */
+  /* final */ transient Properties properties;
+
+  /**
+   * The symbols for the current locale.  Volatile because threads may read and write at the same
+   * time.
+   */
+  volatile transient DecimalFormatSymbols symbols;
+
+  /**
+   * The pre-computed formatter object.  Setters cause this to be re-computed atomically.  The
+   * {@link #format} method uses the formatter directly without needing to synchronize.  Volatile
+   * because threads may read and write at the same time.
+   */
+  volatile transient SingularFormat formatter;
+
+  /**
+   * The effective properties as exported from the formatter object.  Volatile because threads may
+   * read and write at the same time.
+   */
+  volatile transient Properties exportedProperties;
 
   /** @stable ICU 2.0 */
   public DecimalFormat() {
@@ -113,6 +145,37 @@ public class DecimalFormat extends NumberFormat {
     other.exportedProperties = new Properties();
     other.refreshFormatter();
     return other;
+  }
+
+  /**
+   * Custom serialization: save property bag and symbols; the formatter object can be re-created
+   * from just that amount of information.
+   */
+  private void writeObject(ObjectOutputStream oos) throws IOException {
+    oos.defaultWriteObject();
+    // ICU 59 custom serialization.
+    // Extra int for possible future use
+    oos.writeInt(0);
+    // 1) Property Bag
+    oos.writeObject(properties);
+    // 2) DecimalFormatSymbols
+    oos.writeObject(symbols);
+  }
+
+  /**
+   * Custom serialization: re-create object from serialized property bag and symbols.
+   */
+  private void readObject(ObjectInputStream ois) throws IOException, ClassNotFoundException {
+    ois.defaultReadObject();
+    // Extra int for possible future use
+    ois.readInt();
+    // 1) Property Bag
+    properties = (Properties) ois.readObject();
+    // 2) DecimalFormatSymbols
+    symbols = (DecimalFormatSymbols) ois.readObject();
+    // Re-build transient fields
+    exportedProperties = new Properties();
+    refreshFormatter();
   }
 
   static DecimalFormatSymbols getDefaultSymbols() {
@@ -198,16 +261,17 @@ public class DecimalFormat extends NumberFormat {
     return result;
   }
 
-  private static final ThreadLocal<Properties> threadLocalCurrencyProperties =
+  protected static final ThreadLocal<Properties> threadLocalCurrencyProperties =
       new ThreadLocal<Properties>() {
-        @Override
-        protected Properties initialValue() {
-          return new Properties();
-        }
-      };
+    @Override
+    protected Properties initialValue() {
+      return new Properties();
+    }
+  };
 
   @Override
   public StringBuffer format(CurrencyAmount currAmt, StringBuffer toAppendTo, FieldPosition pos) {
+    // TODO: This is ugly. Currency should be a free parameter, not in property bag. Fix in ICU 60.
     Properties cprops = threadLocalCurrencyProperties.get();
     synchronized(this) {
       cprops.copyFrom(properties);
@@ -277,8 +341,8 @@ public class DecimalFormat extends NumberFormat {
 
   /** @stable ICU 2.0 */
   public synchronized String getPositivePrefix() {
-    CharSequence result = exportedProperties.getPositivePrefix();
-    return (result == null) ? "" : result.toString();
+    String result = exportedProperties.getPositivePrefix();
+    return (result == null) ? "" : result;
   }
 
   /** @stable ICU 2.0 */
@@ -289,8 +353,8 @@ public class DecimalFormat extends NumberFormat {
 
   /** @stable ICU 2.0 */
   public synchronized String getNegativePrefix() {
-    CharSequence result = exportedProperties.getNegativePrefix();
-    return (result == null) ? "" : result.toString();
+    String result = exportedProperties.getNegativePrefix();
+    return (result == null) ? "" : result;
   }
 
   /** @stable ICU 2.0 */
@@ -301,8 +365,8 @@ public class DecimalFormat extends NumberFormat {
 
   /** @stable ICU 2.0 */
   public synchronized String getPositiveSuffix() {
-    CharSequence result = exportedProperties.getPositiveSuffix();
-    return (result == null) ? "" : result.toString();
+    String result = exportedProperties.getPositiveSuffix();
+    return (result == null) ? "" : result;
   }
 
   /** @stable ICU 2.0 */
@@ -313,8 +377,8 @@ public class DecimalFormat extends NumberFormat {
 
   /** @stable ICU 2.0 */
   public synchronized String getNegativeSuffix() {
-    CharSequence result = exportedProperties.getNegativeSuffix();
-    return (result == null) ? "" : result.toString();
+    String result = exportedProperties.getNegativeSuffix();
+    return (result == null) ? "" : result;
   }
 
   /** @stable ICU 2.0 */
@@ -384,8 +448,12 @@ public class DecimalFormat extends NumberFormat {
 
   /** @stable ICU 2.0 */
   public synchronized void setRoundingIncrement(double newValue) {
-    java.math.BigDecimal javaBigDecimal = java.math.BigDecimal.valueOf(newValue);
-    setRoundingIncrement(javaBigDecimal);
+    if (newValue == 0) {
+      setRoundingIncrement((java.math.BigDecimal) null);
+    } else {
+      java.math.BigDecimal javaBigDecimal = java.math.BigDecimal.valueOf(newValue);
+      setRoundingIncrement(javaBigDecimal);
+    }
   }
 
   /** @stable ICU 2.0 */
@@ -510,10 +578,11 @@ public class DecimalFormat extends NumberFormat {
   @Override
   public synchronized void setGroupingUsed(boolean newValue) {
     if (newValue) {
-      // TODO(sffc): how should this be handled?
+      // Set to a reasonable default value
       properties.setGroupingSize(3);
     } else {
-      properties.setGroupingSize(Properties.DEFAULT_SECONDARY_GROUPING_SIZE);
+      properties.setGroupingSize(Properties.DEFAULT_GROUPING_SIZE);
+      properties.setSecondaryGroupingSize(Properties.DEFAULT_SECONDARY_GROUPING_SIZE);
     }
     refreshFormatter();
   }
@@ -677,6 +746,11 @@ public class DecimalFormat extends NumberFormat {
     refreshFormatter();
   }
 
+  @Override
+  public synchronized Currency getCurrency() {
+    return properties.getCurrency();
+  }
+
   /** @stable ICU 2.2 */
   @Override
   public synchronized void setCurrency(Currency theCurrency) {
@@ -789,11 +863,11 @@ public class DecimalFormat extends NumberFormat {
 
   private static final ThreadLocal<Properties> threadLocalToPatternProperties =
       new ThreadLocal<Properties>() {
-        @Override
-        protected Properties initialValue() {
-          return new Properties();
-        }
-      };
+    @Override
+    protected Properties initialValue() {
+      return new Properties();
+    }
+  };
 
   /** @stable ICU 2.0 */
   public synchronized String toPattern() {

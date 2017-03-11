@@ -148,7 +148,7 @@ public class Parse {
      */
     public IProperties setDecimalPatternMatchRequired(boolean decimalPatternMatchRequired);
 
-    ParseMode DEFAULT_PARSE_MODE = ParseMode.LENIENT;
+    ParseMode DEFAULT_PARSE_MODE = null;
 
     /** @see #setParseMode */
     public ParseMode getParseMode();
@@ -161,23 +161,6 @@ public class Parse {
      * @return The property bag, for chaining.
      */
     public IProperties setParseMode(ParseMode parseMode);
-
-    //    boolean DEFAULT_PARSE_CURRENCY = false;
-    //
-    //    /** @see #setParseCurrency */
-    //    public boolean getParseCurrency();
-    //
-    //    /**
-    //     * Whether to parse currency codes and currency names in the string.
-    //     *
-    //     * <p>Due to the large number of possible currencies, enabling this option may impact the
-    //     * runtime of the parse operation.
-    //     *
-    //     * @param parseCurrency true to parse arbitrary currency codes and currency names; false to
-    //     *     disable. (Default is false)
-    //     * @return The property bag, for chaining.
-    //     */
-    //    public IProperties setParseCurrency(boolean parseCurrency);
 
     boolean DEFAULT_PARSE_TO_BIG_DECIMAL = false;
 
@@ -212,20 +195,6 @@ public class Parse {
      * @return The property bag, for chaining.
      */
     public IProperties setParseCaseSensitive(boolean parseCaseSensitive);
-
-    //    boolean DEFAULT_PARSE_STRICT = false;
-    //
-    //    /** @see #setParseStrict */
-    //    public boolean getParseStrict();
-    //
-    //    public IProperties setParseStrict(boolean parseStrict);
-    //
-    //    boolean DEFAULT_PARSE_FAST = true;
-    //
-    //    /** @see #setParseFastMode */
-    //    public boolean getParseFastMode();
-    //
-    //    public IProperties setParseFastMode(boolean parseFastMode);
   }
 
   /**
@@ -761,36 +730,35 @@ public class Parse {
     }
 
     static AffixHolder fromPropertiesPositivePattern(IProperties properties) {
-      CharSequence ppp = properties.getPositivePrefixPattern();
-      CharSequence psp = properties.getPositiveSuffixPattern();
+      String ppp = properties.getPositivePrefixPattern();
+      String psp = properties.getPositiveSuffixPattern();
       return getInstance(ppp, psp, false, false);
     }
 
     static AffixHolder fromPropertiesNegativePattern(IProperties properties) {
-      CharSequence npp = properties.getNegativePrefixPattern();
-      CharSequence nsp = properties.getNegativeSuffixPattern();
+      String npp = properties.getNegativePrefixPattern();
+      String nsp = properties.getNegativeSuffixPattern();
       return getInstance(npp, nsp, false, true);
     }
 
     static AffixHolder fromPropertiesPositiveString(IProperties properties) {
-      CharSequence pp = properties.getPositivePrefix();
-      CharSequence ps = properties.getPositiveSuffix();
+      String pp = properties.getPositivePrefix();
+      String ps = properties.getPositiveSuffix();
       return getInstance(pp, ps, true, false);
     }
 
     static AffixHolder fromPropertiesNegativeString(IProperties properties) {
-      CharSequence np = properties.getNegativePrefix();
-      CharSequence ns = properties.getNegativeSuffix();
+      String np = properties.getNegativePrefix();
+      String ns = properties.getNegativeSuffix();
       return getInstance(np, ns, true, true);
     }
 
-    static AffixHolder getInstance(
-        CharSequence p, CharSequence s, boolean strings, boolean negative) {
+    static AffixHolder getInstance(String p, String s, boolean strings, boolean negative) {
       if (p == null && s == null) return null;
       if (p == null) p = "";
       if (s == null) s = "";
       if (p.length() == 0 && s.length() == 0) return negative ? EMPTY_NEGATIVE : EMPTY_POSITIVE;
-      return new AffixHolder(p.toString(), s.toString(), strings, negative);
+      return new AffixHolder(p, s, strings, negative);
     }
 
     AffixHolder(String pp, String sp, boolean strings, boolean negative) {
@@ -1014,6 +982,7 @@ public class Parse {
     }
 
     ParseMode mode = properties.getParseMode();
+    if (mode == null) mode = ParseMode.LENIENT;
     boolean integerOnly = properties.getParseIntegerOnly();
     boolean ignoreExponent = properties.getParseIgnoreExponent();
 
@@ -1029,9 +998,9 @@ public class Parse {
     state.groupingCp1 = Character.codePointAt(symbols.getGroupingSeparatorString(), 0);
     state.groupingCp2 = Character.codePointAt(symbols.getMonetaryGroupingSeparatorString(), 0);
     state.decimalType1 = SeparatorType.fromCp(state.decimalCp1, mode);
-    state.decimalType2 = SeparatorType.fromCp(state.decimalCp1, mode);
+    state.decimalType2 = SeparatorType.fromCp(state.decimalCp2, mode);
     state.groupingType1 = SeparatorType.fromCp(state.groupingCp1, mode);
-    state.groupingType2 = SeparatorType.fromCp(state.groupingCp1, mode);
+    state.groupingType2 = SeparatorType.fromCp(state.groupingCp2, mode);
     StateItem initialStateItem = state.getNext().clear();
     initialStateItem.name = StateName.BEFORE_PREFIX;
 
@@ -1632,20 +1601,14 @@ public class Parse {
 
     SeparatorType cpType = SeparatorType.fromCp(cp, state.mode);
 
-    // Always accept if exactly the same as the locale symbol.
-    // Otherwise, reject if UNKNOWN, OTHER, the same class as the decimal separator.
-    if (cp != state.decimalCp1 && cp != state.decimalCp2) {
-      if (cpType == SeparatorType.UNKNOWN || cpType == SeparatorType.OTHER_GROUPING) {
-        return;
-      }
-      if (cpType == SeparatorType.COMMA_LIKE
-          && (state.groupingType1 == SeparatorType.COMMA_LIKE
-              || state.groupingType2 == SeparatorType.COMMA_LIKE)) {
-        return;
-      }
-      if (cpType == SeparatorType.PERIOD_LIKE
-          && (state.groupingType1 == SeparatorType.PERIOD_LIKE
-              || state.groupingType2 == SeparatorType.PERIOD_LIKE)) {
+    // We require that the decimal separator be in the same class as the locale.
+    if (cpType != state.decimalType1 && cpType != state.decimalType2) {
+      return;
+    }
+
+    // If in UNKNOWN or OTHER, require an exact match.
+    if (cpType == SeparatorType.OTHER_GROUPING || cpType == SeparatorType.UNKNOWN) {
+      if (cp != state.decimalCp1 && cp != state.decimalCp2) {
         return;
       }
     }

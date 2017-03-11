@@ -69,10 +69,10 @@ public class PaddingFormat implements AfterFormat {
      */
     public IProperties setPaddingWidth(int paddingWidth);
 
-    static CharSequence DEFAULT_PADDING_STRING = null;
+    static String DEFAULT_PADDING_STRING = null;
 
     /** @see #setPaddingString */
-    public CharSequence getPaddingString();
+    public String getPaddingString();
 
     /**
      * Sets the string used for padding. This can be any string, but it usually makes sense for it
@@ -87,7 +87,7 @@ public class PaddingFormat implements AfterFormat {
      * @return The property bag, for chaining.
      * @see #setPaddingWidth
      */
-    public IProperties setPaddingString(CharSequence paddingString);
+    public IProperties setPaddingString(String paddingString);
 
     static PaddingLocation DEFAULT_PADDING_LOCATION = null;
 
@@ -126,9 +126,9 @@ public class PaddingFormat implements AfterFormat {
   private final PaddingLocation paddingLocation;
 
   private PaddingFormat(
-      int paddingWidth, CharSequence paddingString, PaddingLocation paddingLocation) {
+      int paddingWidth, String paddingString, PaddingLocation paddingLocation) {
     this.paddingWidth = paddingWidth > 0 ? paddingWidth : 10; // TODO: Is this a sensible default?
-    this.paddingString = paddingString != null ? paddingString.toString() : FALLBACK_PADDING_STRING;
+    this.paddingString = paddingString != null ? paddingString : FALLBACK_PADDING_STRING;
     this.paddingLocation =
         paddingLocation != null ? paddingLocation : PaddingLocation.BEFORE_PREFIX;
   }

@@ -100,8 +100,7 @@ public class Endpoint {
     if (CurrencyFormat.useCurrency(properties)) {
       canUseFastTrack = false;
       if (CompactDecimalFormat.useCompactDecimalFormat(properties)) {
-        // TODO: Implement compact currency
-        throw new UnsupportedOperationException();
+        format.addBeforeFormat(CompactDecimalFormat.getInstance(symbols, properties));
       } else if (ScientificFormat.useScientificNotation(properties)) {
         format.addBeforeFormat(PositiveNegativeAffixFormat.getInstance(symbols, properties));
         Rounder rounder = CurrencyFormat.getCurrencyRounder(symbols, properties);

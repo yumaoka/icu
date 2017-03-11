@@ -12,15 +12,19 @@ import com.ibm.icu.impl.UResource;
 import com.ibm.icu.impl.number.Format;
 import com.ibm.icu.impl.number.FormatQuantity;
 import com.ibm.icu.impl.number.Modifier;
+import com.ibm.icu.impl.number.Modifier.PositiveNegativeModifier;
 import com.ibm.icu.impl.number.ModifierHolder;
 import com.ibm.icu.impl.number.PNAffixGenerator;
 import com.ibm.icu.impl.number.PatternString;
 import com.ibm.icu.impl.number.Properties;
 import com.ibm.icu.impl.number.Rounder;
+import com.ibm.icu.impl.number.modifiers.ConstantAffixModifier;
+import com.ibm.icu.impl.number.modifiers.PositiveNegativeAffixModifier;
 import com.ibm.icu.impl.number.rounders.SignificantDigitsRounder;
 import com.ibm.icu.impl.number.rounders.SignificantDigitsRounder.SignificantDigitsMode;
 import com.ibm.icu.text.CompactDecimalFormat.CompactStyle;
 import com.ibm.icu.text.DecimalFormatSymbols;
+import com.ibm.icu.text.NumberFormat;
 import com.ibm.icu.text.NumberingSystem;
 import com.ibm.icu.text.PluralRules;
 import com.ibm.icu.util.ULocale;
@@ -55,17 +59,12 @@ public class CompactDecimalFormat extends Format.BeforeFormat {
   // Properties
   private final CompactDecimalData data;
   private final Rounder rounder;
+  private final PositiveNegativeModifier defaultMod;
   private final CompactStyle style; // retained for exporting only
 
   public static CompactDecimalFormat getInstance(
       DecimalFormatSymbols symbols, IProperties properties) {
-    return getInstance(symbols, getRounder(properties), properties);
-  }
-
-  public static CompactDecimalFormat getInstance(
-      DecimalFormatSymbols symbols, Rounder rounder, IProperties properties) {
-    return new CompactDecimalFormat(
-        getData(symbols, properties), rounder, properties.getCompactStyle());
+    return new CompactDecimalFormat(symbols, properties);
   }
 
   private static Rounder getRounder(IProperties properties) {
@@ -91,16 +90,16 @@ public class CompactDecimalFormat extends Format.BeforeFormat {
             }
           };
 
-  private static CompactDecimalData getData(DecimalFormatSymbols symbols, IProperties properties) {
+  private static CompactDecimalData getData(
+      DecimalFormatSymbols symbols, CompactDecimalFingerprint fingerprint) {
     // See if we already have a data object based on the fingerprint
-    CompactDecimalFingerprint fingerprint = new CompactDecimalFingerprint(symbols, properties);
     CompactDecimalData data = threadLocalDataCache.get().get(fingerprint);
     if (data != null) return data;
 
     // Make data bundle object
     data = new CompactDecimalData();
     ULocale ulocale = symbols.getULocale();
-    CompactDecimalDataSink sink = new CompactDecimalDataSink(data, symbols, properties);
+    CompactDecimalDataSink sink = new CompactDecimalDataSink(data, symbols, fingerprint);
     String nsName = NumberingSystem.getInstance(ulocale).getName();
     ICUResourceBundle r =
         (ICUResourceBundle) UResourceBundle.getBundleInstance(ICUData.ICU_BASE_NAME, ulocale);
@@ -115,19 +114,35 @@ public class CompactDecimalFormat extends Format.BeforeFormat {
     return data;
   }
 
-  private CompactDecimalFormat(CompactDecimalData data, Rounder rounder, CompactStyle style) {
-    this.data = data;
-    this.rounder = rounder;
-    this.style = style;
+  private static PositiveNegativeModifier getDefaultMod(
+      DecimalFormatSymbols symbols, CompactDecimalFingerprint fingerprint) {
+    ULocale uloc = symbols.getULocale();
+    String pattern;
+    if (fingerprint.compactType == CompactType.CURRENCY) {
+      pattern = NumberFormat.getPattern(uloc, NumberFormat.CURRENCYSTYLE);
+    } else {
+      pattern = NumberFormat.getPattern(uloc, NumberFormat.NUMBERSTYLE);
+    }
+    // TODO: Clean this up; avoid the extra object creations.
+    // TODO: Currency may also need to override grouping settings, not just affixes.
+    Properties properties = PatternString.parseToProperties(pattern);
+    PNAffixGenerator pnag = PNAffixGenerator.getThreadLocalInstance();
+    PNAffixGenerator.Result result =
+        pnag.getModifiers(symbols, fingerprint.currencySymbol, properties);
+    return new PositiveNegativeAffixModifier(result.positive, result.negative);
+  }
+
+  private CompactDecimalFormat(DecimalFormatSymbols symbols, IProperties properties) {
+    CompactDecimalFingerprint fingerprint = new CompactDecimalFingerprint(symbols, properties);
+    this.rounder = getRounder(properties);
+    this.data = getData(symbols, fingerprint);
+    this.defaultMod = getDefaultMod(symbols, fingerprint);
+    this.style = properties.getCompactStyle(); // for exporting only
   }
 
   @Override
   public void before(FormatQuantity input, ModifierHolder mods, PluralRules rules) {
-    //    int multiplier = rounder.chooseMultiplierAndApply(input, data);
-    //    StandardPlural plural = input.getStandardPlural(rules);
-    //    boolean isNegative = input.isNegative();
-    //    mods.add(data.getModifier(input.getMagnitude() - multiplier, plural, isNegative));
-    apply(input, mods, rules, rounder, data);
+    apply(input, mods, rules, rounder, data, defaultMod);
   }
 
   @Override
@@ -141,9 +156,11 @@ public class CompactDecimalFormat extends Format.BeforeFormat {
       PluralRules rules,
       DecimalFormatSymbols symbols,
       IProperties properties) {
+    CompactDecimalFingerprint fingerprint = new CompactDecimalFingerprint(symbols, properties);
     Rounder rounder = getRounder(properties);
-    CompactDecimalData data = getData(symbols, properties);
-    apply(input, mods, rules, rounder, data);
+    CompactDecimalData data = getData(symbols, fingerprint);
+    PositiveNegativeModifier defaultMod = getDefaultMod(symbols, fingerprint);
+    apply(input, mods, rules, rounder, data, defaultMod);
   }
 
   private static void apply(
@@ -151,7 +168,8 @@ public class CompactDecimalFormat extends Format.BeforeFormat {
       ModifierHolder mods,
       PluralRules rules,
       Rounder rounder,
-      CompactDecimalData data) {
+      CompactDecimalData data,
+      PositiveNegativeModifier defaultMod) {
 
     // Treat zero as if it had magnitude 0
     int magnitude;
@@ -165,7 +183,12 @@ public class CompactDecimalFormat extends Format.BeforeFormat {
 
     StandardPlural plural = input.getStandardPlural(rules);
     boolean isNegative = input.isNegative();
-    mods.add(data.getModifier(magnitude, plural, isNegative));
+    Modifier mod = data.getModifier(magnitude, plural, isNegative);
+    if (mod == null) {
+      // Use the default (non-compact) modifier.
+      mod = defaultMod.getModifier(isNegative);
+    }
+    mods.add(mod);
   }
 
   @Override
@@ -175,6 +198,11 @@ public class CompactDecimalFormat extends Format.BeforeFormat {
   }
 
   static class CompactDecimalData implements Rounder.MultiplierGenerator {
+
+    // A dummy object used when a "0" compact decimal entry is encountered.  This is necessary
+    // in order to prevent falling back to root.
+    private static final Modifier USE_FALLBACK = new ConstantAffixModifier();
+
     final Modifier[] mods;
     final byte[] multipliers;
     boolean isEmpty;
@@ -202,31 +230,49 @@ public class CompactDecimalFormat extends Format.BeforeFormat {
       return multipliers[magnitude];
     }
 
-    CompactDecimalData setMultiplier(int magnitude, byte multiplier) {
+    int setOrGetMultiplier(int magnitude, byte multiplier) {
+      if (multipliers[magnitude] != 0) {
+        return multipliers[magnitude];
+      }
       multipliers[magnitude] = multiplier;
       isEmpty = false;
       if (magnitude > largestMagnitude) largestMagnitude = magnitude;
-      return this;
+      return multiplier;
     }
 
     Modifier getModifier(int magnitude, StandardPlural plural, boolean isNegative) {
-      // TODO: Should this fall back to the OTHER plural?
       if (magnitude < 0) {
         return null;
       }
       if (magnitude > largestMagnitude) {
         magnitude = largestMagnitude;
       }
-      return mods[modIndex(magnitude, plural, isNegative)];
+      Modifier mod = mods[modIndex(magnitude, plural, isNegative)];
+      if (mod == null && plural != StandardPlural.OTHER) {
+        // Fall back to "other" plural variant
+        mod = mods[modIndex(magnitude, StandardPlural.OTHER, isNegative)];
+      }
+      if (mod == USE_FALLBACK) {
+        // Return null if USE_FALLBACK is present
+        mod = null;
+      }
+      return mod;
     }
 
-    CompactDecimalData setModifiers(
-        Modifier positive, Modifier negative, int magnitude, StandardPlural plural) {
+    public boolean has(int magnitude, StandardPlural plural) {
+      // Return true if USE_FALLBACK is present
+      return mods[modIndex(magnitude, plural, false)] != null;
+    }
+
+    void setModifiers(Modifier positive, Modifier negative, int magnitude, StandardPlural plural) {
       mods[modIndex(magnitude, plural, false)] = positive;
       mods[modIndex(magnitude, plural, true)] = negative;
       isEmpty = false;
       if (magnitude > largestMagnitude) largestMagnitude = magnitude;
-      return this;
+    }
+
+    void setNoFallback(int magnitude, StandardPlural plural) {
+      setModifiers(USE_FALLBACK, USE_FALLBACK, magnitude, plural);
     }
 
     private static final int modIndex(int magnitude, StandardPlural plural, boolean isNegative) {
@@ -248,6 +294,9 @@ public class CompactDecimalFormat extends Format.BeforeFormat {
     final String currencySymbol;
 
     CompactDecimalFingerprint(DecimalFormatSymbols symbols, IProperties properties) {
+      // CompactDecimalFormat does not need to worry about the same constraints as non-compact
+      // currency formatting needs to consider, like the currency rounding mode and the currency
+      // long names with plural forms.
       if (properties.getCurrency() != CurrencyFormat.ICurrencyProperties.DEFAULT_CURRENCY) {
         compactType = CompactType.CURRENCY;
         currencySymbol = CurrencyFormat.getCurrencySymbol(symbols, properties);
@@ -306,32 +355,19 @@ public class CompactDecimalFormat extends Format.BeforeFormat {
      */
 
     public CompactDecimalDataSink(
-        CompactDecimalData data, DecimalFormatSymbols symbols, IProperties properties) {
+        CompactDecimalData data,
+        DecimalFormatSymbols symbols,
+        CompactDecimalFingerprint fingerprint) {
       this.data = data;
       this.symbols = symbols;
-
-      // CompactDecimalFormat does not need to worry about the same constraints as non-compact
-      // currency formatting needs to consider, like the currency rounding mode and the currency
-      // long names with plural forms.
-
-      if (properties.getCurrency() != CurrencyFormat.ICurrencyProperties.DEFAULT_CURRENCY) {
-        compactType = CompactType.CURRENCY;
-        currencySymbol = CurrencyFormat.getCurrencySymbol(symbols, properties);
-      } else {
-        compactType = CompactType.DECIMAL;
-        currencySymbol = symbols.getCurrencySymbol(); // fallback; should remain unused
-      }
-
-      compactStyle = properties.getCompactStyle();
+      compactType = fingerprint.compactType;
+      currencySymbol = fingerprint.currencySymbol;
+      compactStyle = fingerprint.compactStyle;
       pnag = PNAffixGenerator.getThreadLocalInstance();
     }
 
     @Override
     public void put(UResource.Key key, UResource.Value value, boolean isRoot) {
-      if (!data.isEmpty()) {
-        return;
-      }
-
       UResource.Table patternsTable = value.getTable();
       for (int i1 = 0; patternsTable.getKeyAndValue(i1, key, value); ++i1) {
         if (key.contentEquals("patternsShort") && compactStyle == CompactStyle.SHORT) {
@@ -361,23 +397,29 @@ public class CompactDecimalFormat extends Format.BeforeFormat {
               // Silently ignore divisors that are too big.
               if (magnitude >= MAX_DIGITS) continue;
 
-              byte multiplier = 0;
-              boolean seenOther = false;
-
               // Iterate over the plural variants ("one", "other", etc)
               UResource.Table pluralVariantsTable = value.getTable();
               for (int i4 = 0; pluralVariantsTable.getKeyAndValue(i4, key, value); ++i4) {
-                // Spec: Skip if the value is just '0'
-                String patternString = value.toString();
-                if (patternString.equals("0")) continue;
 
+                // Skip this magnitude/plural if we already have it from a child locale.
                 StandardPlural plural = StandardPlural.fromString(key.toString());
-                Properties properties = PatternString.parseToProperties(value.toString());
+                if (data.has(magnitude, plural)) {
+                  continue;
+                }
+
+                // The value "0" means that we need to use the default pattern and not fall back
+                // to parent locales.  Example locale where this is relevant: 'it'.
+                String patternString = value.toString();
+                if (patternString.equals("0")) {
+                  data.setNoFallback(magnitude, plural);
+                  continue;
+                }
 
                 // The magnitude multiplier is the difference between the magnitude and the number
                 // of zeros in the pattern, getMinimumIntegerDigits.
+                Properties properties = PatternString.parseToProperties(patternString);
                 byte _multiplier = (byte) -(magnitude - properties.getMinimumIntegerDigits() + 1);
-                if (multiplier > 0 && multiplier != _multiplier) {
+                if (_multiplier != data.setOrGetMultiplier(magnitude, _multiplier)) {
                   throw new IllegalArgumentException(
                       String.format(
                           "Different number of zeros for same power of ten in compact decimal format data for locale '%s', style '%s', type '%s'",
@@ -385,16 +427,11 @@ public class CompactDecimalFormat extends Format.BeforeFormat {
                           compactStyle.toString(),
                           compactType.toString()));
                 }
-                multiplier = _multiplier;
-
-                seenOther = seenOther || (plural == StandardPlural.OTHER);
 
                 PNAffixGenerator.Result result =
                     pnag.getModifiers(symbols, currencySymbol, properties);
                 data.setModifiers(result.positive, result.negative, magnitude, plural);
               }
-
-              data.setMultiplier(magnitude, multiplier);
 
             } catch (IllegalArgumentException e) {
               exception = e;

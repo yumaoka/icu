@@ -22,7 +22,6 @@ import java.util.Locale;
 
 import com.ibm.icu.impl.number.FormatQuantity4;
 import com.ibm.icu.impl.number.Properties;
-import com.ibm.icu.util.CurrencyAmount;
 import com.ibm.icu.util.ULocale;
 
 /**
@@ -115,7 +114,8 @@ public class CompactDecimalFormat extends DecimalFormat {
     exportedProperties = new Properties();
     setPropertiesFromPattern(pattern, true);
     if (style == CompactStyle.SHORT) {
-      setGroupingUsed(false);
+      // TODO: This was setGroupingUsed(false) in ICU 58. Is it okay that I changed it for ICU 59?
+      properties.setMinimumGroupingDigits(2);
     }
     refreshFormatter();
   }
@@ -210,18 +210,18 @@ public class CompactDecimalFormat extends DecimalFormat {
     return toAppendTo;
   }
 
-  /**
-   * {@inheritDoc}
-   *
-   * @internal ICU 57 technology preview
-   * @deprecated This API might change or be removed in a future release.
-   */
-  @Override
-  @Deprecated
-  public StringBuffer format(CurrencyAmount currAmt, StringBuffer toAppendTo, FieldPosition pos) {
-    // TODO(sffc)
-    throw new UnsupportedOperationException();
-  }
+//  /**
+//   * {@inheritDoc}
+//   *
+//   * @internal ICU 57 technology preview
+//   * @deprecated This API might change or be removed in a future release.
+//   */
+//  @Override
+//  @Deprecated
+//  public StringBuffer format(CurrencyAmount currAmt, StringBuffer toAppendTo, FieldPosition pos) {
+//    // TODO(sffc)
+//    throw new UnsupportedOperationException();
+//  }
 
   /**
    * Parsing is currently unsupported, and throws an UnsupportedOperationException.

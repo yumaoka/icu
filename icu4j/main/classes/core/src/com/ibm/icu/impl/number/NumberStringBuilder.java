@@ -322,23 +322,26 @@ public class NumberStringBuilder implements CharSequence {
    * @param offset An offset to add to the field position index; can be zero.
    */
   public void populateFieldPosition(FieldPosition fp, int offset) {
-    if (!(fp.getFieldAttribute() instanceof com.ibm.icu.text.NumberFormat.Field)) {
-      throw new IllegalArgumentException(
-          "You must pass an instance of com.ibm.icu.text.NumberFormat.Field as your FieldPosition attribute.");
-    }
+    java.text.Format.Field rawField = fp.getFieldAttribute();
 
-    /* com.ibm.icu.text.NumberFormat. */ Field field = (Field) fp.getFieldAttribute();
-    if (field == null) {
+    if (rawField == null) {
       // Backwards compatibility: read from fp.getField()
       if (fp.getField() == NumberFormat.INTEGER_FIELD) {
-        field = NumberFormat.Field.INTEGER;
+        rawField = NumberFormat.Field.INTEGER;
       } else if (fp.getField() == NumberFormat.FRACTION_FIELD) {
-        field = NumberFormat.Field.FRACTION;
+        rawField = NumberFormat.Field.FRACTION;
       } else {
         // No field is set
         return;
       }
     }
+
+    if (!(rawField instanceof com.ibm.icu.text.NumberFormat.Field)) {
+      throw new IllegalArgumentException(
+          "You must pass an instance of com.ibm.icu.text.NumberFormat.Field as your FieldPosition attribute.  You passed: "
+              + rawField.getClass().toString());
+    }
+    /* com.ibm.icu.text.NumberFormat. */ Field field = (Field) rawField;
 
     boolean seenStart = false;
     int fractionStart = -1;

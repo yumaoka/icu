@@ -28,7 +28,6 @@ package com.ibm.icu.dev.test.format;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InvalidObjectException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
@@ -1432,98 +1431,6 @@ public class NumberRegressionTests extends TestFmwk {
         }
     }
 
-    @Test
-    public void Test4185761() throws IOException, ClassNotFoundException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ObjectOutputStream oos = new ObjectOutputStream(baos);
-
-        NumberFormat nf = NumberFormat.getInstance(Locale.US);
-
-    // Set special values we are going to search for in the output byte stream
-    // These are all legal values.
-        nf.setMinimumIntegerDigits(0x111); // Keep under 309
-        nf.setMaximumIntegerDigits(0x112); // Keep under 309
-        nf.setMinimumFractionDigits(0x113); // Keep under 340
-        nf.setMaximumFractionDigits(0x114); // Keep under 340
-
-        oos.writeObject(nf);
-        oos.flush();
-        baos.close();
-
-        byte[] bytes = baos.toByteArray();
-
-    // Scan for locations of min/max int/fract values in the byte array.
-    // At the moment (ICU4J 2.1), there is only one instance of each target pair
-    // in the byte stream, so assume first match is it.  Note this is not entirely
-    // failsafe, and needs to be checked if we change the package or structure of
-    // this class.
-    // Current positions are 890, 880, 886, 876
-        int[] offsets = new int[4];
-        for (int i = 0; i < bytes.length - 1; ++i) {
-            if (bytes[i] == 0x01) { // high byte
-                for (int j = 0; j < offsets.length; ++j) {
-                    if ((offsets[j] == 0) && (bytes[i+1] == (0x11 + j))) { // low byte
-                        offsets[j] = i;
-                        break;
-                    }
-                }
-            }
-        }
-
-        {
-            ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(bytes));
-            Object o = ois.readObject();
-            ois.close();
-
-            if (!nf.equals(o)) {
-                errln("Fail: NumberFormat serialization/equality bug");
-            } else {
-                logln("NumberFormat serialization/equality is OKAY.");
-            }
-        }
-
-    // Change the values in the byte stream so that min > max.
-    // Numberformat should catch this and throw an exception.
-        for (int i = 0; i < offsets.length; ++i) {
-            bytes[offsets[i]] = (byte)(4 - i);
-        }
-
-        {
-            ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(bytes));
-            try {
-                NumberFormat format = (NumberFormat) ois.readObject();
-                logln("format: " + format.format(1234.56)); //fix "The variable is never used"
-                errln("FAIL: Deserialized bogus NumberFormat with minXDigits > maxXDigits");
-            } catch (InvalidObjectException e) {
-                logln("Ok: " + e.getMessage());
-            }
-        }
-
-    // Set values so they are too high, but min <= max
-    // Format should pass the min <= max test, and DecimalFormat should reset to current maximum
-    // (for compatibility with versions streamed out before the maximums were imposed).
-        for (int i = 0; i < offsets.length; ++i) {
-            bytes[offsets[i]] = 4;
-        }
-
-        {
-            ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(bytes));
-            NumberFormat format = (NumberFormat) ois.readObject();
-            //For compatibility with previous version
-            if ((format.getMaximumIntegerDigits() != 309)
-                || format.getMaximumFractionDigits() != 340) {
-                errln("FAIL: Deserialized bogus NumberFormat with values out of range," +
-                      " intMin: " + format.getMinimumIntegerDigits() +
-                      " intMax: " + format.getMaximumIntegerDigits() +
-                      " fracMin: " + format.getMinimumFractionDigits() +
-                      " fracMax: " + format.getMaximumFractionDigits());
-            } else {
-                logln("Ok: Digit count out of range");
-            }
-        }
-    }
-
-
     /**
      * Some DecimalFormatSymbols changes are not picked up by DecimalFormat.
      * This includes the minus sign, currency symbol, international currency
@@ -1633,6 +1540,7 @@ public class NumberRegressionTests extends TestFmwk {
                 String pat = df.toPattern();
                 DecimalFormatSymbols symb = new DecimalFormatSymbols(avail[i]);
                 DecimalFormat f2 = new DecimalFormat(pat, symb);
+                f2.setCurrency(df.getCurrency()); // Currency does not travel with the pattern string
                 if (!df.equals(f2)) {
                     errln("FAIL: " + avail[i] + " #" + j + " -> \"" + pat +
                           "\" -> \"" + f2.toPattern() + '"');
@@ -1650,14 +1558,22 @@ public class NumberRegressionTests extends TestFmwk {
                                 "\" -> \"" + s2 + '"'+ " in locale "+df.getLocale(ULocale.ACTUAL_LOCALE));
 
                     }
-                    if (!df.equals(f2)) {
-                        errln("FAIL: " + avail[i] + " #" + j + " -> localized \"" + pat +
-                              "\" -> \"" + f2.toLocalizedPattern() + '"'+ " in locale "+df.getLocale(ULocale.ACTUAL_LOCALE));
-                        errln("s1: "+s1+" s2: "+s2);
-                    }
+
+                    // Equality of formatter objects is NOT guaranteed across toLocalizedPattern/applyLocalizedPattern.
+                    // However, equality of relevant properties is guaranteed.
+                    assertEquals("Localized FAIL on posPrefix", df.getPositivePrefix(), f2.getPositivePrefix());
+                    assertEquals("Localized FAIL on posSuffix", df.getPositiveSuffix(), f2.getPositiveSuffix());
+                    assertEquals("Localized FAIL on negPrefix", df.getNegativePrefix(), f2.getNegativePrefix());
+                    assertEquals("Localized FAIL on negSuffix", df.getNegativeSuffix(), f2.getNegativeSuffix());
+                    assertEquals("Localized FAIL on groupingSize", df.getGroupingSize(), f2.getGroupingSize());
+                    assertEquals("Localized FAIL on secondaryGroupingSize", df.getSecondaryGroupingSize(), f2.getSecondaryGroupingSize());
+                    assertEquals("Localized FAIL on minFrac", df.getMinimumFractionDigits(), f2.getMinimumFractionDigits());
+                    assertEquals("Localized FAIL on maxFrac", df.getMaximumFractionDigits(), f2.getMaximumFractionDigits());
+                    assertEquals("Localized FAIL on minInt", df.getMinimumIntegerDigits(), f2.getMinimumIntegerDigits());
+                    assertEquals("Localized FAIL on maxInt", df.getMaximumIntegerDigits(), f2.getMaximumIntegerDigits());
 
                 }catch(IllegalArgumentException ex){
-                    errln(ex.getMessage()+" for locale "+ df.getLocale(ULocale.ACTUAL_LOCALE));
+                    throw new AssertionError("For locale " + avail[i], ex);
                 }
 
 
@@ -1688,7 +1604,7 @@ public class NumberRegressionTests extends TestFmwk {
         sym = new DecimalFormatSymbols(Locale.US);
         for (int j=0; j<SPECIALS.length; ++j) {
             char special = SPECIALS[j];
-            String pat = "'" + special + "'#0'" + special + "'";
+            String pat = "'" + special + "'0'" + special + "'";
             try {
                 fmt = new DecimalFormat(pat, sym);
                 String pat2 = fmt.toPattern();

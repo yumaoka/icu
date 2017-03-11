@@ -16,6 +16,7 @@ package com.ibm.icu.dev.test.format;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InvalidClassException;
 import java.io.ObjectInputStream;
 import java.text.ParseException;
 import java.text.ParsePosition;
@@ -168,26 +169,32 @@ public class NumberFormatRegressionTest extends com.ibm.icu.dev.test.TestFmwk {
         }
     }
 
-    //Test New serialized DecimalFormat(2.0) read old serialized forms of DecimalFormat(1.3.1.1)
+    // ICU 59 breaks serialization compatibility.
+    // Test that future versions of ICU can read ICU 59's serialized output.
     @Test
-    public void TestSerialization() throws IOException{
-        byte[][] contents = NumberFormatSerialTestData.getContent();
+    public void TestSerialization() throws IOException, ClassNotFoundException {
+        // Legacy data from the old serialization format, dating to antiquity
+        byte[][] content = NumberFormatSerialTestData.getContentLegacy();
         double data = 1234.56;
-        String[] expected = {
-            "1,234.56", "$1,234.56", "123,456%", "1.23456E3"};
-        for (int i = 0; i < 4; ++i) {
-            ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(contents[i]));
+        for (int i = 0; i < content.length; ++i) {
+            ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(content[i]));
             try {
-                NumberFormat format = (NumberFormat) ois.readObject();
-                String result = format.format(data);
-                if (result.equals(expected[i])) {
-                    logln("OK: Deserialized bogus NumberFormat(new version read old version)");
-                } else {
-                    errln("FAIL: the test data formats are not euqal");
-                }
-            } catch (Exception e) {
-                warnln("FAIL: " + e.getMessage());
+                ois.readObject();
+                fail("Did not fail upon attempting to read legacy format");
+            } catch (InvalidClassException e) {
+                // success
             }
+        }
+
+        // New data based on ICU 59
+        content = NumberFormatSerialTestData.getContent59();
+        String[] expected = new String[]{"A-**#####,#00.00b¤"};
+        assert expected.length == content.length;
+        for (int i = 0; i < content.length; ++i) {
+            ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(content[i]));
+            DecimalFormat df = (DecimalFormat) ois.readObject();
+            String actual = df.toPattern();
+            assertEquals("Deserialized bytes do not produce same pattern string", expected[i], actual);
         }
     }
 

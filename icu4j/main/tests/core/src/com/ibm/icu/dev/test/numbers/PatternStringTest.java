@@ -20,21 +20,24 @@ public class PatternStringTest {
     DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance(ULocale.ENGLISH);
     symbols.setDecimalSeparatorString("a");
     symbols.setPercentString("b");
+    symbols.setMinusSignString(".");
+    symbols.setPlusSignString("'");
 
-    String standard = "#,##0.0%'a%'";
-    String localized = "#,##0a0b'a%'";
+    String standard = "+-abcb''a''#,##0.0%'a%'";
+    String localized = "’.'ab'c'b''a'''#,##0a0b'a%'";
+    String toStandard = "+-'ab'c'b''a'''#,##0.0%'a%'";
 
     assertEquals(localized, PatternString.convertLocalized(standard, symbols, true));
-    assertEquals(standard, PatternString.convertLocalized(localized, symbols, false));
+    assertEquals(toStandard, PatternString.convertLocalized(localized, symbols, false));
   }
 
   @Test
   public void testToPatternSimple() {
     String[][] cases = {
-      {"#", "#"},
+      {"#", "0"},
       {"0", "0"},
       {"#0", "0"},
-      {"###", "#"},
+      {"###", "0"},
       {"0.##", "0.##"},
       {"0.00", "0.00"},
       {"0.00#", "0.00#"},
@@ -43,8 +46,8 @@ public class PatternStringTest {
       {"#00E00", "#00E00"},
       {"#,##0", "#,##0"},
       {"#,##0E0", "#,##0E0"},
-      {"#;#", "#;#"},
-      {"#;-#", "#"}, // ignore a negative prefix pattern of '-' since that is the default
+      {"#;#", "0;0"},
+      {"#;-#", "0"}, // ignore a negative prefix pattern of '-' since that is the default
     };
 
     for (String[] cas : cases) {
@@ -61,12 +64,12 @@ public class PatternStringTest {
   @Test
   public void testToPatternWithProperties() {
     Object[][] cases = {
-      {new Properties().setPositivePrefix("abc"), "'abc'#"},
-      {new Properties().setPositiveSuffix("abc"), "#'abc'"},
+      {new Properties().setPositivePrefix("abc"), "abc#"},
+      {new Properties().setPositiveSuffix("abc"), "#abc"},
       {new Properties().setPositivePrefixPattern("abc"), "abc#"},
       {new Properties().setPositiveSuffixPattern("abc"), "#abc"},
-      {new Properties().setNegativePrefix("abc"), "#;'abc'#"},
-      {new Properties().setNegativeSuffix("abc"), "#;#'abc'"},
+      {new Properties().setNegativePrefix("abc"), "#;abc#"},
+      {new Properties().setNegativeSuffix("abc"), "#;#abc"},
       {new Properties().setNegativePrefixPattern("abc"), "#;abc#"},
       {new Properties().setNegativeSuffixPattern("abc"), "#;#abc"},
       {new Properties().setPositivePrefix("+"), "'+'#"},

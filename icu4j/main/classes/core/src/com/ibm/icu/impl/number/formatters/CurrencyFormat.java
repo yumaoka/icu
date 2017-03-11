@@ -6,7 +6,6 @@ import java.math.BigDecimal;
 
 import com.ibm.icu.impl.StandardPlural;
 import com.ibm.icu.impl.number.AffixPatternUtils;
-import com.ibm.icu.impl.number.Format;
 import com.ibm.icu.impl.number.PNAffixGenerator;
 import com.ibm.icu.impl.number.PatternString;
 import com.ibm.icu.impl.number.Properties;
@@ -188,7 +187,7 @@ public class CurrencyFormat {
         symbols.getULocale(), Currency.PLURAL_LONG_NAME, plural.getKeyword(), null);
   }
 
-  public static Format.BeforeFormat getCurrencyModifier(
+  public static GeneralPluralModifier getCurrencyModifier(
       DecimalFormatSymbols symbols, IProperties properties) {
 
     PNAffixGenerator pnag = PNAffixGenerator.getThreadLocalInstance();

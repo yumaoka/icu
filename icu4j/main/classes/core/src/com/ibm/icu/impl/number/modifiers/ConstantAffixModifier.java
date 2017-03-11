@@ -40,7 +40,10 @@ public class ConstantAffixModifier extends Modifier.BaseModifier implements Affi
     this.strong = strong;
   }
 
-  private ConstantAffixModifier() {
+  /**
+   * Constructs a new instance with an empty prefix, suffix, and field.
+   */
+  public ConstantAffixModifier() {
     prefix = "";
     suffix = "";
     field = null;

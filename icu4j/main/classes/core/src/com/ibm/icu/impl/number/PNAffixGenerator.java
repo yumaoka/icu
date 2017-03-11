@@ -215,8 +215,8 @@ public class PNAffixGenerator {
       NumberStringBuilder prefix, NumberStringBuilder suffix, IProperties properties) {
     if (properties.getPositivePrefix() != null || properties.getPositiveSuffix() != null) {
       // Override with custom affixes
-      CharSequence _prefix = properties.getPositivePrefix();
-      CharSequence _suffix = properties.getPositiveSuffix();
+      String _prefix = properties.getPositivePrefix();
+      String _suffix = properties.getPositiveSuffix();
       if (_prefix == null) _prefix = "";
       if (_suffix == null) _suffix = "";
       if (_prefix.length() == 0 && _suffix.length() == 0) {
@@ -230,7 +230,7 @@ public class PNAffixGenerator {
         return;
       }
       resultInstance.positive =
-          new ConstantAffixModifier(_prefix.toString(), _suffix.toString(), null, false);
+          new ConstantAffixModifier(_prefix, _suffix, null, false);
     } else {
       // Use pattern affixes
       if (prefix.length() == 0 && suffix.length() == 0) {
@@ -251,8 +251,8 @@ public class PNAffixGenerator {
       NumberStringBuilder prefix, NumberStringBuilder suffix, IProperties properties) {
     if (properties.getNegativePrefix() != null || properties.getNegativeSuffix() != null) {
       // Override with custom affixes
-      CharSequence _prefix = properties.getNegativePrefix();
-      CharSequence _suffix = properties.getNegativeSuffix();
+      String _prefix = properties.getNegativePrefix();
+      String _suffix = properties.getNegativeSuffix();
       if (_prefix == null) _prefix = "";
       if (_suffix == null) _suffix = "";
       if (_prefix.length() == 0 && _suffix.length() == 0) {
@@ -266,7 +266,7 @@ public class PNAffixGenerator {
         return;
       }
       resultInstance.negative =
-          new ConstantAffixModifier(_prefix.toString(), _suffix.toString(), null, false);
+          new ConstantAffixModifier(_prefix, _suffix, null, false);
     } else {
       // Use pattern affixes
       if (prefix.length() == 0 && suffix.length() == 0) {

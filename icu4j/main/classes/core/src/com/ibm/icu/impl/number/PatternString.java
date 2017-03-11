@@ -75,7 +75,7 @@ public class PatternString {
     int firstGroupingSize = Math.min(properties.getGroupingSize(), dosMax);
     int paddingWidth = Math.min(properties.getPaddingWidth(), dosMax);
     PaddingLocation paddingLocation = properties.getPaddingLocation();
-    CharSequence paddingString = properties.getPaddingString();
+    String paddingString = properties.getPaddingString();
     int minInt = Math.max(Math.min(properties.getMinimumIntegerDigits(), dosMax), 0);
     int maxInt = Math.min(properties.getMaximumIntegerDigits(), dosMax);
     int minFrac = Math.max(Math.min(properties.getMinimumFractionDigits(), dosMax), 0);
@@ -85,14 +85,14 @@ public class PatternString {
     boolean alwaysShowDecimal = properties.getAlwaysShowDecimal();
     int exponentDigits = Math.min(properties.getExponentDigits(), dosMax);
     boolean exponentShowPlusSign = properties.getExponentShowPlusSign();
-    CharSequence pp = properties.getPositivePrefix();
-    CharSequence ppp = properties.getPositivePrefixPattern();
-    CharSequence ps = properties.getPositiveSuffix();
-    CharSequence psp = properties.getPositiveSuffixPattern();
-    CharSequence np = properties.getNegativePrefix();
-    CharSequence npp = properties.getNegativePrefixPattern();
-    CharSequence ns = properties.getNegativeSuffix();
-    CharSequence nsp = properties.getNegativeSuffixPattern();
+    String pp = properties.getPositivePrefix();
+    String ppp = properties.getPositivePrefixPattern();
+    String ps = properties.getPositiveSuffix();
+    String psp = properties.getPositiveSuffixPattern();
+    String np = properties.getNegativePrefix();
+    String npp = properties.getNegativePrefixPattern();
+    String ns = properties.getNegativeSuffix();
+    String nsp = properties.getNegativeSuffixPattern();
 
     // Prefixes
     if (ppp != null) sb.append(ppp);
@@ -282,48 +282,97 @@ public class PatternString {
       CharSequence input, DecimalFormatSymbols symbols, boolean toLocalized) {
     if (input == null) return null;
 
+    /// This is not the prettiest function in the world, but it gets the job done. ///
+
     // Construct a table of code points to be converted between localized and standard.
     int[][] table = new int[6][2];
     int standIdx = toLocalized ? 0 : 1;
     int localIdx = toLocalized ? 1 : 0;
     table[0][standIdx] = '%';
-    table[0][localIdx] = Character.codePointAt(symbols.getPercentString(), 0);
+    table[0][localIdx] = symbols.getPercent();
     table[1][standIdx] = '‰';
-    table[1][localIdx] = Character.codePointAt(symbols.getPerMillString(), 0);
+    table[1][localIdx] = symbols.getPerMill();
     table[2][standIdx] = '.';
-    table[2][localIdx] = Character.codePointAt(symbols.getDecimalSeparatorString(), 0);
+    table[2][localIdx] = symbols.getDecimalSeparator();
     table[3][standIdx] = ',';
-    table[3][localIdx] = Character.codePointAt(symbols.getGroupingSeparatorString(), 0);
+    table[3][localIdx] = symbols.getGroupingSeparator();
     table[4][standIdx] = '-';
-    table[4][localIdx] = Character.codePointAt(symbols.getMinusSignString(), 0);
+    table[4][localIdx] = symbols.getMinusSign();
     table[5][standIdx] = '+';
-    table[5][localIdx] = Character.codePointAt(symbols.getPlusSignString(), 0);
+    table[5][localIdx] = symbols.getPlusSign();
+
+    // Special case: localIdx characters are NOT allowed to be quotes, like in de_CH.
+    // Use '’' instead.
+    for (int i=0; i<table.length; i++) {
+      if (table[i][localIdx] == '\'') {
+        table[i][localIdx] = '’';
+      }
+    }
 
     // Iterate through the string and convert
     int offset = 0;
-    boolean insideQuote = false;
+    int state = 0;
     StringBuilder result = new StringBuilder();
     for (; offset < input.length(); ) {
       int cp = Character.codePointAt(input, offset);
       int cpToAppend = cp;
-      if (insideQuote) {
+
+      if (state == 1 || state == 3 || state == 4) {
+        // Inside user-specified quote
         if (cp == '\'') {
-          insideQuote = false;
+          if (state == 1) {
+            state = 0;
+          } else if (state == 3) {
+            state = 2;
+            cpToAppend = -1;
+          } else {
+            state = 2;
+          }
         }
       } else {
+        // Base state or inside special character quote
         if (cp == '\'') {
-          insideQuote = true;
+          if (state == 2 && offset + 1 < input.length()) {
+            int nextCp = Character.codePointAt(input, offset + 1);
+            if (nextCp == '\'') {
+              // escaped quote
+              state = 4;
+            } else {
+              // begin user-specified quote sequence
+              // we are already in a quote sequence, so omit the opening quote
+              state = 3;
+              cpToAppend = -1;
+            }
+          } else {
+            state = 1;
+          }
         } else {
+          boolean needsSpecialQuote = false;
           for (int i = 0; i < table.length; i++) {
             if (table[i][0] == cp) {
               cpToAppend = table[i][1];
+              needsSpecialQuote = false; // in case an earlier translation triggered it
               break;
+            } else if (table[i][1] == cp) {
+              needsSpecialQuote = true;
             }
+          }
+          if (state == 0 && needsSpecialQuote) {
+            state = 2;
+            result.appendCodePoint('\'');
+          } else if (state == 2 && !needsSpecialQuote) {
+            state = 0;
+            result.appendCodePoint('\'');
           }
         }
       }
-      result.appendCodePoint(cpToAppend);
+      if (cpToAppend != -1) {
+        result.appendCodePoint(cpToAppend);
+      }
       offset += Character.charCount(cp);
+    }
+    if (state == 2) {
+      result.appendCodePoint('\'');
     }
     return result.toString();
   }
@@ -458,11 +507,11 @@ public class PatternString {
         // Set the affixes
         // Always call the setter, even if the prefixes are empty, especially in the case of the
         // negative prefix pattern, to prevent default values from overriding the pattern.
-        properties.setPositivePrefixPattern(positive.prefix);
-        properties.setPositiveSuffixPattern(positive.suffix);
+        properties.setPositivePrefixPattern(positive.prefix.toString());
+        properties.setPositiveSuffixPattern(positive.suffix.toString());
         if (negative != null) {
-          properties.setNegativePrefixPattern(negative.prefix);
-          properties.setNegativeSuffixPattern(negative.suffix);
+          properties.setNegativePrefixPattern(negative.prefix.toString());
+          properties.setNegativeSuffixPattern(negative.suffix.toString());
         } else {
           properties.setNegativePrefixPattern(null);
           properties.setNegativeSuffixPattern(null);
@@ -553,6 +602,7 @@ public class PatternString {
       }
 
       // TODO: Use whitespace characters from PatternProps
+      // TODO: Use thread locals here.
       ParserState state = new ParserState(pattern);
       PatternParseResult result = new PatternParseResult();
       consumePattern(state, result);

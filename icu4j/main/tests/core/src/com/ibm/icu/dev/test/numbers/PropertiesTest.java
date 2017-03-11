@@ -7,6 +7,11 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -21,9 +26,11 @@ import java.util.Set;
 import org.junit.Test;
 
 import com.ibm.icu.impl.number.Parse.ParseMode;
+import com.ibm.icu.impl.number.PatternString;
 import com.ibm.icu.impl.number.Properties;
 import com.ibm.icu.impl.number.formatters.CurrencyFormat.CurrencyStyle;
 import com.ibm.icu.impl.number.formatters.PaddingFormat.PaddingLocation;
+import com.ibm.icu.impl.number.rounders.SignificantDigitsRounder.SignificantDigitsMode;
 import com.ibm.icu.text.CompactDecimalFormat.CompactStyle;
 import com.ibm.icu.text.CurrencyPluralInfo;
 import com.ibm.icu.text.MeasureFormat.FormatWidth;
@@ -50,6 +57,7 @@ public class PropertiesTest {
 
   @Test
   public void testFieldCoverage() {
+    Properties p0 = new Properties();
     Properties p1 = new Properties();
     Properties p2 = new Properties();
     Properties p3 = new Properties();
@@ -94,6 +102,12 @@ public class PropertiesTest {
       }
 
       try {
+        // Check for default value (should be null for objects)
+        if (field.getType() != Integer.TYPE && field.getType() != Boolean.TYPE) {
+          Object default0 = getter.invoke(p0);
+          assertEquals("Field " + field + " has non-null default value:", null, default0);
+        }
+
         // Check for getter, equals, and hash code behavior
         Object val0 = getSampleValueForType(field.getType(), 0);
         Object val1 = getSampleValueForType(field.getType(), 1);
@@ -193,7 +207,7 @@ public class PropertiesTest {
       if (seed == 0) return null;
       return new BigDecimal(seed * 1000002);
 
-    } else if (type == CharSequence.class) {
+    } else if (type == String.class) {
       if (seed == 0) return null;
       return BigInteger.valueOf(seed * 1000003).toString(32);
 
@@ -252,9 +266,39 @@ public class PropertiesTest {
       RoundingMode[] values = RoundingMode.values();
       return values[seed % values.length];
 
+    } else if (type == SignificantDigitsMode.class) {
+      if (seed == 0) return null;
+      SignificantDigitsMode[] values = SignificantDigitsMode.values();
+      return values[seed % values.length];
+
     } else {
       fail("Don't know how to handle type " + type + ". Please add it to getSampleValueForType().");
       return null;
     }
+  }
+
+  @Test
+  public void TestBasicSerializationRoundTrip() throws IOException, ClassNotFoundException {
+    Properties props0 = new Properties();
+
+    // Write values to some of the fields
+    PatternString.parseToExistingProperties("A-**####,#00.00#b¤", props0);
+
+    // Write to byte stream
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    ObjectOutputStream oos = new ObjectOutputStream(baos);
+    oos.writeObject(props0);
+    oos.flush();
+    baos.close();
+    byte[] bytes = baos.toByteArray();
+
+    // Read from byte stream
+    ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(bytes));
+    Object obj = ois.readObject();
+    ois.close();
+    Properties props1 = (Properties) obj;
+
+    // Test equality
+    assertEquals("Did not round-trip through serialization", props0, props1);
   }
 }
