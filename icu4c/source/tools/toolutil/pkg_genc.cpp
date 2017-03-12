@@ -694,9 +694,10 @@ getArchitecture(uint16_t *pCPU, uint16_t *pBits, UBool *pIsBigEndian, const char
 #   else
 // link.exe does not really care about the .obj machine type and this will
 // allow us to build a dll for both ARM & I386 with an x86 built tool
-        *pCPU = IMAGE_FILE_MACHINE_UNKNOWN;
+// TODO: Broke arm so I could get x86 tools to build
+        //*pCPU=IMAGE_FILE_MACHINE_UNKNOWN;
         //*pCPU=IMAGE_FILE_MACHINE_ARMNT;   // If we wanted to be explicit
-        //*pCPU=IMAGE_FILE_MACHINE_I386;    // We would use one of these names
+        *pCPU=IMAGE_FILE_MACHINE_I386;    // We would use one of these names
         *pBits = 32;
 #   endif
         *pIsBigEndian=FALSE;
