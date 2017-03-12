@@ -689,14 +689,14 @@ getArchitecture(uint16_t *pCPU, uint16_t *pBits, UBool *pIsBigEndian, const char
         *pCPU=IMAGE_FILE_MACHINE_IA64;
         *pBits = 64;
 #   elif defined(_M_AMD64)
-        *pCPU=IMAGE_FILE_MACHINE_AMD64;
-        *pBits = 64;
-#   else
 // link.exe does not really care about the .obj machine type and this will
-// allow us to build a dll for both ARM & I386 with an x86 built tool
-// TODO: Broke arm so I could get x86 tools to build
-        //*pCPU=IMAGE_FILE_MACHINE_UNKNOWN;
-        //*pCPU=IMAGE_FILE_MACHINE_ARMNT;   // If we wanted to be explicit
+// allow us to build a dll for both ARM & x64 with an amd64 built tool
+// ARM is same as x64 except for first 2 bytes of object file
+        *pCPU = IMAGE_FILE_MACHINE_UNKNOWN;
+        // *pCPU = IMAGE_FILE_MACHINE_ARMNT;   // If we wanted to be explicit
+        // *pCPU = IMAGE_FILE_MACHINE_AMD64;   // We would use one of these names
+        *pBits = 64;                           // Doesn't seem to be used for anything interesting?
+#   else
         *pCPU=IMAGE_FILE_MACHINE_I386;    // We would use one of these names
         *pBits = 32;
 #   endif

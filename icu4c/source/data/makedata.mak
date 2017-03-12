@@ -159,10 +159,12 @@ ICUTOOLS=$(ICUP)\source\tools
 #
 #  TOOLS CFG PATH
 #      ARM needs to use one of the other tools, so make sure to get an usable cfg path
+#      Since tools, particularly pkggen, have architecture built-in, we made x64 on
+#      Windows be machine-independent and use those tools.
 #
 CFGTOOLS=$(CFG)
 !IF "$(CFG)" == "ARM\Release" || "$(CFG)" == "ARM\Debug"
-CFGTOOLS=x86\Release
+CFGTOOLS=x64\Release
 !ENDIF
 !MESSAGE ICU tools CFG subpath is $(CFGTOOLS)
 
