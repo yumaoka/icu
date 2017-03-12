@@ -530,6 +530,11 @@ COMMON_ICUDATA_ARGUMENTS=$(COMMON_ICUDATA_ARGUMENTS) -a
 ALL : GODATA "$(ICU_LIB_TARGET)" "$(TESTDATAOUT)\testdata.dat"
 	@echo All targets are up to date
 
+!IF "$(UWP)" == "UWP"
+	@if not exist "$(ICUMAKE)\..\..\commondata\" mkdir "$(ICUMAKE)\..\..\commondata\"
+    copy "$(ICUOUT)\$(U_ICUDATA_NAME)$(U_ICUDATA_ENDIAN_SUFFIX).dat" "$(ICUMAKE)\..\..\commondata\"
+!ENDIF
+
 # The core Unicode properties files (uprops.icu, ucase.icu, ubidi.icu)
 # are hardcoded in the common DLL and therefore not included in the data package any more.
 # They are not built by default but need to be built for ICU4J data and for getting the .c source files
@@ -694,14 +699,11 @@ $(SPREP_FILES:.spp=.spp
 )
 <<KEEP
 	-@erase "$(ICU_LIB_TARGET)"
+    @if not exist "$(DLL_OUTPUT)" mkdir "$(DLL_OUTPUT)"
 	copy "$(U_ICUDATA_NAME).dll" "$(ICU_LIB_TARGET)"
 	-@erase "$(U_ICUDATA_NAME).dll"
 	copy "$(ICUTMP)\$(ICUPKG).dat" "$(ICUOUT)\$(U_ICUDATA_NAME)$(U_ICUDATA_ENDIAN_SUFFIX).dat"
 	-@erase "$(ICUTMP)\$(ICUPKG).dat"
-!ENDIF
-
-!IF "$(UWP)" == "UWP"
-    copy "$(ICUOUT)\$(U_ICUDATA_NAME)$(U_ICUDATA_ENDIAN_SUFFIX).dat" "$(ICUMAKE)\..\..\commondata\"
 !ENDIF
 
 # utility target to create missing directories
