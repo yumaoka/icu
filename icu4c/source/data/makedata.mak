@@ -169,13 +169,13 @@ CFGTOOLS=x64\Release
 !MESSAGE ICU tools CFG subpath is $(CFGTOOLS)
 
 # The current ICU tools need to be in the path first.
-# x64 uses x64, x86 and arm use x86
-!IF "$(CFG)" == "x64\Release" || "$(CFG)" == "x64\Debug"
-PATH = $(ICUP)\bin64;$(PATH)
-ICUPBIN=$(ICUP)\bin64
-!ELSE
+# x86 uses x86, x64 and arm use x64
+!IF "$(CFG)" == "x32\Release" || "$(CFG)" == "x32\Debug"
 PATH = $(ICUP)\bin;$(PATH)
 ICUPBIN=$(ICUP)\bin
+!ELSE
+PATH = $(ICUP)\bin64;$(PATH)
+ICUPBIN=$(ICUP)\bin64
 !ENDIF
 
 
