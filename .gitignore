@@ -24,9 +24,11 @@ icu4c/source/common/*.o
 icu4c/source/common/*.plg
 icu4c/source/common/*.vcxproj.user
 icu4c/source/common/Debug
+icu4c/source/common/Generated[!!-~]Files
 icu4c/source/common/Makefile
 icu4c/source/common/Makefile.local
 icu4c/source/common/Release
+icu4c/source/common/arm
 icu4c/source/common/common.res
 icu4c/source/common/common.vcproj.*.*.user
 icu4c/source/common/debug
@@ -101,9 +103,11 @@ icu4c/source/i18n/*.o
 icu4c/source/i18n/*.plg
 icu4c/source/i18n/*.vcxproj.user
 icu4c/source/i18n/Debug
+icu4c/source/i18n/Generated[!!-~]Files
 icu4c/source/i18n/Makefile
 icu4c/source/i18n/Makefile.local
 icu4c/source/i18n/Release
+icu4c/source/i18n/arm
 icu4c/source/i18n/debug
 icu4c/source/i18n/i18n.res
 icu4c/source/i18n/i18n.vcproj.*.*.user

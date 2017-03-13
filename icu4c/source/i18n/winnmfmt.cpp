@@ -58,20 +58,20 @@ UOBJECT_DEFINE_RTTI_IMPLEMENTATION(Win32NumberFormat)
  * end in ";0" then the return value should be multiplied by 10.
  * (e.g. "3" => 30, "3;2" => 320)
  */
-static UINT getGrouping(const char *grouping)
+static UINT getGrouping(const UChar *grouping)
 {
     UINT g = 0;
-	const char *s;
+	const UChar *s;
 
-    for (s = grouping; *s != '\0'; s += 1) {
-        if (*s > '0' && *s < '9') {
-            g = g * 10 + (*s - '0');
-        } else if (*s != ';') {
+    for (s = grouping; *s != L'\0'; s += 1) {
+        if (*s > L'0' && *s < L'9') {
+            g = g * 10 + (*s - L'0');
+        } else if (*s != L';') {
             break;
         }
     }
 
-    if (*s != '0') {
+    if (*s != L'0') {
         g *= 10;
     }
 
@@ -80,21 +80,27 @@ static UINT getGrouping(const char *grouping)
 
 static void getNumberFormat(NUMBERFMTW *fmt, int32_t lcid)
 {
-    char buf[10];
+    UChar buf[10];
 
-    GetLocaleInfoW(lcid, LOCALE_RETURN_NUMBER|LOCALE_IDIGITS, (LPWSTR) &fmt->NumDigits, sizeof(UINT));
-    GetLocaleInfoW(lcid, LOCALE_RETURN_NUMBER|LOCALE_ILZERO,  (LPWSTR) &fmt->LeadingZero, sizeof(UINT));
+    // TODO: This was lcid and should be a locale name
+    GetLocaleInfoEx(LOCALE_NAME_USER_DEFAULT, LOCALE_RETURN_NUMBER|LOCALE_IDIGITS, (LPWSTR) &fmt->NumDigits, sizeof(UINT));
+    // TODO: This was lcid and should be a locale name
+    GetLocaleInfoEx(LOCALE_NAME_USER_DEFAULT, LOCALE_RETURN_NUMBER|LOCALE_ILZERO,  (LPWSTR) &fmt->LeadingZero, sizeof(UINT));
 
-    GetLocaleInfoA(lcid, LOCALE_SGROUPING, buf, 10);
+    // TODO: This was lcid and should be a locale name
+    GetLocaleInfoEx(LOCALE_NAME_USER_DEFAULT, LOCALE_SGROUPING, (LPWSTR)buf, 10);
     fmt->Grouping = getGrouping(buf);
 
     fmt->lpDecimalSep = NEW_ARRAY(wchar_t, 6);
-    GetLocaleInfoW(lcid, LOCALE_SDECIMAL,  fmt->lpDecimalSep,  6);
+    // TODO: This was lcid and should be a locale name
+    GetLocaleInfoEx(LOCALE_NAME_USER_DEFAULT, LOCALE_SDECIMAL,  fmt->lpDecimalSep,  6);
 
     fmt->lpThousandSep = NEW_ARRAY(wchar_t, 6);
-    GetLocaleInfoW(lcid, LOCALE_STHOUSAND, fmt->lpThousandSep, 6);
+    // TODO: This was lcid and should be a locale name
+    GetLocaleInfoEx(LOCALE_NAME_USER_DEFAULT, LOCALE_STHOUSAND, fmt->lpThousandSep, 6);
 
-    GetLocaleInfoW(lcid, LOCALE_RETURN_NUMBER|LOCALE_INEGNUMBER, (LPWSTR) &fmt->NegativeOrder, sizeof(UINT));
+    // TODO: This was lcid and should be a locale name
+    GetLocaleInfoEx(LOCALE_NAME_USER_DEFAULT, LOCALE_RETURN_NUMBER|LOCALE_INEGNUMBER, (LPWSTR) &fmt->NegativeOrder, sizeof(UINT));
 }
 
 static void freeNumberFormat(NUMBERFMTW *fmt)
@@ -107,25 +113,33 @@ static void freeNumberFormat(NUMBERFMTW *fmt)
 
 static void getCurrencyFormat(CURRENCYFMTW *fmt, int32_t lcid)
 {
-    char buf[10];
+    UChar buf[10];
 
-    GetLocaleInfoW(lcid, LOCALE_RETURN_NUMBER|LOCALE_ICURRDIGITS, (LPWSTR) &fmt->NumDigits, sizeof(UINT));
-    GetLocaleInfoW(lcid, LOCALE_RETURN_NUMBER|LOCALE_ILZERO, (LPWSTR) &fmt->LeadingZero, sizeof(UINT));
+    // TODO: This was lcid and should be a locale name
+    GetLocaleInfoEx(LOCALE_NAME_USER_DEFAULT, LOCALE_RETURN_NUMBER|LOCALE_ICURRDIGITS, (LPWSTR) &fmt->NumDigits, sizeof(UINT));
+    // TODO: This was lcid and should be a locale name
+    GetLocaleInfoEx(LOCALE_NAME_USER_DEFAULT, LOCALE_RETURN_NUMBER|LOCALE_ILZERO, (LPWSTR) &fmt->LeadingZero, sizeof(UINT));
 
-    GetLocaleInfoA(lcid, LOCALE_SMONGROUPING, buf, sizeof(buf));
+    // TODO: This was lcid and should be a locale name
+    GetLocaleInfoEx(LOCALE_NAME_USER_DEFAULT, LOCALE_SMONGROUPING, (LPWSTR)buf, sizeof(buf));
     fmt->Grouping = getGrouping(buf);
 
     fmt->lpDecimalSep = NEW_ARRAY(wchar_t, 6);
-    GetLocaleInfoW(lcid, LOCALE_SMONDECIMALSEP,  fmt->lpDecimalSep,  6);
+    // TODO: This was lcid and should be a locale name
+    GetLocaleInfoEx(LOCALE_NAME_USER_DEFAULT, LOCALE_SMONDECIMALSEP,  fmt->lpDecimalSep,  6);
 
     fmt->lpThousandSep = NEW_ARRAY(wchar_t, 6);
-    GetLocaleInfoW(lcid, LOCALE_SMONTHOUSANDSEP, fmt->lpThousandSep, 6);
+    // TODO: This was lcid and should be a locale name
+    GetLocaleInfoEx(LOCALE_NAME_USER_DEFAULT, LOCALE_SMONTHOUSANDSEP, fmt->lpThousandSep, 6);
 
-    GetLocaleInfoW(lcid, LOCALE_RETURN_NUMBER|LOCALE_INEGCURR,  (LPWSTR) &fmt->NegativeOrder, sizeof(UINT));
-    GetLocaleInfoW(lcid, LOCALE_RETURN_NUMBER|LOCALE_ICURRENCY, (LPWSTR) &fmt->PositiveOrder, sizeof(UINT));
+    // TODO: This was lcid and should be a locale name
+    GetLocaleInfoEx(LOCALE_NAME_USER_DEFAULT, LOCALE_RETURN_NUMBER|LOCALE_INEGCURR,  (LPWSTR) &fmt->NegativeOrder, sizeof(UINT));
+    // TODO: This was lcid and should be a locale name
+    GetLocaleInfoEx(LOCALE_NAME_USER_DEFAULT, LOCALE_RETURN_NUMBER|LOCALE_ICURRENCY, (LPWSTR) &fmt->PositiveOrder, sizeof(UINT));
 
     fmt->lpCurrencySymbol = NEW_ARRAY(wchar_t, 8);
-    GetLocaleInfoW(lcid, LOCALE_SCURRENCY, (LPWSTR) fmt->lpCurrencySymbol, 8);
+    // TODO: This was lcid and should be a locale name
+    GetLocaleInfoEx(LOCALE_NAME_USER_DEFAULT, LOCALE_SCURRENCY, (LPWSTR) fmt->lpCurrencySymbol, 8);
 }
 
 static void freeCurrencyFormat(CURRENCYFMTW *fmt)
@@ -308,17 +322,20 @@ UnicodeString &Win32NumberFormat::format(int32_t numDigits, UnicodeString &appen
             formatInfo.currency.Grouping = 0;
         }
 
-        result = GetCurrencyFormatW(fLCID, 0, nBuffer, &formatInfo.currency, buffer, STACK_BUFFER_SIZE);
+        // TODO: This was lcid and should be a locale name
+        result = GetCurrencyFormatEx(LOCALE_NAME_USER_DEFAULT, 0, nBuffer, &formatInfo.currency, buffer, STACK_BUFFER_SIZE);
 
         if (result == 0) {
             DWORD lastError = GetLastError();
 
             if (lastError == ERROR_INSUFFICIENT_BUFFER) {
-                int newLength = GetCurrencyFormatW(fLCID, 0, nBuffer, &formatInfo.currency, NULL, 0);
+                // TODO: This was lcid and should be a locale name
+                int newLength = GetCurrencyFormatEx(LOCALE_NAME_USER_DEFAULT, 0, nBuffer, &formatInfo.currency, NULL, 0);
 
                 buffer = NEW_ARRAY(wchar_t, newLength);
                 buffer[0] = 0x0000;
-                GetCurrencyFormatW(fLCID, 0, nBuffer,  &formatInfo.currency, buffer, newLength);
+                // TODO: This was lcid and should be a locale name
+                GetCurrencyFormatEx(LOCALE_NAME_USER_DEFAULT, 0, nBuffer,  &formatInfo.currency, buffer, newLength);
             }
         }
     } else {
@@ -330,15 +347,18 @@ UnicodeString &Win32NumberFormat::format(int32_t numDigits, UnicodeString &appen
             formatInfo.number.Grouping = 0;
         }
 
-        result = GetNumberFormatW(fLCID, 0, nBuffer, &formatInfo.number, buffer, STACK_BUFFER_SIZE);
+        // TODO: This was lcid and should be a locale name
+        result = GetNumberFormatEx(LOCALE_NAME_USER_DEFAULT, 0, nBuffer, &formatInfo.number, buffer, STACK_BUFFER_SIZE);
 
         if (result == 0) {
             if (GetLastError() == ERROR_INSUFFICIENT_BUFFER) {
-                int newLength = GetNumberFormatW(fLCID, 0, nBuffer, &formatInfo.number, NULL, 0);
+                // TODO: This was lcid and should be a locale name
+                int newLength = GetNumberFormatEx(LOCALE_NAME_USER_DEFAULT, 0, nBuffer, &formatInfo.number, NULL, 0);
 
                 buffer = NEW_ARRAY(wchar_t, newLength);
                 buffer[0] = 0x0000;
-                GetNumberFormatW(fLCID, 0, nBuffer, &formatInfo.number, buffer, newLength);
+                // TODO: This was lcid and should be a locale name
+                GetNumberFormatEx(LOCALE_NAME_USER_DEFAULT, 0, nBuffer, &formatInfo.number, buffer, newLength);
             }
         }
     }

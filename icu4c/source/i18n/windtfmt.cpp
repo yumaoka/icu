@@ -231,18 +231,21 @@ static const DWORD dfFlags[] = {DATE_LONGDATE, DATE_LONGDATE, DATE_SHORTDATE, DA
 
 void Win32DateFormat::formatDate(const SYSTEMTIME *st, UnicodeString &appendTo) const
 {
-    int result;
+    int result=0;
     wchar_t stackBuffer[STACK_BUFFER_SIZE];
     wchar_t *buffer = stackBuffer;
 
-    result = GetDateFormatW(fLCID, dfFlags[fDateStyle - kDateOffset], st, NULL, buffer, STACK_BUFFER_SIZE);
+    // TODO: This was fLCID and should be a locale name
+    result = GetDateFormatEx(LOCALE_NAME_USER_DEFAULT, dfFlags[fDateStyle - kDateOffset], st, NULL, buffer, STACK_BUFFER_SIZE, NULL);
 
     if (result == 0) {
         if (GetLastError() == ERROR_INSUFFICIENT_BUFFER) {
-            int newLength = GetDateFormatW(fLCID, dfFlags[fDateStyle - kDateOffset], st, NULL, NULL, 0);
+            // TODO: This was fLCID and should be a locale name
+            int newLength = GetDateFormatEx(LOCALE_NAME_USER_DEFAULT, dfFlags[fDateStyle - kDateOffset], st, NULL, NULL, 0, NULL);
 
             buffer = NEW_ARRAY(wchar_t, newLength);
-            GetDateFormatW(fLCID, dfFlags[fDateStyle - kDateOffset], st, NULL, buffer, newLength);
+            // TODO: This was fLCID and should be a locale name
+            GetDateFormatEx(LOCALE_NAME_USER_DEFAULT, dfFlags[fDateStyle - kDateOffset], st, NULL, buffer, newLength, NULL);
         }
     }
 
@@ -261,14 +264,18 @@ void Win32DateFormat::formatTime(const SYSTEMTIME *st, UnicodeString &appendTo) 
     wchar_t stackBuffer[STACK_BUFFER_SIZE];
     wchar_t *buffer = stackBuffer;
 
-    result = GetTimeFormatW(fLCID, tfFlags[fTimeStyle], st, NULL, buffer, STACK_BUFFER_SIZE);
+    // TODO: This was fLCID and should be a locale name
+    result = GetTimeFormatEx(LOCALE_NAME_USER_DEFAULT, tfFlags[fTimeStyle], st, NULL, buffer, STACK_BUFFER_SIZE);
 
     if (result == 0) {
         if (GetLastError() == ERROR_INSUFFICIENT_BUFFER) {
-            int newLength = GetTimeFormatW(fLCID, tfFlags[fTimeStyle], st, NULL, NULL, 0);
+            // TODO: This was fLCID and should be a locale name
+            int newLength = GetTimeFormatEx(LOCALE_NAME_USER_DEFAULT, tfFlags[fTimeStyle], st, NULL, NULL, 0);
 
             buffer = NEW_ARRAY(wchar_t, newLength);
-            GetDateFormatW(fLCID, tfFlags[fTimeStyle], st, NULL, buffer, newLength);
+            // TODO: This was fLCID and should be a locale name
+            // NOTE: Previous code didn't even work (cut & replace error here, was GetDateFormatW)
+            GetTimeFormatEx(LOCALE_NAME_USER_DEFAULT, tfFlags[fTimeStyle], st, NULL, buffer, newLength);
         }
     }
 

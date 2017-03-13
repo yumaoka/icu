@@ -46,6 +46,7 @@
 #ifdef USE_WINDOWS_LOCALE_API
 #include <windows.h>
 #include <winnls.h>
+#define USE_WINDOWS_LCID_MAPPING_API
 #endif
 
 /*
@@ -53,8 +54,8 @@
  * The mapping from Win32 locale ID numbers to POSIX locale strings should
  * be the faster one.
  *
- * Many LCID values come from winnt.h
- * Some also come from http://www.microsoft.com/globaldev/reference/lcid-all.mspx
+ * Windows LCIDs are defined at https://msdn.microsoft.com/en-us/library/cc233965.aspx
+ * [MS-LCID] Windows Language Code Identifier (LCID) Reference
  */
 
 /*
@@ -1017,43 +1018,56 @@ uprv_convertToPosix(uint32_t hostid, char *posixID, int32_t posixIDCapacity, UEr
     UBool bLookup = TRUE;
     const char *pPosixID = NULL;
 
-#ifdef USE_WINDOWS_LOCALE_API
+#ifdef USE_WINDOWS_LCID_MAPPING_API
     // Note: Windows primary lang ID 0x92 in LCID is used for Central Kurdish and
     // GetLocaleInfo() maps such LCID to "ku". However, CLDR uses "ku" for
     // Northern Kurdish and "ckb" for Central Kurdish. For this reason, we cannot
     // use the Windows API to resolve locale ID for this specific case.
     if ((hostid & 0x3FF) != 0x92) {
         int32_t tmpLen = 0;
-        char locName[157];  /* ULOC_FULLNAME_CAPACITY */
+        UChar windowsLocaleName[LOCALE_NAME_MAX_LENGTH];  // ULOC_FULLNAME_CAPACITY > LOCALE_NAME_MAX_LENGTH
+        char locName[LOCALE_NAME_MAX_LENGTH];             // ICU name can't be longer than Windows name
 
-        tmpLen = GetLocaleInfoA(hostid, LOCALE_SNAME, (LPSTR)locName, UPRV_LENGTHOF(locName));
+        // Note: LOCALE_ALLOW_NEUTRAL_NAMES was enabled in Windows7+, prior versions did not handle neutral (no-region) locale names.
+        tmpLen = LCIDToLocaleName(hostid, (PWSTR)windowsLocaleName, UPRV_LENGTHOF(windowsLocaleName), LOCALE_ALLOW_NEUTRAL_NAMES);
         if (tmpLen > 1) {
-            /* Windows locale name may contain sorting variant, such as "es-ES_tradnl".
-            In such case, we need special mapping data found in the hardcoded table
-            in this source file. */
-            char *p = uprv_strchr(locName, '_');
-            if (p) {
-                /* Keep the base locale, without variant */
-                *p = 0;
-                tmpLen = uprv_strlen(locName);
-            }
-            else {
-                /* No hardcoded table lookup necessary */
-                bLookup = FALSE;
-            }
-            /* Change the tag separator from '-' to '_' */
-            p = locName;
-            while (*p) {
-                if (*p == '-') {
-                    *p = '_';
+            int i = 0;
+            // Only need to look up in table if have _, eg for de-de_phoneb type alternate sort.
+            bLookup = FALSE;
+            for (i = 0; i < UPRV_LENGTHOF(locName); i++)
+            {
+                locName[i] = (char)(windowsLocaleName[i]);
+
+                // Windows locale name may contain sorting variant, such as "es-ES_tradnl".
+                // In such case, we need special mapping data found in the hardcoded table
+                // in this source file.
+                if (windowsLocaleName[i] == L'_')
+                {
+                    // Keep the base locale, without variant
+                    // TODO: Should these be mapped from _phoneb to @collation=phonebook, etc.?
+                    locName[i] = '\0';
+                    tmpLen = i;
+                    bLookup = TRUE;
+                    break;
                 }
-                p++;
+                else if (windowsLocaleName[i] == L'-')
+                {
+                    // Windows names use -, ICU uses _
+                    locName[i] = '_';
+                }
+                else if (windowsLocaleName[i] == L'\0')
+                {
+                    // No point in doing more work than necessary
+                    break;
+                }
             }
+            // TODO: Need to understand this better, why isn't it an alias?
             FIX_LANGUAGE_ID_TAG(locName, tmpLen);
             pPosixID = locName;
         }
     }
-#endif
+#endif // USE_WINDOWS_LOCALE_API
+
     if (bLookup) {
         const char *pCandidate = NULL;
         langID = LANGUAGE_LCID(hostid);
@@ -1109,7 +1123,8 @@ uprv_convertToPosix(uint32_t hostid, char *posixID, int32_t posixIDCapacity, UEr
 U_CAPI uint32_t
 uprv_convertToLCID(const char *langID, const char* posixID, UErrorCode* status)
 {
-
+    // This function does the table lookup when native platform name->lcid conversion isn't available,
+    // or for locales that don't follow patterns the platform expects.
     uint32_t   low    = 0;
     uint32_t   high   = gLocaleCount;
     uint32_t   mid;
