@@ -1119,6 +1119,18 @@ uprv_convertToPosix(uint32_t hostid, char *posixID, int32_t posixIDCapacity, UEr
 //
 /////////////////////////////////////
 */
+U_CAPI uint32_t
+uprv_convertToLCIDPlatform(const char* localeID)
+{
+    // The purpose of this function is to leverage native platform name->lcid
+    // conversion functionality when available.
+#ifdef USE_WINDOWS_LCID_MAPPING_API
+    // TODO: Make Windows call native API
+#endif
+
+    // Not found, or not implemented on platforms without native name->lcid conversion
+    return 0;
+}
 
 U_CAPI uint32_t
 uprv_convertToLCID(const char *langID, const char* posixID, UErrorCode* status)
