@@ -170,7 +170,7 @@ CFGTOOLS=x64\Release
 
 # The current ICU tools need to be in the path first.
 # x86 uses x86, x64 and arm use x64
-!IF "$(CFG)" == "x32\Release" || "$(CFG)" == "x32\Debug"
+!IF "$(CFG)" == "x86\Release" || "$(CFG)" == "x86\Debug"
 PATH = $(ICUP)\bin;$(PATH)
 ICUPBIN=$(ICUP)\bin
 !ELSE
