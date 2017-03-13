@@ -623,7 +623,7 @@ U_NAMESPACE_END
 
 /*----------------------------------------------------------------------*
  *                                                                      *
- *  Add a static reference to the common data  library                  *
+ *  Add a static reference to the common data library                   *
  *   Unless overridden by an explicit udata_setCommonData, this will be *
  *      our common data.                                                *
  *                                                                      *
@@ -1260,7 +1260,7 @@ doOpenChoice(const char *path, const char *type, const char *name,
         path = COMMON_DATA_NAME; /* "icudt26e" */
     }
 #else
-    // Windows expects only a single data file in %windir%\globalization
+    // Windows UWP expects only a single data file.
     path = COMMON_DATA_NAME; /* "icudt26e" */
 #endif
 
