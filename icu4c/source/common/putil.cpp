@@ -1776,23 +1776,26 @@ The leftmost codepage (.xxx) wins.
     // Now we should have a Windows locale name that needs converted to the POSIX style,
     if (length > 0)
     {
-        // First we need to go from UTF-16 to char (and get rid of _ while we're at it.)
-        // TODO: Find/make helpers for ASCII<->UTF16
-        char modifiedWindowsLocale[LOCALE_NAME_MAX_LENGTH];
-		u_UCharsToChars((UChar*)windowsLocale, modifiedWindowsLocale, LOCALE_NAME_MAX_LENGTH);
+        // First we need to go from UTF-16 to char (and also convert from _ to - while we're at it.)
+		char modifiedWindowsLocale[LOCALE_NAME_MAX_LENGTH];
 
-        int i;
-        for (i = 0; i < UPRV_LENGTHOF(modifiedWindowsLocale); i++)
-        {
-            if (modifiedWindowsLocale[i] == '_')
-            {
-                modifiedWindowsLocale[i] = '-';
-            }
-            if (modifiedWindowsLocale[i] == '\0')
-            {
-                break;
-            }
-        }
+		int i;
+		for (i = 0; i < UPRV_LENGTHOF(modifiedWindowsLocale); i++)
+		{
+			if (windowsLocale[i] == '_')
+			{
+				modifiedWindowsLocale[i] = '-';
+			}
+			else
+			{
+				modifiedWindowsLocale[i] = static_cast<char>(windowsLocale[i]);
+			}
+
+			if (modifiedWindowsLocale[i] == '\0')
+			{
+				break;
+			}
+		}
 
         if (i >= UPRV_LENGTHOF(modifiedWindowsLocale))
         {
