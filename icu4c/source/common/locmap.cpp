@@ -1211,7 +1211,7 @@ uprv_convertToLCIDPlatform(const char* localeID)
     // conversion functionality when available.
 #ifdef USE_WINDOWS_LCID_MAPPING_API
     DWORD nameLCIDFlags = 0;
-    UErrorCode myStatus;
+	UErrorCode myStatus = U_ZERO_ERROR;
 
     // First check for a Windows name->LCID match, fall through to catch
     // ICU special cases, but Windows may know it already.
