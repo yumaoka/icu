@@ -113,7 +113,7 @@
             FILE_ATTRIBUTE_NORMAL|FILE_FLAG_RANDOM_ACCESS, NULL);
 #else
         // First we need to go from char to UTF-16
-        // TODO: Find/make helpers for ASCII<->UTF16
+        // u_UCharsToChars could work but it requires length.
         WCHAR utf16Path[MAX_PATH];
         int i;
         for (i = 0; i < UPRV_LENGTHOF(utf16Path); i++)

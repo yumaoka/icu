@@ -1227,7 +1227,6 @@ uprv_convertToLCIDPlatform(const char* localeID)
     if (U_SUCCESS(myStatus))
     {
         // Need it to be UTF-16, not 8-bit
-        // TODO: This seems like a good thing for a helper
         UChar bcp47Tag[LOCALE_NAME_MAX_LENGTH];
         int i;
         for (i = 0; i < UPRV_LENGTHOF(bcp47Tag); i++)
