@@ -103,7 +103,8 @@ public class SignificantDigitsRounder extends Rounder {
     return properties.getMinimumSignificantDigits()
             != IProperties.DEFAULT_MINIMUM_SIGNIFICANT_DIGITS
         || properties.getMaximumSignificantDigits()
-            != IProperties.DEFAULT_MAXIMUM_SIGNIFICANT_DIGITS;
+            != IProperties.DEFAULT_MAXIMUM_SIGNIFICANT_DIGITS
+        || properties.getSignificantDigitsMode() != IProperties.DEFAULT_SIGNIFICANT_DIGITS_MODE;
   }
 
   public static SignificantDigitsRounder getInstance(IProperties properties) {
@@ -118,8 +119,8 @@ public class SignificantDigitsRounder extends Rounder {
     super(properties);
     int _minSig = properties.getMinimumSignificantDigits();
     int _maxSig = properties.getMaximumSignificantDigits();
-    minSig = _minSig < 1 ? 1 : _minSig;
-    maxSig = _maxSig < 0 ? Integer.MAX_VALUE : _maxSig < minSig ? minSig : _maxSig;
+    minSig = _minSig < 1 ? 1 : _minSig > 1000 ? 1000 : _minSig;
+    maxSig = _maxSig < 0 ? 1000 : _maxSig < minSig ? minSig : _maxSig > 1000 ? 1000 : _maxSig;
     SignificantDigitsMode _mode = properties.getSignificantDigitsMode();
     mode = _mode == null ? SignificantDigitsMode.OVERRIDE_MAXIMUM_FRACTION : _mode;
   }
@@ -198,18 +199,12 @@ public class SignificantDigitsRounder extends Rounder {
       case OVERRIDE_MAXIMUM_FRACTION:
         // Ensure minSig is always displayed.
         input.setIntegerFractionLength(
-            minInt,
-            maxInt,
-            Math.max(minFrac, -magMinSig),
-            Integer.MAX_VALUE);
+            minInt, maxInt, Math.max(minFrac, -magMinSig), Integer.MAX_VALUE);
         break;
       case RESPECT_MAXIMUM_FRACTION:
         // Ensure minSig is displayed, unless doing so is in violation of maxFrac.
         input.setIntegerFractionLength(
-            minInt,
-            maxInt,
-            Math.min(maxFrac, Math.max(minFrac, -magMinSig)),
-            maxFrac);
+            minInt, maxInt, Math.min(maxFrac, Math.max(minFrac, -magMinSig)), maxFrac);
         break;
       case ENSURE_MINIMUM_SIGNIFICANT:
         // Follow minInt/minFrac, but ensure all digits are allowed to be visible.

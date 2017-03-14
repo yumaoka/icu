@@ -8,6 +8,7 @@
 */
 package com.ibm.icu.dev.test.util;
 
+import java.util.Arrays;
 import java.util.Iterator;
 
 import org.junit.Test;
@@ -148,7 +149,7 @@ public class TextTrieMapTest extends TestFmwk {
         logln("Test for get(String)");
         for (int i = 0; i < TESTCASES.length; i++) {
             itr = map.get((String)TESTCASES[i][0]);
-            checkResult(itr, TESTCASES[i][1]);
+            checkResult("get(String) case " + i, itr, TESTCASES[i][1]);
         }
 
         logln("Test for get(String, int)");
@@ -160,7 +161,7 @@ public class TextTrieMapTest extends TestFmwk {
             }
             textBuf.append(TESTCASES[i][0]);
             itr = map.get(textBuf.toString(), i);
-            checkResult(itr, TESTCASES[i][1]);
+            checkResult("get(String, int) case " + i, itr, TESTCASES[i][1]);
         }
 
         logln("Test for ParseState");
@@ -177,7 +178,7 @@ public class TextTrieMapTest extends TestFmwk {
 
         // Make sure the all entries are returned
         itr = map.get("Sunday");
-        checkResult(itr, new Object[]{FOO, SUN});
+        checkResult("Get Sunday", itr, new Object[]{FOO, SUN});
     }
 
     @Test
@@ -191,7 +192,7 @@ public class TextTrieMapTest extends TestFmwk {
         logln("Test for get(String)");
         for (int i = 0; i < TESTCASES.length; i++) {
             itr = map.get((String)TESTCASES[i][0]);
-            checkResult(itr, TESTCASES[i][2]);
+            checkResult("get(String) case " + i, itr, TESTCASES[i][2]);
         }
 
         logln("Test for get(String, int)");
@@ -203,7 +204,7 @@ public class TextTrieMapTest extends TestFmwk {
             }
             textBuf.append(TESTCASES[i][0]);
             itr = map.get(textBuf.toString(), i);
-            checkResult(itr, TESTCASES[i][2]);
+            checkResult("get(String, int) case " + i, itr, TESTCASES[i][2]);
         }
 
         logln("Test for ParseState");
@@ -220,7 +221,7 @@ public class TextTrieMapTest extends TestFmwk {
 
         // Make sure the all entries are returned
         itr = map.get("Sunday");
-        checkResult(itr, new Object[]{SUN, FOO, BAR});
+        checkResult("Get Sunday", itr, new Object[]{SUN, FOO, BAR});
     }
 
     private void checkParse(TextTrieMap map, String text, Object[] rawExpecteds, boolean caseSensitive) {
@@ -245,23 +246,28 @@ public class TextTrieMapTest extends TestFmwk {
             int cp = Character.codePointAt(text, charOffset);
             if (state == null) {
                 state = map.openParseState(cp);
-            } else {
-                state.accept(cp);
             }
-            if (cpOffset >= expecteds.length) {
-                if (state != null && !state.atEnd()) {
-                    errln("At end of parse sequence, but atEnd() is false");
-                }
+            if (state == null) {
+                assertEquals("Expected matches, but no matches are available", 0, expecteds.length);
                 break;
-            } else {
-                if (state.atEnd()) {
-                    errln("In middle of parse sequence, but atEnd() is true");
-                    return;
-                }
-                Object expected = expecteds[cpOffset];
-                Iterator actual = state.getCurrentMatches();
-                checkResult(actual, expected);
             }
+            state.accept(cp);
+            if (cpOffset < expecteds.length - 1) {
+                assertFalse(
+                        "In middle of parse sequence, but atEnd() is true: '" + text + "' offset " + charOffset,
+                        state.atEnd());
+            } else if (cpOffset == expecteds.length) {
+                // Note: it possible for atEnd() to be either true or false at expecteds.length - 1;
+                // if true, we are at the end of the input string; if false, there is still input string
+                // left to be consumed, but we don't know if there are remaining matches.
+                assertTrue(
+                        "At end of parse sequence, but atEnd() is false: '" + text + "' offset " + charOffset,
+                        state.atEnd());
+                break;
+            }
+            Object expected = expecteds[cpOffset];
+            Iterator actual = state.getCurrentMatches();
+            checkResult("ParseState '" + text + "' offset " + charOffset, actual, expected);
             charOffset += Character.charCount(cp);
         }
     }
@@ -276,10 +282,13 @@ public class TextTrieMapTest extends TestFmwk {
         return o1.equals(o2);
     }
 
-    private void checkResult(Iterator itr, Object expected) {
+    private void checkResult(String memo, Iterator itr, Object expected) {
         if (itr == null) {
             if (expected != null) {
-                errln("FAIL: Empty results - Expected: " + expected);
+                String expectedStr = (expected instanceof Object[])
+                        ? Arrays.toString((Object[]) expected)
+                        : expected.toString();
+                errln("FAIL: Empty results: " + memo + ": Expected: " + expectedStr);
             }
             return;
         }
