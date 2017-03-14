@@ -1224,7 +1224,8 @@ UInitOnce gTimeZoneFilesInitOnce = U_INITONCE_INITIALIZER;
 static CharString *gTimeZoneFilesDirectory = NULL;
 
 #if U_POSIX_LOCALE || U_PLATFORM_USES_ONLY_WIN32_API
- static char *gCorrectedPOSIXLocale = NULL; /* Heap allocated */
+ static char *gCorrectedPOSIXLocale = NULL; /* Sometimes heap allocated */
+ static bool gCorrectedPOSIXLocaleHeapAllocated = false;
 #endif
 
 static UBool U_CALLCONV putil_cleanup(void)
@@ -1245,9 +1246,10 @@ static UBool U_CALLCONV putil_cleanup(void)
 #endif
 
 #if U_POSIX_LOCALE || U_PLATFORM_USES_ONLY_WIN32_API
-    if (gCorrectedPOSIXLocale) {
+    if (gCorrectedPOSIXLocale && gCorrectedPOSIXLocaleHeapAllocated) {
         uprv_free(gCorrectedPOSIXLocale);
         gCorrectedPOSIXLocale = NULL;
+        gCorrectedPOSIXLocaleHeapAllocated = false;
     }
 #endif
     return TRUE;
@@ -1698,6 +1700,7 @@ The leftmost codepage (.xxx) wins.
 
     if (gCorrectedPOSIXLocale == NULL) {
         gCorrectedPOSIXLocale = correctedPOSIXLocale;
+        gCorrectedPOSIXLocaleHeapAllocated = true;
         ucln_common_registerCleanup(UCLN_COMMON_PUTIL, putil_cleanup);
         correctedPOSIXLocale = NULL;
     }
@@ -1760,7 +1763,10 @@ The leftmost codepage (.xxx) wins.
     if (FAILED(hr))
     {
         // Unexpected, use en-US by default
-        gCorrectedPOSIXLocale = "en_US";
+        if (gCorrectedPOSIXLocale == NULL) {
+            gCorrectedPOSIXLocale = "en_US";
+        }
+
         return gCorrectedPOSIXLocale;
     }
 
@@ -1806,6 +1812,7 @@ The leftmost codepage (.xxx) wins.
             {
                 *(correctedPOSIXLocale + posixLen) = 0;
                 gCorrectedPOSIXLocale = correctedPOSIXLocale;
+                gCorrectedPOSIXLocaleHeapAllocated = true;
                 ucln_common_registerCleanup(UCLN_COMMON_PUTIL, putil_cleanup);
             }
             else
