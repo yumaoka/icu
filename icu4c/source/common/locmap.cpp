@@ -273,7 +273,7 @@ ILCID_POSIX_SUBTABLE(en) {
     {0x2C09, "en_TT"},
     {0x0409, "en_US"},
 #endif
-    {0x007f, "en_US_POSIX"}, /* duplicate for roundtripping */
+    {0x007f, "en_US_POSIX"}, /* duplicate for round-tripping */
 #ifndef USE_WINDOWS_LCID_MAPPING_API
     {0x2409, "en_VI"},  /* Virgin Islands AKA Caribbean Islands (en_CB). On Windows8+ This is 0x1000 or dynamically assigned */
     {0x1c09, "en_ZA"},
@@ -633,7 +633,7 @@ ILCID_POSIX_SUBTABLE(ro) {
 };
 #endif
 
-// This is almost certainly 'wrong'.  0 in Windows is a synonym for LOCALE_USER_DEFAULT.
+// TODO: This is almost certainly 'wrong'.  0 in Windows is a synonym for LOCALE_USER_DEFAULT.
 // More likely this is a similar concept to the Windows 0x7f Invariant locale ""
 // (Except that it's not invariant in ICU)
 ILCID_POSIX_SUBTABLE(root) {
@@ -783,8 +783,8 @@ ILCID_POSIX_ELEMENT_ARRAY(0x043d, yi, yi)
 ILCID_POSIX_ELEMENT_ARRAY(0x046a, yo, yo_NG)
 #endif
 
-// Windows & ICU tend to differnet names for some of these
-// TODO: Windows probalby does not need all of these entries, but I don't know how the precedence works.
+// Windows & ICU tend to different names for some of these
+// TODO: Windows probably does not need all of these entries, but I don't know how the precedence works.
 ILCID_POSIX_SUBTABLE(zh) {
     {0x0004, "zh_Hans"},
     {0x7804, "zh"},
@@ -1214,7 +1214,7 @@ uprv_convertToLCIDPlatform(const char* localeID)
     UErrorCode myStatus;
 
     // First check for a Windows name->LCID match, fall through to catch
-    // ICU special cases, but windows may know it already.
+    // ICU special cases, but Windows may know it already.
 #if LOCALE_ALLOW_NEUTRAL_NAMES
     nameLCIDFlags = LOCALE_ALLOW_NEUTRAL_NAMES;
 #endif
