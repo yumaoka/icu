@@ -142,7 +142,7 @@
         // TODO: UWP does not have this function and I do not think it is required?
 #if U_PLATFORM_HAS_WINUWP_API == 0
         if (InitializeSecurityDescriptor(&securityDesc, SECURITY_DESCRIPTOR_REVISION)) {
-            /* give the security descriptor a Null Dacl done using the  "TRUE, (PACL)NULL" here	*/
+            /* give the security descriptor a Null Dacl done using the  "TRUE, (PACL)NULL" here */
             if (SetSecurityDescriptorDacl(&securityDesc, TRUE, (PACL)NULL, FALSE)) {
                 /* Make the security attributes point to the security descriptor */
                 uprv_memset(&mappingAttributes, 0, sizeof(mappingAttributes));

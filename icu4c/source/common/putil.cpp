@@ -1777,25 +1777,25 @@ The leftmost codepage (.xxx) wins.
     if (length > 0)
     {
         // First we need to go from UTF-16 to char (and also convert from _ to - while we're at it.)
-		char modifiedWindowsLocale[LOCALE_NAME_MAX_LENGTH];
+        char modifiedWindowsLocale[LOCALE_NAME_MAX_LENGTH];
 
-		int i;
-		for (i = 0; i < UPRV_LENGTHOF(modifiedWindowsLocale); i++)
-		{
-			if (windowsLocale[i] == '_')
-			{
-				modifiedWindowsLocale[i] = '-';
-			}
-			else
-			{
-				modifiedWindowsLocale[i] = static_cast<char>(windowsLocale[i]);
-			}
+        int i;
+        for (i = 0; i < UPRV_LENGTHOF(modifiedWindowsLocale); i++)
+        {
+            if (windowsLocale[i] == '_')
+            {
+                modifiedWindowsLocale[i] = '-';
+            }
+            else
+            {
+                modifiedWindowsLocale[i] = static_cast<char>(windowsLocale[i]);
+            }
 
-			if (modifiedWindowsLocale[i] == '\0')
-			{
-				break;
-			}
-		}
+            if (modifiedWindowsLocale[i] == '\0')
+            {
+                break;
+            }
+        }
 
         if (i >= UPRV_LENGTHOF(modifiedWindowsLocale))
         {
