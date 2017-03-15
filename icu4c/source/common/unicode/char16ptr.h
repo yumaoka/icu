@@ -13,7 +13,7 @@
 /**
  * \file
  * \brief C++ API: char16_t pointer wrappers with
- *        implicit conversion to/from bit-compatible raw pointer types.
+ *        implicit conversion from bit-compatible raw pointer types.
  *        Also conversion functions from char16_t * to UChar * and OldUChar *.
  */
 
@@ -26,7 +26,7 @@ U_NAMESPACE_BEGIN
  */
 #ifdef U_ALIASING_BARRIER
     // Use the predefined value.
-#elif defined(__clang__) || defined(__GNUC__)
+#elif (defined(__clang__) || defined(__GNUC__)) && U_PLATFORM != U_PF_BROWSER_NATIVE_CLIENT
 #   define U_ALIASING_BARRIER(ptr) asm volatile("" : : "rm"(ptr) : "memory")
 #endif
 
@@ -235,7 +235,7 @@ const char16_t *ConstChar16Ptr::get() const { return u.cp; }
  * @return p as const UChar *
  * @draft ICU 59
  */
-inline U_COMMON_API const UChar *toUCharPtr(const char16_t *p) {
+inline const UChar *toUCharPtr(const char16_t *p) {
 #ifdef U_ALIASING_BARRIER
     U_ALIASING_BARRIER(p);
 #endif
@@ -249,7 +249,7 @@ inline U_COMMON_API const UChar *toUCharPtr(const char16_t *p) {
  * @return p as UChar *
  * @draft ICU 59
  */
-inline U_COMMON_API UChar *toUCharPtr(char16_t *p) {
+inline UChar *toUCharPtr(char16_t *p) {
 #ifdef U_ALIASING_BARRIER
     U_ALIASING_BARRIER(p);
 #endif
@@ -263,7 +263,7 @@ inline U_COMMON_API UChar *toUCharPtr(char16_t *p) {
  * @return p as const OldUChar *
  * @draft ICU 59
  */
-inline U_COMMON_API const OldUChar *toOldUCharPtr(const char16_t *p) {
+inline const OldUChar *toOldUCharPtr(const char16_t *p) {
 #ifdef U_ALIASING_BARRIER
     U_ALIASING_BARRIER(p);
 #endif
@@ -277,7 +277,7 @@ inline U_COMMON_API const OldUChar *toOldUCharPtr(const char16_t *p) {
  * @return p as OldUChar *
  * @draft ICU 59
  */
-inline U_COMMON_API OldUChar *toOldUCharPtr(char16_t *p) {
+inline OldUChar *toOldUCharPtr(char16_t *p) {
 #ifdef U_ALIASING_BARRIER
     U_ALIASING_BARRIER(p);
 #endif
