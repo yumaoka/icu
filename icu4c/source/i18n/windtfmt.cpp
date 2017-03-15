@@ -92,13 +92,85 @@ UnicodeString* Win32DateFormat::getTimeDateFormat(const Calendar *cal, const Loc
     return result;
 }
 
+// TODO: This is copied in both winnmfmt.cpp and windtfmt.cpp, but really should
+// be factored out into a common helper for both.
+static UErrorCode GetEquivalentWindowsLocaleName(const Locale& locale, UnicodeString* buffer)
+{
+	UErrorCode status = U_ZERO_ERROR;
+	char asciiBCP47Tag[LOCALE_NAME_MAX_LENGTH] = {};
+
+	// Convert from names like "en_CA" and "de_DE@collation=phonebook" to "en-CA" and "de-DE-u-co-phonebk".
+	int32_t length = uloc_toLanguageTag(locale.getName(), asciiBCP47Tag, UPRV_LENGTHOF(asciiBCP47Tag), FALSE, &status);
+
+	if (U_SUCCESS(status))
+	{
+		// Need it to be UTF-16, not 8-bit
+		// TODO: This seems like a good thing for a helper
+		wchar_t bcp47Tag[LOCALE_NAME_MAX_LENGTH] = {};
+		int i;
+		for (i = 0; i < UPRV_LENGTHOF(bcp47Tag); i++)
+		{
+			if (asciiBCP47Tag[i] == '_')
+			{
+				// Windows uses tags with - instead of _
+				bcp47Tag[i] = '-';
+			}
+			else if (asciiBCP47Tag[i] == '\0')
+			{
+				break;
+			}
+			else
+			{
+				// normally just copy the character
+				bcp47Tag[i] = static_cast<wchar_t>(asciiBCP47Tag[i]);
+			}
+		}
+
+		// Ensure it's null terminated
+		if (i < (UPRV_LENGTHOF(bcp47Tag) - 1))
+		{
+			bcp47Tag[i] = L'\0';
+		}
+		else
+		{
+			// Ran out of room.
+			bcp47Tag[UPRV_LENGTHOF(bcp47Tag) - 1] = L'\0';
+		}
+
+
+		wchar_t windowsLocaleName[LOCALE_NAME_MAX_LENGTH] = {};
+
+		// Note: On Windows versions below 10, there is no support for locale name aliases.
+		// This means that it will fail for locales where ICU has a completely different
+		// name (like ku vs ckb), and it will also not work for alternate sort locale
+		// names like "de-DE-u-co-phonebk".
+		
+		// TODO: We could add some sort of exception table for cases like ku vs ckb.
+
+		int length = ResolveLocaleName(bcp47Tag, windowsLocaleName, UPRV_LENGTHOF(windowsLocaleName));
+
+		if (length > 0)
+		{
+			buffer = new UnicodeString(windowsLocaleName);
+		}
+		else
+		{
+			// TODO: Should we fallback to something instead? (en-US?)
+			status = U_UNSUPPORTED_ERROR;
+		}
+	}
+	return status;
+}
+
 // TODO: Range-check timeStyle, dateStyle
 Win32DateFormat::Win32DateFormat(DateFormat::EStyle timeStyle, DateFormat::EStyle dateStyle, const Locale &locale, UErrorCode &status)
-  : DateFormat(), fDateTimeMsg(NULL), fTimeStyle(timeStyle), fDateStyle(dateStyle), fLocale(locale), fZoneID()
+  : DateFormat(), fDateTimeMsg(NULL), fTimeStyle(timeStyle), fDateStyle(dateStyle), fLocale(locale), fZoneID(), fWindowsLocaleName(nullptr)
 {
     if (U_SUCCESS(status)) {
-        fLCID = locale.getLCID();
-        fTZI = NEW_ARRAY(TIME_ZONE_INFORMATION, 1);
+		
+		GetEquivalentWindowsLocaleName(locale, fWindowsLocaleName);
+
+		fTZI = NEW_ARRAY(TIME_ZONE_INFORMATION, 1);
         uprv_memset(fTZI, 0, sizeof(TIME_ZONE_INFORMATION));
         adoptCalendar(Calendar::createInstance(locale, status));
     }
@@ -115,6 +187,7 @@ Win32DateFormat::~Win32DateFormat()
 //    delete fCalendar;
     uprv_free(fTZI);
     delete fDateTimeMsg;
+	delete fWindowsLocaleName;
 }
 
 Win32DateFormat &Win32DateFormat::operator=(const Win32DateFormat &other)
@@ -128,12 +201,13 @@ Win32DateFormat &Win32DateFormat::operator=(const Win32DateFormat &other)
     this->fTimeStyle   = other.fTimeStyle;
     this->fDateStyle   = other.fDateStyle;
     this->fLocale      = other.fLocale;
-    this->fLCID        = other.fLCID;
 //    this->fCalendar    = other.fCalendar->clone();
     this->fZoneID      = other.fZoneID;
 
     this->fTZI = NEW_ARRAY(TIME_ZONE_INFORMATION, 1);
     *this->fTZI = *other.fTZI;
+
+	this->fWindowsLocaleName = other.fWindowsLocaleName == NULL ? NULL : new UnicodeString(*other.fWindowsLocaleName);
 
     return *this;
 }
@@ -235,17 +309,15 @@ void Win32DateFormat::formatDate(const SYSTEMTIME *st, UnicodeString &appendTo) 
     wchar_t stackBuffer[STACK_BUFFER_SIZE];
     wchar_t *buffer = stackBuffer;
 
-    // TODO: This was fLCID and should be a locale name
-    result = GetDateFormatEx(LOCALE_NAME_USER_DEFAULT, dfFlags[fDateStyle - kDateOffset], st, NULL, buffer, STACK_BUFFER_SIZE, NULL);
+    result = GetDateFormatEx(toOldUCharPtr(fWindowsLocaleName->getTerminatedBuffer()), dfFlags[fDateStyle - kDateOffset], st, NULL, buffer, STACK_BUFFER_SIZE, NULL);
 
     if (result == 0) {
         if (GetLastError() == ERROR_INSUFFICIENT_BUFFER) {
-            // TODO: This was fLCID and should be a locale name
-            int newLength = GetDateFormatEx(LOCALE_NAME_USER_DEFAULT, dfFlags[fDateStyle - kDateOffset], st, NULL, NULL, 0, NULL);
+            int newLength = GetDateFormatEx(toOldUCharPtr(fWindowsLocaleName->getTerminatedBuffer()), dfFlags[fDateStyle - kDateOffset], st, NULL, NULL, 0, NULL);
 
             buffer = NEW_ARRAY(wchar_t, newLength);
-            // TODO: This was fLCID and should be a locale name
-            GetDateFormatEx(LOCALE_NAME_USER_DEFAULT, dfFlags[fDateStyle - kDateOffset], st, NULL, buffer, newLength, NULL);
+
+            GetDateFormatEx(toOldUCharPtr(fWindowsLocaleName->getTerminatedBuffer()), dfFlags[fDateStyle - kDateOffset], st, NULL, buffer, newLength, NULL);
         }
     }
 
@@ -264,18 +336,15 @@ void Win32DateFormat::formatTime(const SYSTEMTIME *st, UnicodeString &appendTo) 
     wchar_t stackBuffer[STACK_BUFFER_SIZE];
     wchar_t *buffer = stackBuffer;
 
-    // TODO: This was fLCID and should be a locale name
-    result = GetTimeFormatEx(LOCALE_NAME_USER_DEFAULT, tfFlags[fTimeStyle], st, NULL, buffer, STACK_BUFFER_SIZE);
+    result = GetTimeFormatEx(toOldUCharPtr(fWindowsLocaleName->getTerminatedBuffer()), tfFlags[fTimeStyle], st, NULL, buffer, STACK_BUFFER_SIZE);
 
     if (result == 0) {
         if (GetLastError() == ERROR_INSUFFICIENT_BUFFER) {
-            // TODO: This was fLCID and should be a locale name
-            int newLength = GetTimeFormatEx(LOCALE_NAME_USER_DEFAULT, tfFlags[fTimeStyle], st, NULL, NULL, 0);
+            int newLength = GetTimeFormatEx(toOldUCharPtr(fWindowsLocaleName->getTerminatedBuffer()), tfFlags[fTimeStyle], st, NULL, NULL, 0);
 
             buffer = NEW_ARRAY(wchar_t, newLength);
-            // TODO: This was fLCID and should be a locale name
-            // NOTE: Previous code didn't even work (cut & replace error here, was GetDateFormatW)
-            GetTimeFormatEx(LOCALE_NAME_USER_DEFAULT, tfFlags[fTimeStyle], st, NULL, buffer, newLength);
+
+            GetTimeFormatEx(toOldUCharPtr(fWindowsLocaleName->getTerminatedBuffer()), tfFlags[fTimeStyle], st, NULL, buffer, newLength);
         }
     }
 
