@@ -21,11 +21,11 @@ import com.ibm.icu.impl.number.formatters.CurrencyFormat.CurrencyStyle;
 import com.ibm.icu.impl.number.formatters.MagnitudeMultiplier;
 import com.ibm.icu.impl.number.formatters.MeasureFormat;
 import com.ibm.icu.impl.number.formatters.PaddingFormat;
-import com.ibm.icu.impl.number.formatters.PaddingFormat.PaddingLocation;
+import com.ibm.icu.impl.number.formatters.PaddingFormat.PadPosition;
 import com.ibm.icu.impl.number.formatters.PositiveDecimalFormat;
 import com.ibm.icu.impl.number.formatters.PositiveNegativeAffixFormat;
 import com.ibm.icu.impl.number.formatters.ScientificFormat;
-import com.ibm.icu.impl.number.rounders.IntervalRounder;
+import com.ibm.icu.impl.number.rounders.IncrementRounder;
 import com.ibm.icu.impl.number.rounders.MagnitudeRounder;
 import com.ibm.icu.impl.number.rounders.SignificantDigitsRounder;
 import com.ibm.icu.impl.number.rounders.SignificantDigitsRounder.SignificantDigitsMode;
@@ -49,14 +49,14 @@ public class Properties
         BigDecimalMultiplier.IProperties,
         CurrencyFormat.IProperties,
         Parse.IProperties,
-        IntervalRounder.IProperties,
+        IncrementRounder.IProperties,
         MagnitudeRounder.IProperties,
         SignificantDigitsRounder.IProperties {
 
+  private static final Properties DEFAULT = new Properties();
+
   /** Auto-generated. */
   private static final long serialVersionUID = 4095518955889349243L;
-
-  private static final Properties DEFAULT = new Properties();
 
   // The setters in this class should NOT have any side-effects or perform any validation.  It is
   // up to the consumer of the property bag to deal with property validation.
@@ -72,16 +72,15 @@ public class Properties
   /| or #equals(), but it will NOT catch if you forget to add it to #hashCode().                |/
   /+--------------------------------------------------------------------------------------------*/
 
-  private transient boolean alwaysShowDecimal;
-  private transient boolean alwaysShowPlusSign;
   private transient CompactStyle compactStyle;
   private transient Currency currency;
   private transient CurrencyPluralInfo currencyPluralInfo;
   private transient CurrencyStyle currencyStyle;
   private transient CurrencyUsage currencyUsage;
   private transient boolean decimalPatternMatchRequired;
-  private transient int exponentDigits;
-  private transient boolean exponentShowPlusSign;
+  private transient boolean decimalSeparatorAlwaysShown;
+  private transient boolean exponentSignAlwaysShown;
+  private transient int formatWidth;
   private transient int groupingSize;
   private transient int magnitudeMultiplier;
   private transient MathContext mathContext;
@@ -90,6 +89,7 @@ public class Properties
   private transient int maximumSignificantDigits;
   private transient FormatWidth measureFormatWidth;
   private transient MeasureUnit measureUnit;
+  private transient int minimumExponentDigits;
   private transient int minimumFractionDigits;
   private transient int minimumGroupingDigits;
   private transient int minimumIntegerDigits;
@@ -99,19 +99,19 @@ public class Properties
   private transient String negativePrefixPattern;
   private transient String negativeSuffix;
   private transient String negativeSuffixPattern;
-  private transient PaddingLocation paddingLocation;
-  private transient String paddingString;
-  private transient int paddingWidth;
+  private transient PadPosition padPosition;
+  private transient String padString;
   private transient boolean parseCaseSensitive;
-  private transient boolean parseIgnoreExponent;
+  private transient boolean parseNoExponent;
   private transient boolean parseIntegerOnly;
   private transient ParseMode parseMode;
   private transient boolean parseToBigDecimal;
+  private transient boolean plusSignAlwaysShown;
   private transient String positivePrefix;
   private transient String positivePrefixPattern;
   private transient String positiveSuffix;
   private transient String positiveSuffixPattern;
-  private transient BigDecimal roundingInterval;
+  private transient BigDecimal roundingIncrement;
   private transient RoundingMode roundingMode;
   private transient int secondaryGroupingSize;
   private transient SignificantDigitsMode significantDigitsMode;
@@ -130,16 +130,15 @@ public class Properties
   }
 
   private Properties _clear() {
-    alwaysShowDecimal = DEFAULT_ALWAYS_SHOW_DECIMAL;
-    alwaysShowPlusSign = DEFAULT_ALWAYS_SHOW_PLUS_SIGN;
     compactStyle = DEFAULT_COMPACT_STYLE;
     currency = DEFAULT_CURRENCY;
     currencyPluralInfo = DEFAULT_CURRENCY_PLURAL_INFO;
     currencyStyle = DEFAULT_CURRENCY_STYLE;
     currencyUsage = DEFAULT_CURRENCY_USAGE;
     decimalPatternMatchRequired = DEFAULT_DECIMAL_PATTERN_MATCH_REQUIRED;
-    exponentDigits = DEFAULT_EXPONENT_DIGITS;
-    exponentShowPlusSign = DEFAULT_EXPONENT_SHOW_PLUS_SIGN;
+    decimalSeparatorAlwaysShown = DEFAULT_DECIMAL_SEPARATOR_ALWAYS_SHOWN;
+    exponentSignAlwaysShown = DEFAULT_EXPONENT_SIGN_ALWAYS_SHOWN;
+    formatWidth = DEFAULT_FORMAT_WIDTH;
     groupingSize = DEFAULT_GROUPING_SIZE;
     magnitudeMultiplier = DEFAULT_MAGNITUDE_MULTIPLIER;
     mathContext = DEFAULT_MATH_CONTEXT;
@@ -148,6 +147,7 @@ public class Properties
     maximumSignificantDigits = DEFAULT_MAXIMUM_SIGNIFICANT_DIGITS;
     measureFormatWidth = DEFAULT_MEASURE_FORMAT_WIDTH;
     measureUnit = DEFAULT_MEASURE_UNIT;
+    minimumExponentDigits = DEFAULT_MINIMUM_EXPONENT_DIGITS;
     minimumFractionDigits = DEFAULT_MINIMUM_FRACTION_DIGITS;
     minimumGroupingDigits = DEFAULT_MINIMUM_GROUPING_DIGITS;
     minimumIntegerDigits = DEFAULT_MINIMUM_INTEGER_DIGITS;
@@ -157,19 +157,19 @@ public class Properties
     negativePrefixPattern = DEFAULT_NEGATIVE_PREFIX_PATTERN;
     negativeSuffix = DEFAULT_NEGATIVE_SUFFIX;
     negativeSuffixPattern = DEFAULT_NEGATIVE_SUFFIX_PATTERN;
-    paddingLocation = DEFAULT_PADDING_LOCATION;
-    paddingString = DEFAULT_PADDING_STRING;
-    paddingWidth = DEFAULT_PADDING_WIDTH;
+    padPosition = DEFAULT_PAD_POSITION;
+    padString = DEFAULT_PAD_STRING;
     parseCaseSensitive = DEFAULT_PARSE_CASE_SENSITIVE;
-    parseIgnoreExponent = DEFAULT_PARSE_IGNORE_EXPONENT;
     parseIntegerOnly = DEFAULT_PARSE_INTEGER_ONLY;
     parseMode = DEFAULT_PARSE_MODE;
+    parseNoExponent = DEFAULT_PARSE_NO_EXPONENT;
     parseToBigDecimal = DEFAULT_PARSE_TO_BIG_DECIMAL;
+    plusSignAlwaysShown = DEFAULT_PLUS_SIGN_ALWAYS_SHOWN;
     positivePrefix = DEFAULT_POSITIVE_PREFIX;
     positivePrefixPattern = DEFAULT_POSITIVE_PREFIX_PATTERN;
     positiveSuffix = DEFAULT_POSITIVE_SUFFIX;
     positiveSuffixPattern = DEFAULT_POSITIVE_SUFFIX_PATTERN;
-    roundingInterval = DEFAULT_ROUNDING_INTERVAL;
+    roundingIncrement = DEFAULT_ROUNDING_INCREMENT;
     roundingMode = DEFAULT_ROUNDING_MODE;
     secondaryGroupingSize = DEFAULT_SECONDARY_GROUPING_SIZE;
     significantDigitsMode = DEFAULT_SIGNIFICANT_DIGITS_MODE;
@@ -177,16 +177,15 @@ public class Properties
   }
 
   private Properties _copyFrom(Properties other) {
-    alwaysShowDecimal = other.alwaysShowDecimal;
-    alwaysShowPlusSign = other.alwaysShowPlusSign;
     compactStyle = other.compactStyle;
     currency = other.currency;
     currencyPluralInfo = other.currencyPluralInfo;
     currencyStyle = other.currencyStyle;
     currencyUsage = other.currencyUsage;
     decimalPatternMatchRequired = other.decimalPatternMatchRequired;
-    exponentDigits = other.exponentDigits;
-    exponentShowPlusSign = other.exponentShowPlusSign;
+    decimalSeparatorAlwaysShown = other.decimalSeparatorAlwaysShown;
+    exponentSignAlwaysShown = other.exponentSignAlwaysShown;
+    formatWidth = other.formatWidth;
     groupingSize = other.groupingSize;
     magnitudeMultiplier = other.magnitudeMultiplier;
     mathContext = other.mathContext;
@@ -195,6 +194,7 @@ public class Properties
     maximumSignificantDigits = other.maximumSignificantDigits;
     measureFormatWidth = other.measureFormatWidth;
     measureUnit = other.measureUnit;
+    minimumExponentDigits = other.minimumExponentDigits;
     minimumFractionDigits = other.minimumFractionDigits;
     minimumGroupingDigits = other.minimumGroupingDigits;
     minimumIntegerDigits = other.minimumIntegerDigits;
@@ -204,19 +204,19 @@ public class Properties
     negativePrefixPattern = other.negativePrefixPattern;
     negativeSuffix = other.negativeSuffix;
     negativeSuffixPattern = other.negativeSuffixPattern;
-    paddingLocation = other.paddingLocation;
-    paddingString = other.paddingString;
-    paddingWidth = other.paddingWidth;
+    padPosition = other.padPosition;
+    padString = other.padString;
     parseCaseSensitive = other.parseCaseSensitive;
-    parseIgnoreExponent = other.parseIgnoreExponent;
     parseIntegerOnly = other.parseIntegerOnly;
     parseMode = other.parseMode;
+    parseNoExponent = other.parseNoExponent;
     parseToBigDecimal = other.parseToBigDecimal;
+    plusSignAlwaysShown = other.plusSignAlwaysShown;
     positivePrefix = other.positivePrefix;
     positivePrefixPattern = other.positivePrefixPattern;
     positiveSuffix = other.positiveSuffix;
     positiveSuffixPattern = other.positiveSuffixPattern;
-    roundingInterval = other.roundingInterval;
+    roundingIncrement = other.roundingIncrement;
     roundingMode = other.roundingMode;
     secondaryGroupingSize = other.secondaryGroupingSize;
     significantDigitsMode = other.significantDigitsMode;
@@ -225,16 +225,15 @@ public class Properties
 
   private boolean _equals(Properties other) {
     boolean eq = true;
-    eq = eq && _equalsHelper(alwaysShowDecimal, other.alwaysShowDecimal);
-    eq = eq && _equalsHelper(alwaysShowPlusSign, other.alwaysShowPlusSign);
     eq = eq && _equalsHelper(compactStyle, other.compactStyle);
     eq = eq && _equalsHelper(currency, other.currency);
     eq = eq && _equalsHelper(currencyPluralInfo, other.currencyPluralInfo);
     eq = eq && _equalsHelper(currencyStyle, other.currencyStyle);
     eq = eq && _equalsHelper(currencyUsage, other.currencyUsage);
     eq = eq && _equalsHelper(decimalPatternMatchRequired, other.decimalPatternMatchRequired);
-    eq = eq && _equalsHelper(exponentDigits, other.exponentDigits);
-    eq = eq && _equalsHelper(exponentShowPlusSign, other.exponentShowPlusSign);
+    eq = eq && _equalsHelper(decimalSeparatorAlwaysShown, other.decimalSeparatorAlwaysShown);
+    eq = eq && _equalsHelper(exponentSignAlwaysShown, other.exponentSignAlwaysShown);
+    eq = eq && _equalsHelper(formatWidth, other.formatWidth);
     eq = eq && _equalsHelper(groupingSize, other.groupingSize);
     eq = eq && _equalsHelper(magnitudeMultiplier, other.magnitudeMultiplier);
     eq = eq && _equalsHelper(mathContext, other.mathContext);
@@ -243,6 +242,7 @@ public class Properties
     eq = eq && _equalsHelper(maximumSignificantDigits, other.maximumSignificantDigits);
     eq = eq && _equalsHelper(measureFormatWidth, other.measureFormatWidth);
     eq = eq && _equalsHelper(measureUnit, other.measureUnit);
+    eq = eq && _equalsHelper(minimumExponentDigits, other.minimumExponentDigits);
     eq = eq && _equalsHelper(minimumFractionDigits, other.minimumFractionDigits);
     eq = eq && _equalsHelper(minimumGroupingDigits, other.minimumGroupingDigits);
     eq = eq && _equalsHelper(minimumIntegerDigits, other.minimumIntegerDigits);
@@ -252,19 +252,19 @@ public class Properties
     eq = eq && _equalsHelper(negativePrefixPattern, other.negativePrefixPattern);
     eq = eq && _equalsHelper(negativeSuffix, other.negativeSuffix);
     eq = eq && _equalsHelper(negativeSuffixPattern, other.negativeSuffixPattern);
-    eq = eq && _equalsHelper(paddingLocation, other.paddingLocation);
-    eq = eq && _equalsHelper(paddingString, other.paddingString);
-    eq = eq && _equalsHelper(paddingWidth, other.paddingWidth);
+    eq = eq && _equalsHelper(padPosition, other.padPosition);
+    eq = eq && _equalsHelper(padString, other.padString);
     eq = eq && _equalsHelper(parseCaseSensitive, other.parseCaseSensitive);
-    eq = eq && _equalsHelper(parseIgnoreExponent, other.parseIgnoreExponent);
     eq = eq && _equalsHelper(parseIntegerOnly, other.parseIntegerOnly);
     eq = eq && _equalsHelper(parseMode, other.parseMode);
+    eq = eq && _equalsHelper(parseNoExponent, other.parseNoExponent);
     eq = eq && _equalsHelper(parseToBigDecimal, other.parseToBigDecimal);
+    eq = eq && _equalsHelper(plusSignAlwaysShown, other.plusSignAlwaysShown);
     eq = eq && _equalsHelper(positivePrefix, other.positivePrefix);
     eq = eq && _equalsHelper(positivePrefixPattern, other.positivePrefixPattern);
     eq = eq && _equalsHelper(positiveSuffix, other.positiveSuffix);
     eq = eq && _equalsHelper(positiveSuffixPattern, other.positiveSuffixPattern);
-    eq = eq && _equalsHelper(roundingInterval, other.roundingInterval);
+    eq = eq && _equalsHelper(roundingIncrement, other.roundingIncrement);
     eq = eq && _equalsHelper(roundingMode, other.roundingMode);
     eq = eq && _equalsHelper(secondaryGroupingSize, other.secondaryGroupingSize);
     eq = eq && _equalsHelper(significantDigitsMode, other.significantDigitsMode);
@@ -287,16 +287,15 @@ public class Properties
 
   private int _hashCode() {
     int hashCode = 0;
-    hashCode ^= _hashCodeHelper(alwaysShowDecimal);
-    hashCode ^= _hashCodeHelper(alwaysShowPlusSign);
     hashCode ^= _hashCodeHelper(compactStyle);
     hashCode ^= _hashCodeHelper(currency);
     hashCode ^= _hashCodeHelper(currencyPluralInfo);
     hashCode ^= _hashCodeHelper(currencyStyle);
     hashCode ^= _hashCodeHelper(currencyUsage);
     hashCode ^= _hashCodeHelper(decimalPatternMatchRequired);
-    hashCode ^= _hashCodeHelper(exponentDigits);
-    hashCode ^= _hashCodeHelper(exponentShowPlusSign);
+    hashCode ^= _hashCodeHelper(decimalSeparatorAlwaysShown);
+    hashCode ^= _hashCodeHelper(exponentSignAlwaysShown);
+    hashCode ^= _hashCodeHelper(formatWidth);
     hashCode ^= _hashCodeHelper(groupingSize);
     hashCode ^= _hashCodeHelper(magnitudeMultiplier);
     hashCode ^= _hashCodeHelper(mathContext);
@@ -305,6 +304,7 @@ public class Properties
     hashCode ^= _hashCodeHelper(maximumSignificantDigits);
     hashCode ^= _hashCodeHelper(measureFormatWidth);
     hashCode ^= _hashCodeHelper(measureUnit);
+    hashCode ^= _hashCodeHelper(minimumExponentDigits);
     hashCode ^= _hashCodeHelper(minimumFractionDigits);
     hashCode ^= _hashCodeHelper(minimumGroupingDigits);
     hashCode ^= _hashCodeHelper(minimumIntegerDigits);
@@ -314,19 +314,19 @@ public class Properties
     hashCode ^= _hashCodeHelper(negativePrefixPattern);
     hashCode ^= _hashCodeHelper(negativeSuffix);
     hashCode ^= _hashCodeHelper(negativeSuffixPattern);
-    hashCode ^= _hashCodeHelper(paddingLocation);
-    hashCode ^= _hashCodeHelper(paddingString);
-    hashCode ^= _hashCodeHelper(paddingWidth);
+    hashCode ^= _hashCodeHelper(padPosition);
+    hashCode ^= _hashCodeHelper(padString);
     hashCode ^= _hashCodeHelper(parseCaseSensitive);
-    hashCode ^= _hashCodeHelper(parseIgnoreExponent);
     hashCode ^= _hashCodeHelper(parseIntegerOnly);
     hashCode ^= _hashCodeHelper(parseMode);
+    hashCode ^= _hashCodeHelper(parseNoExponent);
     hashCode ^= _hashCodeHelper(parseToBigDecimal);
+    hashCode ^= _hashCodeHelper(plusSignAlwaysShown);
     hashCode ^= _hashCodeHelper(positivePrefix);
     hashCode ^= _hashCodeHelper(positivePrefixPattern);
     hashCode ^= _hashCodeHelper(positiveSuffix);
     hashCode ^= _hashCodeHelper(positiveSuffixPattern);
-    hashCode ^= _hashCodeHelper(roundingInterval);
+    hashCode ^= _hashCodeHelper(roundingIncrement);
     hashCode ^= _hashCodeHelper(roundingMode);
     hashCode ^= _hashCodeHelper(secondaryGroupingSize);
     hashCode ^= _hashCodeHelper(significantDigitsMode);
@@ -380,114 +380,6 @@ public class Properties
     return _equals((Properties) other);
   }
 
-  /**
-   * Custom serialization: save fields along with their name, so that fields can be easily added in
-   * the future in any order. Only save fields that differ from their default value.
-   */
-  private void writeObject(ObjectOutputStream oos) throws IOException {
-    oos.defaultWriteObject();
-
-    // Extra int for possible future use
-    oos.writeInt(0);
-
-    ArrayList<Field> fieldsToSerialize = new ArrayList<Field>();
-    ArrayList<Object> valuesToSerialize = new ArrayList<Object>();
-    Field[] fields = Properties.class.getDeclaredFields();
-    for (Field field : fields) {
-      if (Modifier.isStatic(field.getModifiers())) {
-        continue;
-      }
-      try {
-        Object myValue = field.get(this);
-        if (myValue == null) {
-          // All *Object* values default to null; no need to serialize.
-          continue;
-        }
-        Object defaultValue = field.get(DEFAULT);
-        if (!myValue.equals(defaultValue)) {
-          fieldsToSerialize.add(field);
-          valuesToSerialize.add(myValue);
-        }
-      } catch (IllegalArgumentException e) {
-        // Should not happen
-        throw new AssertionError(e);
-      } catch (IllegalAccessException e) {
-        // Should not happen
-        throw new AssertionError(e);
-      }
-    }
-
-    // 1) How many fields are to be serialized?
-    int count = fieldsToSerialize.size();
-    oos.writeInt(count);
-
-    // 2) Write each field with its name and value
-    for (int i = 0; i < count; i++) {
-      Field field = fieldsToSerialize.get(i);
-      Object value = valuesToSerialize.get(i);
-      oos.writeObject(field.getName());
-      oos.writeObject(value);
-    }
-  }
-
-  /** Custom serialization: re-create object from serialized properties. */
-  private void readObject(ObjectInputStream ois) throws IOException, ClassNotFoundException {
-    ois.defaultReadObject();
-
-    // Initialize to empty
-    clear();
-
-    // Extra int for possible future use
-    ois.readInt();
-
-    // 1) How many fields were serialized?
-    int count = ois.readInt();
-
-    // 2) Read each field by its name and value
-    for (int i=0; i<count; i++) {
-      String name = (String) ois.readObject();
-      Object value = ois.readObject();
-
-      // Get the field reference
-      Field field = null;
-      try {
-        field = Properties.class.getDeclaredField(name);
-      } catch (NoSuchFieldException e) {
-        // The field name does not exist! Possibly corrupted serialization. Ignore this entry.
-        continue;
-      } catch (SecurityException e) {
-        // Should not happen
-        throw new AssertionError(e);
-      }
-
-      // NOTE: If the type of a field were changed in the future, this would be the place to check:
-      // If the variable `value` is the old type, perform any conversions necessary.
-
-      // Save value into the field
-      try {
-        field.set(this, value);
-      } catch (IllegalArgumentException e) {
-        // Should not happen
-        throw new AssertionError(e);
-      } catch (IllegalAccessException e) {
-        // Should not happen
-        throw new AssertionError(e);
-      }
-    }
-  }
-
-  /// BEGIN GETTERS/SETTERS ///
-
-  @Override
-  public boolean getAlwaysShowDecimal() {
-    return alwaysShowDecimal;
-  }
-
-  @Override
-  public boolean getAlwaysShowPlusSign() {
-    return alwaysShowPlusSign;
-  }
-
   @Override
   public CompactStyle getCompactStyle() {
     return compactStyle;
@@ -497,6 +389,8 @@ public class Properties
   public Currency getCurrency() {
     return currency;
   }
+
+  /// BEGIN GETTERS/SETTERS ///
 
   @Override
   @Deprecated
@@ -520,13 +414,18 @@ public class Properties
   }
 
   @Override
-  public int getExponentDigits() {
-    return exponentDigits;
+  public boolean getDecimalSeparatorAlwaysShown() {
+    return decimalSeparatorAlwaysShown;
   }
 
   @Override
-  public boolean getExponentShowPlusSign() {
-    return exponentShowPlusSign;
+  public boolean getExponentSignAlwaysShown() {
+    return exponentSignAlwaysShown;
+  }
+
+  @Override
+  public int getFormatWidth() {
+    return formatWidth;
   }
 
   @Override
@@ -567,6 +466,11 @@ public class Properties
   @Override
   public MeasureUnit getMeasureUnit() {
     return measureUnit;
+  }
+
+  @Override
+  public int getMinimumExponentDigits() {
+    return minimumExponentDigits;
   }
 
   @Override
@@ -615,28 +519,18 @@ public class Properties
   }
 
   @Override
-  public PaddingLocation getPaddingLocation() {
-    return paddingLocation;
+  public PadPosition getPadPosition() {
+    return padPosition;
   }
 
   @Override
-  public String getPaddingString() {
-    return paddingString;
-  }
-
-  @Override
-  public int getPaddingWidth() {
-    return paddingWidth;
+  public String getPadString() {
+    return padString;
   }
 
   @Override
   public boolean getParseCaseSensitive() {
     return parseCaseSensitive;
-  }
-
-  @Override
-  public boolean getParseIgnoreExponent() {
-    return parseIgnoreExponent;
   }
 
   @Override
@@ -650,8 +544,18 @@ public class Properties
   }
 
   @Override
+  public boolean getParseNoExponent() {
+    return parseNoExponent;
+  }
+
+  @Override
   public boolean getParseToBigDecimal() {
     return parseToBigDecimal;
+  }
+
+  @Override
+  public boolean getPlusSignAlwaysShown() {
+    return plusSignAlwaysShown;
   }
 
   @Override
@@ -675,8 +579,8 @@ public class Properties
   }
 
   @Override
-  public BigDecimal getRoundingInterval() {
-    return roundingInterval;
+  public BigDecimal getRoundingIncrement() {
+    return roundingIncrement;
   }
 
   @Override
@@ -699,16 +603,50 @@ public class Properties
     return _hashCode();
   }
 
-  @Override
-  public Properties setAlwaysShowDecimal(boolean alwaysShowDecimal) {
-    this.alwaysShowDecimal = alwaysShowDecimal;
-    return this;
-  }
+  /** Custom serialization: re-create object from serialized properties. */
+  private void readObject(ObjectInputStream ois) throws IOException, ClassNotFoundException {
+    ois.defaultReadObject();
 
-  @Override
-  public Properties setAlwaysShowPlusSign(boolean alwaysShowPlusSign) {
-    this.alwaysShowPlusSign = alwaysShowPlusSign;
-    return this;
+    // Initialize to empty
+    clear();
+
+    // Extra int for possible future use
+    ois.readInt();
+
+    // 1) How many fields were serialized?
+    int count = ois.readInt();
+
+    // 2) Read each field by its name and value
+    for (int i=0; i<count; i++) {
+      String name = (String) ois.readObject();
+      Object value = ois.readObject();
+
+      // Get the field reference
+      Field field = null;
+      try {
+        field = Properties.class.getDeclaredField(name);
+      } catch (NoSuchFieldException e) {
+        // The field name does not exist! Possibly corrupted serialization. Ignore this entry.
+        continue;
+      } catch (SecurityException e) {
+        // Should not happen
+        throw new AssertionError(e);
+      }
+
+      // NOTE: If the type of a field were changed in the future, this would be the place to check:
+      // If the variable `value` is the old type, perform any conversions necessary.
+
+      // Save value into the field
+      try {
+        field.set(this, value);
+      } catch (IllegalArgumentException e) {
+        // Should not happen
+        throw new AssertionError(e);
+      } catch (IllegalAccessException e) {
+        // Should not happen
+        throw new AssertionError(e);
+      }
+    }
   }
 
   @Override
@@ -754,14 +692,20 @@ public class Properties
   }
 
   @Override
-  public Properties setExponentDigits(int exponentDigits) {
-    this.exponentDigits = exponentDigits;
+  public Properties setDecimalSeparatorAlwaysShown(boolean alwaysShowDecimal) {
+    this.decimalSeparatorAlwaysShown = alwaysShowDecimal;
     return this;
   }
 
   @Override
-  public Properties setExponentShowPlusSign(boolean exponentShowPlusSign) {
-    this.exponentShowPlusSign = exponentShowPlusSign;
+  public Properties setExponentSignAlwaysShown(boolean exponentSignAlwaysShown) {
+    this.exponentSignAlwaysShown = exponentSignAlwaysShown;
+    return this;
+  }
+
+  @Override
+  public Properties setFormatWidth(int paddingWidth) {
+    this.formatWidth = paddingWidth;
     return this;
   }
 
@@ -810,6 +754,12 @@ public class Properties
   @Override
   public Properties setMeasureUnit(MeasureUnit measureUnit) {
     this.measureUnit = measureUnit;
+    return this;
+  }
+
+  @Override
+  public Properties setMinimumExponentDigits(int exponentDigits) {
+    this.minimumExponentDigits = exponentDigits;
     return this;
   }
 
@@ -868,20 +818,14 @@ public class Properties
   }
 
   @Override
-  public Properties setPaddingLocation(PaddingLocation paddingLocation) {
-    this.paddingLocation = paddingLocation;
+  public Properties setPadPosition(PadPosition paddingLocation) {
+    this.padPosition = paddingLocation;
     return this;
   }
 
   @Override
-  public Properties setPaddingString(String paddingString) {
-    this.paddingString = paddingString;
-    return this;
-  }
-
-  @Override
-  public Properties setPaddingWidth(int paddingWidth) {
-    this.paddingWidth = paddingWidth;
+  public Properties setPadString(String paddingString) {
+    this.padString = paddingString;
     return this;
   }
 
@@ -891,27 +835,12 @@ public class Properties
     return this;
   }
 
-  /* (non-Javadoc)
-   * @see com.ibm.icu.impl.number.Parse.IProperties#setParseIgnoreExponent(boolean)
-   */
-  @Override
-  public Properties setParseIgnoreExponent(boolean parseIgnoreExponent) {
-    this.parseIgnoreExponent = parseIgnoreExponent;
-    return this;
-  }
-
-  /* (non-Javadoc)
-   * @see com.ibm.icu.impl.number.Parse.IProperties#setParseIntegerOnly(boolean)
-   */
   @Override
   public Properties setParseIntegerOnly(boolean parseIntegerOnly) {
     this.parseIntegerOnly = parseIntegerOnly;
     return this;
   }
 
-  /* (non-Javadoc)
-   * @see com.ibm.icu.impl.number.Parse.IProperties#setParseMode(com.ibm.icu.impl.number.Parse.ParseMode)
-   */
   @Override
   public Properties setParseMode(ParseMode parseMode) {
     this.parseMode = parseMode;
@@ -919,8 +848,20 @@ public class Properties
   }
 
   @Override
+  public Properties setParseNoExponent(boolean parseNoExponent) {
+    this.parseNoExponent = parseNoExponent;
+    return this;
+  }
+
+  @Override
   public Properties setParseToBigDecimal(boolean parseToBigDecimal) {
     this.parseToBigDecimal = parseToBigDecimal;
+    return this;
+  }
+
+  @Override
+  public Properties setPlusSignAlwaysShown(boolean plusSignAlwaysShown) {
+    this.plusSignAlwaysShown = plusSignAlwaysShown;
     return this;
   }
 
@@ -949,8 +890,8 @@ public class Properties
   }
 
   @Override
-  public Properties setRoundingInterval(BigDecimal interval) {
-    this.roundingInterval = interval;
+  public Properties setRoundingIncrement(BigDecimal roundingIncrement) {
+    this.roundingIncrement = roundingIncrement;
     return this;
   }
 
@@ -999,5 +940,55 @@ public class Properties
     }
     result.append(">");
     return result.toString();
+  }
+
+  /**
+   * Custom serialization: save fields along with their name, so that fields can be easily added in
+   * the future in any order. Only save fields that differ from their default value.
+   */
+  private void writeObject(ObjectOutputStream oos) throws IOException {
+    oos.defaultWriteObject();
+
+    // Extra int for possible future use
+    oos.writeInt(0);
+
+    ArrayList<Field> fieldsToSerialize = new ArrayList<Field>();
+    ArrayList<Object> valuesToSerialize = new ArrayList<Object>();
+    Field[] fields = Properties.class.getDeclaredFields();
+    for (Field field : fields) {
+      if (Modifier.isStatic(field.getModifiers())) {
+        continue;
+      }
+      try {
+        Object myValue = field.get(this);
+        if (myValue == null) {
+          // All *Object* values default to null; no need to serialize.
+          continue;
+        }
+        Object defaultValue = field.get(DEFAULT);
+        if (!myValue.equals(defaultValue)) {
+          fieldsToSerialize.add(field);
+          valuesToSerialize.add(myValue);
+        }
+      } catch (IllegalArgumentException e) {
+        // Should not happen
+        throw new AssertionError(e);
+      } catch (IllegalAccessException e) {
+        // Should not happen
+        throw new AssertionError(e);
+      }
+    }
+
+    // 1) How many fields are to be serialized?
+    int count = fieldsToSerialize.size();
+    oos.writeInt(count);
+
+    // 2) Write each field with its name and value
+    for (int i = 0; i < count; i++) {
+      Field field = fieldsToSerialize.get(i);
+      Object value = valuesToSerialize.get(i);
+      oos.writeObject(field.getName());
+      oos.writeObject(value);
+    }
   }
 }

@@ -16,6 +16,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.Parameter;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
@@ -29,7 +30,7 @@ import com.ibm.icu.impl.number.Parse.ParseMode;
 import com.ibm.icu.impl.number.PatternString;
 import com.ibm.icu.impl.number.Properties;
 import com.ibm.icu.impl.number.formatters.CurrencyFormat.CurrencyStyle;
-import com.ibm.icu.impl.number.formatters.PaddingFormat.PaddingLocation;
+import com.ibm.icu.impl.number.formatters.PaddingFormat.PadPosition;
 import com.ibm.icu.impl.number.rounders.SignificantDigitsRounder.SignificantDigitsMode;
 import com.ibm.icu.text.CompactDecimalFormat.CompactStyle;
 import com.ibm.icu.text.CurrencyPluralInfo;
@@ -99,6 +100,13 @@ public class PropertiesTest {
       } catch (SecurityException e) {
         fail("Could not access method " + setterName + " for field " + field);
         continue;
+      }
+
+      // Check for parameter name equality.
+      // The parameter name is not always available, depending on compiler settings.
+      Parameter param = setter.getParameters()[0];
+      if (!param.getName().subSequence(0, 3).equals("arg")) {
+        assertEquals("Parameter name should equal field name", field.getName(), param.getName());
       }
 
       try {
@@ -251,9 +259,9 @@ public class PropertiesTest {
       Object[] units = MeasureUnit.getAvailable().toArray();
       return units[seed % units.length];
 
-    } else if (type == PaddingLocation.class) {
+    } else if (type == PadPosition.class) {
       if (seed == 0) return null;
-      PaddingLocation[] values = PaddingLocation.values();
+      PadPosition[] values = PadPosition.values();
       return values[seed % values.length];
 
     } else if (type == ParseMode.class) {

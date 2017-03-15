@@ -47,6 +47,9 @@ import com.ibm.icu.text.NumberFormat.Field;
  *     case AffixPatternUtils.TYPE_CURRENCY_TRIPLE:
  *       // Current token is a triple currency sign.
  *       break;
+ *     case AffixPatternUtils.TYPE_CURRENCY_OVERFLOW:
+ *       // Current token has four or more currency signs.
+ *       break;
  *     default:
  *       // Current token is an arbitrary code point.
  *       // The variable typeOrCp is the code point.
@@ -63,6 +66,8 @@ public class AffixPatternUtils {
   private static final int STATE_AFTER_QUOTE = 3;
   private static final int STATE_FIRST_CURR = 4;
   private static final int STATE_SECOND_CURR = 5;
+  private static final int STATE_THIRD_CURR = 6;
+  private static final int STATE_OVERFLOW_CURR = 7;
 
   private static final int TYPE_CODEPOINT = 0;
 
@@ -86,6 +91,9 @@ public class AffixPatternUtils {
 
   /** Represents a triple currency symbol '¤¤¤'. */
   public static final int TYPE_CURRENCY_TRIPLE = -7;
+
+  /** Represents a sequence of four or more currency symbols. */
+  public static final int TYPE_CURRENCY_OVERFLOW = -15;
 
   /**
    * Checks whether the specified affix pattern has any unquoted currency symbols ("¤").
@@ -309,6 +317,9 @@ public class AffixPatternUtils {
         case TYPE_CURRENCY_TRIPLE:
           output.append(currency3, Field.CURRENCY);
           break;
+        case TYPE_CURRENCY_OVERFLOW:
+          output.append("\uFFFD", Field.CURRENCY);
+          break;
         default:
           output.appendCodePoint(typeOrCp, null);
           break;
@@ -394,9 +405,29 @@ public class AffixPatternUtils {
           }
         case STATE_SECOND_CURR:
           if (cp == '¤') {
-            return makeTag(offset + count, TYPE_CURRENCY_TRIPLE, STATE_BASE, 0);
+            state = STATE_THIRD_CURR;
+            offset += count;
+            // continue to the next code point
+            break;
           } else {
             return makeTag(offset, TYPE_CURRENCY_DOUBLE, STATE_BASE, 0);
+          }
+        case STATE_THIRD_CURR:
+          if (cp == '¤') {
+            state = STATE_OVERFLOW_CURR;
+            offset += count;
+            // continue to the next code point
+            break;
+          } else {
+            return makeTag(offset, TYPE_CURRENCY_TRIPLE, STATE_BASE, 0);
+          }
+        case STATE_OVERFLOW_CURR:
+          if (cp == '¤') {
+            offset += count;
+            // continue to the next code point and loop back to this state
+            break;
+          } else {
+            return makeTag(offset, TYPE_CURRENCY_OVERFLOW, STATE_BASE, 0);
           }
         default:
           throw new AssertionError();
@@ -419,6 +450,10 @@ public class AffixPatternUtils {
         return makeTag(offset, TYPE_CURRENCY_SINGLE, STATE_BASE, 0);
       case STATE_SECOND_CURR:
         return makeTag(offset, TYPE_CURRENCY_DOUBLE, STATE_BASE, 0);
+      case STATE_THIRD_CURR:
+        return makeTag(offset, TYPE_CURRENCY_TRIPLE, STATE_BASE, 0);
+      case STATE_OVERFLOW_CURR:
+        return makeTag(offset, TYPE_CURRENCY_OVERFLOW, STATE_BASE, 0);
       default:
         throw new AssertionError();
     }

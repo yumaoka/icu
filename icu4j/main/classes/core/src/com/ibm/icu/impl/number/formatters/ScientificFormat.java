@@ -10,7 +10,7 @@ import com.ibm.icu.impl.number.Properties;
 import com.ibm.icu.impl.number.Rounder;
 import com.ibm.icu.impl.number.modifiers.ConstantAffixModifier;
 import com.ibm.icu.impl.number.modifiers.PositiveNegativeAffixModifier;
-import com.ibm.icu.impl.number.rounders.IntervalRounder;
+import com.ibm.icu.impl.number.rounders.IncrementRounder;
 import com.ibm.icu.impl.number.rounders.SignificantDigitsRounder;
 import com.ibm.icu.text.DecimalFormatSymbols;
 import com.ibm.icu.text.NumberFormat;
@@ -19,41 +19,41 @@ public class ScientificFormat extends Format.BeforeFormat implements Rounder.Mul
 
   public static interface IProperties extends RoundingFormat.IProperties {
 
-    static boolean DEFAULT_EXPONENT_SHOW_PLUS_SIGN = false;
+    static boolean DEFAULT_EXPONENT_SIGN_ALWAYS_SHOWN = false;
 
-    /** @see #setExponentShowPlusSign */
-    public boolean getExponentShowPlusSign();
+    /** @see #setExponentSignAlwaysShown */
+    public boolean getExponentSignAlwaysShown();
 
     /**
      * Sets whether to show the plus sign in the exponent part of numbers with a zero or positive
      * exponent. For example, the number "1200" with the pattern "0.0E0" would be formatted as
      * "1.2E+3" instead of "1.2E3" in <em>en-US</em>.
      *
-     * @param exponentShowPlusSign Whether to show the plus sign in positive exponents.
+     * @param exponentSignAlwaysShown Whether to show the plus sign in positive exponents.
      * @return The property bag, for chaining.
      */
-    public IProperties setExponentShowPlusSign(boolean exponentShowPlusSign);
+    public IProperties setExponentSignAlwaysShown(boolean exponentSignAlwaysShown);
 
-    static int DEFAULT_EXPONENT_DIGITS = -1;
+    static int DEFAULT_MINIMUM_EXPONENT_DIGITS = -1;
 
-    /** @see #setExponentDigits */
-    public int getExponentDigits();
+    /** @see #setMinimumExponentDigits */
+    public int getMinimumExponentDigits();
 
     /**
      * Sets the minimum number of digits to display in the exponent. For example, the number "1200"
      * with the pattern "0.0E00", which has 2 exponent digits, would be formatted as "1.2E03" in
      * <em>en-US</em>.
      *
-     * @param exponentDigits The minimum number of digits to display in the exponent field.
+     * @param minimumExponentDigits The minimum number of digits to display in the exponent field.
      * @return The property bag, for chaining.
      */
-    public IProperties setExponentDigits(int exponentDigits);
+    public IProperties setMinimumExponentDigits(int minimumExponentDigits);
 
     public IProperties clone();
   }
 
   public static boolean useScientificNotation(IProperties properties) {
-    return properties.getExponentDigits() != IProperties.DEFAULT_EXPONENT_DIGITS;
+    return properties.getMinimumExponentDigits() != IProperties.DEFAULT_MINIMUM_EXPONENT_DIGITS;
   }
 
   private static final ThreadLocal<Properties> threadLocalProperties =
@@ -68,8 +68,8 @@ public class ScientificFormat extends Format.BeforeFormat implements Rounder.Mul
     // If significant digits or rounding interval are specified through normal means, we use those.
     // Otherwise, we use the special significant digit rules for scientific notation.
     Rounder rounder;
-    if (IntervalRounder.useRoundingInterval(properties)) {
-      rounder = IntervalRounder.getInstance(properties);
+    if (IncrementRounder.useRoundingIncrement(properties)) {
+      rounder = IncrementRounder.getInstance(properties);
     } else if (SignificantDigitsRounder.useSignificantDigits(properties)) {
       rounder = SignificantDigitsRounder.getInstance(properties);
     } else {
@@ -132,8 +132,8 @@ public class ScientificFormat extends Format.BeforeFormat implements Rounder.Mul
   private final String[] digitStrings;
 
   private ScientificFormat(DecimalFormatSymbols symbols, IProperties properties, Rounder rounder) {
-    exponentShowPlusSign = properties.getExponentShowPlusSign();
-    exponentDigits = Math.max(1, properties.getExponentDigits());
+    exponentShowPlusSign = properties.getExponentSignAlwaysShown();
+    exponentDigits = Math.max(1, properties.getMinimumExponentDigits());
     int _maxInt = properties.getMaximumIntegerDigits();
     int _minInt = properties.getMinimumIntegerDigits();
     // Special behavior:
@@ -212,8 +212,8 @@ public class ScientificFormat extends Format.BeforeFormat implements Rounder.Mul
 
   @Override
   public void export(Properties properties) {
-    properties.setExponentDigits(exponentDigits);
-    properties.setExponentShowPlusSign(exponentShowPlusSign);
+    properties.setMinimumExponentDigits(exponentDigits);
+    properties.setExponentSignAlwaysShown(exponentShowPlusSign);
 
     // Set the transformed object into the property bag.  This may result in a pattern string that
     // uses different syntax from the original, but it will be functionally equivalent.

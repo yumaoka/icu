@@ -8,22 +8,22 @@ import com.ibm.icu.impl.number.NumberStringBuilder;
 import com.ibm.icu.impl.number.Properties;
 
 public class PaddingFormat implements AfterFormat {
-  public enum PaddingLocation {
+  public enum PadPosition {
     BEFORE_PREFIX,
     AFTER_PREFIX,
     BEFORE_SUFFIX,
     AFTER_SUFFIX;
 
-    public static PaddingLocation fromOld(int old) {
+    public static PadPosition fromOld(int old) {
       switch (old) {
         case com.ibm.icu.text.DecimalFormat.PAD_BEFORE_PREFIX:
-          return PaddingLocation.BEFORE_PREFIX;
+          return PadPosition.BEFORE_PREFIX;
         case com.ibm.icu.text.DecimalFormat.PAD_AFTER_PREFIX:
-          return PaddingLocation.AFTER_PREFIX;
+          return PadPosition.AFTER_PREFIX;
         case com.ibm.icu.text.DecimalFormat.PAD_BEFORE_SUFFIX:
-          return PaddingLocation.BEFORE_SUFFIX;
+          return PadPosition.BEFORE_SUFFIX;
         case com.ibm.icu.text.DecimalFormat.PAD_AFTER_SUFFIX:
-          return PaddingLocation.AFTER_SUFFIX;
+          return PadPosition.AFTER_SUFFIX;
         default:
           throw new IllegalArgumentException("Don't know how to map " + old);
       }
@@ -47,10 +47,10 @@ public class PaddingFormat implements AfterFormat {
 
   public static interface IProperties {
 
-    static int DEFAULT_PADDING_WIDTH = 0;
+    static int DEFAULT_FORMAT_WIDTH = 0;
 
-    /** @see #setPaddingWidth */
-    public int getPaddingWidth();
+    /** @see #setFormatWidth */
+    public int getFormatWidth();
 
     /**
      * Sets the minimum width of the string output by the formatting pipeline. For example, if
@@ -62,75 +62,72 @@ public class PaddingFormat implements AfterFormat {
      *
      * <p>Width is counted in UTF-16 code units.
      *
-     * @param paddingWidth The output width.
+     * @param formatWidth The output width.
      * @return The property bag, for chaining.
-     * @see #setPaddingString
-     * @see #setPaddingLocation
+     * @see #setPadPosition
+     * @see #setPadString
      */
-    public IProperties setPaddingWidth(int paddingWidth);
+    public IProperties setFormatWidth(int formatWidth);
 
-    static String DEFAULT_PADDING_STRING = null;
+    static String DEFAULT_PAD_STRING = null;
 
-    /** @see #setPaddingString */
-    public String getPaddingString();
+    /** @see #setPadString */
+    public String getPadString();
 
     /**
-     * Sets the string used for padding. This can be any string, but it usually makes sense for it
-     * to be a single character or code point long.
+     * Sets the string used for padding. The string should contain a single character or grapheme
+     * cluster.
      *
-     * <p>If you do not pass a String object, the CharSequence will be converted to a String upon
-     * construction of the formatting pipeline object.
-     *
-     * <p>Must be used in conjunction with {@link #setPaddingWidth}.
+     * <p>Must be used in conjunction with {@link #setFormatWidth}.
      *
      * @param paddingString The padding string. Defaults to an ASCII space (U+0020).
      * @return The property bag, for chaining.
-     * @see #setPaddingWidth
+     * @see #setFormatWidth
      */
-    public IProperties setPaddingString(String paddingString);
+    public IProperties setPadString(String paddingString);
 
-    static PaddingLocation DEFAULT_PADDING_LOCATION = null;
+    static PadPosition DEFAULT_PAD_POSITION = null;
 
-    /** @see #setPaddingLocation */
-    public PaddingLocation getPaddingLocation();
+    /** @see #setPadPosition */
+    public PadPosition getPadPosition();
 
     /**
      * Sets the location where the padding string is to be inserted to maintain the padding width:
      * one of BEFORE_PREFIX, AFTER_PREFIX, BEFORE_SUFFIX, or AFTER_SUFFIX.
      *
-     * <p>Must be used in conjunction with {@link #setPaddingWidth}.
+     * <p>Must be used in conjunction with {@link #setFormatWidth}.
      *
-     * @param paddingLocation The output width.
+     * @param padPosition The output width.
      * @return The property bag, for chaining.
-     * @see #setPaddingWidth
+     * @see #setFormatWidth
      */
-    public IProperties setPaddingLocation(PaddingLocation paddingLocation);
+    public IProperties setPadPosition(PadPosition padPosition);
   }
 
   public static final String FALLBACK_PADDING_STRING = "\u0020"; // i.e. a space
 
   public static boolean usePadding(IProperties properties) {
-    return properties.getPaddingWidth() != IProperties.DEFAULT_PADDING_WIDTH;
+    return properties.getFormatWidth() != IProperties.DEFAULT_FORMAT_WIDTH;
   }
 
   public static AfterFormat getInstance(IProperties properties) {
     return new PaddingFormat(
-        properties.getPaddingWidth(),
-        properties.getPaddingString(),
-        properties.getPaddingLocation());
+        properties.getFormatWidth(),
+        properties.getPadString(),
+        properties.getPadPosition());
   }
 
   // Properties
   private final int paddingWidth;
   private final String paddingString;
-  private final PaddingLocation paddingLocation;
+  private final PadPosition paddingLocation;
 
   private PaddingFormat(
-      int paddingWidth, String paddingString, PaddingLocation paddingLocation) {
+      int paddingWidth, String paddingString, PadPosition paddingLocation) {
     this.paddingWidth = paddingWidth > 0 ? paddingWidth : 10; // TODO: Is this a sensible default?
     this.paddingString = paddingString != null ? paddingString : FALLBACK_PADDING_STRING;
     this.paddingLocation =
-        paddingLocation != null ? paddingLocation : PaddingLocation.BEFORE_PREFIX;
+        paddingLocation != null ? paddingLocation : PadPosition.BEFORE_PREFIX;
   }
 
   @Override
@@ -145,15 +142,15 @@ public class PaddingFormat implements AfterFormat {
     }
 
     int length = 0;
-    if (paddingLocation == PaddingLocation.AFTER_PREFIX) {
+    if (paddingLocation == PadPosition.AFTER_PREFIX) {
       length += addPadding(requiredPadding, string, leftIndex);
-    } else if (paddingLocation == PaddingLocation.BEFORE_SUFFIX) {
+    } else if (paddingLocation == PadPosition.BEFORE_SUFFIX) {
       length += addPadding(requiredPadding, string, rightIndex);
     }
     length += mods.applyAll(string, leftIndex, rightIndex + length);
-    if (paddingLocation == PaddingLocation.BEFORE_PREFIX) {
+    if (paddingLocation == PadPosition.BEFORE_PREFIX) {
       length += addPadding(requiredPadding, string, leftIndex);
-    } else if (paddingLocation == PaddingLocation.AFTER_SUFFIX) {
+    } else if (paddingLocation == PadPosition.AFTER_SUFFIX) {
       length += addPadding(requiredPadding, string, rightIndex + length);
     }
 
@@ -169,8 +166,8 @@ public class PaddingFormat implements AfterFormat {
 
   @Override
   public void export(Properties properties) {
-    properties.setPaddingWidth(paddingWidth);
-    properties.setPaddingString(paddingString);
-    properties.setPaddingLocation(paddingLocation);
+    properties.setFormatWidth(paddingWidth);
+    properties.setPadString(paddingString);
+    properties.setPadPosition(paddingLocation);
   }
 }

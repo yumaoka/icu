@@ -46,13 +46,13 @@ public class FormatQuantityTest extends TestFmwk {
 
     properties =
         new Properties()
-            .setExponentDigits(1)
+            .setMinimumExponentDigits(1)
             .setMaximumIntegerDigits(3)
             .setMaximumFractionDigits(1);
     Format exf = Endpoint.fromBTA(properties);
     formats.add(exf);
 
-    properties = new Properties().setRoundingInterval(new BigDecimal("0.5"));
+    properties = new Properties().setRoundingIncrement(new BigDecimal("0.5"));
     Format rif = Endpoint.fromBTA(properties);
     formats.add(rif);
 
@@ -203,14 +203,14 @@ public class FormatQuantityTest extends TestFmwk {
   private static void testFormatQuantityRoundingInterval(FormatQuantity rq0, FormatQuantity rq1) {
     FormatQuantity q0 = rq0.clone();
     FormatQuantity q1 = rq1.clone();
-    q0.roundToInterval(new BigDecimal("0.05"), MATH_CONTEXT_HALF_EVEN);
-    q1.roundToInterval(new BigDecimal("0.05"), MATH_CONTEXT_HALF_EVEN);
+    q0.roundToIncrement(new BigDecimal("0.05"), MATH_CONTEXT_HALF_EVEN);
+    q1.roundToIncrement(new BigDecimal("0.05"), MATH_CONTEXT_HALF_EVEN);
     testFormatQuantityBehavior(q0, q1);
 
     q0 = rq0.clone();
     q1 = rq1.clone();
-    q0.roundToInterval(new BigDecimal("0.05"), MATH_CONTEXT_CEILING);
-    q1.roundToInterval(new BigDecimal("0.05"), MATH_CONTEXT_CEILING);
+    q0.roundToIncrement(new BigDecimal("0.05"), MATH_CONTEXT_CEILING);
+    q1.roundToIncrement(new BigDecimal("0.05"), MATH_CONTEXT_CEILING);
     testFormatQuantityBehavior(q0, q1);
   }
 

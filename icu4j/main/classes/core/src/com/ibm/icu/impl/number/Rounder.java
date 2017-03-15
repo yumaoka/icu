@@ -28,7 +28,7 @@ import com.ibm.icu.impl.number.formatters.ScientificFormat;
  * "999" as "999".)
  *
  * @see com.ibm.icu.impl.number.rounders.MagnitudeRounder
- * @see com.ibm.icu.impl.number.rounders.IntervalRounder
+ * @see com.ibm.icu.impl.number.rounders.IncrementRounder
  * @see com.ibm.icu.impl.number.rounders.SignificantDigitsRounder
  * @see com.ibm.icu.impl.number.rounders.NoRounder
  */

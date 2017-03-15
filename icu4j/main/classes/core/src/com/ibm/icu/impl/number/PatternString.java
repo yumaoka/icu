@@ -5,7 +5,7 @@ package com.ibm.icu.impl.number;
 import java.math.BigDecimal;
 
 import com.ibm.icu.impl.number.formatters.PaddingFormat;
-import com.ibm.icu.impl.number.formatters.PaddingFormat.PaddingLocation;
+import com.ibm.icu.impl.number.formatters.PaddingFormat.PadPosition;
 import com.ibm.icu.text.DecimalFormatSymbols;
 
 /**
@@ -73,18 +73,18 @@ public class PatternString {
     int dosMax = 100;
     int groupingSize = Math.min(properties.getSecondaryGroupingSize(), dosMax);
     int firstGroupingSize = Math.min(properties.getGroupingSize(), dosMax);
-    int paddingWidth = Math.min(properties.getPaddingWidth(), dosMax);
-    PaddingLocation paddingLocation = properties.getPaddingLocation();
-    String paddingString = properties.getPaddingString();
+    int paddingWidth = Math.min(properties.getFormatWidth(), dosMax);
+    PadPosition paddingLocation = properties.getPadPosition();
+    String paddingString = properties.getPadString();
     int minInt = Math.max(Math.min(properties.getMinimumIntegerDigits(), dosMax), 0);
     int maxInt = Math.min(properties.getMaximumIntegerDigits(), dosMax);
     int minFrac = Math.max(Math.min(properties.getMinimumFractionDigits(), dosMax), 0);
     int maxFrac = Math.min(properties.getMaximumFractionDigits(), dosMax);
     int minSig = Math.min(properties.getMinimumSignificantDigits(), dosMax);
     int maxSig = Math.min(properties.getMaximumSignificantDigits(), dosMax);
-    boolean alwaysShowDecimal = properties.getAlwaysShowDecimal();
-    int exponentDigits = Math.min(properties.getExponentDigits(), dosMax);
-    boolean exponentShowPlusSign = properties.getExponentShowPlusSign();
+    boolean alwaysShowDecimal = properties.getDecimalSeparatorAlwaysShown();
+    int exponentDigits = Math.min(properties.getMinimumExponentDigits(), dosMax);
+    boolean exponentShowPlusSign = properties.getExponentSignAlwaysShown();
     String pp = properties.getPositivePrefix();
     String ppp = properties.getPositivePrefixPattern();
     String ps = properties.getPositiveSuffix();
@@ -123,7 +123,7 @@ public class PatternString {
     int groupingLength = grouping1 + grouping2 + 1;
 
     // Figure out the digits we need to put in the pattern.
-    BigDecimal roundingInterval = properties.getRoundingInterval();
+    BigDecimal roundingInterval = properties.getRoundingIncrement();
     StringBuilder digitsString = new StringBuilder();
     int digitsStringScale = 0;
     if (maxSig != Math.min(dosMax, Properties.DEFAULT_MAXIMUM_SIGNIFICANT_DIGITS)) {
@@ -134,7 +134,7 @@ public class PatternString {
       while (digitsString.length() < maxSig) {
         digitsString.append('#');
       }
-    } else if (roundingInterval != Properties.DEFAULT_ROUNDING_INTERVAL) {
+    } else if (roundingInterval != Properties.DEFAULT_ROUNDING_INCREMENT) {
       // Rounding Interval.
       digitsStringScale = -roundingInterval.scale();
       // TODO: Check for DoS here?
@@ -175,7 +175,7 @@ public class PatternString {
     }
 
     // Exponential notation
-    if (exponentDigits != Math.min(dosMax, Properties.DEFAULT_EXPONENT_DIGITS)) {
+    if (exponentDigits != Math.min(dosMax, Properties.DEFAULT_MINIMUM_EXPONENT_DIGITS)) {
       sb.append('E');
       if (exponentShowPlusSign) {
         sb.append('+');
@@ -191,7 +191,7 @@ public class PatternString {
     AffixPatternUtils.escape(ps, sb);
 
     // Resolve Padding
-    if (paddingWidth != Properties.DEFAULT_PADDING_WIDTH) {
+    if (paddingWidth != Properties.DEFAULT_FORMAT_WIDTH) {
       while (paddingWidth - sb.length() > 0) {
         sb.insert(afterPrefixPos, '#');
         beforeSuffixPos++;
@@ -245,19 +245,26 @@ public class PatternString {
     if (input == null || input.length() == 0) input = PaddingFormat.FALLBACK_PADDING_STRING;
     int startLength = output.length();
     if (input.length() == 1) {
-      output.insert(startIndex, input);
+      if (input.equals("'")) {
+        output.insert(startIndex, "''");
+      } else {
+        output.insert(startIndex, input);
+      }
     } else {
       output.insert(startIndex, '\'');
+      int offset = 1;
       for (int i = 0; i < input.length(); i++) {
         // it's okay to deal in chars here because the quote mark is the only interesting thing.
         char ch = input.charAt(i);
         if (ch == '\'') {
-          output.insert(startIndex, "''");
+          output.insert(startIndex + offset, "''");
+          offset += 2;
         } else {
-          output.insert(startIndex, ch);
+          output.insert(startIndex + offset, ch);
+          offset += 1;
         }
       }
-      output.insert(startIndex, '\'');
+      output.insert(startIndex + offset, '\'');
     }
     return output.length() - startLength;
   }
@@ -303,7 +310,7 @@ public class PatternString {
 
     // Special case: localIdx characters are NOT allowed to be quotes, like in de_CH.
     // Use '’' instead.
-    for (int i=0; i<table.length; i++) {
+    for (int i = 0; i < table.length; i++) {
       if (table[i][localIdx] == '\'') {
         table[i][localIdx] = '’';
       }
@@ -425,18 +432,18 @@ public class PatternString {
         if (positive.minimumSignificantDigits > 0) {
           properties.setMinimumFractionDigits(Properties.DEFAULT_MINIMUM_FRACTION_DIGITS);
           properties.setMaximumFractionDigits(Properties.DEFAULT_MAXIMUM_FRACTION_DIGITS);
-          properties.setRoundingInterval(Properties.DEFAULT_ROUNDING_INTERVAL);
+          properties.setRoundingIncrement(Properties.DEFAULT_ROUNDING_INCREMENT);
           properties.setMinimumSignificantDigits(positive.minimumSignificantDigits);
           properties.setMaximumSignificantDigits(positive.maximumSignificantDigits);
         } else if (!positive.rounding.isZero()) {
           if (!ignoreRounding) {
             properties.setMinimumFractionDigits(minFrac);
             properties.setMaximumFractionDigits(positive.maximumFractionDigits);
-            properties.setRoundingInterval(positive.rounding.toBigDecimal());
+            properties.setRoundingIncrement(positive.rounding.toBigDecimal());
           } else {
             properties.setMinimumFractionDigits(Properties.DEFAULT_MINIMUM_FRACTION_DIGITS);
             properties.setMaximumFractionDigits(Properties.DEFAULT_MAXIMUM_FRACTION_DIGITS);
-            properties.setRoundingInterval(Properties.DEFAULT_ROUNDING_INTERVAL);
+            properties.setRoundingIncrement(Properties.DEFAULT_ROUNDING_INCREMENT);
           }
           properties.setMinimumSignificantDigits(Properties.DEFAULT_MINIMUM_SIGNIFICANT_DIGITS);
           properties.setMaximumSignificantDigits(Properties.DEFAULT_MAXIMUM_SIGNIFICANT_DIGITS);
@@ -444,11 +451,11 @@ public class PatternString {
           if (!ignoreRounding) {
             properties.setMinimumFractionDigits(minFrac);
             properties.setMaximumFractionDigits(positive.maximumFractionDigits);
-            properties.setRoundingInterval(Properties.DEFAULT_ROUNDING_INTERVAL);
+            properties.setRoundingIncrement(Properties.DEFAULT_ROUNDING_INCREMENT);
           } else {
             properties.setMinimumFractionDigits(Properties.DEFAULT_MINIMUM_FRACTION_DIGITS);
             properties.setMaximumFractionDigits(Properties.DEFAULT_MAXIMUM_FRACTION_DIGITS);
-            properties.setRoundingInterval(Properties.DEFAULT_ROUNDING_INTERVAL);
+            properties.setRoundingIncrement(Properties.DEFAULT_ROUNDING_INCREMENT);
           }
           properties.setMinimumSignificantDigits(Properties.DEFAULT_MINIMUM_SIGNIFICANT_DIGITS);
           properties.setMaximumSignificantDigits(Properties.DEFAULT_MAXIMUM_SIGNIFICANT_DIGITS);
@@ -456,15 +463,15 @@ public class PatternString {
 
         // If the pattern ends with a '.' then force the decimal point.
         if (positive.hasDecimal && positive.maximumFractionDigits == 0) {
-          properties.setAlwaysShowDecimal(true);
+          properties.setDecimalSeparatorAlwaysShown(true);
         } else {
-          properties.setAlwaysShowDecimal(false);
+          properties.setDecimalSeparatorAlwaysShown(false);
         }
 
         // Scientific notation settings
         if (positive.exponentDigits > 0) {
-          properties.setExponentShowPlusSign(positive.exponentShowPlusSign);
-          properties.setExponentDigits(positive.exponentDigits);
+          properties.setExponentSignAlwaysShown(positive.exponentShowPlusSign);
+          properties.setMinimumExponentDigits(positive.exponentDigits);
           if (positive.minimumSignificantDigits == 0) {
             // patterns without '@' can define max integer digits, used for engineering notation
             properties.setMinimumIntegerDigits(positive.minimumIntegerDigits);
@@ -475,8 +482,8 @@ public class PatternString {
             properties.setMaximumIntegerDigits(Properties.DEFAULT_MAXIMUM_INTEGER_DIGITS);
           }
         } else {
-          properties.setExponentShowPlusSign(Properties.DEFAULT_EXPONENT_SHOW_PLUS_SIGN);
-          properties.setExponentDigits(Properties.DEFAULT_EXPONENT_DIGITS);
+          properties.setExponentSignAlwaysShown(Properties.DEFAULT_EXPONENT_SIGN_ALWAYS_SHOWN);
+          properties.setMinimumExponentDigits(Properties.DEFAULT_MINIMUM_EXPONENT_DIGITS);
           properties.setMinimumIntegerDigits(minInt);
           properties.setMaximumIntegerDigits(Properties.DEFAULT_MAXIMUM_INTEGER_DIGITS);
         }
@@ -488,20 +495,25 @@ public class PatternString {
               positive.paddingWidth
                   + AffixPatternUtils.unescapedLength(positive.prefix)
                   + AffixPatternUtils.unescapedLength(positive.suffix);
-          properties.setPaddingWidth(paddingWidth);
-          if (positive.padding.length() > 1) {
-            // TODO: What if the custom padding string has a quote character?
-            properties.setPaddingString(
-                positive.padding.subSequence(1, positive.padding.length() - 1).toString());
+          properties.setFormatWidth(paddingWidth);
+          if (positive.padding.length() == 1) {
+            properties.setPadString(positive.padding.toString());
+          } else if (positive.padding.length() == 2) {
+            if (positive.padding.charAt(0) == '\'') {
+              properties.setPadString("'");
+            } else {
+              properties.setPadString(positive.padding.toString());
+            }
           } else {
-            properties.setPaddingString(positive.padding.toString());
+            properties.setPadString(
+                positive.padding.subSequence(1, positive.padding.length() - 1).toString());
           }
           assert positive.paddingLocation != null;
-          properties.setPaddingLocation(positive.paddingLocation);
+          properties.setPadPosition(positive.paddingLocation);
         } else {
-          properties.setPaddingWidth(Properties.DEFAULT_PADDING_WIDTH);
-          properties.setPaddingString(Properties.DEFAULT_PADDING_STRING);
-          properties.setPaddingLocation(Properties.DEFAULT_PADDING_LOCATION);
+          properties.setFormatWidth(Properties.DEFAULT_FORMAT_WIDTH);
+          properties.setPadString(Properties.DEFAULT_PAD_STRING);
+          properties.setPadPosition(Properties.DEFAULT_PAD_POSITION);
         }
 
         // Set the affixes
@@ -538,7 +550,7 @@ public class PatternString {
       int maximumSignificantDigits = 0;
       boolean hasDecimal = false;
       int paddingWidth = 0;
-      PaddingLocation paddingLocation = null;
+      PadPosition paddingLocation = null;
       FormatQuantity4 rounding = new FormatQuantity4();
       boolean exponentShowPlusSign = false;
       int exponentDigits = 0;
@@ -624,18 +636,18 @@ public class PatternString {
 
     private static void consumeSubpattern(ParserState state, SubpatternParseResult result) {
       // subpattern := literals? number exponent? literals?
-      consumePadding(state, result, PaddingLocation.BEFORE_PREFIX);
+      consumePadding(state, result, PadPosition.BEFORE_PREFIX);
       consumeAffix(state, result, result.prefix);
-      consumePadding(state, result, PaddingLocation.AFTER_PREFIX);
+      consumePadding(state, result, PadPosition.AFTER_PREFIX);
       consumeFormat(state, result);
       consumeExponent(state, result);
-      consumePadding(state, result, PaddingLocation.BEFORE_SUFFIX);
+      consumePadding(state, result, PadPosition.BEFORE_SUFFIX);
       consumeAffix(state, result, result.suffix);
-      consumePadding(state, result, PaddingLocation.AFTER_SUFFIX);
+      consumePadding(state, result, PadPosition.AFTER_SUFFIX);
     }
 
     private static void consumePadding(
-        ParserState state, SubpatternParseResult result, PaddingLocation paddingLocation) {
+        ParserState state, SubpatternParseResult result, PadPosition paddingLocation) {
       if (state.peek() != '*') {
         return;
       }

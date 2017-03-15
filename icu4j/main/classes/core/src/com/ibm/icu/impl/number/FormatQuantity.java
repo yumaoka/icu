@@ -42,7 +42,7 @@ public interface FormatQuantity extends PluralRules.IFixedDecimal {
    * @param mathContext The {@link MathContext} to use if rounding is necessary. Undefined behavior
    *     if null.
    */
-  public void roundToInterval(BigDecimal roundingInterval, MathContext mathContext);
+  public void roundToIncrement(BigDecimal roundingInterval, MathContext mathContext);
 
   /**
    * Rounds the number to a specified magnitude (power of ten).

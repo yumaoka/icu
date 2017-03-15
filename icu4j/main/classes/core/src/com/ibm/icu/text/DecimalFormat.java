@@ -19,10 +19,12 @@ import com.ibm.icu.impl.number.FormatQuantity4;
 import com.ibm.icu.impl.number.Parse;
 import com.ibm.icu.impl.number.PatternString;
 import com.ibm.icu.impl.number.Properties;
-import com.ibm.icu.impl.number.formatters.PaddingFormat.PaddingLocation;
+import com.ibm.icu.impl.number.formatters.PaddingFormat.PadPosition;
 import com.ibm.icu.impl.number.formatters.PositiveDecimalFormat;
 import com.ibm.icu.impl.number.formatters.ScientificFormat;
 import com.ibm.icu.impl.number.rounders.SignificantDigitsRounder;
+import com.ibm.icu.impl.number.rounders.SignificantDigitsRounder.SignificantDigitsMode;
+import com.ibm.icu.lang.UCharacter;
 import com.ibm.icu.math.BigDecimal;
 import com.ibm.icu.math.MathContext;
 import com.ibm.icu.text.PluralRules.IFixedDecimal;
@@ -31,44 +33,49 @@ import com.ibm.icu.util.Currency.CurrencyUsage;
 import com.ibm.icu.util.CurrencyAmount;
 import com.ibm.icu.util.ULocale;
 
-/** @author sffc */
+/** @stable ICU 2.0 */
 public class DecimalFormat extends NumberFormat {
 
-  /**
-   * New serialization in ICU 59: declare different version from ICU 58.
-   */
+  /** New serialization in ICU 59: declare different version from ICU 58. */
   private static final long serialVersionUID = 864413376551465019L;
 
-  /// INSTANCE VARIABLES ///
-  // Access level: package-private, so that subclasses can use them.
+  //=====================================================================================//
+  //                                   INSTANCE FIELDS                                   //
+  //=====================================================================================//
+
+  // Fields are package-private, so that subclasses can use them.
   // properties should be final, but clone won't work if we make it final.
   // All fields are transient because custom serialization is used.
 
   /**
-   * The property bag corresponding to user-specified settings and settings from the pattern
-   * string.  In principle this should be final, but serialize and clone won't work if it is
-   * final.  Does not need to be volatile because the reference never changes.
+   * The property bag corresponding to user-specified settings and settings from the pattern string.
+   * In principle this should be final, but serialize and clone won't work if it is final. Does not
+   * need to be volatile because the reference never changes.
    */
   /* final */ transient Properties properties;
 
   /**
-   * The symbols for the current locale.  Volatile because threads may read and write at the same
+   * The symbols for the current locale. Volatile because threads may read and write at the same
    * time.
    */
-  volatile transient DecimalFormatSymbols symbols;
+  transient volatile DecimalFormatSymbols symbols;
 
   /**
-   * The pre-computed formatter object.  Setters cause this to be re-computed atomically.  The
-   * {@link #format} method uses the formatter directly without needing to synchronize.  Volatile
-   * because threads may read and write at the same time.
+   * The pre-computed formatter object. Setters cause this to be re-computed atomically. The {@link
+   * #format} method uses the formatter directly without needing to synchronize. Volatile because
+   * threads may read and write at the same time.
    */
-  volatile transient SingularFormat formatter;
+  transient volatile SingularFormat formatter;
 
   /**
-   * The effective properties as exported from the formatter object.  Volatile because threads may
+   * The effective properties as exported from the formatter object. Volatile because threads may
    * read and write at the same time.
    */
-  volatile transient Properties exportedProperties;
+  transient volatile Properties exportedProperties;
+
+  //=====================================================================================//
+  //                                    CONSTRUCTORS                                     //
+  //=====================================================================================//
 
   /** @stable ICU 2.0 */
   public DecimalFormat() {
@@ -128,13 +135,80 @@ public class DecimalFormat extends NumberFormat {
         || choice == CASHCURRENCYSTYLE
         || choice == STANDARDCURRENCYSTYLE
         || choice == PLURALCURRENCYSTYLE
-        || AffixPatternUtils.hasCurrencySymbols(pattern)){
+        || AffixPatternUtils.hasCurrencySymbols(pattern)) {
       setPropertiesFromPattern(pattern, true);
     } else {
       setPropertiesFromPattern(pattern, false);
     }
     refreshFormatter();
   }
+
+  private static DecimalFormatSymbols getDefaultSymbols() {
+    return DecimalFormatSymbols.getInstance();
+  }
+
+  /**
+   * Parses the given pattern string and overwrites the settings specified in the pattern string.
+   * The properties corresponding to the following setters are overwritten, either with their
+   * default values or with the value specified in the pattern string:
+   *
+   * <ol>
+   *   <li>{@link #setDecimalSeparatorAlwaysShown}
+   *   <li>{@link #setExponentSignAlwaysShown}
+   *   <li>{@link #setFormatWidth}
+   *   <li>{@link #setGroupingSize}
+   *   <li>{@link #setMultiplier} (percent/permille)
+   *   <li>{@link #setMaximumFractionDigits}
+   *   <li>{@link #setMaximumIntegerDigits}
+   *   <li>{@link #setMaximumSignificantDigits}
+   *   <li>{@link #setMinimumExponentDigits}
+   *   <li>{@link #setMinimumFractionDigits}
+   *   <li>{@link #setMinimumIntegerDigits}
+   *   <li>{@link #setMinimumSignificantDigits}
+   *   <li>{@link #setPadPosition}
+   *   <li>{@link #setPadCharacter}
+   *   <li>{@link #setRoundingIncrement}
+   *   <li>{@link #setSecondaryGroupingSize}
+   * </ol>
+   *
+   * All other settings remain untouched.
+   *
+   * <p>For more information on pattern strings, see <a
+   * href="http://unicode.org/reports/tr35/tr35-numbers.html#Number_Format_Patterns">UTS #35</a>.
+   *
+   * @stable ICU 2.0
+   */
+  public synchronized void applyPattern(String pattern) {
+    setPropertiesFromPattern(pattern, false);
+    // Backwards compatibility: clear out user-specified prefix and suffix,
+    // as well as CurrencyPluralInfo.
+    properties.setPositivePrefix(null);
+    properties.setNegativePrefix(null);
+    properties.setPositiveSuffix(null);
+    properties.setNegativeSuffix(null);
+    properties.setCurrencyPluralInfo(null);
+    refreshFormatter();
+  }
+
+  /**
+   * Converts the given string to standard notation and then parses it using {@link #applyPattern}.
+   *
+   * <p>Localized notation means that instead of using generic placeholders in the pattern, you use
+   * the corresponding locale-specific characters instead. For example, in locale <em>fr-FR</em>,
+   * the period in the pattern "0.000" means "decimal" in standard notation (as it does in every
+   * other locale), but it means "grouping" in localized notation.
+   *
+   * @param localizedPattern The pattern string in localized notation.
+   * @stable ICU 2.0
+   */
+  public synchronized void applyLocalizedPattern(String localizedPattern) {
+    String pattern = PatternString.convertLocalized(localizedPattern, symbols, false);
+    applyPattern(pattern);
+  }
+
+  //=====================================================================================//
+  //                                CLONE AND SERIALIZE                                  //
+  //=====================================================================================//
 
   /** @stable ICU 2.0 */
   @Override
@@ -162,9 +236,7 @@ public class DecimalFormat extends NumberFormat {
     oos.writeObject(symbols);
   }
 
-  /**
-   * Custom serialization: re-create object from serialized property bag and symbols.
-   */
+  /** Custom serialization: re-create object from serialized property bag and symbols. */
   private void readObject(ObjectInputStream ois) throws IOException, ClassNotFoundException {
     ois.defaultReadObject();
     // Extra int for possible future use
@@ -178,34 +250,11 @@ public class DecimalFormat extends NumberFormat {
     refreshFormatter();
   }
 
-  static DecimalFormatSymbols getDefaultSymbols() {
-    return DecimalFormatSymbols.getInstance();
-  }
+  //=====================================================================================//
+  //                               FORMAT AND PARSE APIS                                 //
+  //=====================================================================================//
 
   /** @stable ICU 2.0 */
-  public synchronized void applyPattern(String pattern) {
-    setPropertiesFromPattern(pattern, false);
-    // Backwards compatibility: clear out user-specified prefix and suffix,
-    // as well as CurrencyPluralInfo.
-    properties.setPositivePrefix(null);
-    properties.setNegativePrefix(null);
-    properties.setPositiveSuffix(null);
-    properties.setNegativeSuffix(null);
-    properties.setCurrencyPluralInfo(null);
-    refreshFormatter();
-  }
-
-  /** @stable ICU 2.0 */
-  public synchronized void applyLocalizedPattern(String localizedPattern) {
-    String pattern = PatternString.convertLocalized(localizedPattern, symbols, false);
-    applyPattern(pattern);
-  }
-
-  /**
-   * {@inheritDoc}
-   *
-   * @stable ICU 2.0
-   */
   @Override
   public StringBuffer format(double number, StringBuffer result, FieldPosition fieldPosition) {
     FormatQuantity4 fq = new FormatQuantity4(number);
@@ -263,17 +312,18 @@ public class DecimalFormat extends NumberFormat {
 
   protected static final ThreadLocal<Properties> threadLocalCurrencyProperties =
       new ThreadLocal<Properties>() {
-    @Override
-    protected Properties initialValue() {
-      return new Properties();
-    }
-  };
+        @Override
+        protected Properties initialValue() {
+          return new Properties();
+        }
+      };
 
   @Override
   public StringBuffer format(CurrencyAmount currAmt, StringBuffer toAppendTo, FieldPosition pos) {
-    // TODO: This is ugly. Currency should be a free parameter, not in property bag. Fix in ICU 60.
+    // TODO: This is ugly (although not as ugly as it was in ICU 58).
+    // Currency should be a free parameter, not in property bag. Fix in ICU 60.
     Properties cprops = threadLocalCurrencyProperties.get();
-    synchronized(this) {
+    synchronized (this) {
       cprops.copyFrom(properties);
     }
     cprops.setCurrency(currAmt.getCurrency());
@@ -315,8 +365,12 @@ public class DecimalFormat extends NumberFormat {
     }
   }
 
+  //=====================================================================================//
+  //                                GETTERS AND SETTERS                                  //
+  //=====================================================================================//
+
   /**
-   * Returns a copy of the decimal format symbols used by this format.
+   * Returns a copy of the decimal format symbols used by this formatter.
    *
    * @return desired DecimalFormatSymbols
    * @see DecimalFormatSymbols
@@ -327,8 +381,8 @@ public class DecimalFormat extends NumberFormat {
   }
 
   /**
-   * Sets the decimal format symbols used by this format. The format uses a copy of the provided
-   * symbols.
+   * Sets the decimal format symbols used by this formatter. The formatter uses a copy of the
+   * provided symbols.
    *
    * @param newSymbols desired DecimalFormatSymbols
    * @see DecimalFormatSymbols
@@ -339,55 +393,152 @@ public class DecimalFormat extends NumberFormat {
     refreshFormatter();
   }
 
-  /** @stable ICU 2.0 */
+  /**
+   * <strong>Affixes:</strong> Gets the positive prefix string currently being used to format
+   * numbers.
+   *
+   * <p>If the affix was specified via the pattern, the string returned by this method will have
+   * locale symbols substituted in place of special characters according to the LDML specification.
+   * If the affix was specified via {@link #setPositivePrefix}, the string will be returned
+   * literally.
+   *
+   * @return The string being prepended to positive numbers.
+   * @category Affixes
+   * @stable ICU 2.0
+   */
   public synchronized String getPositivePrefix() {
     String result = exportedProperties.getPositivePrefix();
     return (result == null) ? "" : result;
   }
 
-  /** @stable ICU 2.0 */
-  public synchronized void setPositivePrefix(String newValue) {
-    properties.setPositivePrefix(newValue);
+  /**
+   * <strong>Affixes:</strong> Sets the string to prepend to positive numbers. For example, if you
+   * set the value "#", then the number 123 will be formatted as "#123" in the locale
+   * <em>en-US</em>.
+   *
+   * <p>Using this method overrides the affix specified via the pattern, and unlike the pattern, the
+   * string given to this method will be interpreted literally WITHOUT locale symbol substitutions.
+   *
+   * @param prefix The literal string to prepend to positive numbers.
+   * @category Affixes
+   * @stable ICU 2.0
+   */
+  public synchronized void setPositivePrefix(String prefix) {
+    properties.setPositivePrefix(prefix);
     refreshFormatter();
   }
 
-  /** @stable ICU 2.0 */
+  /**
+   * <strong>Affixes:</strong> Gets the negative prefix string currently being used to format
+   * numbers.
+   *
+   * <p>If the affix was specified via the pattern, the string returned by this method will have
+   * locale symbols substituted in place of special characters according to the LDML specification.
+   * If the affix was specified via {@link #setNegativePrefix}, the string will be returned
+   * literally.
+   *
+   * @return The string being prepended to negative numbers.
+   * @category Affixes
+   * @stable ICU 2.0
+   */
   public synchronized String getNegativePrefix() {
     String result = exportedProperties.getNegativePrefix();
     return (result == null) ? "" : result;
   }
 
-  /** @stable ICU 2.0 */
-  public synchronized void setNegativePrefix(String newValue) {
-    properties.setNegativePrefix(newValue);
+  /**
+   * <strong>Affixes:</strong> Sets the string to prepend to negative numbers. For example, if you
+   * set the value "#", then the number -123 will be formatted as "#123" in the locale
+   * <em>en-US</em> (overriding the implicit default '-' in the pattern).
+   *
+   * <p>Using this method overrides the affix specified via the pattern, and unlike the pattern, the
+   * string given to this method will be interpreted literally WITHOUT locale symbol substitutions.
+   *
+   * @param suffix The literal string to prepend to negative numbers.
+   * @category Affixes
+   * @stable ICU 2.0
+   */
+  public synchronized void setNegativePrefix(String suffix) {
+    properties.setNegativePrefix(suffix);
     refreshFormatter();
   }
 
-  /** @stable ICU 2.0 */
+  /**
+   * <strong>Affixes:</strong> Gets the positive suffix string currently being used to format
+   * numbers.
+   *
+   * <p>If the affix was specified via the pattern, the string returned by this method will have
+   * locale symbols substituted in place of special characters according to the LDML specification.
+   * If the affix was specified via {@link #setPositiveSuffix}, the string will be returned
+   * literally.
+   *
+   * @return The string being appended to positive numbers.
+   * @category Affixes
+   * @stable ICU 2.0
+   */
   public synchronized String getPositiveSuffix() {
     String result = exportedProperties.getPositiveSuffix();
     return (result == null) ? "" : result;
   }
 
-  /** @stable ICU 2.0 */
-  public synchronized void setPositiveSuffix(String newValue) {
-    properties.setPositiveSuffix(newValue);
+  /**
+   * <strong>Affixes:</strong> Sets the string to append to positive numbers. For example, if you
+   * set the value "#", then the number 123 will be formatted as "123#" in the locale
+   * <em>en-US</em>.
+   *
+   * <p>Using this method overrides the affix specified via the pattern, and unlike the pattern, the
+   * string given to this method will be interpreted literally WITHOUT locale symbol substitutions.
+   *
+   * @param suffix The literal string to append to positive numbers.
+   * @category Affixes
+   * @stable ICU 2.0
+   */
+  public synchronized void setPositiveSuffix(String suffix) {
+    properties.setPositiveSuffix(suffix);
     refreshFormatter();
   }
 
-  /** @stable ICU 2.0 */
+  /**
+   * <strong>Affixes:</strong> Gets the negative suffix string currently being used to format
+   * numbers.
+   *
+   * <p>If the affix was specified via the pattern, the string returned by this method will have
+   * locale symbols substituted in place of special characters according to the LDML specification.
+   * If the affix was specified via {@link #setNegativeSuffix}, the string will be returned
+   * literally.
+   *
+   * @return The string being appended to negative numbers.
+   * @category Affixes
+   * @stable ICU 2.0
+   */
   public synchronized String getNegativeSuffix() {
     String result = exportedProperties.getNegativeSuffix();
     return (result == null) ? "" : result;
   }
 
-  /** @stable ICU 2.0 */
-  public synchronized void setNegativeSuffix(String newValue) {
-    properties.setNegativeSuffix(newValue);
+  /**
+   * <strong>Affixes:</strong> Sets the string to append to negative numbers. For example, if you
+   * set the value "#", then the number 123 will be formatted as "123#" in the locale
+   * <em>en-US</em>.
+   *
+   * <p>Using this method overrides the affix specified via the pattern, and unlike the pattern, the
+   * string given to this method will be interpreted literally WITHOUT locale symbol substitutions.
+   *
+   * @param suffix The literal string to append to negative numbers.
+   * @category Affixes
+   * @stable ICU 2.0
+   */
+  public synchronized void setNegativeSuffix(String suffix) {
+    properties.setNegativeSuffix(suffix);
     refreshFormatter();
   }
 
-  /** @stable ICU 2.0 */
+  /**
+   * @return The multiplier being applied to numbers before they are formatted.
+   * @see #setMultiplier
+   * @category Multipliers
+   * @stable ICU 2.0
+   */
   public synchronized int getMultiplier() {
     if (properties.getMultiplier() != null) {
       return properties.getMultiplier().intValue();
@@ -396,16 +547,29 @@ public class DecimalFormat extends NumberFormat {
     }
   }
 
-  /** @stable ICU 2.0 */
-  public synchronized void setMultiplier(int newValue) {
-    if (newValue == 0) {
+  /**
+   * Sets a number that will be used to multiply all numbers prior to formatting. For example, when
+   * formatting percents, a multiplier of 100 can be used.
+   *
+   * <p>If a percent or permille sign is specified in the pattern, the multiplier is automatically
+   * set to 100 or 1000, respectively.
+   *
+   * <p>If the number specified here is a power of 10, a more efficient code path will be used.
+   *
+   * @param multiplier The number by which all numbers passed to {@link #format} will be multiplied.
+   * @throws IllegalArgumentException If the given multiplier is zero.
+   * @category Multipliers
+   * @stable ICU 2.0
+   */
+  public synchronized void setMultiplier(int multiplier) {
+    if (multiplier == 0) {
       throw new IllegalArgumentException("Multiplier must be nonzero.");
     }
 
     // Try to convert to a magnitude multiplier first
     int delta = 0;
-    int value = newValue;
-    while (newValue != 1) {
+    int value = multiplier;
+    while (multiplier != 1) {
       delta++;
       int temp = value / 10;
       if (temp * 10 != value) {
@@ -417,180 +581,166 @@ public class DecimalFormat extends NumberFormat {
     if (delta != -1) {
       properties.setMagnitudeMultiplier(delta);
     } else {
-      properties.setMultiplier(java.math.BigDecimal.valueOf(newValue));
+      properties.setMultiplier(java.math.BigDecimal.valueOf(multiplier));
     }
     refreshFormatter();
   }
 
-  /** @stable ICU 2.0 */
+  /**
+   * @return The increment to which numbers are being rounded.
+   * @see #setRoundingIncrement
+   * @category Rounding
+   * @stable ICU 2.0
+   */
   public synchronized java.math.BigDecimal getRoundingIncrement() {
-    return exportedProperties.getRoundingInterval();
+    return exportedProperties.getRoundingIncrement();
   }
 
-  /** @stable ICU 2.0 */
-  public synchronized void setRoundingIncrement(java.math.BigDecimal newValue) {
+  /**
+   * <strong>Rounding and Digit Limits:</strong> Sets an increment, or interval, to which numbers
+   * are rounded. For example, a rounding increment of 0.05 will cause the number 1.23 to be rounded
+   * to 1.25 in the default rounding mode.
+   *
+   * <p>The rounding increment can be specified via the pattern string: for example, the pattern
+   * "#,##0.05" encodes a rounding increment of 0.05.
+   *
+   * <p>The rounding increment is applied <em>after</em> any multipliers might take effect; for
+   * example, in scientific notation or when {@link #setMultiplier} is used.
+   *
+   * <p>See {@link #setMaximumFractionDigits} and {@link #setMaximumSignificantDigits} for two other
+   * ways of specifying rounding strategies.
+   *
+   * @param increment The increment to which numbers are to be rounded.
+   * @see #setRoundingMode
+   * @see #setMaximumFractionDigits
+   * @see #setMaximumSignificantDigits
+   * @category Rounding
+   * @stable ICU 2.0
+   */
+  public synchronized void setRoundingIncrement(java.math.BigDecimal increment) {
     // Backwards compatibility: ignore rounding increment if zero,
     // and instead set maximum fraction digits.
-    if (newValue != null && newValue.compareTo(java.math.BigDecimal.ZERO) == 0) {
+    if (increment != null && increment.compareTo(java.math.BigDecimal.ZERO) == 0) {
       properties.setMaximumFractionDigits(Integer.MAX_VALUE);
       return;
     }
 
-    properties.setRoundingInterval(newValue);
+    properties.setRoundingIncrement(increment);
     refreshFormatter();
   }
 
-  /** @stable ICU 3.6 */
-  public synchronized void setRoundingIncrement(BigDecimal newValue) {
-    java.math.BigDecimal javaBigDecimal = (newValue == null) ? null : newValue.toBigDecimal();
+  /**
+   * <strong>Rounding and Digit Limits:</strong> Overload of {@link
+   * #setRoundingIncrement(java.math.BigDecimal)}.
+   *
+   * @param increment The increment to which numbers are to be rounded.
+   * @see #setRoundingIncrement
+   * @category Rounding
+   * @stable ICU 3.6
+   */
+  public synchronized void setRoundingIncrement(BigDecimal increment) {
+    java.math.BigDecimal javaBigDecimal = (increment == null) ? null : increment.toBigDecimal();
     setRoundingIncrement(javaBigDecimal);
   }
 
-  /** @stable ICU 2.0 */
-  public synchronized void setRoundingIncrement(double newValue) {
-    if (newValue == 0) {
+  /**
+   * <strong>Rounding and Digit Limits:</strong> Overload of {@link
+   * #setRoundingIncrement(java.math.BigDecimal)}.
+   *
+   * @param increment The increment to which numbers are to be rounded.
+   * @see #setRoundingIncrement
+   * @category Rounding
+   * @stable ICU 2.0
+   */
+  public synchronized void setRoundingIncrement(double increment) {
+    if (increment == 0) {
       setRoundingIncrement((java.math.BigDecimal) null);
     } else {
-      java.math.BigDecimal javaBigDecimal = java.math.BigDecimal.valueOf(newValue);
+      java.math.BigDecimal javaBigDecimal = java.math.BigDecimal.valueOf(increment);
       setRoundingIncrement(javaBigDecimal);
     }
   }
 
-  /** @stable ICU 2.0 */
+  /**
+   * @return The rounding mode being used to round numbers.
+   * @see #setRoundingMode
+   * @category Rounding
+   * @stable ICU 2.0
+   */
   @Override
   public synchronized int getRoundingMode() {
     RoundingMode mode = exportedProperties.getRoundingMode();
     return (mode == null) ? 0 : mode.ordinal();
   }
 
-  /** @stable ICU 2.0 */
+  /**
+   * <strong>Rounding and Digit Limits:</strong> Sets the {@link RoundingMode} used to round
+   * numbers. The default rounding mode is HALF_EVEN, which rounds decimals to their closest whole
+   * number, and rounds to the closest even number if at the midpoint.
+   *
+   * <p>For more detail on rounding modes, see <a
+   * href="​http://userguide.icu-project.org/formatparse/numbers/rounding-modes">the ICU User
+   * Guide</a>.
+   *
+   * <p>For backwards compatibility, the rounding mode is specified as an int argument, which can be
+   * from either the constants in {@link BigDecimal} or the ordinal value of {@link RoundingMode}.
+   * The following two calls are functionally equivalent.
+   *
+   * <pre>
+   * df.setRoundingMode(BigDecimal.ROUND_CEILING);
+   * df.setRoundingMode(RoundingMode.CEILING.ordinal());
+   * </pre>
+   *
+   * @param roundingMode The integer constant rounding mode to use when formatting numbers.
+   * @category Rounding
+   * @stable ICU 2.0
+   */
   @Override
   public synchronized void setRoundingMode(int roundingMode) {
     properties.setRoundingMode(RoundingMode.valueOf(roundingMode));
     refreshFormatter();
   }
 
-  /** @stable ICU 2.0 */
-  public synchronized int getFormatWidth() {
-    return exportedProperties.getPaddingWidth();
+  /**
+   * @return The {@link java.math.MathContext} being used to round numbers.
+   * @see #setMathContext
+   * @category Rounding
+   * @stable ICU 4.2
+   */
+  public synchronized java.math.MathContext getMathContext() {
+    java.math.MathContext mathContext = exportedProperties.getMathContext();
+    assert mathContext != null;
+    return mathContext;
   }
 
-  /** @stable ICU 2.0 */
-  public synchronized void setFormatWidth(int width) {
-    properties.setPaddingWidth(width);
+  /**
+   * <strong>Rounding and Digit Limits:</strong> Sets the {@link java.math.MathContext} used to
+   * round numbers. A "math context" encodes both a rounding mode and a number of significant
+   * digits.
+   *
+   * <p>This method is provided for users who require their output to conform to a standard math
+   * context. <strong>Most users should call {@link #setRoundingMode} and/or {@link
+   * #setMaximumSignificantDigits} instead of this method.</strong>
+   *
+   * @param mathContext The MathContext to use when rounding numbers.
+   * @see java.math.MathContext
+   * @category Rounding
+   * @stable ICU 4.2
+   */
+  public synchronized void setMathContext(java.math.MathContext mathContext) {
+    properties.setMathContext(mathContext);
     refreshFormatter();
   }
 
-  /** @stable ICU 2.0 */
-  public synchronized char getPadCharacter() {
-    CharSequence paddingString = exportedProperties.getPaddingString();
-    if (paddingString == null) {
-      return '.'; // TODO: Is this the correct behavior?
-    } else {
-      return paddingString.charAt(0);
-    }
-  }
-
-  /** @stable ICU 2.0 */
-  public synchronized void setPadCharacter(char padChar) {
-    properties.setPaddingString(Character.toString(padChar));
-    refreshFormatter();
-  }
-
-  /** @stable ICU 2.0 */
-  public synchronized int getPadPosition() {
-    PaddingLocation loc = exportedProperties.getPaddingLocation();
-    return (loc == null) ? PAD_BEFORE_PREFIX : loc.toOld();
-  }
-
-  /** @stable ICU 2.0 */
-  public synchronized void setPadPosition(int padPos) {
-    properties.setPaddingLocation(PaddingLocation.fromOld(padPos));
-    refreshFormatter();
-  }
-
-  /** @stable ICU 2.0 */
-  public synchronized boolean isScientificNotation() {
-    return ScientificFormat.useScientificNotation(properties);
-  }
-
-  /** @stable ICU 2.0 */
-  public synchronized void setScientificNotation(boolean useScientific) {
-    if (useScientific) {
-      properties.setExponentDigits(1);
-    } else {
-      properties.setExponentDigits(Properties.DEFAULT_EXPONENT_DIGITS);
-    }
-    refreshFormatter();
-  }
-
-  /** @stable ICU 2.0 */
-  public synchronized byte getMinimumExponentDigits() {
-    return (byte) exportedProperties.getExponentDigits();
-  }
-
-  /** @stable ICU 2.0 */
-  public synchronized void setMinimumExponentDigits(byte minExpDig) {
-    properties.setExponentDigits(minExpDig);
-    refreshFormatter();
-  }
-
-  /** @stable ICU 2.0 */
-  public synchronized boolean isExponentSignAlwaysShown() {
-    return exportedProperties.getExponentShowPlusSign();
-  }
-
-  /** @stable ICU 2.0 */
-  public synchronized void setExponentSignAlwaysShown(boolean expSignAlways) {
-    properties.setExponentShowPlusSign(expSignAlways);
-    refreshFormatter();
-  }
-
-  /** @stable ICU 2.0 */
-  public synchronized int getGroupingSize() {
-    return exportedProperties.getGroupingSize();
-  }
-
-  /** @stable ICU 2.0 */
-  public synchronized void setGroupingSize(int newValue) {
-    properties.setGroupingSize(newValue);
-    refreshFormatter();
-  }
-
-  /** @stable ICU 2.0 */
-  public synchronized int getSecondaryGroupingSize() {
-    return exportedProperties.getSecondaryGroupingSize();
-  }
-
-  /** @stable ICU 2.0 */
-  public synchronized void setSecondaryGroupingSize(int newValue) {
-    properties.setSecondaryGroupingSize(newValue);
-    refreshFormatter();
-  }
-
-  /** @stable ICU 2.0 */
-  @Override
-  public synchronized boolean isGroupingUsed() {
-    return PositiveDecimalFormat.useGrouping(properties);
-  }
-
-  /** @stable ICU 2.0 */
-  @Override
-  public synchronized void setGroupingUsed(boolean newValue) {
-    if (newValue) {
-      // Set to a reasonable default value
-      properties.setGroupingSize(3);
-    } else {
-      properties.setGroupingSize(Properties.DEFAULT_GROUPING_SIZE);
-      properties.setSecondaryGroupingSize(Properties.DEFAULT_SECONDARY_GROUPING_SIZE);
-    }
-    refreshFormatter();
-  }
-
-  /** Remember the ICU math context form in order to be able to return it from the API. */
+  // Remember the ICU math context form in order to be able to return it from the API.
   private int icuMathContextForm = MathContext.PLAIN;
 
-  /** @stable ICU 4.2 */
+  /**
+   * @return The {@link com.ibm.icu.math.MathContext} being used to round numbers.
+   * @see #setMathContext
+   * @category Rounding
+   * @stable ICU 4.2
+   */
   public synchronized MathContext getMathContextICU() {
     java.math.MathContext mathContext = getMathContext();
     return new MathContext(
@@ -600,140 +750,195 @@ public class DecimalFormat extends NumberFormat {
         mathContext.getRoundingMode().ordinal());
   }
 
-  /** @stable ICU 4.2 */
-  public synchronized void setMathContextICU(MathContext newValue) {
-    icuMathContextForm = newValue.getForm();
+  /**
+   * <strong>Rounding and Digit Limits:</strong> Overload of {@link #setMathContext} for {@link
+   * com.ibm.icu.math.MathContext}.
+   *
+   * @param mathContextICU The MathContext to use when rounding numbers.
+   * @see #setMathContext(java.math.MathContext)
+   * @category Rounding
+   * @stable ICU 4.2
+   */
+  public synchronized void setMathContextICU(MathContext mathContextICU) {
+    icuMathContextForm = mathContextICU.getForm();
     java.math.MathContext mathContext;
-    if (newValue.getLostDigits()) {
+    if (mathContextICU.getLostDigits()) {
       // The getLostDigits() feature in ICU MathContext means "throw an ArithmeticException if
       // rounding causes digits to be lost". That feature is called RoundingMode.UNNECESSARY in
       // Java MathContext.
-      mathContext = new java.math.MathContext(
-          newValue.getDigits(),
-          RoundingMode.UNNECESSARY);
+      mathContext = new java.math.MathContext(mathContextICU.getDigits(), RoundingMode.UNNECESSARY);
     } else {
-      mathContext = new java.math.MathContext(
-          newValue.getDigits(),
-          RoundingMode.valueOf(newValue.getRoundingMode()));
+      mathContext =
+          new java.math.MathContext(
+              mathContextICU.getDigits(), RoundingMode.valueOf(mathContextICU.getRoundingMode()));
     }
     setMathContext(mathContext);
   }
 
-  /** @stable ICU 4.2 */
-  public synchronized java.math.MathContext getMathContext() {
-    java.math.MathContext mathContext = exportedProperties.getMathContext();
-    assert mathContext != null;
-    return mathContext;
-  }
-
-  /** @stable ICU 4.2 */
-  public synchronized void setMathContext(java.math.MathContext newValue) {
-    properties.setMathContext(newValue);
-    refreshFormatter();
-  }
-
-  /** @stable ICU 54 */
-  public synchronized void setDecimalPatternMatchRequired(boolean value) {
-    properties.setDecimalPatternMatchRequired(value);
-    refreshFormatter();
-  }
-
-  /** @stable ICU 54 */
-  public synchronized boolean isDecimalPatternMatchRequired() {
-    return properties.getDecimalPatternMatchRequired();
-  }
-
-  /** @stable ICU 2.0 */
-  public synchronized boolean isDecimalSeparatorAlwaysShown() {
-    return exportedProperties.getAlwaysShowDecimal();
-  }
-
-  /** @stable ICU 2.0 */
-  public synchronized void setDecimalSeparatorAlwaysShown(boolean newValue) {
-    properties.setAlwaysShowDecimal(newValue);
-    refreshFormatter();
-  }
-
-  /** @stable ICU 2.0 */
-  @Override
-  public synchronized int getMaximumIntegerDigits() {
-    return exportedProperties.getMaximumIntegerDigits();
-  }
-
-  /** @stable ICU 2.0 */
+  /**
+   * @return The effective minimum number of digits before the decimal separator.
+   * @see #setMinimumIntegerDigits
+   * @category Rounding
+   * @stable ICU 2.0
+   */
   @Override
   public synchronized int getMinimumIntegerDigits() {
     return exportedProperties.getMinimumIntegerDigits();
   }
 
-  /** @stable ICU 2.0 */
+  /**
+   * <strong>Rounding and Digit Limits:</strong> Sets the minimum number of digits to display before
+   * the decimal separator. If the number has fewer than this many digits, the number is padded with
+   * zeros.
+   *
+   * <p>For example, if minimum integer digits is 3, the number 12.3 will be printed as "001.23".
+   *
+   * <p>Minimum integer and minimum and maximum fraction digits can be specified via the pattern
+   * string. For example, "#,#00.00#" has 2 minimum integer digits, 2 minimum fraction digits, and 3
+   * maximum fraction digits. Note that it is not possible to specify maximium integer digits in the
+   * pattern except in scientific notation.
+   *
+   * @param value The minimum number of digits before the decimal separator.
+   * @category Rounding
+   * @stable ICU 2.0
+   */
   @Override
-  public synchronized void setMaximumIntegerDigits(int newValue) {
-    properties.setMaximumIntegerDigits(newValue);
+  public synchronized void setMinimumIntegerDigits(int value) {
+    properties.setMinimumIntegerDigits(value);
     refreshFormatter();
   }
 
-  /** @stable ICU 2.0 */
+  /**
+   * @return The effective maximum number of digits before the decimal separator.
+   * @see #setMaximumIntegerDigits
+   * @category Rounding
+   * @stable ICU 2.0
+   */
   @Override
-  public synchronized void setMinimumIntegerDigits(int newValue) {
-    properties.setMinimumIntegerDigits(newValue);
+  public synchronized int getMaximumIntegerDigits() {
+    return exportedProperties.getMaximumIntegerDigits();
+  }
+
+  /**
+   * <strong>Rounding and Digit Limits:</strong> Sets the maximum number of digits to display before
+   * the decimal separator. If the number has more than this many digits, the number is truncated.
+   *
+   * <p>For example, if maximum integer digits is 3, the number 12345 will be printed as "345".
+   *
+   * <p>Minimum integer and minimum and maximum fraction digits can be specified via the pattern
+   * string. For example, "#,#00.00#" has 2 minimum integer digits, 2 minimum fraction digits, and 3
+   * maximum fraction digits. Note that it is not possible to specify maximium integer digits in the
+   * pattern except in scientific notation.
+   *
+   * @param value The maximum number of digits before the decimal separator.
+   * @category Rounding
+   * @stable ICU 2.0
+   */
+  @Override
+  public synchronized void setMaximumIntegerDigits(int value) {
+    properties.setMaximumIntegerDigits(value);
     refreshFormatter();
   }
 
-  /** @stable ICU 2.0 */
-  @Override
-  public synchronized int getMaximumFractionDigits() {
-    return exportedProperties.getMaximumFractionDigits();
-  }
-
-  /** @stable ICU 2.0 */
+  /**
+   * @return The effective minimum number of integer digits after the decimal separator.
+   * @see #setMaximumIntegerDigits
+   * @category Rounding
+   * @stable ICU 2.0
+   */
   @Override
   public synchronized int getMinimumFractionDigits() {
     return exportedProperties.getMinimumFractionDigits();
   }
 
-  /** @stable ICU 2.0 */
+  /**
+   * <strong>Rounding and Digit Limits:</strong> Sets the minimum number of digits to display after
+   * the decimal separator. If the number has fewer than this many digits, the number is padded with
+   * zeros.
+   *
+   * <p>For example, if minimum fraction digits is 2, the number 123.4 will be printed as "123.40".
+   *
+   * <p>Minimum integer and minimum and maximum fraction digits can be specified via the pattern
+   * string. For example, "#,#00.00#" has 2 minimum integer digits, 2 minimum fraction digits, and 3
+   * maximum fraction digits. Note that it is not possible to specify maximium integer digits in the
+   * pattern except in scientific notation.
+   *
+   * <p>See {@link #setRoundingIncrement} and {@link #setMaximumSignificantDigits} for two other
+   * ways of specifying rounding strategies.
+   *
+   * @param value The minimum number of integer digits after the decimal separator.
+   * @see #setRoundingMode
+   * @see #setRoundingIncrement
+   * @see #setMaximumSignificantDigits
+   * @category Rounding
+   * @stable ICU 2.0
+   */
   @Override
-  public synchronized void setMaximumFractionDigits(int newValue) {
-    properties.setMaximumFractionDigits(newValue);
+  public synchronized void setMinimumFractionDigits(int value) {
+    properties.setMinimumFractionDigits(value);
     refreshFormatter();
   }
 
-  /** @stable ICU 2.0 */
+  /**
+   * @return The effective maximum number of integer digits after the decimal separator.
+   * @see #setMaximumIntegerDigits
+   * @category Rounding
+   * @stable ICU 2.0
+   */
   @Override
-  public synchronized void setMinimumFractionDigits(int newValue) {
-    properties.setMinimumFractionDigits(newValue);
+  public synchronized int getMaximumFractionDigits() {
+    return exportedProperties.getMaximumFractionDigits();
+  }
+
+  /**
+   * <strong>Rounding and Digit Limits:</strong> Sets the maximum number of digits to display after
+   * the decimal separator. If the number has more than this many digits, the number is rounded
+   * according to the rounding mode.
+   *
+   * <p>For example, if maximum fraction digits is 2, the number 123.456 will be printed as
+   * "123.46".
+   *
+   * <p>Minimum integer and minimum and maximum fraction digits can be specified via the pattern
+   * string. For example, "#,#00.00#" has 2 minimum integer digits, 2 minimum fraction digits, and 3
+   * maximum fraction digits. Note that it is not possible to specify maximium integer digits in the
+   * pattern except in scientific notation.
+   *
+   * @param value The maximum number of integer digits after the decimal separator.
+   * @see #setRoundingMode
+   * @category Rounding
+   * @stable ICU 2.0
+   */
+  @Override
+  public synchronized void setMaximumFractionDigits(int value) {
+    properties.setMaximumFractionDigits(value);
     refreshFormatter();
   }
 
-  /** @stable ICU 3.0 */
-  public synchronized int getMinimumSignificantDigits() {
-    return exportedProperties.getMinimumSignificantDigits();
-  }
-
-  /** @stable ICU 3.0 */
-  public synchronized int getMaximumSignificantDigits() {
-    return exportedProperties.getMaximumSignificantDigits();
-  }
-
-  /** @stable ICU 3.0 */
-  public synchronized void setMinimumSignificantDigits(int min) {
-    properties.setMinimumSignificantDigits(min);
-    refreshFormatter();
-  }
-
-  /** @stable ICU 3.0 */
-  public synchronized void setMaximumSignificantDigits(int max) {
-    properties.setMaximumSignificantDigits(max);
-    refreshFormatter();
-  }
-
-  /** @stable ICU 3.0 */
+  /**
+   * @return Whether significant digits are being used in rounding.
+   * @see #setSignificantDigitsUsed
+   * @category Rounding
+   * @stable ICU 3.0
+   */
   public synchronized boolean areSignificantDigitsUsed() {
     return SignificantDigitsRounder.useSignificantDigits(properties);
   }
 
-  /** @stable ICU 3.0 */
+  /**
+   * <strong>Rounding and Digit Limits:</strong> Sets whether significant digits are to be used in
+   * rounding.
+   *
+   * <p>Calling <code>df.setSignificantDigitsUsed(true)</code> is functionally equivalent to:
+   *
+   * <pre>
+   * df.setMinimumSignificantDigits(1);
+   * df.setMaximumSignificantDigits(6);
+   * </pre>
+   *
+   * @param useSignificantDigits true to enable significant digit rounding; false to disable it.
+   * @category Rounding
+   * @stable ICU 3.0
+   */
   public synchronized void setSignificantDigitsUsed(boolean useSignificantDigits) {
     if (useSignificantDigits) {
       // These are the default values from the old implementation.
@@ -742,35 +947,517 @@ public class DecimalFormat extends NumberFormat {
     } else {
       properties.setMinimumSignificantDigits(Properties.DEFAULT_MINIMUM_SIGNIFICANT_DIGITS);
       properties.setMaximumSignificantDigits(Properties.DEFAULT_MAXIMUM_SIGNIFICANT_DIGITS);
+      properties.setSignificantDigitsMode(null);
     }
     refreshFormatter();
   }
 
+  /**
+   * @return The effective minimum number of significant digits displayed.
+   * @see #setMinimumSignificantDigits
+   * @category Rounding
+   * @stable ICU 3.0
+   */
+  public synchronized int getMinimumSignificantDigits() {
+    return exportedProperties.getMinimumSignificantDigits();
+  }
+
+  /**
+   * <strong>Rounding and Digit Limits:</strong> Sets the minimum number of significant digits to be
+   * displayed. If the number of significant digits is less than this value, the number will be
+   * padded with zeros as necessary.
+   *
+   * <p>For example, if minimum significant digits is 3 and the number is 1.2, the number will be
+   * printed as "1.20".
+   *
+   * @param value The minimum number of significant digits to display.
+   * @see #setSignificantDigitsMode
+   * @category Rounding
+   * @stable ICU 3.0
+   */
+  public synchronized void setMinimumSignificantDigits(int value) {
+    properties.setMinimumSignificantDigits(value);
+    refreshFormatter();
+  }
+
+  /**
+   * @return The effective maximum number of significant digits displayed.
+   * @see #setMaximumSignificantDigits
+   * @category Rounding
+   * @stable ICU 3.0
+   */
+  public synchronized int getMaximumSignificantDigits() {
+    return exportedProperties.getMaximumSignificantDigits();
+  }
+
+  /**
+   * <strong>Rounding and Digit Limits:</strong> Sets the maximum number of significant digits to be
+   * displayed. If the number of significant digits in the number exceeds this value, the number
+   * will be rounded according to the current rounding mode.
+   *
+   * <p>For example, if maximum significant digits is 3 and the number is 12345, the number will be
+   * printed as "12300".
+   *
+   * <p>See {@link #setRoundingIncrement} and {@link #setMaximumFractionDigits} for two other ways
+   * of specifying rounding strategies.
+   *
+   * @param value The maximum number of significant digits to display.
+   * @see #setRoundingMode
+   * @see #setRoundingIncrement
+   * @see #setMaximumFractionDigits
+   * @see #setSignificantDigitsMode
+   * @category Rounding
+   * @stable ICU 3.0
+   */
+  public synchronized void setMaximumSignificantDigits(int value) {
+    properties.setMaximumSignificantDigits(value);
+    refreshFormatter();
+  }
+
+  /**
+   * @return The current significant digits mode.
+   * @see #setSignificantDigitsMode
+   * @category Rounding
+   * @internal
+   * @deprecated ICU 59: This API is a technical preview. It may change in an upcoming release.
+   */
+  @Deprecated
+  public synchronized SignificantDigitsMode getSignificantDigitsMode() {
+    return exportedProperties.getSignificantDigitsMode();
+  }
+
+  /**
+   * <strong>Rounding and Digit Limits:</strong> Sets the strategy used for resolving
+   * minimum/maximum significant digits when minimum/maximum integer and/or fraction digits are
+   * specified. There are three modes:
+   *
+   * <ul>
+   *   <li>Mode A: OVERRIDE_MAXIMUM_FRACTION. This is the default. Settings in maximum fraction are
+   *       ignored.
+   *   <li>Mode B: RESPECT_MAXIMUM_FRACTION. Round to maximum fraction even if doing so will prevent
+   *       minimum significant from being respected.
+   *   <li>Mode C: ENSURE_MINIMUM_SIGNIFICANT. Respect maximum fraction, but always ensure that
+   *       minimum significant digits are shown.
+   * </ul>
+   *
+   * <p>The following table illustrates the difference. Below, minFrac=1, maxFrac=2, minSig=3, and
+   * maxSig=4:
+   *
+   * <pre>
+   *   Mode A |   Mode B |   Mode C
+   * ---------+----------+----------
+   *  12340.0 |  12340.0 |  12340.0
+   *   1234.0 |   1234.0 |   1234.0
+   *    123.4 |    123.4 |    123.4
+   *    12.34 |    12.34 |    12.34
+   *    1.234 |     1.23 |     1.23
+   *   0.1234 |     0.12 |    0.123
+   *  0.01234 |     0.01 |   0.0123
+   * 0.001234 |     0.00 |  0.00123
+   * </pre>
+   *
+   * @param mode The significant digits mode to use.
+   * @category Rounding
+   * @internal
+   * @deprecated ICU 59: This API is a technical preview. It may change in an upcoming release.
+   */
+  @Deprecated
+  public synchronized void setSignificantDigitsMode(SignificantDigitsMode mode) {
+    properties.setSignificantDigitsMode(mode);
+    refreshFormatter();
+  }
+
+  /**
+   * @return The minimum number of characters in formatted output.
+   * @see #setFormatWidth
+   * @category Padding
+   * @stable ICU 2.0
+   */
+  public synchronized int getFormatWidth() {
+    return exportedProperties.getFormatWidth();
+  }
+
+  /**
+   * <strong>Padding:</strong> Sets the minimum width of the string output by the formatting
+   * pipeline. For example, if padding is enabled and paddingWidth is set to 6, formatting the
+   * number "3.14159" with the pattern "0.00" will result in "··3.14" if '·' is your padding string.
+   *
+   * <p>If the number is longer than your padding width, the number will display as if no padding
+   * width had been specified, which may result in strings longer than the padding width.
+   *
+   * <p>Padding can be specified in the pattern string using the '*' symbol. For example, the format
+   * "*x######0" has a format width of 7 and a pad character of 'x'.
+   *
+   * <p>Padding is currently counted in UTF-16 code units; see <a
+   * href="http://bugs.icu-project.org/trac/ticket/13034">ticket #13034</a> for more information.
+   *
+   * @param width The minimum number of characters in the output.
+   * @see #setPadCharacter
+   * @see #setPadPosition
+   * @category Padding
+   * @stable ICU 2.0
+   */
+  public synchronized void setFormatWidth(int width) {
+    properties.setFormatWidth(width);
+    refreshFormatter();
+  }
+
+  /**
+   * @return The character used for padding.
+   * @see #setPadCharacter
+   * @category Padding
+   * @stable ICU 2.0
+   */
+  public synchronized char getPadCharacter() {
+    CharSequence paddingString = exportedProperties.getPadString();
+    if (paddingString == null) {
+      return '.'; // TODO: Is this the correct behavior?
+    } else {
+      return paddingString.charAt(0);
+    }
+  }
+
+  /**
+   * <strong>Padding:</strong> Sets the character used to pad numbers that are narrower than the
+   * width specified in {@link #setFormatWidth}.
+   *
+   * <p>In the pattern string, the padding character is the token that follows '*' before or after
+   * the prefix or suffix.
+   *
+   * @param padChar The character used for padding.
+   * @see #setFormatWidth
+   * @category Padding
+   * @stable ICU 2.0
+   */
+  public synchronized void setPadCharacter(char padChar) {
+    properties.setPadString(Character.toString(padChar));
+    refreshFormatter();
+  }
+
+  /**
+   * @return The position used for padding.
+   * @see #setPadPosition
+   * @category Padding
+   * @stable ICU 2.0
+   */
+  public synchronized int getPadPosition() {
+    PadPosition loc = exportedProperties.getPadPosition();
+    return (loc == null) ? PAD_BEFORE_PREFIX : loc.toOld();
+  }
+
+  /**
+   * <strong>Padding:</strong> Sets the position where to insert the pad character when narrower
+   * than the width specified in {@link #setFormatWidth}. For example, consider the pattern "P123S"
+   * with padding width 8 and padding char "*". The four positions are:
+   *
+   * <ul>
+   *   <li>{@link DecimalFormat#PAD_BEFORE_PREFIX} ⇒ "***P123S"
+   *   <li>{@link DecimalFormat#PAD_AFTER_PREFIX} ⇒ "P***123S"
+   *   <li>{@link DecimalFormat#PAD_BEFORE_SUFFIX} ⇒ "P123***S"
+   *   <li>{@link DecimalFormat#PAD_AFTER_SUFFIX} ⇒ "P123S***"
+   * </ul>
+   *
+   * @param padPos The position used for padding.
+   * @see #setFormatWidth
+   * @category Padding
+   * @stable ICU 2.0
+   */
+  public synchronized void setPadPosition(int padPos) {
+    properties.setPadPosition(PadPosition.fromOld(padPos));
+    refreshFormatter();
+  }
+
+  /**
+   * @return Whether scientific (exponential) notation is enabled on this formatter.
+   * @see #setScientificNotation
+   * @category ScientificNotation
+   * @stable ICU 2.0
+   */
+  public synchronized boolean isScientificNotation() {
+    return ScientificFormat.useScientificNotation(properties);
+  }
+
+  /**
+   * <strong>Scientific Notation:</strong> Sets whether this formatter should print in scientific
+   * (exponential) notation. For example, if scientific notation is enabled, the number 123000 will
+   * be printed as "1.23E5" in locale <em>en-US</em>. A locale-specific symbol is used as the
+   * exponent separator.
+   *
+   * <p>Calling <code>df.setScientificNotation(true)</code> is functionally equivalent to calling
+   * <code>df.setMinimumExponentDigits(1)</code>.
+   *
+   * @param useScientific true to enable scientific notation; false to disable it.
+   * @see #setMinimumExponentDigits
+   * @category ScientificNotation
+   * @stable ICU 2.0
+   */
+  public synchronized void setScientificNotation(boolean useScientific) {
+    if (useScientific) {
+      properties.setMinimumExponentDigits(1);
+    } else {
+      properties.setMinimumExponentDigits(Properties.DEFAULT_MINIMUM_EXPONENT_DIGITS);
+    }
+    refreshFormatter();
+  }
+
+  /**
+   * @return The minimum number of digits printed in the exponent in scientific notation.
+   * @see #setMinimumExponentDigits
+   * @category ScientificNotation
+   * @stable ICU 2.0
+   */
+  public synchronized byte getMinimumExponentDigits() {
+    return (byte) exportedProperties.getMinimumExponentDigits();
+  }
+
+  /**
+   * <strong>Scientific Notation:</strong> Sets the minimum number of digits to be printed in the
+   * exponent. For example, if minimum exponent digits is 3, the number 123000 will be printed as
+   * "1.23E005".
+   *
+   * <p>This setting corresponds to the number of zeros after the 'E' in a pattern string such as
+   * "0.00E000".
+   *
+   * @param minExpDig The minimum number of digits in the exponent.
+   * @category ScientificNotation
+   * @stable ICU 2.0
+   */
+  public synchronized void setMinimumExponentDigits(byte minExpDig) {
+    properties.setMinimumExponentDigits(minExpDig);
+    refreshFormatter();
+  }
+
+  /**
+   * @return Whether the sign (plus or minus) is always printed in scientific notation.
+   * @see #setExponentSignAlwaysShown
+   * @category ScientificNotation
+   * @stable ICU 2.0
+   */
+  public synchronized boolean isExponentSignAlwaysShown() {
+    return exportedProperties.getExponentSignAlwaysShown();
+  }
+
+  /**
+   * <strong>Scientific Notation:</strong> Sets whether the sign (plus or minus) is always to be
+   * shown in the exponent in scientific notation. For example, if this setting is enabled, the
+   * number 123000 will be printed as "1.23E+5" in locale <em>en-US</em>. The number 0.0000123 will
+   * always be printed as "1.23E-5" in locale <em>en-US</em> whether or not this setting is enabled.
+   *
+   * <p>This setting corresponds to the '+' in a pattern such as "0.00E+0".
+   *
+   * @param expSignAlways true to always shown the sign in the exponent; false to show it for
+   *     negatives but not positives.
+   * @category ScientificNotation
+   * @stable ICU 2.0
+   */
+  public synchronized void setExponentSignAlwaysShown(boolean expSignAlways) {
+    properties.setExponentSignAlwaysShown(expSignAlways);
+    refreshFormatter();
+  }
+
+  /**
+   * @return Whether or not grouping separators are to be printed in the output.
+   * @see #setGroupingUsed
+   * @category Separators
+   * @stable ICU 2.0
+   */
+  @Override
+  public synchronized boolean isGroupingUsed() {
+    return PositiveDecimalFormat.useGrouping(properties);
+  }
+
+  /**
+   * <strong>Grouping:</strong> Sets whether grouping is to be used when formatting numbers.
+   * Grouping means whether the thousands, millions, billions, and larger powers of ten should be
+   * separated by a grouping separator (a comma in <em>en-US</em>).
+   *
+   * <p>For example, if grouping is enabled, 12345 will be printed as "12,345" in <em>en-US</em>. If
+   * grouping were disabled, it would instead be printed as simply "12345".
+   *
+   * <p>Calling <code>df.setGroupingUsed(true)</code> is functionally equivalent to setting grouping
+   * size to 3, as in <code>df.setGroupingSize(3)</code>.
+   *
+   * @param enabled true to enable grouping separators; false to disable them.
+   * @see #setGroupingSize
+   * @see #setSecondaryGroupingSize
+   * @category Separators
+   * @stable ICU 2.0
+   */
+  @Override
+  public synchronized void setGroupingUsed(boolean enabled) {
+    if (enabled) {
+      // Set to a reasonable default value
+      properties.setGroupingSize(3);
+    } else {
+      properties.setGroupingSize(Properties.DEFAULT_GROUPING_SIZE);
+      properties.setSecondaryGroupingSize(Properties.DEFAULT_SECONDARY_GROUPING_SIZE);
+    }
+    refreshFormatter();
+  }
+
+  /**
+   * @return The primary grouping size in use.
+   * @see #setGroupingSize
+   * @category Separators
+   * @stable ICU 2.0
+   */
+  public synchronized int getGroupingSize() {
+    return exportedProperties.getGroupingSize();
+  }
+
+  /**
+   * <strong>Grouping:</strong> Sets the primary grouping size (distance between grouping
+   * separators) used when formatting large numbers. For most locales, this defaults to 3: the
+   * number of digits between the ones and thousands place, between thousands and millions, and so
+   * forth.
+   *
+   * <p>For example, with a grouping size of 3, the number 1234567 will be formatted as "1,234,567".
+   *
+   * <p>Grouping size can also be specified in the pattern: for example, "#,##0" corresponds to a
+   * grouping size of 3.
+   *
+   * @param width The grouping size to use.
+   * @see #setSecondaryGroupingSize
+   * @category Separators
+   * @stable ICU 2.0
+   */
+  public synchronized void setGroupingSize(int width) {
+    properties.setGroupingSize(width);
+    refreshFormatter();
+  }
+
+  /**
+   * @return The secondary grouping size in use.
+   * @see #setSecondaryGroupingSize
+   * @category Separators
+   * @stable ICU 2.0
+   */
+  public synchronized int getSecondaryGroupingSize() {
+    return exportedProperties.getSecondaryGroupingSize();
+  }
+
+  /**
+   * <strong>Grouping:</strong> Sets the secondary grouping size (distance between grouping
+   * separators after the first separator) used when formatting large numbers. In many south Asian
+   * locales, this is set to 2.
+   *
+   * <p>For example, with primary grouping size 3 and secondary grouping size 2, the number 1234567
+   * will be formatted as "12,34,567".
+   *
+   * <p>Grouping size can also be specified in the pattern: for example, "#,##,##0" corresponds to a
+   * primary grouping size of 3 and a secondary grouping size of 2.
+   *
+   * @param width The secondary grouping size to use.
+   * @see #setGroupingSize
+   * @category Separators
+   * @stable ICU 2.0
+   */
+  public synchronized void setSecondaryGroupingSize(int width) {
+    properties.setSecondaryGroupingSize(width);
+    refreshFormatter();
+  }
+
+  /**
+   * @return The minimum number of digits before grouping is triggered.
+   * @see #setMinimumGroupingDigits
+   * @category Separators
+   * @internal
+   * @deprecated ICU 59: This API is a technical preview. It may change in an upcoming release.
+   */
+  @Deprecated
+  public synchronized int getMinimumGroupingDigits() {
+    return properties.getMinimumGroupingDigits();
+  }
+
+  /**
+   * Sets the minimum number of digits that must be before the first grouping separator in order for
+   * the grouping separator to be printed. For example, if minimum grouping digits is set to 2, in
+   * <em>en-US</em>, 1234 will be printed as "1234" and 12345 will be printed as "12,345".
+   *
+   * @param number The minimum number of digits before grouping is triggered.
+   * @category Separators
+   * @internal
+   * @deprecated ICU 59: This API is a technical preview. It may change in an upcoming release.
+   */
+  @Deprecated
+  public synchronized void setMinimumGroupingDigits(int number) {
+    properties.setMinimumGroupingDigits(number);
+    refreshFormatter();
+  }
+
+  /**
+   * @return Whether the decimal separator is shown on integers.
+   * @see #setDecimalSeparatorAlwaysShown
+   * @category Separators
+   * @stable ICU 2.0
+   */
+  public synchronized boolean isDecimalSeparatorAlwaysShown() {
+    return exportedProperties.getDecimalSeparatorAlwaysShown();
+  }
+
+  /**
+   * <strong>Separators:</strong> Sets whether the decimal separator (a period in <em>en-US</em>) is
+   * shown on integers. For example, if this setting is turned on, formatting 123 will result in
+   * "123." with the decimal separator.
+   *
+   * <p>This setting can be specified in the pattern for integer formats: "#,##0." is an example.
+   *
+   * @param value true to always show the decimal separator; false to show it only when there is a
+   *     fraction part of the number.
+   * @category Separators
+   * @stable ICU 2.0
+   */
+  public synchronized void setDecimalSeparatorAlwaysShown(boolean value) {
+    properties.setDecimalSeparatorAlwaysShown(value);
+    refreshFormatter();
+  }
+
+  /**
+   * @return The user-specified currency. May be null.
+   * @see #setCurrency
+   * @see DecimalFormatSymbols#getCurrency
+   * @category Currency
+   * @stable ICU 2.6
+   */
   @Override
   public synchronized Currency getCurrency() {
     return properties.getCurrency();
   }
 
-  /** @stable ICU 2.2 */
+  /**
+   * Sets the currency to be used when formatting numbers. The effect is twofold:
+   *
+   * <ol>
+   *   <li>Substitutions for currency symbols in the pattern string will use this currency
+   *   <li>The rounding mode will obey the rules for this currency (see {@link #setCurrencyUsage})
+   * </ol>
+   *
+   * <strong>Important:</strong> Displaying the currency in the output requires that the patter
+   * associated with this formatter contains a currency symbol '¤'. This will be the case if the
+   * instance was created via {@link #getCurrencyInstance} or one of its friends.
+   *
+   * @param currency The currency to use.
+   * @category Currency
+   * @stable ICU 2.2
+   */
   @Override
-  public synchronized void setCurrency(Currency theCurrency) {
-    properties.setCurrency(theCurrency);
+  public synchronized void setCurrency(Currency currency) {
+    properties.setCurrency(currency);
     // Backwards compatibility: also set the currency in the DecimalFormatSymbols
-    if (theCurrency != null) {
-      symbols.setCurrency(theCurrency);
-      String symbol = theCurrency.getName(symbols.getULocale(), Currency.SYMBOL_NAME, null);
+    if (currency != null) {
+      symbols.setCurrency(currency);
+      String symbol = currency.getName(symbols.getULocale(), Currency.SYMBOL_NAME, null);
       symbols.setCurrencySymbol(symbol);
     }
     refreshFormatter();
   }
 
-  /** @stable ICU 54 */
-  public synchronized void setCurrencyUsage(CurrencyUsage newUsage) {
-    properties.setCurrencyUsage(newUsage);
-    refreshFormatter();
-  }
-
-  /** @stable ICU 54 */
+  /**
+   * @return The strategy for rounding currency amounts.
+   * @see #setCurrencyUsage
+   * @category Currency
+   * @stable ICU 54
+   */
   public synchronized CurrencyUsage getCurrencyUsage() {
     // CurrencyUsage is not exported, so we have to get it from the input property bag.
     // TODO: Should we export CurrencyUsage instead?
@@ -781,47 +1468,127 @@ public class DecimalFormat extends NumberFormat {
     return usage;
   }
 
-  /** @stable ICU 4.2 */
+  /**
+   * Sets the currency-dependent strategy to use when rounding numbers. There are two strategies:
+   *
+   * <ul>
+   *   <li>STANDARD: When the amount displayed is intended for banking statements or electronic
+   *       transfer.
+   *   <li>CASH: When the amount displayed is intended to be representable in physical currency,
+   *       like at a cash register.
+   * </ul>
+   *
+   * CASH mode is relevant in currencies that do not have tender down to the penny. For more
+   * information on the two rounding strategies, see <a
+   * href="http://unicode.org/reports/tr35/tr35-numbers.html#Supplemental_Currency_Data">UTS
+   * #35</a>. If omitted, the strategy defaults to STANDARD. To override currency rounding
+   * altogether, use {@link #setMinimumFractionDigits} and {@link #setMaximumFractionDigits} or
+   * {@link #setRoundingIncrement}.
+   *
+   * @param usage The strategy to use when rounding in the current currency.
+   * @category Currency
+   * @stable ICU 54
+   */
+  public synchronized void setCurrencyUsage(CurrencyUsage usage) {
+    properties.setCurrencyUsage(usage);
+    refreshFormatter();
+  }
+
+  /**
+   * @return The current instance of CurrencyPluralInfo.
+   * @see #setCurrencyPluralInfo
+   * @category Currency
+   * @stable ICU 4.2
+   */
   public CurrencyPluralInfo getCurrencyPluralInfo() {
     // CurrencyPluralInfo also is not exported.
     return properties.getCurrencyPluralInfo();
   }
 
-  /** @stable ICU 4.2 */
+  /**
+   * Sets a custom instance of CurrencyPluralInfo. CurrencyPluralInfo generates pattern strings for
+   * printing currency long names.
+   *
+   * <p><strong>Most users should not call this method directly.</strong> You should instead create
+   * your formatter via <code>NumberFormat.getInstance(NumberFormat.PLURALCURRENCYSTYLE)</code>.
+   *
+   * @param newInfo The CurrencyPluralInfo to use when printing currency long names.
+   * @category Currency
+   * @stable ICU 4.2
+   */
   public void setCurrencyPluralInfo(CurrencyPluralInfo newInfo) {
     properties.setCurrencyPluralInfo(newInfo);
     refreshFormatter();
   }
 
-  /** @stable ICU 3.6 */
-  public synchronized void setParseBigDecimal(boolean value) {
-    properties.setParseToBigDecimal(value);
-    // refreshFormatter() not needed
-  }
-
-  /** @stable ICU 3.6 */
+  /**
+   * @return Whether {@link #parse} will always return a BigDecimal
+   * @see #setParseBigDecimal
+   * @category Parsing
+   * @stable ICU 3.6
+   */
   public synchronized boolean isParseBigDecimal() {
     return properties.getParseToBigDecimal();
   }
 
   /**
-   * Setting max parse digits has no effect since ICU 59.
+   * Whether to force {@link #parse} to always return a BigDecimal. By default, {@link #parse} will
+   * return different data types as follows:
    *
-   * @stable ICU 51
+   * <ol>
+   *   <li>If the number is an integer (has no fraction part), return a Long if possible, or else a
+   *       BigInteger.
+   *   <li>Otherwise, return a BigDecimal.
+   * </ol>
+   *
+   * If this setting is enabled, a BigDecimal will be returned even if the number is an integer.
+   *
+   * @param value true to cause {@link #parse} to always return a BigDecimal; false to let {@link
+   *     #parse} return different data types.
+   * @category Parsing
+   * @stable ICU 3.6
    */
-  public synchronized void setParseMaxDigits(int _) {
+  public synchronized void setParseBigDecimal(boolean value) {
+    properties.setParseToBigDecimal(value);
+    // refreshFormatter() not needed
   }
 
   /**
-   * Setting max parse digits has no effect since ICU 59.
-   * Always returns 1000.
-   *
-   * @stable ICU 51
+   * @return Always 1000, the default prior to ICU 59.
+   * @category Parsing
+   * @deprecated Setting max parse digits has no effect since ICU4J 59.
    */
-  public synchronized int getParseMaxDigits() {
+  @Deprecated
+  public int getParseMaxDigits() {
     return 1000;
   }
 
+  /**
+   * @param maxDigits Prior to ICU 59, the maximum number of digits in the output number after
+   *     exponential notation is applied.
+   * @category Parsing
+   * @deprecated Setting max parse digits has no effect since ICU4J 59.
+   */
+  @Deprecated
+  public void setParseMaxDigits(int maxDigits) {}
+
+  /**
+   * {@inheritDoc}
+   *
+   * @category Parsing
+   * @stable ICU 3.6
+   */
+  @Override
+  public synchronized boolean isParseStrict() {
+    return properties.getParseMode() == Parse.ParseMode.STRICT;
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * @category Parsing
+   * @stable ICU 3.6
+   */
   @Override
   public synchronized void setParseStrict(boolean parseStrict) {
     Parse.ParseMode mode = parseStrict ? Parse.ParseMode.STRICT : Parse.ParseMode.LENIENT;
@@ -829,21 +1596,148 @@ public class DecimalFormat extends NumberFormat {
     // refreshFormatter() not needed
   }
 
+  /**
+   * @return Whether parsing should stop before encountering a decimal point and fraction part.
+   * @see #setParseIntegerOnly
+   * @category Parsing
+   * @stable ICU 2.0
+   */
   @Override
-  public synchronized boolean isParseStrict() {
-    return properties.getParseMode() == Parse.ParseMode.STRICT;
+  public synchronized boolean isParseIntegerOnly() {
+    return properties.getParseIntegerOnly();
   }
 
+  /**
+   * <strong>Parsing:</strong> Whether to ignore the fraction part of a number when parsing
+   * (defaults to false). If a string contains a decimal point, parsing will stop before the decimal
+   * point. Note that determining whether a character is a decimal point depends on the locale.
+   *
+   * <p>For example, in <em>en-US</em>, parsing the string "123.45" will return the number 123 and
+   * parse position 3.
+   *
+   * <p>This is functionally equivalent to calling {@link #setDecimalPatternMatchRequired} and a
+   * pattern without a decimal point.
+   *
+   * @param parseIntegerOnly true to ignore fractional parts of numbers when parsing; false to
+   *     consume fractional parts.
+   * @category Parsing
+   * @stable ICU 2.0
+   */
   @Override
   public synchronized void setParseIntegerOnly(boolean parseIntegerOnly) {
     properties.setParseIntegerOnly(parseIntegerOnly);
     // refreshFormatter() not needed
   }
 
-  @Override
-  public synchronized boolean isParseIntegerOnly() {
-    return properties.getParseIntegerOnly();
+  /**
+   * @return Whether the presence of a decimal point must match the pattern.
+   * @see #setDecimalPatternMatchRequired
+   * @category Parsing
+   * @stable ICU 54
+   */
+  public synchronized boolean isDecimalPatternMatchRequired() {
+    return properties.getDecimalPatternMatchRequired();
   }
+
+  /**
+   * <strong>Parsing:</strong> This method is used to either <em>require</em> or <em>forbid</em> the
+   * presence of a decimal point in the string being parsed (disabled by default). This feature was
+   * designed to be an extra layer of strictness on top of strict parsing, although it can be used
+   * in either lenient mode or strict mode.
+   *
+   * <p>To <em>require</em> a decimal point, call this method in combination with either a pattern
+   * containing a decimal point or with {@link #setDecimalSeparatorAlwaysShown}.
+   *
+   * <pre>
+   * // Require a decimal point in the string being parsed:
+   * df.applyPattern("#.");
+   * df.setDecimalPatternMatchRequired(true);
+   *
+   * // Alternatively:
+   * df.setDecimalSeparatorAlwaysShown(true);
+   * df.setDecimalPatternMatchRequired(true);
+   * </pre>
+   *
+   * To <em>forbid</em> a decimal point, call this method in combination with a pattern containing
+   * no decimal point. Alternatively, use {@link #setParseIntegerOnly} for the same behavior without
+   * depending on the contents of the pattern string.
+   *
+   * <pre>
+   * // Forbid a decimal point in the string being parsed:
+   * df.applyPattern("#");
+   * df.setDecimalPatternMatchRequired(true);
+   * </pre>
+   *
+   * @param value true to either require or forbid the decimal point according to the pattern; false
+   *     to disable this feature.
+   * @see #setParseIntegerOnly
+   * @category Parsing
+   * @stable ICU 54
+   */
+  public synchronized void setDecimalPatternMatchRequired(boolean value) {
+    properties.setDecimalPatternMatchRequired(value);
+    refreshFormatter();
+  }
+
+  /**
+   * @return Whether to ignore exponents when parsing.
+   * @see #setParseNoExponent
+   * @category Parsing
+   * @internal
+   * @deprecated ICU 59: This API is a technical preview. It may change in an upcoming release.
+   */
+  @Deprecated
+  public synchronized boolean getParseNoExponent() {
+    return properties.getParseNoExponent();
+  }
+
+  /**
+   * Specifies whether to stop parsing when an exponent separator is encountered. For example,
+   * parses "123E4" to 123 (with parse position 3) instead of 1230000 (with parse position 5).
+   *
+   * @param value true to prevent exponents from being parsed; false to allow them to be parsed.
+   * @category Parsing
+   * @internal
+   * @deprecated ICU 59: This API is a technical preview. It may change in an upcoming release.
+   */
+  @Deprecated
+  public synchronized void setParseNoExponent(boolean value) {
+    properties.setParseNoExponent(value);
+    refreshFormatter();
+  }
+
+  /**
+   * @return Whether to force case (uppercase/lowercase) to match when parsing.
+   * @see #setParseNoExponent
+   * @category Parsing
+   * @internal
+   * @deprecated ICU 59: This API is a technical preview. It may change in an upcoming release.
+   */
+  @Deprecated
+  public synchronized boolean getParseCaseSensitive() {
+    return properties.getParseCaseSensitive();
+  }
+
+  /**
+   * Specifies whether parsing should require cases to match in affixes, exponent separators, and
+   * currency codes. Case mapping is performed for each code point using {@link
+   * UCharacter#foldCase}.
+   *
+   * @param value true to force case (uppercase/lowercase) to match when parsing; false to ignore
+   *     case and perform case folding.
+   * @category Parsing
+   * @internal
+   * @deprecated ICU 59: This API is a technical preview. It may change in an upcoming release.
+   */
+  @Deprecated
+  public synchronized void setParseCaseSensitive(boolean value) {
+    properties.setParseCaseSensitive(value);
+    refreshFormatter();
+  }
+
+  //=====================================================================================//
+  //                                     UTILITIES                                       //
+  //=====================================================================================//
 
   /** @stable ICU 2.0 */
   @Override
@@ -863,13 +1757,26 @@ public class DecimalFormat extends NumberFormat {
 
   private static final ThreadLocal<Properties> threadLocalToPatternProperties =
       new ThreadLocal<Properties>() {
-    @Override
-    protected Properties initialValue() {
-      return new Properties();
-    }
-  };
+        @Override
+        protected Properties initialValue() {
+          return new Properties();
+        }
+      };
 
-  /** @stable ICU 2.0 */
+  /**
+   * Serializes this formatter object to a decimal format pattern string. The result of this method
+   * is guaranteed to be <em>functionally</em> equivalent to the pattern string used to create this
+   * instance after incorporating values from the setter methods.
+   *
+   * <p>For more information on decimal format pattern strings, see <a
+   * href="http://unicode.org/reports/tr35/tr35-numbers.html#Number_Format_Patterns">UTS #35</a>.
+   *
+   * <p><strong>Important:</strong> Not all properties are capable of being encoded in a pattern
+   * string. See a list of properties in {@link #applyPattern}.
+   *
+   * @return A decimal format pattern string.
+   * @stable ICU 2.0
+   */
   public synchronized String toPattern() {
     // Pull some properties from exportedProperties and others from properties
     // to keep affix patterns intact.  In particular, pull rounding properties
@@ -880,12 +1787,18 @@ public class DecimalFormat extends NumberFormat {
     if (com.ibm.icu.impl.number.formatters.CurrencyFormat.useCurrency(properties)) {
       tprops.setMinimumFractionDigits(exportedProperties.getMinimumFractionDigits());
       tprops.setMaximumFractionDigits(exportedProperties.getMaximumFractionDigits());
-      tprops.setRoundingInterval(exportedProperties.getRoundingInterval());
+      tprops.setRoundingIncrement(exportedProperties.getRoundingIncrement());
     }
     return PatternString.propertiesToString(tprops);
   }
 
-  /** @stable ICU 2.0 */
+  /**
+   * Calls {@link #toPattern} and converts the string to localized notation. For more information on
+   * localized notation, see {@link #applyLocalizedPattern}.
+   *
+   * @return A decimal format pattern string in localized notation.
+   * @stable ICU 2.0
+   */
   public synchronized String toLocalizedPattern() {
     String pattern = toPattern();
     return PatternString.convertLocalized(pattern, symbols, true);
@@ -902,9 +1815,7 @@ public class DecimalFormat extends NumberFormat {
     return fq;
   }
 
-  /**
-   * Rebuilds the formatter object from the property bag.
-   */
+  /** Rebuilds the formatter object from the property bag. */
   void refreshFormatter() {
     formatter = Endpoint.fromBTA(properties, symbols);
     exportedProperties.clear();
@@ -913,9 +1824,10 @@ public class DecimalFormat extends NumberFormat {
 
   /**
    * Updates the property bag with settings from the given pattern.
+   *
    * @param pattern The pattern string to parse.
-   * @param ignoreRounding Whether to read rounding information from the string.  Set to false if
-   * CurrencyUsage is to be used instead.
+   * @param ignoreRounding Whether to read rounding information from the string. Set to false if
+   *     CurrencyUsage is to be used instead.
    * @see PatternString#parseToExistingProperties
    */
   void setPropertiesFromPattern(String pattern, boolean ignoreRounding) {

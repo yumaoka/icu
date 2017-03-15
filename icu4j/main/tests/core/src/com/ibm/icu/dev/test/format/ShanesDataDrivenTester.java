@@ -19,7 +19,7 @@ import com.ibm.icu.impl.number.Parse;
 import com.ibm.icu.impl.number.Parse.ParseMode;
 import com.ibm.icu.impl.number.PatternString;
 import com.ibm.icu.impl.number.Properties;
-import com.ibm.icu.impl.number.formatters.PaddingFormat.PaddingLocation;
+import com.ibm.icu.impl.number.formatters.PaddingFormat.PadPosition;
 import com.ibm.icu.text.DecimalFormat;
 import com.ibm.icu.text.DecimalFormat.PropertySetter;
 import com.ibm.icu.text.DecimalFormatSymbols;
@@ -273,17 +273,17 @@ public class ShanesDataDrivenTester extends CodeUnderTest {
       properties.setMultiplier(new BigDecimal(tuple.multiplier));
     }
     if (tuple.roundingIncrement != null) {
-      properties.setRoundingInterval(new BigDecimal(tuple.roundingIncrement.toString()));
+      properties.setRoundingIncrement(new BigDecimal(tuple.roundingIncrement.toString()));
     }
     if (tuple.formatWidth != null) {
-      properties.setPaddingWidth(tuple.formatWidth);
+      properties.setFormatWidth(tuple.formatWidth);
     }
     if (tuple.padCharacter != null && tuple.padCharacter.length() > 0) {
-      properties.setPaddingString(tuple.padCharacter.toString());
+      properties.setPadString(tuple.padCharacter.toString());
     }
     if (tuple.useScientific != null) {
-      properties.setExponentDigits(
-          tuple.useScientific != 0 ? 1 : Properties.DEFAULT_EXPONENT_DIGITS);
+      properties.setMinimumExponentDigits(
+          tuple.useScientific != 0 ? 1 : Properties.DEFAULT_MINIMUM_EXPONENT_DIGITS);
     }
     if (tuple.grouping != null) {
       properties.setGroupingSize(tuple.grouping);
@@ -298,16 +298,16 @@ public class ShanesDataDrivenTester extends CodeUnderTest {
       properties.setCurrencyUsage(tuple.currencyUsage);
     }
     if (tuple.minimumExponentDigits != null) {
-      properties.setExponentDigits(tuple.minimumExponentDigits.byteValue());
+      properties.setMinimumExponentDigits(tuple.minimumExponentDigits.byteValue());
     }
     if (tuple.exponentSignAlwaysShown != null) {
-      properties.setExponentShowPlusSign(tuple.exponentSignAlwaysShown != 0);
+      properties.setExponentSignAlwaysShown(tuple.exponentSignAlwaysShown != 0);
     }
     if (tuple.decimalSeparatorAlwaysShown != null) {
-      properties.setAlwaysShowDecimal(tuple.decimalSeparatorAlwaysShown != 0);
+      properties.setDecimalSeparatorAlwaysShown(tuple.decimalSeparatorAlwaysShown != 0);
     }
     if (tuple.padPosition != null) {
-      properties.setPaddingLocation(PaddingLocation.fromOld(tuple.padPosition));
+      properties.setPadPosition(PadPosition.fromOld(tuple.padPosition));
     }
     if (tuple.positivePrefix != null) {
       properties.setPositivePrefix(tuple.positivePrefix);
@@ -337,7 +337,7 @@ public class ShanesDataDrivenTester extends CodeUnderTest {
       properties.setDecimalPatternMatchRequired(tuple.decimalPatternMatchRequired != 0);
     }
     if (tuple.parseNoExponent != null) {
-      properties.setParseIgnoreExponent(tuple.parseNoExponent != 0);
+      properties.setParseNoExponent(tuple.parseNoExponent != 0);
     }
   }
 }

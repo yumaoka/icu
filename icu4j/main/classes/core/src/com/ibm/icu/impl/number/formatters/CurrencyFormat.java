@@ -11,7 +11,7 @@ import com.ibm.icu.impl.number.PatternString;
 import com.ibm.icu.impl.number.Properties;
 import com.ibm.icu.impl.number.Rounder;
 import com.ibm.icu.impl.number.modifiers.GeneralPluralModifier;
-import com.ibm.icu.impl.number.rounders.IntervalRounder;
+import com.ibm.icu.impl.number.rounders.IncrementRounder;
 import com.ibm.icu.impl.number.rounders.MagnitudeRounder;
 import com.ibm.icu.text.CurrencyPluralInfo;
 import com.ibm.icu.text.DecimalFormatSymbols;
@@ -269,14 +269,14 @@ public class CurrencyFormat {
 
     if (incrementDouble > 0.0) {
       BigDecimal incrementBigDecimal;
-      BigDecimal _roundingIncrement = properties.getRoundingInterval();
+      BigDecimal _roundingIncrement = properties.getRoundingIncrement();
       if (_roundingIncrement != null) {
         incrementBigDecimal = _roundingIncrement;
       } else {
         incrementBigDecimal = BigDecimal.valueOf(incrementDouble);
       }
-      cprops.setRoundingInterval(incrementBigDecimal);
-      return IntervalRounder.getInstance(cprops);
+      cprops.setRoundingIncrement(incrementBigDecimal);
+      return IncrementRounder.getInstance(cprops);
     } else {
       return MagnitudeRounder.getInstance(cprops);
     }

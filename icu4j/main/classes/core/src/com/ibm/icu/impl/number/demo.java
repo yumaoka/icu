@@ -8,7 +8,7 @@ import java.text.ParsePosition;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.ibm.icu.impl.number.formatters.PaddingFormat.PaddingLocation;
+import com.ibm.icu.impl.number.formatters.PaddingFormat.PadPosition;
 import com.ibm.icu.impl.number.formatters.RangeFormat;
 import com.ibm.icu.impl.number.modifiers.SimpleModifier;
 import com.ibm.icu.text.CompactDecimalFormat.CompactStyle;
@@ -51,19 +51,19 @@ public class demo {
     formats.add(cdf);
 
     properties =
-        new Properties().setPaddingWidth(10).setPaddingLocation(PaddingLocation.AFTER_PREFIX);
+        new Properties().setFormatWidth(10).setPadPosition(PadPosition.AFTER_PREFIX);
     Format pdf = Endpoint.fromBTA(properties);
     formats.add(pdf);
 
     properties =
         new Properties()
-            .setExponentDigits(1)
+            .setMinimumExponentDigits(1)
             .setMaximumIntegerDigits(3)
             .setMaximumFractionDigits(1);
     Format exf = Endpoint.fromBTA(properties);
     formats.add(exf);
 
-    properties = new Properties().setRoundingInterval(new BigDecimal("0.5"));
+    properties = new Properties().setRoundingIncrement(new BigDecimal("0.5"));
     Format rif = Endpoint.fromBTA(properties);
     formats.add(rif);
 

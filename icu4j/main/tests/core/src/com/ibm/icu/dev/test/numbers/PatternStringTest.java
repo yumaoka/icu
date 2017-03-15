@@ -48,6 +48,12 @@ public class PatternStringTest {
       {"#,##0E0", "#,##0E0"},
       {"#;#", "0;0"},
       {"#;-#", "0"}, // ignore a negative prefix pattern of '-' since that is the default
+      {"**##0", "**##0"},
+      {"*'x'##0", "*x##0"},
+      {"a''b0", "a''b0"},
+      {"*''##0", "*''##0"},
+      {"*📺##0", "*'📺'##0"},
+      {"*'நி'##0", "*'நி'##0"},
     };
 
     for (String[] cas : cases) {

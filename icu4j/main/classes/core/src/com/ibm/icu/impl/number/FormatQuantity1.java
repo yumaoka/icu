@@ -341,7 +341,7 @@ public class FormatQuantity1 implements FormatQuantity {
   }
 
   @Override
-  public void roundToInterval(BigDecimal roundingInterval, MathContext mathContext) {
+  public void roundToIncrement(BigDecimal roundingInterval, MathContext mathContext) {
     BigDecimal d =
         (primary == -1) ? fallback : new BigDecimal(primary).scaleByPowerOfTen(primaryScale);
     if (isNegative()) d = d.negate();

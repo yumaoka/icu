@@ -4,7 +4,7 @@ package com.ibm.icu.impl.number.formatters;
 
 import com.ibm.icu.impl.number.Rounder;
 import com.ibm.icu.impl.number.Rounder.IBasicRoundingProperties;
-import com.ibm.icu.impl.number.rounders.IntervalRounder;
+import com.ibm.icu.impl.number.rounders.IncrementRounder;
 import com.ibm.icu.impl.number.rounders.MagnitudeRounder;
 import com.ibm.icu.impl.number.rounders.NoRounder;
 import com.ibm.icu.impl.number.rounders.SignificantDigitsRounder;
@@ -15,7 +15,7 @@ public class RoundingFormat {
 
   public static interface IProperties
       extends IBasicRoundingProperties,
-          IntervalRounder.IProperties,
+          IncrementRounder.IProperties,
           MagnitudeRounder.IProperties,
           SignificantDigitsRounder.IProperties {}
 
@@ -30,8 +30,8 @@ public class RoundingFormat {
   public static Rounder getDefaultOrNull(IProperties properties) {
     if (SignificantDigitsRounder.useSignificantDigits(properties)) {
       return SignificantDigitsRounder.getInstance(properties);
-    } else if (IntervalRounder.useRoundingInterval(properties)) {
-      return IntervalRounder.getInstance(properties);
+    } else if (IncrementRounder.useRoundingIncrement(properties)) {
+      return IncrementRounder.getInstance(properties);
     } else if (MagnitudeRounder.useFractionFormat(properties)) {
       return MagnitudeRounder.getInstance(properties);
     } else {

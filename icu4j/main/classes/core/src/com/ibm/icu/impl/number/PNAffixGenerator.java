@@ -110,7 +110,7 @@ public class PNAffixGenerator {
       PositiveNegativeAffixFormat.IProperties properties) {
 
     // Use a different code path for handling affixes with "always show plus sign"
-    if (properties.getAlwaysShowPlusSign()) {
+    if (properties.getPlusSignAlwaysShown()) {
       return getModifiersWithPlusSign(symbols, curr1, curr2, curr3, properties);
     }
 

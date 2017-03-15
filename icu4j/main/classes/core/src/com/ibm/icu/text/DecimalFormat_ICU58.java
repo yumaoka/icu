@@ -606,8 +606,10 @@ import com.ibm.icu.util.ULocale.Category;
  * @see          NumberFormat
  * @author       Mark Davis
  * @author       Alan Liu
- * @stable ICU 2.0
+ * @deprecated DecimalFormat was overhauled in ICU 59.  This is the old implementation, provided
+ *    temporarily to ease the transition.  This class will be removed from ICU 60.
  */
+@Deprecated
 public class DecimalFormat_ICU58 extends NumberFormat {
 
     /**

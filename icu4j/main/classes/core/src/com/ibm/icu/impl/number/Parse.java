@@ -119,10 +119,10 @@ public class Parse {
      */
     public IProperties setParseIntegerOnly(boolean parseIntegerOnly);
 
-    boolean DEFAULT_PARSE_IGNORE_EXPONENT = false;
+    boolean DEFAULT_PARSE_NO_EXPONENT = false;
 
-    /** @see #setParseIgnoreExponent */
-    public boolean getParseIgnoreExponent();
+    /** @see #setParseNoExponent */
+    public boolean getParseNoExponent();
 
     /**
      * Whether to ignore the exponential part of numbers. For example, parses "123E4" to "123"
@@ -131,7 +131,7 @@ public class Parse {
      * @param parseIgnoreExponent true to ignore exponents; false to parse them.
      * @return The property bag, for chaining.
      */
-    public IProperties setParseIgnoreExponent(boolean parseIgnoreExponent);
+    public IProperties setParseNoExponent(boolean parseIgnoreExponent);
 
     boolean DEFAULT_DECIMAL_PATTERN_MATCH_REQUIRED = false;
 
@@ -139,9 +139,10 @@ public class Parse {
     public boolean getDecimalPatternMatchRequired();
 
     /**
-     * Whether to require that a decimal point be present. If a decimal point is not present, the
-     * parse will not succeed: null will be returned from <code>parse()</code>, and an error index
-     * will be set in the {@link ParsePosition}.
+     * Whether to require that the presence of decimal point matches the pattern. If a decimal point
+     * is not present, but the pattern contained a decimal point, parse will not succeed: null will
+     * be returned from <code>parse()</code>, and an error index will be set in the {@link
+     * ParsePosition}.
      *
      * @param decimalPatternMatchRequired true to set an error if decimal is not present
      * @return The property bag, for chaining.
@@ -712,7 +713,7 @@ public class Parse {
       AffixHolder ps = fromPropertiesPositiveString(properties);
       AffixHolder ns = fromPropertiesNegativeString(properties);
       if (pp == null && ps == null) {
-        if (properties.getAlwaysShowPlusSign()) {
+        if (properties.getPlusSignAlwaysShown()) {
           state.affixHolders.add(DEFAULT_POSITIVE);
         } else {
           state.affixHolders.add(EMPTY_POSITIVE);
@@ -984,7 +985,7 @@ public class Parse {
     ParseMode mode = properties.getParseMode();
     if (mode == null) mode = ParseMode.LENIENT;
     boolean integerOnly = properties.getParseIntegerOnly();
-    boolean ignoreExponent = properties.getParseIgnoreExponent();
+    boolean ignoreExponent = properties.getParseNoExponent();
 
     // Set up the initial state
     ParserState state = threadLocalParseState.get().clear();
@@ -1419,7 +1420,7 @@ public class Parse {
    * @param item The old state leading into the code point.
    */
   private static void acceptPadding(int cp, StateName nextName, ParserState state, StateItem item) {
-    CharSequence padding = state.properties.getPaddingString();
+    CharSequence padding = state.properties.getPadString();
     if (padding == null || padding.length() == 0) return;
     int referenceCp = Character.codePointAt(padding, 0);
     if (cp == referenceCp) {

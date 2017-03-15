@@ -47,20 +47,20 @@ public class PositiveDecimalFormat implements Format.TargetFormat {
      */
     public IProperties setSecondaryGroupingSize(int secondaryGroupingSize);
 
-    static boolean DEFAULT_ALWAYS_SHOW_DECIMAL = false;
+    static boolean DEFAULT_DECIMAL_SEPARATOR_ALWAYS_SHOWN = false;
 
-    /** @see #setAlwaysShowDecimal */
-    public boolean getAlwaysShowDecimal();
+    /** @see #setDecimalSeparatorAlwaysShown */
+    public boolean getDecimalSeparatorAlwaysShown();
 
     /**
      * Sets whether to always show the decimal point, even if the number doesn't require one. For
      * example, if always show decimal is true, the number 123 would be formatted as "123." in
      * locale <em>en-US</em>.
      *
-     * @param alwaysShowDecimal Whether to show the decimal point when it is optional.
+     * @param decimalSeparatorAlwaysShown Whether to show the decimal point when it is optional.
      * @return The property bag, for chaining.
      */
-    public IProperties setAlwaysShowDecimal(boolean alwaysShowDecimal);
+    public IProperties setDecimalSeparatorAlwaysShown(boolean decimalSeparatorAlwaysShown);
 
     static int DEFAULT_MINIMUM_GROUPING_DIGITS = 1;
 
@@ -86,7 +86,7 @@ public class PositiveDecimalFormat implements Format.TargetFormat {
   }
 
   public static boolean allowsDecimalPoint(IProperties properties) {
-    return properties.getAlwaysShowDecimal() || properties.getMaximumFractionDigits() != 0;
+    return properties.getDecimalSeparatorAlwaysShown() || properties.getMaximumFractionDigits() != 0;
   }
 
   // Properties
@@ -114,7 +114,7 @@ public class PositiveDecimalFormat implements Format.TargetFormat {
             : properties.getSecondaryGroupingSize();
 
     minimumGroupingDigits = properties.getMinimumGroupingDigits();
-    alwaysShowDecimal = properties.getAlwaysShowDecimal();
+    alwaysShowDecimal = properties.getDecimalSeparatorAlwaysShown();
     infinityString = symbols.getInfinity();
     nanString = symbols.getNaN();
 
@@ -219,7 +219,7 @@ public class PositiveDecimalFormat implements Format.TargetFormat {
 
   @Override
   public void export(Properties properties) {
-    properties.setAlwaysShowDecimal(alwaysShowDecimal);
+    properties.setDecimalSeparatorAlwaysShown(alwaysShowDecimal);
     properties.setGroupingSize(groupingSize);
     properties.setSecondaryGroupingSize(secondaryGroupingSize);
     properties.setMinimumGroupingDigits(minimumGroupingDigits);

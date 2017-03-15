@@ -157,7 +157,7 @@ public abstract class FormatQuantityBCD implements FormatQuantity {
   }
 
   @Override
-  public void roundToInterval(BigDecimal roundingInterval, MathContext mathContext) {
+  public void roundToIncrement(BigDecimal roundingInterval, MathContext mathContext) {
     // TODO: Avoid converting back and forth to BigDecimal.
     BigDecimal temp = toBigDecimal();
     temp =

@@ -41,6 +41,7 @@ import com.ibm.icu.impl.ICUConfig;
 import com.ibm.icu.impl.LocaleUtility;
 import com.ibm.icu.impl.data.ResourceReader;
 import com.ibm.icu.impl.data.TokenIterator;
+import com.ibm.icu.impl.number.rounders.SignificantDigitsRounder.SignificantDigitsMode;
 import com.ibm.icu.math.BigDecimal;
 import com.ibm.icu.math.MathContext;
 import com.ibm.icu.text.CompactDecimalFormat;
@@ -3474,13 +3475,13 @@ public class NumberFormatTest extends TestFmwk {
 
         try {
             ca = new CurrencyAmount(null, null);
-            errln("IllegalArgumentException should have been thrown.");
-        } catch (IllegalArgumentException ex) {
+            errln("NullPointerException should have been thrown.");
+        } catch (NullPointerException ex) {
         }
         try {
             ca = new CurrencyAmount(new Integer(0), null);
-            errln("IllegalArgumentException should have been thrown.");
-        } catch (IllegalArgumentException ex) {
+            errln("NullPointerException should have been thrown.");
+        } catch (NullPointerException ex) {
         }
 
         ca = new CurrencyAmount(new Integer(0), Currency.getInstance(new ULocale("ja_JP")));
@@ -4117,7 +4118,9 @@ public class NumberFormatTest extends TestFmwk {
         String[] testPattern = { "00.####", "00.0", "00" };
 
         String value2Parse = "99";
+        String value2ParseWithDecimal = "99.9";
         double parseValue  =  99;
+        double parseValueWithDecimal = 99.9;
         DecimalFormat parser = new DecimalFormat();
         double result;
         boolean hasDecimalPoint;
@@ -4133,12 +4136,28 @@ public class NumberFormatTest extends TestFmwk {
                 TestFmwk.errln("Parsing " + value2Parse + " should have succeeded with " + testPattern[i] +
                             " and isDecimalPointMatchRequired set to: " + parser.isDecimalPatternMatchRequired());
             }
+            try {
+                result = parser.parse(value2ParseWithDecimal).doubleValue();
+                assertEquals("wrong parsed value", parseValueWithDecimal, result);
+            } catch (ParseException e) {
+                TestFmwk.errln("Parsing " + value2ParseWithDecimal + " should have succeeded with " + testPattern[i] +
+                            " and isDecimalPointMatchRequired set to: " + parser.isDecimalPatternMatchRequired());
+            }
 
             parser.setDecimalPatternMatchRequired(true);
             try {
                 result = parser.parse(value2Parse).doubleValue();
                 if(hasDecimalPoint){
                     TestFmwk.errln("Parsing " + value2Parse + " should NOT have succeeded with " + testPattern[i] +
+                            " and isDecimalPointMatchRequired set to: " + parser.isDecimalPatternMatchRequired());
+                }
+            } catch (ParseException e) {
+                    // OK, should fail
+            }
+            try {
+                result = parser.parse(value2ParseWithDecimal).doubleValue();
+                if(!hasDecimalPoint){
+                    TestFmwk.errln("Parsing " + value2ParseWithDecimal + " should NOT have succeeded with " + testPattern[i] +
                             " and isDecimalPointMatchRequired set to: " + parser.isDecimalPatternMatchRequired());
                 }
             } catch (ParseException e) {
@@ -4712,24 +4731,40 @@ public class NumberFormatTest extends TestFmwk {
         fmt.applyPattern(pattern);
         DecimalFormat fmtCopy;
 
+        final int newMultiplier = 37;
         fmtCopy = (DecimalFormat) fmt.clone();
-        fmtCopy.setMultiplier(37);
+        assertNotEquals("Value before setter", fmtCopy.getMultiplier(), newMultiplier);
+        fmtCopy.setMultiplier(newMultiplier);
+        assertEquals("Value after setter", fmtCopy.getMultiplier(), newMultiplier);
         fmtCopy.applyPattern(pattern);
+        assertEquals("Value after applyPattern", fmtCopy.getMultiplier(), newMultiplier);
         assertFalse("multiplier", fmt.equals(fmtCopy));
 
+        final int newRoundingMode = RoundingMode.CEILING.ordinal();
         fmtCopy = (DecimalFormat) fmt.clone();
-        fmtCopy.setRoundingMode(RoundingMode.CEILING.ordinal());
+        assertNotEquals("Value before setter", fmtCopy.getRoundingMode(), newRoundingMode);
+        fmtCopy.setRoundingMode(newRoundingMode);
+        assertEquals("Value after setter", fmtCopy.getRoundingMode(), newRoundingMode);
         fmtCopy.applyPattern(pattern);
+        assertEquals("Value after applyPattern", fmtCopy.getRoundingMode(), newRoundingMode);
         assertFalse("roundingMode", fmt.equals(fmtCopy));
 
+        final Currency newCurrency = Currency.getInstance("EAT");
         fmtCopy = (DecimalFormat) fmt.clone();
-        fmtCopy.setCurrency(Currency.getInstance("EAT"));
+        assertNotEquals("Value before setter", fmtCopy.getCurrency(), newCurrency);
+        fmtCopy.setCurrency(newCurrency);
+        assertEquals("Value after setter", fmtCopy.getCurrency(), newCurrency);
         fmtCopy.applyPattern(pattern);
+        assertEquals("Value after applyPattern", fmtCopy.getCurrency(), newCurrency);
         assertFalse("currency", fmt.equals(fmtCopy));
 
+        final CurrencyUsage newCurrencyUsage = CurrencyUsage.CASH;
         fmtCopy = (DecimalFormat) fmt.clone();
+        assertNotEquals("Value before setter", fmtCopy.getCurrencyUsage(), newCurrencyUsage);
         fmtCopy.setCurrencyUsage(CurrencyUsage.CASH);
+        assertEquals("Value after setter", fmtCopy.getCurrencyUsage(), newCurrencyUsage);
         fmtCopy.applyPattern(pattern);
+        assertEquals("Value after applyPattern", fmtCopy.getCurrencyUsage(), newCurrencyUsage);
         assertFalse("currencyUsage", fmt.equals(fmtCopy));
     }
 
@@ -4882,6 +4917,29 @@ public class NumberFormatTest extends TestFmwk {
     }
 
     @Test
+    public void Test11647() {
+        DecimalFormat df = new DecimalFormat();
+        df.applyPattern("¤¤¤¤#");
+        String actual = df.format(123);
+        assertEquals("Should replace 4 currency signs with U+FFFD", "\uFFFD123", actual);
+    }
+
+    @Test
+    public void Test12567() {
+        DecimalFormat df1 = (DecimalFormat) NumberFormat.getInstance(NumberFormat.PLURALCURRENCYSTYLE);
+        DecimalFormat df2 = (DecimalFormat) NumberFormat.getInstance(NumberFormat.NUMBERSTYLE);
+        df2.setCurrency(df1.getCurrency());
+        df2.setCurrencyPluralInfo(df1.getCurrencyPluralInfo());
+        df1.applyPattern("0.00");
+        df2.applyPattern("0.00");
+        assertEquals("df1 == df2", df1, df2);
+        assertEquals("df2 == df1", df2, df1);
+        df2.setPositivePrefix("abc");
+        assertNotEquals("df1 != df2", df1, df2);
+        assertNotEquals("df2 != df1", df2, df1);
+    }
+
+    @Test
     public void TestBasicSerializationRoundTrip() throws IOException, ClassNotFoundException {
         DecimalFormat df0 = new DecimalFormat("A-**#####,#00.00b¤");
 
@@ -4917,5 +4975,127 @@ public class NumberFormatTest extends TestFmwk {
         assertEquals("Currency should equal EUR after set", curr, df.getCurrency());
         String result = df.format(123);
         assertEquals("Currency should format as expected in EUR", "€123.00", result);
+    }
+
+    @Test
+    public void testRoundingModeSetters() {
+        DecimalFormat df1 = new DecimalFormat();
+        DecimalFormat df2 = new DecimalFormat();
+
+        df1.setRoundingMode(java.math.BigDecimal.ROUND_CEILING);
+        assertNotEquals("Rounding mode was set to a non-default", df1, df2);
+        df2.setRoundingMode(com.ibm.icu.math.BigDecimal.ROUND_CEILING);
+        assertEquals("Rounding mode from icu.math and java.math should be the same", df1, df2);
+        df2.setRoundingMode(java.math.RoundingMode.CEILING.ordinal());
+        assertEquals("Rounding mode ordinal from java.math.RoundingMode should be the same", df1, df2);
+    }
+
+    @Test
+    public void testSignificantDigitsMode() {
+        String[][] allExpected = {
+              {"12340.0", "12340.0", "12340.0"},
+              {"1234.0", "1234.0", "1234.0"},
+              {"123.4", "123.4", "123.4"},
+              {"12.34", "12.34", "12.34"},
+              {"1.234", "1.23", "1.23"},
+              {"0.1234", "0.12", "0.123"},
+              {"0.01234", "0.01", "0.0123"},
+              {"0.001234", "0.00", "0.00123"}
+        };
+
+        DecimalFormat df = new DecimalFormat();
+        df.setMinimumFractionDigits(1);
+        df.setMaximumFractionDigits(2);
+        df.setMinimumSignificantDigits(3);
+        df.setMaximumSignificantDigits(4);
+        df.setGroupingUsed(false);
+
+        SignificantDigitsMode[] modes = new SignificantDigitsMode[] {
+                SignificantDigitsMode.OVERRIDE_MAXIMUM_FRACTION,
+                SignificantDigitsMode.RESPECT_MAXIMUM_FRACTION,
+                SignificantDigitsMode.ENSURE_MINIMUM_SIGNIFICANT
+        };
+
+        for (double d = 12340.0, i=0; d > 0.001; d /= 10, i++) {
+            for (int j=0; j<modes.length; j++) {
+                SignificantDigitsMode mode = modes[j];
+                df.setSignificantDigitsMode(mode);
+                String expected = allExpected[(int)i][j];
+                String actual = df.format(d);
+                assertEquals("Significant digits mode getter is broken",
+                        mode, df.getSignificantDigitsMode());
+                assertEquals("Significant digits output differs for "+i+", "+j,
+                        expected, actual);
+            }
+        }
+    }
+
+    @Test
+    public void testParseNoExponent() throws ParseException {
+        DecimalFormat df = new DecimalFormat();
+        assertEquals("Parse no exponent has wrong default", false, df.getParseNoExponent());
+        Number result1 = df.parse("123E4");
+        df.setParseNoExponent(true);
+        assertEquals("Parse no exponent getter is broken", true, df.getParseNoExponent());
+        Number result2 = df.parse("123E4");
+        assertEquals("Exponent did not parse before setParseNoExponent", result1, new Long(1230000));
+        assertEquals("Exponent parsed after setParseNoExponent", result2, new Long(123));
+    }
+
+    @Test
+    public void testMinimumGroupingDigits() {
+        String[][] allExpected = {
+                {"123", "123"},
+                {"1,230", "1230"},
+                {"12,300", "12,300"},
+                {"1,23,000", "1,23,000"}
+        };
+
+        DecimalFormat df = new DecimalFormat("#,##,##0");
+        assertEquals("Minimum grouping digits has wrong default", 1, df.getMinimumGroupingDigits());
+
+        for (int l = 123, i=0; l <= 123000; l *= 10, i++) {
+            df.setMinimumGroupingDigits(1);
+            assertEquals("Minimum grouping digits getter is broken", 1, df.getMinimumGroupingDigits());
+            String actual = df.format(l);
+            assertEquals("Output is wrong for 1, "+i, allExpected[i][0], actual);
+            df.setMinimumGroupingDigits(2);
+            assertEquals("Minimum grouping digits getter is broken", 2, df.getMinimumGroupingDigits());
+            actual = df.format(l);
+            assertEquals("Output is wrong for 2, "+i, allExpected[i][1], actual);
+        }
+    }
+
+    @Test
+    public void testParseCaseSensitive() {
+        String[] patterns = {"a#b", "A#B"};
+        String[] inputs = {"a500b", "A500b", "a500B", "a500e10b", "a500E10b"};
+        int[][] expectedParsePositions = {
+                {5, 5, 5, 8, 8}, // case insensitive, pattern 0
+                {5, 0, 4, 4, 8}, // case sensitive, pattern 0
+                {5, 5, 5, 8, 8}, // case insensitive, pattern 1
+                {0, 4, 0, 0, 0}, // case sensitive, pattern 1
+        };
+
+        for (int p = 0; p < patterns.length; p++) {
+            String pat = patterns[p];
+            DecimalFormat df = new DecimalFormat(pat);
+            assertEquals("parseCaseSensitive default is wrong", false, df.getParseCaseSensitive());
+            for (int i = 0; i < inputs.length; i++) {
+                String inp = inputs[i];
+                df.setParseCaseSensitive(false);
+                assertEquals("parseCaseSensitive getter is broken", false, df.getParseCaseSensitive());
+                ParsePosition actualInsensitive = new ParsePosition(0);
+                df.parse(inp, actualInsensitive);
+                assertEquals("Insensitive, pattern "+p+", input "+i,
+                        expectedParsePositions[p*2][i], actualInsensitive.getIndex());
+                df.setParseCaseSensitive(true);
+                assertEquals("parseCaseSensitive getter is broken", true, df.getParseCaseSensitive());
+                ParsePosition actualSensitive = new ParsePosition(0);
+                df.parse(inp, actualSensitive);
+                assertEquals("Sensitive, pattern "+p+", input "+i,
+                        expectedParsePositions[p*2+1][i], actualSensitive.getIndex());
+            }
+        }
     }
 }

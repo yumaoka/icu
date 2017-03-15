@@ -209,10 +209,10 @@ public class PositiveNegativeAffixFormat {
      */
     public IProperties setNegativeSuffixPattern(String negativeSuffixPattern);
 
-    static boolean DEFAULT_ALWAYS_SHOW_PLUS_SIGN = false;
+    static boolean DEFAULT_PLUS_SIGN_ALWAYS_SHOWN = false;
 
-    /** @see #setAlwaysShowPlusSign */
-    public boolean getAlwaysShowPlusSign();
+    /** @see #setPlusSignAlwaysShown */
+    public boolean getPlusSignAlwaysShown();
 
     /**
      * Sets whether to always display of a plus sign on positive numbers.
@@ -227,10 +227,10 @@ public class PositiveNegativeAffixFormat {
      * behavior is undefined if alwaysShowPlusSign is set but the positive prefix/suffix already
      * contains a plus sign.
      *
-     * @param alwaysShowPlusSign Whether positive numbers should display a plus sign.
+     * @param plusSignAlwaysShown Whether positive numbers should display a plus sign.
      * @return The property bag, for chaining.
      */
-    public IProperties setAlwaysShowPlusSign(boolean alwaysShowPlusSign);
+    public IProperties setPlusSignAlwaysShown(boolean plusSignAlwaysShown);
   }
 
   public static PositiveNegativeAffixModifier getInstance(DecimalFormatSymbols symbols, IProperties properties) {
