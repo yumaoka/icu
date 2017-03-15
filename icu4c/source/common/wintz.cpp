@@ -24,7 +24,9 @@
 #include "unicode/ures.h"
 #include "unicode/ustring.h"
 
+#ifndef WIN32_LEAN_AND_MEAN
 #   define WIN32_LEAN_AND_MEAN
+#endif
 #   define VC_EXTRALEAN
 #   define NOUSER
 #   define NOSERVICE
