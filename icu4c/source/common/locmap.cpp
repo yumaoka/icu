@@ -1200,7 +1200,7 @@ uprv_convertToPosix(uint32_t hostid, char *posixID, int32_t posixIDCapacity, UEr
 // POSIX --> LCID
 // This should only be called from uloc_getLCID.
 // The locale ID must be in canonical form.
-// langID is separate so that this file doesn't depend on the uloc_* API.
+// localeID/langID is separate so that this file doesn't depend on the uloc_* API.
 //
 /////////////////////////////////////
 */
@@ -1217,42 +1217,54 @@ uprv_convertToLCIDPlatform(const char* localeID)
     // ICU special cases, but Windows may know it already.
 #if LOCALE_ALLOW_NEUTRAL_NAMES
     nameLCIDFlags = LOCALE_ALLOW_NEUTRAL_NAMES;
-#endif
+#endif /* LOCALE_ALLOW_NEUTRAL_NAMES */
 
-    char asciiBCP47Tag[LOCALE_NAME_MAX_LENGTH] = { 0 };
+    int32_t len;
+    char collVal[ULOC_KEYWORDS_CAPACITY] = {};
+    char baseName[ULOC_FULLNAME_CAPACITY] = {};
+    const char * mylocaleID = localeID;
+
+    // Check any for keywords.
+    if (uprv_strchr(localeID, '@'))
+    {
+        len = uloc_getKeywordValue(localeID, "collation", collVal, UPRV_LENGTHOF(collVal) - 1, &myStatus);
+        if (U_SUCCESS(myStatus) && len > 0)
+        {
+            // If it contains the keyword collation, return 0 so that the LCID lookup table will be used.
+            return 0;
+        }
+        else
+        {
+            // If the locale ID contains keywords other than collation, just use the base name.
+            len = uloc_getBaseName(localeID, baseName, UPRV_LENGTHOF(baseName) - 1, &myStatus);
+
+            if (U_SUCCESS(myStatus) && len > 0)
+            {
+                baseName[len] = 0;
+                mylocaleID = baseName;
+            }
+        }
+    }
+
+    char asciiBCP47Tag[LOCALE_NAME_MAX_LENGTH] = {};
     // this will change it from de_DE@collation=phonebook to de-DE-u-co-phonebk form
-    int32_t bcp47Len = uloc_toLanguageTag(localeID, asciiBCP47Tag, UPRV_LENGTHOF(asciiBCP47Tag),
-        FALSE, &myStatus);
+    int32_t bcp47Len = uloc_toLanguageTag(mylocaleID, asciiBCP47Tag, UPRV_LENGTHOF(asciiBCP47Tag), FALSE, &myStatus);
 
     if (U_SUCCESS(myStatus))
     {
         // Need it to be UTF-16, not 8-bit
-        UChar bcp47Tag[LOCALE_NAME_MAX_LENGTH];
+        wchar_t bcp47Tag[LOCALE_NAME_MAX_LENGTH] = {};
         int i;
         for (i = 0; i < UPRV_LENGTHOF(bcp47Tag); i++)
         {
-            if (asciiBCP47Tag[i] == '_')
-            {
-                // Windows uses tags with - instead of _
-                bcp47Tag[i] = '-';
-            }
-            else if (asciiBCP47Tag[i] == '\0')
+            if (asciiBCP47Tag[i] == '\0')
             {
                 break;
             }
-            else if (asciiBCP47Tag[i] == 'u' &&
-                i > 0 && asciiBCP47Tag[i - 1] == '-' &&
-                i + 1 < UPRV_LENGTHOF(bcp47Tag) && asciiBCP47Tag[i + 1] == '-')
-            {
-                // TODO: It is a -u-co-phonebk form tag, but we did not map to _phoneb
-                // For now, force it to fail and fall through to the LCID lookup table,
-                // which will find the _phoneb form.
-                return 0;
-            }
             else
             {
-                // normally just copy the character
-                bcp47Tag[i] = asciiBCP47Tag[i];
+                // Copy the character
+                bcp47Tag[i] = static_cast<wchar_t>(asciiBCP47Tag[i]);
             }
         }
 
@@ -1260,7 +1272,7 @@ uprv_convertToLCIDPlatform(const char* localeID)
         {
             // Ensure it's null terminated
             bcp47Tag[i] = L'\0';
-            LCID lcid = LocaleNameToLCID((PCWSTR)bcp47Tag, nameLCIDFlags);
+            LCID lcid = LocaleNameToLCID(bcp47Tag, nameLCIDFlags);
             if (lcid > 0)
             {
                 // Found LCID from windows, return that one, unless its completely ambiguous
@@ -1273,7 +1285,7 @@ uprv_convertToLCIDPlatform(const char* localeID)
             }
         }
     }
-#endif
+#endif /* USE_WINDOWS_LCID_MAPPING_API */
 
     // No found, or not implemented on platforms without native name->lcid conversion
     return 0;
@@ -1346,4 +1358,3 @@ uprv_convertToLCID(const char *langID, const char* posixID, UErrorCode* status)
     *status = U_ILLEGAL_ARGUMENT_ERROR;
     return 0;   /* return international (root) */
 }
-
