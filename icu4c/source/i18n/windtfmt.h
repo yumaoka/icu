@@ -127,7 +127,7 @@ private:
     UnicodeString fZoneID;
     TIME_ZONE_INFORMATION *fTZI;
 
-	UnicodeString* fWindowsLocaleName; // Stores the equivalent Windows locale name.
+    UnicodeString* fWindowsLocaleName; // Stores the equivalent Windows locale name.
 };
 
 U_NAMESPACE_END

@@ -61,7 +61,7 @@ UOBJECT_DEFINE_RTTI_IMPLEMENTATION(Win32NumberFormat)
 static UINT getGrouping(const UChar *grouping)
 {
     UINT g = 0;
-	const UChar *s;
+    const UChar *s;
 
     for (s = grouping; *s != L'\0'; s += 1) {
         if (*s > L'0' && *s < L'9') {
@@ -141,70 +141,70 @@ static void freeCurrencyFormat(CURRENCYFMTW *fmt)
 // be factored out into a common helper for both.
 static UErrorCode GetEquivalentWindowsLocaleName(const Locale& locale, UnicodeString* buffer)
 {
-	UErrorCode status = U_ZERO_ERROR;
-	char asciiBCP47Tag[LOCALE_NAME_MAX_LENGTH] = {};
+    UErrorCode status = U_ZERO_ERROR;
+    char asciiBCP47Tag[LOCALE_NAME_MAX_LENGTH] = {};
 
-	// Convert from names like "en_CA" and "de_DE@collation=phonebook" to "en-CA" and "de-DE-u-co-phonebk".
-	int32_t length = uloc_toLanguageTag(locale.getName(), asciiBCP47Tag, UPRV_LENGTHOF(asciiBCP47Tag), FALSE, &status);
+    // Convert from names like "en_CA" and "de_DE@collation=phonebook" to "en-CA" and "de-DE-u-co-phonebk".
+    int32_t length = uloc_toLanguageTag(locale.getName(), asciiBCP47Tag, UPRV_LENGTHOF(asciiBCP47Tag), FALSE, &status);
 
-	if (U_SUCCESS(status))
-	{
-		// Need it to be UTF-16, not 8-bit
-		// TODO: This seems like a good thing for a helper
-		wchar_t bcp47Tag[LOCALE_NAME_MAX_LENGTH] = {};
-		int i;
-		for (i = 0; i < UPRV_LENGTHOF(bcp47Tag); i++)
-		{
-			if (asciiBCP47Tag[i] == '_')
-			{
-				// Windows uses tags with - instead of _
-				bcp47Tag[i] = '-';
-			}
-			else if (asciiBCP47Tag[i] == '\0')
-			{
-				break;
-			}
-			else
-			{
-				// normally just copy the character
-				bcp47Tag[i] = static_cast<wchar_t>(asciiBCP47Tag[i]);
-			}
-		}
+    if (U_SUCCESS(status))
+    {
+        // Need it to be UTF-16, not 8-bit
+        // TODO: This seems like a good thing for a helper
+        wchar_t bcp47Tag[LOCALE_NAME_MAX_LENGTH] = {};
+        int i;
+        for (i = 0; i < UPRV_LENGTHOF(bcp47Tag); i++)
+        {
+            if (asciiBCP47Tag[i] == '_')
+            {
+                // Windows uses tags with - instead of _
+                bcp47Tag[i] = '-';
+            }
+            else if (asciiBCP47Tag[i] == '\0')
+            {
+                break;
+            }
+            else
+            {
+                // normally just copy the character
+                bcp47Tag[i] = static_cast<wchar_t>(asciiBCP47Tag[i]);
+            }
+        }
 
-		// Ensure it's null terminated
-		if (i < (UPRV_LENGTHOF(bcp47Tag) - 1))
-		{
-			bcp47Tag[i] = L'\0';
-		}
-		else
-		{
-			// Ran out of room.
-			bcp47Tag[UPRV_LENGTHOF(bcp47Tag) - 1] = L'\0';
-		}
+        // Ensure it's null terminated
+        if (i < (UPRV_LENGTHOF(bcp47Tag) - 1))
+        {
+            bcp47Tag[i] = L'\0';
+        }
+        else
+        {
+            // Ran out of room.
+            bcp47Tag[UPRV_LENGTHOF(bcp47Tag) - 1] = L'\0';
+        }
 
 
-		wchar_t windowsLocaleName[LOCALE_NAME_MAX_LENGTH] = {};
+        wchar_t windowsLocaleName[LOCALE_NAME_MAX_LENGTH] = {};
 
-		// Note: On Windows versions below 10, there is no support for locale name aliases.
-		// This means that it will fail for locales where ICU has a completely different
-		// name (like ku vs ckb), and it will also not work for alternate sort locale
-		// names like "de-DE-u-co-phonebk".
+        // Note: On Windows versions below 10, there is no support for locale name aliases.
+        // This means that it will fail for locales where ICU has a completely different
+        // name (like ku vs ckb), and it will also not work for alternate sort locale
+        // names like "de-DE-u-co-phonebk".
 
-		// TODO: We could add some sort of exception table for cases like ku vs ckb.
+        // TODO: We could add some sort of exception table for cases like ku vs ckb.
 
-		int length = ResolveLocaleName(bcp47Tag, windowsLocaleName, UPRV_LENGTHOF(windowsLocaleName));
+        int length = ResolveLocaleName(bcp47Tag, windowsLocaleName, UPRV_LENGTHOF(windowsLocaleName));
 
-		if (length > 0)
-		{
-			buffer = new UnicodeString(windowsLocaleName);
-		}
-		else
-		{
-			// TODO: Should we fallback to something instead? (en-US?)
-			status = U_UNSUPPORTED_ERROR;
-		}
-	}
-	return status;
+        if (length > 0)
+        {
+            buffer = new UnicodeString(windowsLocaleName);
+        }
+        else
+        {
+            // TODO: Should we fallback to something instead? (en-US?)
+            status = U_UNSUPPORTED_ERROR;
+        }
+    }
+    return status;
 }
 
 Win32NumberFormat::Win32NumberFormat(const Locale &locale, UBool currency, UErrorCode &status)
@@ -213,7 +213,7 @@ Win32NumberFormat::Win32NumberFormat(const Locale &locale, UBool currency, UErro
     if (!U_FAILURE(status)) {
         fLCID = locale.getLCID();
 
-		GetEquivalentWindowsLocaleName(locale, fWindowsLocaleName);
+        GetEquivalentWindowsLocaleName(locale, fWindowsLocaleName);
 
         // Resolve actual locale to be used later
         UErrorCode tmpsts = U_ZERO_ERROR;
@@ -254,7 +254,7 @@ Win32NumberFormat::~Win32NumberFormat()
 
         uprv_free(fFormatInfo);
     }
-	delete fWindowsLocaleName;
+    delete fWindowsLocaleName;
 }
 
 Win32NumberFormat &Win32NumberFormat::operator=(const Win32NumberFormat &other)
@@ -265,7 +265,7 @@ Win32NumberFormat &Win32NumberFormat::operator=(const Win32NumberFormat &other)
     this->fLocale            = other.fLocale;
     this->fLCID              = other.fLCID;
     this->fFractionDigitsSet = other.fFractionDigitsSet;
-	this->fWindowsLocaleName = other.fWindowsLocaleName == NULL ? NULL : new UnicodeString(*other.fWindowsLocaleName);
+    this->fWindowsLocaleName = other.fWindowsLocaleName == NULL ? NULL : new UnicodeString(*other.fWindowsLocaleName);
 
     if (fCurrency) {
         freeCurrencyFormat(&fFormatInfo->currency);
