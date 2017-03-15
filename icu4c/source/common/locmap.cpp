@@ -1200,7 +1200,6 @@ uprv_convertToPosix(uint32_t hostid, char *posixID, int32_t posixIDCapacity, UEr
 // POSIX --> LCID
 // This should only be called from uloc_getLCID.
 // The locale ID must be in canonical form.
-// localeID/langID is separate so that this file doesn't depend on the uloc_* API.
 //
 /////////////////////////////////////
 */
