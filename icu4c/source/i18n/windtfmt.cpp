@@ -96,7 +96,7 @@ UnicodeString* Win32DateFormat::getTimeDateFormat(const Calendar *cal, const Loc
 
 // TODO: This is copied in both winnmfmt.cpp and windtfmt.cpp, but really should
 // be factored out into a common helper for both.
-static UErrorCode GetEquivalentWindowsLocaleName(const Locale& locale, UnicodeString* buffer)
+static UErrorCode GetEquivalentWindowsLocaleName(const Locale& locale, UnicodeString** buffer)
 {
     UErrorCode status = U_ZERO_ERROR;
     char asciiBCP47Tag[LOCALE_NAME_MAX_LENGTH] = {};
@@ -112,12 +112,7 @@ static UErrorCode GetEquivalentWindowsLocaleName(const Locale& locale, UnicodeSt
         int i;
         for (i = 0; i < UPRV_LENGTHOF(bcp47Tag); i++)
         {
-            if (asciiBCP47Tag[i] == '_')
-            {
-                // Windows uses tags with - instead of _
-                bcp47Tag[i] = '-';
-            }
-            else if (asciiBCP47Tag[i] == '\0')
+            if (asciiBCP47Tag[i] == '\0')
             {
                 break;
             }
@@ -153,11 +148,10 @@ static UErrorCode GetEquivalentWindowsLocaleName(const Locale& locale, UnicodeSt
 
         if (length > 0)
         {
-            buffer = new UnicodeString(windowsLocaleName);
+            *buffer = new UnicodeString(windowsLocaleName);
         }
         else
         {
-            // TODO: Should we fallback to something instead? (en-US?)
             status = U_UNSUPPORTED_ERROR;
         }
     }
@@ -169,8 +163,13 @@ Win32DateFormat::Win32DateFormat(DateFormat::EStyle timeStyle, DateFormat::EStyl
   : DateFormat(), fDateTimeMsg(NULL), fTimeStyle(timeStyle), fDateStyle(dateStyle), fLocale(locale), fZoneID(), fWindowsLocaleName(nullptr)
 {
     if (U_SUCCESS(status)) {
-        
-        GetEquivalentWindowsLocaleName(locale, fWindowsLocaleName);
+        GetEquivalentWindowsLocaleName(locale, &fWindowsLocaleName);
+        // Note: In the previous code, it would look up the LCID for the locale, and if
+        // the locale was not recognized then it would get an LCID of 0, which is a
+        // synonym for LOCALE_USER_DEFAULT on Windows.
+        // If the above method fails, then fWindowsLocaleName will remain as nullptr, and 
+        // then we will pass nullptr to API GetLocaleInfoEx, which is the same as passing
+        // LOCALE_USER_DEFAULT.
 
         fTZI = NEW_ARRAY(TIME_ZONE_INFORMATION, 1);
         uprv_memset(fTZI, 0, sizeof(TIME_ZONE_INFORMATION));
@@ -310,16 +309,22 @@ void Win32DateFormat::formatDate(const SYSTEMTIME *st, UnicodeString &appendTo) 
     int result=0;
     wchar_t stackBuffer[STACK_BUFFER_SIZE];
     wchar_t *buffer = stackBuffer;
+    const wchar_t *localeName = nullptr;
 
-    result = GetDateFormatEx(toOldUCharPtr(fWindowsLocaleName->getTerminatedBuffer()), dfFlags[fDateStyle - kDateOffset], st, NULL, buffer, STACK_BUFFER_SIZE, NULL);
+    if (fWindowsLocaleName != nullptr)
+    {
+        localeName = reinterpret_cast<const wchar_t*>(toOldUCharPtr(fWindowsLocaleName->getTerminatedBuffer()));
+    }
+
+    result = GetDateFormatEx(localeName, dfFlags[fDateStyle - kDateOffset], st, NULL, buffer, STACK_BUFFER_SIZE, NULL);
 
     if (result == 0) {
         if (GetLastError() == ERROR_INSUFFICIENT_BUFFER) {
-            int newLength = GetDateFormatEx(toOldUCharPtr(fWindowsLocaleName->getTerminatedBuffer()), dfFlags[fDateStyle - kDateOffset], st, NULL, NULL, 0, NULL);
+            int newLength = GetDateFormatEx(localeName, dfFlags[fDateStyle - kDateOffset], st, NULL, NULL, 0, NULL);
 
             buffer = NEW_ARRAY(wchar_t, newLength);
 
-            GetDateFormatEx(toOldUCharPtr(fWindowsLocaleName->getTerminatedBuffer()), dfFlags[fDateStyle - kDateOffset], st, NULL, buffer, newLength, NULL);
+            GetDateFormatEx(localeName, dfFlags[fDateStyle - kDateOffset], st, NULL, buffer, newLength, NULL);
         }
     }
 
@@ -337,16 +342,22 @@ void Win32DateFormat::formatTime(const SYSTEMTIME *st, UnicodeString &appendTo) 
     int result;
     wchar_t stackBuffer[STACK_BUFFER_SIZE];
     wchar_t *buffer = stackBuffer;
+    const wchar_t *localeName = nullptr;
 
-    result = GetTimeFormatEx(toOldUCharPtr(fWindowsLocaleName->getTerminatedBuffer()), tfFlags[fTimeStyle], st, NULL, buffer, STACK_BUFFER_SIZE);
+    if (fWindowsLocaleName != nullptr)
+    {
+        localeName = reinterpret_cast<const wchar_t*>(toOldUCharPtr(fWindowsLocaleName->getTerminatedBuffer()));
+    }
+
+    result = GetTimeFormatEx(localeName, tfFlags[fTimeStyle], st, NULL, buffer, STACK_BUFFER_SIZE);
 
     if (result == 0) {
         if (GetLastError() == ERROR_INSUFFICIENT_BUFFER) {
-            int newLength = GetTimeFormatEx(toOldUCharPtr(fWindowsLocaleName->getTerminatedBuffer()), tfFlags[fTimeStyle], st, NULL, NULL, 0);
+            int newLength = GetTimeFormatEx(localeName, tfFlags[fTimeStyle], st, NULL, NULL, 0);
 
             buffer = NEW_ARRAY(wchar_t, newLength);
 
-            GetTimeFormatEx(toOldUCharPtr(fWindowsLocaleName->getTerminatedBuffer()), tfFlags[fTimeStyle], st, NULL, buffer, newLength);
+            GetTimeFormatEx(localeName, tfFlags[fTimeStyle], st, NULL, buffer, newLength);
         }
     }
 

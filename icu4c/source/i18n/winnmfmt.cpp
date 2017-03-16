@@ -141,7 +141,7 @@ static void freeCurrencyFormat(CURRENCYFMTW *fmt)
 
 // TODO: This is copied in both winnmfmt.cpp and windtfmt.cpp, but really should
 // be factored out into a common helper for both.
-static UErrorCode GetEquivalentWindowsLocaleName(const Locale& locale, UnicodeString* buffer)
+static UErrorCode GetEquivalentWindowsLocaleName(const Locale& locale, UnicodeString** buffer)
 {
     UErrorCode status = U_ZERO_ERROR;
     char asciiBCP47Tag[LOCALE_NAME_MAX_LENGTH] = {};
@@ -157,12 +157,7 @@ static UErrorCode GetEquivalentWindowsLocaleName(const Locale& locale, UnicodeSt
         int i;
         for (i = 0; i < UPRV_LENGTHOF(bcp47Tag); i++)
         {
-            if (asciiBCP47Tag[i] == '_')
-            {
-                // Windows uses tags with - instead of _
-                bcp47Tag[i] = '-';
-            }
-            else if (asciiBCP47Tag[i] == '\0')
+            if (asciiBCP47Tag[i] == '\0')
             {
                 break;
             }
@@ -198,11 +193,10 @@ static UErrorCode GetEquivalentWindowsLocaleName(const Locale& locale, UnicodeSt
 
         if (length > 0)
         {
-            buffer = new UnicodeString(windowsLocaleName);
+            *buffer = new UnicodeString(windowsLocaleName);
         }
         else
         {
-            // TODO: Should we fallback to something instead? (en-US?)
             status = U_UNSUPPORTED_ERROR;
         }
     }
@@ -215,7 +209,13 @@ Win32NumberFormat::Win32NumberFormat(const Locale &locale, UBool currency, UErro
     if (!U_FAILURE(status)) {
         fLCID = locale.getLCID();
 
-        GetEquivalentWindowsLocaleName(locale, fWindowsLocaleName);
+        GetEquivalentWindowsLocaleName(locale, &fWindowsLocaleName);
+        // Note: In the previous code, it would look up the LCID for the locale, and if
+        // the locale was not recognized then it would get an LCID of 0, which is a
+        // synonym for LOCALE_USER_DEFAULT on Windows.
+        // If the above method fails, then fWindowsLocaleName will remain as nullptr, and 
+        // then we will pass nullptr to API GetLocaleInfoEx, which is the same as passing
+        // LOCALE_USER_DEFAULT.
 
         // Resolve actual locale to be used later
         UErrorCode tmpsts = U_ZERO_ERROR;
@@ -226,12 +226,19 @@ Win32NumberFormat::Win32NumberFormat(const Locale &locale, UBool currency, UErro
             fLocale = Locale((const char*)tmpLocID);
         }
 
+        const wchar_t *localeName = nullptr;
+
+        if (fWindowsLocaleName != nullptr)
+        {
+            localeName = reinterpret_cast<const wchar_t*>(toOldUCharPtr(fWindowsLocaleName->getTerminatedBuffer()));
+        }
+
         fFormatInfo = (FormatInfo*)uprv_malloc(sizeof(FormatInfo));
 
         if (fCurrency) {
-            getCurrencyFormat(&fFormatInfo->currency, toOldUCharPtr(fWindowsLocaleName->getTerminatedBuffer()));
+            getCurrencyFormat(&fFormatInfo->currency, localeName);
         } else {
-            getNumberFormat(&fFormatInfo->number, toOldUCharPtr(fWindowsLocaleName->getTerminatedBuffer()));
+            getNumberFormat(&fFormatInfo->number, localeName);
         }
     }
 }
@@ -268,13 +275,20 @@ Win32NumberFormat &Win32NumberFormat::operator=(const Win32NumberFormat &other)
     this->fLCID              = other.fLCID;
     this->fFractionDigitsSet = other.fFractionDigitsSet;
     this->fWindowsLocaleName = other.fWindowsLocaleName == NULL ? NULL : new UnicodeString(*other.fWindowsLocaleName);
+    
+    const wchar_t *localeName = nullptr;
+
+    if (fWindowsLocaleName != nullptr)
+    {
+        localeName = reinterpret_cast<const wchar_t*>(toOldUCharPtr(fWindowsLocaleName->getTerminatedBuffer()));
+    }
 
     if (fCurrency) {
         freeCurrencyFormat(&fFormatInfo->currency);
-        getCurrencyFormat(&fFormatInfo->currency, toOldUCharPtr(fWindowsLocaleName->getTerminatedBuffer()));
+        getCurrencyFormat(&fFormatInfo->currency, localeName);
     } else {
         freeNumberFormat(&fFormatInfo->number);
-        getNumberFormat(&fFormatInfo->number, toOldUCharPtr(fWindowsLocaleName->getTerminatedBuffer()));
+        getNumberFormat(&fFormatInfo->number, localeName);
     }
 
     return *this;
@@ -375,6 +389,13 @@ UnicodeString &Win32NumberFormat::format(int32_t numDigits, UnicodeString &appen
     formatInfo = *fFormatInfo;
     buffer[0] = 0x0000;
 
+    const wchar_t *localeName = nullptr;
+
+    if (fWindowsLocaleName != nullptr)
+    {
+        localeName = reinterpret_cast<const wchar_t*>(toOldUCharPtr(fWindowsLocaleName->getTerminatedBuffer()));
+    }
+
     if (fCurrency) {
         if (fFractionDigitsSet) {
             formatInfo.currency.NumDigits = (UINT) numDigits;
@@ -384,17 +405,17 @@ UnicodeString &Win32NumberFormat::format(int32_t numDigits, UnicodeString &appen
             formatInfo.currency.Grouping = 0;
         }
 
-        result = GetCurrencyFormatEx(toOldUCharPtr(fWindowsLocaleName->getTerminatedBuffer()), 0, nBuffer, &formatInfo.currency, buffer, STACK_BUFFER_SIZE);
+        result = GetCurrencyFormatEx(localeName, 0, nBuffer, &formatInfo.currency, buffer, STACK_BUFFER_SIZE);
 
         if (result == 0) {
             DWORD lastError = GetLastError();
 
             if (lastError == ERROR_INSUFFICIENT_BUFFER) {
-                int newLength = GetCurrencyFormatEx(toOldUCharPtr(fWindowsLocaleName->getTerminatedBuffer()), 0, nBuffer, &formatInfo.currency, NULL, 0);
+                int newLength = GetCurrencyFormatEx(localeName, 0, nBuffer, &formatInfo.currency, NULL, 0);
 
                 buffer = NEW_ARRAY(wchar_t, newLength);
                 buffer[0] = 0x0000;
-                GetCurrencyFormatEx(toOldUCharPtr(fWindowsLocaleName->getTerminatedBuffer()), 0, nBuffer,  &formatInfo.currency, buffer, newLength);
+                GetCurrencyFormatEx(localeName, 0, nBuffer,  &formatInfo.currency, buffer, newLength);
             }
         }
     } else {
@@ -406,15 +427,15 @@ UnicodeString &Win32NumberFormat::format(int32_t numDigits, UnicodeString &appen
             formatInfo.number.Grouping = 0;
         }
 
-        result = GetNumberFormatEx(toOldUCharPtr(fWindowsLocaleName->getTerminatedBuffer()), 0, nBuffer, &formatInfo.number, buffer, STACK_BUFFER_SIZE);
+        result = GetNumberFormatEx(localeName, 0, nBuffer, &formatInfo.number, buffer, STACK_BUFFER_SIZE);
 
         if (result == 0) {
             if (GetLastError() == ERROR_INSUFFICIENT_BUFFER) {
-                int newLength = GetNumberFormatEx(toOldUCharPtr(fWindowsLocaleName->getTerminatedBuffer()), 0, nBuffer, &formatInfo.number, NULL, 0);
+                int newLength = GetNumberFormatEx(localeName, 0, nBuffer, &formatInfo.number, NULL, 0);
 
                 buffer = NEW_ARRAY(wchar_t, newLength);
                 buffer[0] = 0x0000;
-                GetNumberFormatEx(toOldUCharPtr(fWindowsLocaleName->getTerminatedBuffer()), 0, nBuffer, &formatInfo.number, buffer, newLength);
+                GetNumberFormatEx(localeName, 0, nBuffer, &formatInfo.number, buffer, newLength);
             }
         }
     }
