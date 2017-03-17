@@ -17,7 +17,8 @@ import com.ibm.icu.text.NumberFormat;
 
 public class ScientificFormat extends Format.BeforeFormat implements Rounder.MultiplierGenerator {
 
-  public static interface IProperties extends RoundingFormat.IProperties {
+  public static interface IProperties
+      extends RoundingFormat.IProperties, CurrencyFormat.IProperties {
 
     static boolean DEFAULT_EXPONENT_SIGN_ALWAYS_SHOWN = false;
 
@@ -49,6 +50,7 @@ public class ScientificFormat extends Format.BeforeFormat implements Rounder.Mul
      */
     public IProperties setMinimumExponentDigits(int minimumExponentDigits);
 
+    @Override
     public IProperties clone();
   }
 
@@ -73,14 +75,21 @@ public class ScientificFormat extends Format.BeforeFormat implements Rounder.Mul
     } else if (SignificantDigitsRounder.useSignificantDigits(properties)) {
       rounder = SignificantDigitsRounder.getInstance(properties);
     } else {
-
       Properties rprops = threadLocalProperties.get().clear();
-      rprops.setRoundingMode(properties.getRoundingMode());
 
       int minInt = properties.getMinimumIntegerDigits();
       int maxInt = properties.getMaximumIntegerDigits();
       int minFrac = properties.getMinimumFractionDigits();
       int maxFrac = properties.getMaximumFractionDigits();
+
+      // If currency is in use, pull information from CurrencyUsage.
+      if (CurrencyFormat.useCurrency(properties)) {
+        // Use rprops as the vehicle (it is still clean)
+        CurrencyFormat.populateCurrencyRounderProperties(rprops, symbols, properties);
+        minFrac = rprops.getMinimumFractionDigits();
+        maxFrac = rprops.getMaximumFractionDigits();
+        rprops.clear();
+      }
 
       // TODO: Mark/Andy, take a look at this logic and see if it makes sense to you.
       // I fiddled with the settings and fallbacks to make the unit tests pass, but I
@@ -90,6 +99,8 @@ public class ScientificFormat extends Format.BeforeFormat implements Rounder.Mul
       if (maxInt < minInt) maxInt = minInt;
       if (minFrac < 0) minFrac = 0;
       if (maxFrac < minFrac) maxFrac = minFrac;
+
+      rprops.setRoundingMode(properties.getRoundingMode());
 
       if (minInt == 0 && maxFrac == 0) {
         // Special case for the pattern "#E0" with no significant digits specified.

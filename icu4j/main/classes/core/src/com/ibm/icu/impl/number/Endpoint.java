@@ -102,9 +102,10 @@ public class Endpoint {
       if (CompactDecimalFormat.useCompactDecimalFormat(properties)) {
         format.addBeforeFormat(CompactDecimalFormat.getInstance(symbols, properties));
       } else if (ScientificFormat.useScientificNotation(properties)) {
+          // TODO: Should the currency rounder or scientific rounder be used in this case?
+          // For now, default to using the scientific rounder.
         format.addBeforeFormat(PositiveNegativeAffixFormat.getInstance(symbols, properties));
-        Rounder rounder = CurrencyFormat.getCurrencyRounder(symbols, properties);
-        format.addBeforeFormat(ScientificFormat.getInstance(symbols, properties, rounder));
+        format.addBeforeFormat(ScientificFormat.getInstance(symbols, properties));
       } else {
         format.addBeforeFormat(CurrencyFormat.getCurrencyRounder(symbols, properties));
         format.addBeforeFormat(CurrencyFormat.getCurrencyModifier(symbols, properties));

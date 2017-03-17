@@ -812,7 +812,7 @@ public class Parse {
         new ConcurrentHashMap<ULocale, CurrencyAffixPatterns>();
 
     static void addToState(ULocale uloc, ParserState state) {
-      if (!currencyAffixPatterns.contains(uloc)) {
+      if (!currencyAffixPatterns.containsKey(uloc)) {
         // There can be multiple threads computing the same CurrencyAffixPatterns simultaneously,
         // but that scenario is harmless.
         CurrencyAffixPatterns value = new CurrencyAffixPatterns(uloc);

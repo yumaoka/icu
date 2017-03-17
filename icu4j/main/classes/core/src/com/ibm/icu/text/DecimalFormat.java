@@ -5,6 +5,7 @@ package com.ibm.icu.text;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.ObjectStreamField;
 import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.text.AttributedCharacterIterator;
@@ -37,7 +38,14 @@ import com.ibm.icu.util.ULocale;
 public class DecimalFormat extends NumberFormat {
 
   /** New serialization in ICU 59: declare different version from ICU 58. */
-  private static final long serialVersionUID = 864413376551465019L;
+  private static final long serialVersionUID = 864413376551465018L;
+
+  /**
+   * One non-transient field such that deserialization can determine the version of the class. This
+   * field has existed since the very earliest versions of DecimalFormat.
+   */
+  @SuppressWarnings("unused")
+  private final int serialVersionOnStream = 5;
 
   //=====================================================================================//
   //                                   INSTANCE FIELDS                                   //
@@ -226,9 +234,10 @@ public class DecimalFormat extends NumberFormat {
    * from just that amount of information.
    */
   private void writeObject(ObjectOutputStream oos) throws IOException {
-    oos.defaultWriteObject();
     // ICU 59 custom serialization.
-    // Extra int for possible future use
+    // Write class metadata and serialVersionOnStream field:
+    oos.defaultWriteObject();
+    // Extra int for possible future use:
     oos.writeInt(0);
     // 1) Property Bag
     oos.writeObject(properties);
@@ -236,18 +245,173 @@ public class DecimalFormat extends NumberFormat {
     oos.writeObject(symbols);
   }
 
-  /** Custom serialization: re-create object from serialized property bag and symbols. */
+  /**
+   * Custom serialization: re-create object from serialized property bag and symbols. Also supports
+   * reading from the legacy (pre-ICU4J 59) format and converting it to the new form.
+   */
   private void readObject(ObjectInputStream ois) throws IOException, ClassNotFoundException {
-    ois.defaultReadObject();
-    // Extra int for possible future use
-    ois.readInt();
-    // 1) Property Bag
-    properties = (Properties) ois.readObject();
-    // 2) DecimalFormatSymbols
-    symbols = (DecimalFormatSymbols) ois.readObject();
-    // Re-build transient fields
-    exportedProperties = new Properties();
-    refreshFormatter();
+    ObjectInputStream.GetField fieldGetter = ois.readFields();
+    ObjectStreamField[] serializedFields = fieldGetter.getObjectStreamClass().getFields();
+    int serialVersion = fieldGetter.get("serialVersionOnStream", -1);
+
+    if (serialVersion > 5) {
+      throw new IOException(
+          "Cannot deserialize newer com.ibm.icu.text.DecimalFormat (v" + serialVersion + ")");
+    } else if (serialVersion == 5) {
+      ///// ICU 59+ SERIALIZATION FORMAT /////
+      // We expect this field and no other fields:
+      if (serializedFields.length > 1) {
+        throw new IOException("Too many fields when reading serial version 5");
+      }
+      // Extra int for possible future use:
+      ois.readInt();
+      // 1) Property Bag
+      properties = (Properties) ois.readObject();
+      // 2) DecimalFormatSymbols
+      symbols = (DecimalFormatSymbols) ois.readObject();
+      // Re-build transient fields
+      exportedProperties = new Properties();
+      refreshFormatter();
+    } else {
+      ///// LEGACY SERIALIZATION FORMAT /////
+      properties = new Properties();
+      // Loop through the fields. Not all fields necessarily exist in the serialization.
+      String pp = null, ppp = null, ps = null, psp = null;
+      String np = null, npp = null, ns = null, nsp = null;
+      for (ObjectStreamField field : serializedFields) {
+        String name = field.getName();
+        if (name.equals("decimalSeparatorAlwaysShown")) {
+          setDecimalSeparatorAlwaysShown(fieldGetter.get("decimalSeparatorAlwaysShown", false));
+        } else if (name.equals("exponentSignAlwaysShown")) {
+          setExponentSignAlwaysShown(fieldGetter.get("exponentSignAlwaysShown", false));
+        } else if (name.equals("formatWidth")) {
+          setFormatWidth(fieldGetter.get("formatWidth", 0));
+        } else if (name.equals("groupingSize")) {
+          setGroupingSize(fieldGetter.get("groupingSize", (byte) 3));
+        } else if (name.equals("groupingSize2")) {
+          setSecondaryGroupingSize(fieldGetter.get("groupingSize2", (byte) 0));
+        } else if (name.equals("maxSignificantDigits")) {
+          setMaximumSignificantDigits(fieldGetter.get("maxSignificantDigits", 6));
+        } else if (name.equals("minExponentDigits")) {
+          setMinimumExponentDigits(fieldGetter.get("minExponentDigits", (byte) 0));
+        } else if (name.equals("minSignificantDigits")) {
+          setMinimumSignificantDigits(fieldGetter.get("minSignificantDigits", 1));
+        } else if (name.equals("multiplier")) {
+          setMultiplier(fieldGetter.get("multiplier", 1));
+        } else if (name.equals("pad")) {
+          setPadCharacter(fieldGetter.get("pad", '\u0020'));
+        } else if (name.equals("padPosition")) {
+          setPadPosition(fieldGetter.get("padPosition", 0));
+        } else if (name.equals("parseBigDecimal")) {
+          setParseBigDecimal(fieldGetter.get("parseBigDecimal", false));
+        } else if (name.equals("parseRequireDecimalPoint")) {
+          setDecimalPatternMatchRequired(fieldGetter.get("parseRequireDecimalPoint", false));
+        } else if (name.equals("roundingMode")) {
+          setRoundingMode(fieldGetter.get("roundingMode", 0));
+        } else if (name.equals("useExponentialNotation")) {
+          setScientificNotation(fieldGetter.get("useExponentialNotation", false));
+        } else if (name.equals("useSignificantDigits")) {
+          setSignificantDigitsUsed(fieldGetter.get("useSignificantDigits", false));
+        } else if (name.equals("currencyPluralInfo")) {
+          setCurrencyPluralInfo((CurrencyPluralInfo) fieldGetter.get("currencyPluralInfo", null));
+        } else if (name.equals("currencyUsage")) {
+          setCurrencyUsage((CurrencyUsage) fieldGetter.get("currencyUsage", null));
+        } else if (name.equals("mathContext")) {
+          setMathContextICU((MathContext) fieldGetter.get("mathContext", null));
+        } else if (name.equals("negPrefixPattern")) {
+          npp = (String) fieldGetter.get("negPrefixPattern", null);
+        } else if (name.equals("negSuffixPattern")) {
+          nsp = (String) fieldGetter.get("negSuffixPattern", null);
+        } else if (name.equals("negativePrefix")) {
+          np = (String) fieldGetter.get("negativePrefix", null);
+        } else if (name.equals("negativeSuffix")) {
+          ns = (String) fieldGetter.get("negativeSuffix", null);
+        } else if (name.equals("posPrefixPattern")) {
+          ppp = (String) fieldGetter.get("posPrefixPattern", null);
+        } else if (name.equals("posSuffixPattern")) {
+          psp = (String) fieldGetter.get("posSuffixPattern", null);
+        } else if (name.equals("positivePrefix")) {
+          pp = (String) fieldGetter.get("positivePrefix", null);
+        } else if (name.equals("positiveSuffix")) {
+          ps = (String) fieldGetter.get("positiveSuffix", null);
+        } else if (name.equals("roundingIncrement")) {
+          setRoundingIncrement((java.math.BigDecimal) fieldGetter.get("roundingIncrement", null));
+        } else if (name.equals("symbols")) {
+          setDecimalFormatSymbols((DecimalFormatSymbols) fieldGetter.get("symbols", null));
+        } else {
+          // The following fields are ignored:
+          // "PARSE_MAX_EXPONENT"
+          // "currencySignCount"
+          // "style"
+          // "attributes"
+          // "currencyChoice"
+          // "formatPattern"
+        }
+      }
+      // Resolve affixes
+      if (npp == null) {
+        properties.setNegativePrefix(np);
+      } else {
+        properties.setNegativePrefixPattern(npp);
+      }
+      if (nsp == null) {
+        properties.setNegativeSuffix(ns);
+      } else {
+        properties.setNegativeSuffixPattern(nsp);
+      }
+      if (ppp == null) {
+        properties.setPositivePrefix(pp);
+      } else {
+        properties.setPositivePrefixPattern(ppp);
+      }
+      if (psp == null) {
+        properties.setPositiveSuffix(ps);
+      } else {
+        properties.setPositiveSuffixPattern(psp);
+      }
+      // Extract values from parent NumberFormat class.  Have to use reflection here.
+      java.lang.reflect.Field getter;
+      try {
+        getter = NumberFormat.class.getDeclaredField("groupingUsed");
+        getter.setAccessible(true);
+        setGroupingUsed((Boolean) getter.get(this));
+        getter = NumberFormat.class.getDeclaredField("parseIntegerOnly");
+        getter.setAccessible(true);
+        setParseIntegerOnly((Boolean) getter.get(this));
+        getter = NumberFormat.class.getDeclaredField("maximumIntegerDigits");
+        getter.setAccessible(true);
+        setMaximumIntegerDigits((Integer) getter.get(this));
+        getter = NumberFormat.class.getDeclaredField("minimumIntegerDigits");
+        getter.setAccessible(true);
+        setMinimumIntegerDigits((Integer) getter.get(this));
+        getter = NumberFormat.class.getDeclaredField("maximumFractionDigits");
+        getter.setAccessible(true);
+        setMaximumFractionDigits((Integer) getter.get(this));
+        getter = NumberFormat.class.getDeclaredField("minimumFractionDigits");
+        getter.setAccessible(true);
+        setMinimumFractionDigits((Integer) getter.get(this));
+        getter = NumberFormat.class.getDeclaredField("currency");
+        getter.setAccessible(true);
+        setCurrency((Currency) getter.get(this));
+        getter = NumberFormat.class.getDeclaredField("parseStrict");
+        getter.setAccessible(true);
+        setParseStrict((Boolean) getter.get(this));
+      } catch (IllegalArgumentException e) {
+        throw new IOException(e);
+      } catch (IllegalAccessException e) {
+        throw new IOException(e);
+      } catch (NoSuchFieldException e) {
+        throw new IOException(e);
+      } catch (SecurityException e) {
+        throw new IOException(e);
+      }
+      // Finish initialization
+      if (symbols == null) {
+        symbols = getDefaultSymbols();
+      }
+      exportedProperties = new Properties();
+      refreshFormatter();
+    }
   }
 
   //=====================================================================================//
@@ -733,7 +897,8 @@ public class DecimalFormat extends NumberFormat {
   }
 
   // Remember the ICU math context form in order to be able to return it from the API.
-  private int icuMathContextForm = MathContext.PLAIN;
+  // NOTE: This value is not serialized. (should it be?)
+  private transient int icuMathContextForm = MathContext.PLAIN;
 
   /**
    * @return The {@link com.ibm.icu.math.MathContext} being used to round numbers.
@@ -1763,6 +1928,11 @@ public class DecimalFormat extends NumberFormat {
         }
       };
 
+  @Override
+  public synchronized String toString() {
+    return "<DecimalFormat " + symbols.toString() + " " + properties.toString() + ">";
+  }
+
   /**
    * Serializes this formatter object to a decimal format pattern string. The result of this method
    * is guaranteed to be <em>functionally</em> equivalent to the pattern string used to create this
@@ -1817,6 +1987,11 @@ public class DecimalFormat extends NumberFormat {
 
   /** Rebuilds the formatter object from the property bag. */
   void refreshFormatter() {
+    if (exportedProperties == null) {
+      // exportedProperties is null only when the formatter is not ready yet.
+      // The only time when this happens is during legacy deserialization.
+      return;
+    }
     formatter = Endpoint.fromBTA(properties, symbols);
     exportedProperties.clear();
     formatter.export(exportedProperties);
@@ -1836,7 +2011,7 @@ public class DecimalFormat extends NumberFormat {
 
   /**
    * @internal
-   * @deprecated This API is a technical preview.
+   * @deprecated This API is ICU internal only.
    */
   @Deprecated
   public synchronized void setProperties(PropertySetter func) {

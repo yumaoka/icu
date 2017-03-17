@@ -151,8 +151,8 @@ public abstract class FormatQuantityBCD implements FormatQuantity {
     long fingerprint = 0;
     fingerprint ^= lOptPos;
     fingerprint ^= (lReqPos << 16);
-    fingerprint ^= (rReqPos << 32);
-    fingerprint ^= (rOptPos << 48);
+    fingerprint ^= ((long) rReqPos << 32);
+    fingerprint ^= ((long) rOptPos << 48);
     return fingerprint;
   }
 
@@ -356,9 +356,9 @@ public abstract class FormatQuantityBCD implements FormatQuantity {
 
   private void _setToBigInteger(BigInteger n) {
     if (n.bitLength() < 32) {
-      readIntToBcd(n.intValueExact());
+      readIntToBcd(n.intValue());
     } else if (n.bitLength() < 64) {
-      readLongToBcd(n.longValueExact());
+      readLongToBcd(n.longValue());
     } else {
       readBigIntegerToBcd(n);
     }

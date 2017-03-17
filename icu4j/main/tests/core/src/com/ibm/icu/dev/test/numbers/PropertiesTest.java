@@ -26,6 +26,7 @@ import java.util.Set;
 
 import org.junit.Test;
 
+import com.ibm.icu.dev.test.serializable.SerializableTestUtility;
 import com.ibm.icu.impl.number.Parse.ParseMode;
 import com.ibm.icu.impl.number.PatternString;
 import com.ibm.icu.impl.number.Properties;
@@ -308,5 +309,23 @@ public class PropertiesTest {
 
     // Test equality
     assertEquals("Did not round-trip through serialization", props0, props1);
+  }
+
+  /** Handler for serialization compatibility test suite. */
+  public static class PropertiesHandler implements SerializableTestUtility.Handler {
+
+    @Override
+    public Object[] getTestObjects() {
+      return new Object[] {
+        new Properties(),
+        PatternString.parseToProperties("x#,##0.00%"),
+        new Properties().setCompactStyle(CompactStyle.LONG).setMinimumExponentDigits(2)
+      };
+    }
+
+    @Override
+    public boolean hasSameBehavior(Object a, Object b) {
+      return a.equals(b);
+    }
   }
 }

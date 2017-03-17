@@ -1530,7 +1530,7 @@ public class DecimalFormatSymbols implements Cloneable, Serializable {
                 groupingSeparatorString = String.valueOf(groupingSeparator);
             }
             if (percentString == null) {
-                percentString = String.valueOf(percentString);
+                percentString = String.valueOf(percent);
             }
             if (perMillString == null) {
                 perMillString = String.valueOf(perMill);

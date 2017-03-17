@@ -277,8 +277,8 @@ public class FormatQuantity1 implements FormatQuantity {
     long fingerprint = 0;
     fingerprint ^= lOptPos;
     fingerprint ^= (lReqPos << 16);
-    fingerprint ^= (rReqPos << 32);
-    fingerprint ^= (rOptPos << 48);
+    fingerprint ^= ((long) rReqPos << 32);
+    fingerprint ^= ((long) rOptPos << 48);
     return fingerprint;
   }
 

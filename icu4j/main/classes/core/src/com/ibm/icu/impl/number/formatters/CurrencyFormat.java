@@ -219,17 +219,11 @@ public class CurrencyFormat {
     return mod;
   }
 
-  private static final ThreadLocal<Properties> threadLocalProperties =
-      new ThreadLocal<Properties>() {
-        @Override
-        protected Properties initialValue() {
-          return new Properties();
-        }
-      };
-
   private static final Currency DEFAULT_CURRENCY = Currency.getInstance("XXX");
 
-  public static Rounder getCurrencyRounder(DecimalFormatSymbols symbols, IProperties properties) {
+  public static void populateCurrencyRounderProperties(
+      Properties destination, DecimalFormatSymbols symbols, IProperties properties) {
+
     Currency currency = properties.getCurrency();
     if (currency == null) {
       // Fall back to the DecimalFormatSymbols currency instance.
@@ -249,22 +243,21 @@ public class CurrencyFormat {
     double incrementDouble = currency.getRoundingIncrement(currencyUsage);
     int fractionDigits = currency.getDefaultFractionDigits(currencyUsage);
 
-    Properties cprops = threadLocalProperties.get().clear();
-    cprops.setRoundingMode(properties.getRoundingMode());
-    cprops.setMinimumIntegerDigits(properties.getMinimumIntegerDigits());
-    cprops.setMaximumIntegerDigits(properties.getMaximumIntegerDigits());
+    destination.setRoundingMode(properties.getRoundingMode());
+    destination.setMinimumIntegerDigits(properties.getMinimumIntegerDigits());
+    destination.setMaximumIntegerDigits(properties.getMaximumIntegerDigits());
 
     int _minFrac = properties.getMinimumFractionDigits();
     if (_minFrac < 0) {
-      cprops.setMinimumFractionDigits(fractionDigits);
+      destination.setMinimumFractionDigits(fractionDigits);
     } else {
-      cprops.setMinimumFractionDigits(_minFrac);
+      destination.setMinimumFractionDigits(_minFrac);
     }
     int _maxFrac = properties.getMaximumFractionDigits();
     if (_maxFrac < 0) {
-      cprops.setMaximumFractionDigits(fractionDigits);
+      destination.setMaximumFractionDigits(fractionDigits);
     } else {
-      cprops.setMaximumFractionDigits(_maxFrac);
+      destination.setMaximumFractionDigits(_maxFrac);
     }
 
     if (incrementDouble > 0.0) {
@@ -275,7 +268,23 @@ public class CurrencyFormat {
       } else {
         incrementBigDecimal = BigDecimal.valueOf(incrementDouble);
       }
-      cprops.setRoundingIncrement(incrementBigDecimal);
+      destination.setRoundingIncrement(incrementBigDecimal);
+    } else {
+    }
+  }
+
+  private static final ThreadLocal<Properties> threadLocalProperties =
+      new ThreadLocal<Properties>() {
+        @Override
+        protected Properties initialValue() {
+          return new Properties();
+        }
+      };
+
+  public static Rounder getCurrencyRounder(DecimalFormatSymbols symbols, IProperties properties) {
+    Properties cprops = threadLocalProperties.get().clear();
+    populateCurrencyRounderProperties(cprops, symbols, properties);
+    if (cprops.getRoundingIncrement() != null) {
       return IncrementRounder.getInstance(cprops);
     } else {
       return MagnitudeRounder.getInstance(cprops);
