@@ -649,4 +649,12 @@ public class CompactDecimalFormatTest extends TestFmwk {
         String result = cdf.format(1000);
         assertEquals("pt_PT should fall back to pt", "1 mil", result);
     }
+
+    @Test
+    public void TestBug12181() {
+        ULocale loc = ULocale.ENGLISH;
+        CompactDecimalFormat cdf = CompactDecimalFormat.getInstance(loc, CompactStyle.SHORT);
+        String s = cdf.format(-1500);
+        assertEquals("Should work with negative numbers", "-1.5K", s);
+    }
 }

@@ -135,8 +135,13 @@ public class CurrencyFormat {
     Currency currency = properties.getCurrency();
     if (currency == null) {
       return symbols.getCurrencySymbol();
+    } else if (currency.equals(symbols.getCurrency())) {
+      // The user may have set a custom currency symbol in DecimalFormatSymbols.
+      return symbols.getCurrencySymbol();
+    } else {
+      // Use the canonical symbol.
+      return currency.getName(symbols.getULocale(), Currency.SYMBOL_NAME, null);
     }
-    return currency.getName(symbols.getULocale(), Currency.SYMBOL_NAME, null);
   }
 
   /**
@@ -155,8 +160,11 @@ public class CurrencyFormat {
       // DecimalFormatSymbols#setInternationalCurrencySymbol() does not update the
       // immutable internal currency instance.
       return symbols.getInternationalCurrencySymbol();
+    } else if (currency.equals(symbols.getCurrency())) {
+      // The user may have set a custom currency symbol in DecimalFormatSymbols.
+      return symbols.getInternationalCurrencySymbol();
     } else {
-      // If a currency object was provided, use it
+      // Use the canonical currency code.
       return currency.getCurrencyCode();
     }
   }
@@ -248,16 +256,14 @@ public class CurrencyFormat {
     destination.setMaximumIntegerDigits(properties.getMaximumIntegerDigits());
 
     int _minFrac = properties.getMinimumFractionDigits();
-    if (_minFrac < 0) {
-      destination.setMinimumFractionDigits(fractionDigits);
-    } else {
-      destination.setMinimumFractionDigits(_minFrac);
-    }
     int _maxFrac = properties.getMaximumFractionDigits();
-    if (_maxFrac < 0) {
-      destination.setMaximumFractionDigits(fractionDigits);
-    } else {
+    if (_minFrac >= 0 || _maxFrac >= 0) {
+      // User override
+      destination.setMinimumFractionDigits(_minFrac);
       destination.setMaximumFractionDigits(_maxFrac);
+    } else {
+      destination.setMinimumFractionDigits(fractionDigits);
+      destination.setMaximumFractionDigits(fractionDigits);
     }
 
     if (incrementDouble > 0.0) {

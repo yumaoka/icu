@@ -4947,6 +4947,25 @@ public class NumberFormatTest extends TestFmwk {
     }
 
     @Test
+    public void testCurrencyZeroRounding() {
+        DecimalFormat df = (DecimalFormat) NumberFormat.getCurrencyInstance();
+        df.setMaximumFractionDigits(0);
+        String actual = df.format(0);
+        assertEquals("Should have zero fraction digits", "$0", actual);
+    }
+
+    @Test
+    public void testCustomCurrencySymbol() {
+        DecimalFormat df = (DecimalFormat) NumberFormat.getCurrencyInstance();
+        df.setCurrency(Currency.getInstance("USD"));
+        DecimalFormatSymbols symbols = df.getDecimalFormatSymbols();
+        symbols.setCurrencySymbol("#");
+        df.setDecimalFormatSymbols(symbols);
+        String actual = df.format(123);
+        assertEquals("Should use '#' instad of '$'", "#123.00", actual);
+    }
+
+    @Test
     public void TestBasicSerializationRoundTrip() throws IOException, ClassNotFoundException {
         DecimalFormat df0 = new DecimalFormat("A-**#####,#00.00b¤");
 
