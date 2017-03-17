@@ -139,7 +139,6 @@ icu4c/source/tools/icuinfo/testplug.vcxproj -text
 icu4c/source/tools/icupkg/icupkg.vcxproj -text
 icu4c/source/tools/pkgdata/pkgdata.vcxproj -text
 icu4c/source/tools/tzcode/icuregions -text
-icu4j/lib/.project -text
 icu4j/main/shared/data/icudata.jar -text
 icu4j/main/shared/data/icutzdata.jar -text
 icu4j/main/shared/data/testdata.jar -text
