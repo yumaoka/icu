@@ -57,6 +57,7 @@
     <property name="icu4j.api.doc.window.title" value="ICU4J ${api.doc.version}"/>
     <property name="icu4j.api.doc.header" value="ICU4J ${api.doc.version}"/>
     <property name="icu4j.api.doc.jdk.link" value="http://docs.oracle.com/javase/8/docs/api/"/>
+    <property name="icu4j.api.doc.copyright.footer" value="&lt;font size=-1&gt;Copyright &#x00A9; ${current.year} Unicode, Inc. and others.&lt;/font&gt;"/>
 
     <!-- directories -->
     <property name="release.dir" value="release"/>
@@ -956,7 +957,7 @@
                 encoding="${java.src.encoding}"
                 docencoding="UTF-8"
                 charset="UTF-8"
-                bottom="&lt;font size=-1&gt;Copyright (c) ${current.year} IBM Corporation and others.&lt;/font&gt;"
+                bottom="${icu4j.api.doc.copyright.footer}"
                 additionalparam="${doclint.option} -breakiterator -use -tagletpath ${icu4j.build-tools.jar}${path.separator}${jcite.libs} -taglet com.ibm.icu.dev.tool.docs.ICUTaglet -taglet ch.arrenbrecht.jcite.JCiteTaglet -J-Djcitesourcepath=${jcite.addl.src} -J-Dfile.encoding=UTF-8"
                 link="${icu4j.api.doc.jdk.link}"
                 source="1.5"
@@ -991,7 +992,7 @@
                 encoding="${java.src.encoding}"
                 docencoding="UTF-8"
                 charset="UTF-8"
-                bottom="&lt;font size=-1&gt;Copyright (c) ${current.year} IBM Corporation and others.&lt;/font&gt;"
+                bottom="${icu4j.api.doc.copyright.footer}"
                 additionalparam="${doclint.option} -breakiterator -use -tagletpath ${icu4j.build-tools.jar} -taglet com.ibm.icu.dev.tool.docs.ICUTaglet"
                 link="${icu4j.api.doc.jdk.link}"
                 source="1.5"
@@ -1138,88 +1139,6 @@
             </classpath>
         </java>
 
-    </target>
-
-    <!-- Clover code coverage target -->
-    <property name="clover.out.dir" value="${out.dir}/clover"/>
-    <property name="clover.jar" location="${env.CLOVER_DIR}/clover.jar"/>
-    <taskdef resource="cloverlib.xml" classpath="${clover.jar}" onerror="ignore"/>
-
-    <target name="codeCoverage" depends="clean" description="Generate code coverage report with clover">
-        <!-- Set up clover -->
-        <mkdir dir="${clover.out.dir}"/>
-        <clover-setup initstring="${clover.out.dir}/clover.db">
-            <files>
-                <exclude name="**/dev/**/*.java"/>
-            </files>
-            <methodContext name="API" regexp="(.* )?public .*"/>
-        </clover-setup>
-
-        <!-- Build components with clover instrumentation -->
-        <ant dir="${icu4j.core.dir}" inheritAll="false" inheritRefs="true">
-            <property name="build.compiler" value="${build.compiler}"/>
-        </ant>
-        <ant dir="${icu4j.collate.dir}" inheritAll="false" inheritRefs="true">
-            <property name="build.compiler" value="${build.compiler}"/>
-        </ant>
-        <ant dir="${icu4j.charset.dir}" inheritAll="false" inheritRefs="true">
-            <property name="build.compiler" value="${build.compiler}"/>
-        </ant>
-        <ant dir="${icu4j.currdata.dir}" inheritAll="false" inheritRefs="true">
-            <property name="build.compiler" value="${build.compiler}"/>
-        </ant>
-        <ant dir="${icu4j.langdata.dir}" inheritAll="false" inheritRefs="true">
-            <property name="build.compiler" value="${build.compiler}"/>
-        </ant>
-        <ant dir="${icu4j.regiondata.dir}" inheritAll="false" inheritRefs="true">
-            <property name="build.compiler" value="${build.compiler}"/>
-        </ant>
-        <ant dir="${icu4j.translit.dir}" inheritAll="false" inheritRefs="true">
-            <property name="build.compiler" value="${build.compiler}"/>
-        </ant>
-        <ant dir="${icu4j.test-framework.dir}" inheritAll="false" inheritRefs="true">
-            <property name="build.compiler" value="${build.compiler}"/>
-        </ant>
-        <ant dir="${icu4j.core-tests.dir}" inheritAll="false" inheritRefs="true">
-            <property name="build.compiler" value="${build.compiler}"/>
-        </ant>
-        <ant dir="${icu4j.collate-tests.dir}" inheritAll="false" inheritRefs="true">
-            <property name="build.compiler" value="${build.compiler}"/>
-        </ant>
-        <ant dir="${icu4j.charset-tests.dir}" inheritAll="false" inheritRefs="true">
-            <property name="build.compiler" value="${build.compiler}"/>
-        </ant>
-        <ant dir="${icu4j.translit-tests.dir}" inheritAll="false" inheritRefs="true">
-            <property name="build.compiler" value="${build.compiler}"/>
-        </ant>
-
-        <!-- Run the test suites -->
-        <java classname="com.ibm.icu.dev.test.TestAll" fork="yes" failonerror="true">
-            <classpath>
-                <pathelement location="${icu4j.core.jar}"/>
-                <pathelement location="${icu4j.collate.jar}"/>
-                <pathelement location="${icu4j.charset.jar}"/>
-                <pathelement location="${icu4j.currdata.jar}"/>
-                <pathelement location="${icu4j.langdata.jar}"/>
-                <pathelement location="${icu4j.regiondata.jar}"/>
-                <pathelement location="${icu4j.translit.jar}"/>
-                <pathelement location="${icu4j.test-framework.jar}"/>
-                <pathelement location="${icu4j.core-tests.jar}"/>
-                <pathelement location="${icu4j.collate-tests.jar}"/>
-                <pathelement location="${icu4j.charset-tests.jar}"/>
-                <pathelement location="${icu4j.translit-tests.jar}"/>
-                <pathelement location="${icu4j.testall.jar}"/>
-                <pathelement location="${clover.jar}"/>
-            </classpath>
-        </java>
-
-        <!-- Generate HTML coverage report -->
-        <!-- <clover-html-report outdir="${clover.out.dir}/html" title="ICU4J Code Coverage"/> -->
-        <clover-report>
-            <current outfile="${clover.out.dir}/html" title="ICU4J Code Coverage">
-                <format type="html" filter="assert" />
-            </current>
-        </clover-report>
     </target>
 
     <!-- Release management targets -->
