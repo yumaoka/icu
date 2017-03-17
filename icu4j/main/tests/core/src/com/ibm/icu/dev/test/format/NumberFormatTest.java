@@ -4940,6 +4940,13 @@ public class NumberFormatTest extends TestFmwk {
     }
 
     @Test
+    public void testPercentZero() {
+        DecimalFormat df = (DecimalFormat) NumberFormat.getPercentInstance();
+        String actual = df.format(0);
+        assertEquals("Should have one zero digit", "0%", actual);
+    }
+
+    @Test
     public void TestBasicSerializationRoundTrip() throws IOException, ClassNotFoundException {
         DecimalFormat df0 = new DecimalFormat("A-**#####,#00.00b¤");
 

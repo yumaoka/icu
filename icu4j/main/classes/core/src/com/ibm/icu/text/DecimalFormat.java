@@ -1904,7 +1904,15 @@ public class DecimalFormat extends NumberFormat {
   //                                     UTILITIES                                       //
   //=====================================================================================//
 
-  /** @stable ICU 2.0 */
+  /**
+   * Tests for equality between this formatter and another formatter.
+   *
+   * <p>If two DecimalFormat instances are equal, then they will always produce the same output.
+   * However, the reverse is not necessarily true: if two DecimalFormat instances always produce the
+   * same output, they are not necessarily equal.
+   *
+   * @stable ICU 2.0
+   */
   @Override
   public synchronized boolean equals(Object obj) {
     if (obj == null) return false;

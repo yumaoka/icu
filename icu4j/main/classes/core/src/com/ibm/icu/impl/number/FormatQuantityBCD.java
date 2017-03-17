@@ -189,8 +189,10 @@ public abstract class FormatQuantityBCD implements FormatQuantity {
 
   @Override
   public void adjustMagnitude(int delta) {
-    scale += delta;
-    origDelta += delta;
+    if (precision != 0) {
+      scale += delta;
+      origDelta += delta;
+    }
   }
 
   @Override
