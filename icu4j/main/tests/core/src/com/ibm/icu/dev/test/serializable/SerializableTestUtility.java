@@ -30,7 +30,7 @@ import java.util.Locale;
 
 import com.ibm.icu.dev.test.format.MeasureUnitTest;
 import com.ibm.icu.dev.test.format.PluralRulesTest;
-import com.ibm.icu.dev.test.numbers.PropertiesTest;
+import com.ibm.icu.dev.test.number.PropertiesTest;
 import com.ibm.icu.impl.JavaTimeZone;
 import com.ibm.icu.impl.OlsonTimeZone;
 import com.ibm.icu.impl.TimeZoneAdapter;

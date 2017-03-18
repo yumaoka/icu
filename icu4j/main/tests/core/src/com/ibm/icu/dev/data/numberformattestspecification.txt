@@ -1351,8 +1351,8 @@ parse	output	breaks
 - 123	-123	JK
  -123	-123	JK
  - 123	-123	JK
-123-	-123	JK
-123 -	-123	JK
+123-	-123	JKS
+123 -	-123	JKS
 
 test parse case sensitive
 set locale en

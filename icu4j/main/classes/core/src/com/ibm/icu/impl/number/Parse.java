@@ -1115,7 +1115,7 @@ public class Parse {
             if (mode == ParseMode.LENIENT || mode == ParseMode.FAST) {
               acceptWhitespace(cp, StateName.BEFORE_SUFFIX, state, item);
               if (state.length > 0 && mode == ParseMode.FAST) break;
-              acceptMinusOrPlusSign(cp, StateName.BEFORE_SUFFIX, state, item, false);
+              // TODO(sffc): acceptMinusOrPlusSign(cp, StateName.BEFORE_SUFFIX, state, item, false);
               if (state.length > 0 && mode == ParseMode.FAST) break;
               if (parseCurrency) {
                 acceptCurrency(cp, StateName.BEFORE_SUFFIX, state, item);
@@ -1141,7 +1141,7 @@ public class Parse {
             if (mode == ParseMode.LENIENT || mode == ParseMode.FAST) {
               acceptWhitespace(cp, StateName.BEFORE_SUFFIX, state, item);
               if (state.length > 0 && mode == ParseMode.FAST) break;
-              acceptMinusOrPlusSign(cp, StateName.BEFORE_SUFFIX, state, item, false);
+              // TODO(sffc): acceptMinusOrPlusSign(cp, StateName.BEFORE_SUFFIX, state, item, false);
               if (state.length > 0 && mode == ParseMode.FAST) break;
               if (parseCurrency) {
                 acceptCurrency(cp, StateName.BEFORE_SUFFIX, state, item);
@@ -1164,7 +1164,7 @@ public class Parse {
             }
             if (mode == ParseMode.LENIENT || mode == ParseMode.FAST) {
               acceptWhitespace(cp, StateName.BEFORE_SUFFIX_SEEN_EXPONENT, state, item);
-              acceptMinusOrPlusSign(cp, StateName.BEFORE_SUFFIX, state, item, false);
+              // TODO(sffc): acceptMinusOrPlusSign(cp, StateName.BEFORE_SUFFIX, state, item, false);
               if (parseCurrency) {
                 acceptCurrency(cp, StateName.BEFORE_SUFFIX_SEEN_EXPONENT, state, item);
               }
@@ -1183,7 +1183,7 @@ public class Parse {
             }
             if (mode == ParseMode.LENIENT || mode == ParseMode.FAST) {
               acceptWhitespace(cp, StateName.BEFORE_SUFFIX, state, item);
-              acceptMinusOrPlusSign(cp, StateName.BEFORE_SUFFIX, state, item, false);
+              // TODO(sffc): acceptMinusOrPlusSign(cp, StateName.BEFORE_SUFFIX, state, item, false);
               if (parseCurrency) {
                 acceptCurrency(cp, StateName.BEFORE_SUFFIX, state, item);
               }
@@ -1199,7 +1199,7 @@ public class Parse {
             }
             if (mode == ParseMode.LENIENT || mode == ParseMode.FAST) {
               acceptWhitespace(cp, StateName.BEFORE_SUFFIX_SEEN_EXPONENT, state, item);
-              acceptMinusOrPlusSign(cp, StateName.BEFORE_SUFFIX_SEEN_EXPONENT, state, item, false);
+              // TODO(sffc): acceptMinusOrPlusSign(cp, StateName.BEFORE_SUFFIX_SEEN_EXPONENT, state, item, false);
               if (parseCurrency) {
                 acceptCurrency(cp, StateName.BEFORE_SUFFIX_SEEN_EXPONENT, state, item);
               }
@@ -1212,7 +1212,7 @@ public class Parse {
               acceptBidi(cp, StateName.AFTER_SUFFIX, state, item);
               acceptPadding(cp, StateName.AFTER_SUFFIX, state, item);
               acceptWhitespace(cp, StateName.AFTER_SUFFIX, state, item);
-              acceptMinusOrPlusSign(cp, StateName.AFTER_SUFFIX, state, item, false);
+              // TODO(sffc): acceptMinusOrPlusSign(cp, StateName.AFTER_SUFFIX, state, item, false);
               if (parseCurrency) {
                 acceptCurrency(cp, StateName.AFTER_SUFFIX, state, item);
               }

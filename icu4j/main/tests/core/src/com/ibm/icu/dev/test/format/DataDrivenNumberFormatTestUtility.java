@@ -114,7 +114,7 @@ public class DataDrivenNumberFormatTestUtility {
      * @param codeUnderTest the code under test
      */
 
-    static void runSuite(
+    public static void runSuite(
             String fileName, CodeUnderTest codeUnderTest) {
         new DataDrivenNumberFormatTestUtility(codeUnderTest)
                 .run(fileName, RunMode.SKIP_KNOWN_FAILURES);
@@ -129,7 +129,7 @@ public class DataDrivenNumberFormatTestUtility {
      *   com/ibm/icu/dev/data such as "data.txt"
      * @param codeUnderTest the code under test
      */
-    static void runFormatSuiteIncludingKnownFailures(
+    public static void runFormatSuiteIncludingKnownFailures(
             String fileName, CodeUnderTest codeUnderTest) {
         new DataDrivenNumberFormatTestUtility(codeUnderTest)
                 .run(fileName, RunMode.INCLUDE_KNOWN_FAILURES);

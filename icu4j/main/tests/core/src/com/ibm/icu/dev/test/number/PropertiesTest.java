@@ -1,6 +1,6 @@
 // © 2017 and later: Unicode, Inc. and others.
 // License & terms of use: http://www.unicode.org/copyright.html#License
-package com.ibm.icu.dev.test.numbers;
+package com.ibm.icu.dev.test.number;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;

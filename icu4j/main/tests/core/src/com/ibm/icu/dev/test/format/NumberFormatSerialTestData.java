@@ -10,13 +10,9 @@
 package com.ibm.icu.dev.test.format;
 
 public class NumberFormatSerialTestData {
-    //get Content
-    public static byte[][] getContent() {
-        return content;
-    }
 
     //NumberFormat.getInstance(Locale.US)
-    static byte[] generalInstance = new byte[]{ 
+    static byte[] generalInstance() { return new byte[] { 
         -84, -19, 0, 5, 115, 114, 0, 30, 99, 111, 109, 46, 105, 98, 109, 46, 105, 99, 117, 46, 
         116, 101, 120, 116, 46, 68, 101, 99, 105, 109, 97, 108, 70, 111, 114, 109, 97, 116, 11, -1, 
         3, 98, -40, 114, 48, 58, 2, 0, 22, 90, 0, 27, 100, 101, 99, 105, 109, 97, 108, 83, 
@@ -85,10 +81,10 @@ public class NumberFormatSerialTestData {
         0, 35, 0, 0, 0, 44, 0, 45, 0, 46, 0, 42, 0, 59, 32, 48, 0, 37, 0, 43, 
         0, 0, 0, 2, 0, 48, 116, 0, 3, -17, -65, -67, 116, 0, 1, 36, 116, 0, 1, 69, 
         116, 0, 3, -30, -120, -98, 116, 0, 3, 85, 83, 68, 
-    };
+    };};
 
     //NumberFormat.getCurrencyInstance(Locale.US)
-    static byte[] currencyInstance = new byte[]{ 
+    static byte[] currencyInstance () { return new byte[] { 
         -84, -19, 0, 5, 115, 114, 0, 30, 99, 111, 109, 46, 105, 98, 109, 46, 105, 99, 117, 46, 
         116, 101, 120, 116, 46, 68, 101, 99, 105, 109, 97, 108, 70, 111, 114, 109, 97, 116, 11, -1, 
         3, 98, -40, 114, 48, 58, 2, 0, 22, 90, 0, 27, 100, 101, 99, 105, 109, 97, 108, 83, 
@@ -158,10 +154,10 @@ public class NumberFormatSerialTestData {
         0, 59, 32, 48, 0, 37, 0, 43, 0, 0, 0, 2, 0, 48, 116, 0, 3, -17, -65, -67, 
         116, 0, 1, 36, 116, 0, 1, 69, 116, 0, 3, -30, -120, -98, 116, 0, 3, 85, 83, 68, 
         
-    };
+    };};
 
     //NumberFormat.getScientificInstance(Locale.US)
-    static byte[] scientificInstance = new byte[]{ 
+    static byte[] scientificInstance() { return new byte[] { 
         -84, -19, 0, 5, 115, 114, 0, 30, 99, 111, 109, 46, 105, 98, 109, 46, 105, 99, 117, 46, 
         116, 101, 120, 116, 46, 68, 101, 99, 105, 109, 97, 108, 70, 111, 114, 109, 97, 116, 11, -1, 
         3, 98, -40, 114, 48, 58, 2, 0, 22, 90, 0, 27, 100, 101, 99, 105, 109, 97, 108, 83, 
@@ -230,9 +226,9 @@ public class NumberFormatSerialTestData {
         0, 46, 0, 35, 0, 0, 0, 44, 0, 45, 0, 46, 0, 42, 0, 59, 32, 48, 0, 37, 
         0, 43, 0, 0, 0, 2, 0, 48, 116, 0, 3, -17, -65, -67, 116, 0, 1, 36, 116, 0, 
         1, 69, 116, 0, 3, -30, -120, -98, 116, 0, 3, 85, 83, 68, 
-    };
+    };};
 
-    static byte[] icu58Latest = {
+    static byte[] icu58Latest() { return new byte[] {
         -84, -19, 0, 5, 115, 114, 0, 30, 99, 111, 109, 46, 105, 98, 109, 46, 105, 99, 117, 46, 116, 101,
         120, 116, 46, 68, 101, 99, 105, 109, 97, 108, 70, 111, 114, 109, 97, 116, 11, -1, 3, 98, -40,
         114, 48, 58, 3, 0, 36, 73, 0, 18, 80, 65, 82, 83, 69, 95, 77, 65, 88, 95, 69, 88, 80, 79, 78,
@@ -391,9 +387,9 @@ public class NumberFormatSerialTestData {
         118, 97, 114, 105, 97, 110, 116, 113, 0, 126, 0, 5, 120, 112, -1, -1, -1, -1, 116, 0, 2, 85, 83,
         116, 0, 0, 116, 0, 2, 101, 110, 113, 0, 126, 0, 79, 113, 0, 126, 0, 79, 120, 115, 113, 0, 126,
         0, 43, 113, 0, 126, 0, 45, 113, 0, 126, 0, 44, 120
-    };
+    };};
 
-    static byte[] newFromPattern = {
+    static byte[] newFromPattern() { return new byte[] {
       -84, -19, 0, 5, 115, 114, 0, 30, 99, 111, 109, 46, 105, 98, 109, 46, 105, 99, 117, 46, 116, 101,
       120, 116, 46, 68, 101, 99, 105, 109, 97, 108, 70, 111, 114, 109, 97, 116, 11, -1, 3, 98, -40,
       114, 48, 58, 3, 0, 1, 73, 0, 18, 105, 99, 117, 77, 97, 116, 104, 67, 111, 110, 116, 101, 120,
@@ -510,13 +506,15 @@ public class NumberFormatSerialTestData {
       112, 116, 113, 0, 126, 0, 33, 76, 0, 7, 118, 97, 114, 105, 97, 110, 116, 113, 0, 126, 0, 33,
       120, 112, -1, -1, -1, -1, 116, 0, 2, 85, 83, 116, 0, 0, 116, 0, 2, 101, 110, 113, 0, 126, 0, 75,
       113, 0, 126, 0, 75, 120, 115, 113, 0, 126, 0, 39, 113, 0, 126, 0, 41, 113, 0, 126, 0, 40, 120
-    };
+    };};
 
-    final static byte[][] content = {
-            generalInstance,
-            currencyInstance,
-            scientificInstance,
-            icu58Latest,
-            newFromPattern
-    };
+    static byte[][] getContent() {
+        return new byte[][] {
+            generalInstance(),
+            currencyInstance(),
+            scientificInstance(),
+            icu58Latest(),
+            newFromPattern()
+        };
+    }
 }

@@ -17,7 +17,7 @@ import com.ibm.icu.impl.number.formatters.ScientificFormat;
  *   <li>Either have the code <code>applyDefaults(input);</code> in its apply function, or otherwise
  *       ensure that minFrac, maxFrac, minInt, and maxInt are obeyed, paying special attention to
  *       the case when the input is zero.
- *   <li>Call one of {@link FormatQuantity#roundToInterval}, {@link
+ *   <li>Call one of {@link FormatQuantity#roundToIncrement}, {@link
  *       FormatQuantity#roundToMagnitude}, or {@link FormatQuantity#roundToInfinity} on the input.
  * </ol>
  *

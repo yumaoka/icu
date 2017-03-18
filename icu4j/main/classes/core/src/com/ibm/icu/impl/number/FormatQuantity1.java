@@ -426,6 +426,7 @@ public class FormatQuantity1 implements FormatQuantity {
    * @param scale The scale of the final rounded number. More negative means more decimal places.
    * @param mathContext The math context to use if rounding is necessary.
    */
+  @SuppressWarnings("unused")
   private void divideBy(BigDecimal divisor, int scale, MathContext mathContext) {
     convertToBigDecimal();
     // Negate the scale because BigDecimal's scale is defined as the inverse of our scale
@@ -544,7 +545,6 @@ public class FormatQuantity1 implements FormatQuantity {
     return isNegative() ? result.negate() : result;
   }
 
-  /** @return */
   @Override
   public StandardPlural getStandardPlural(PluralRules rules) {
     if (rules == null) {
@@ -563,7 +563,6 @@ public class FormatQuantity1 implements FormatQuantity {
     return new PluralRules.FixedDecimal(toDouble()).getPluralOperand(operand);
   }
 
-  /** @return */
   public boolean hasNextFraction() {
     if (rReqPos < 0) {
       // We are in the required zone.
@@ -591,7 +590,6 @@ public class FormatQuantity1 implements FormatQuantity {
     }
   }
 
-  /** @return */
   public byte nextFraction() {
     byte returnValue;
     if (primary == -1) {
@@ -638,7 +636,6 @@ public class FormatQuantity1 implements FormatQuantity {
     return returnValue;
   }
 
-  /** @return */
   public boolean hasNextInteger() {
     if (lReqPos > 0) {
       // We are in the required zone.
@@ -724,7 +721,6 @@ public class FormatQuantity1 implements FormatQuantity {
     }
   }
 
-  /** @return */
   public byte nextInteger() {
     byte returnValue;
     if (primary == -1) {

@@ -1,12 +1,14 @@
 // © 2017 and later: Unicode, Inc. and others.
 // License & terms of use: http://www.unicode.org/copyright.html#License
-package com.ibm.icu.dev.test.format;
+package com.ibm.icu.dev.test.number;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.ParseException;
 import java.text.ParsePosition;
 
+import com.ibm.icu.dev.test.format.DataDrivenNumberFormatTestData;
+import com.ibm.icu.dev.test.format.DataDrivenNumberFormatTestUtility;
 import com.ibm.icu.dev.test.format.DataDrivenNumberFormatTestUtility.CodeUnderTest;
 import com.ibm.icu.impl.number.Endpoint;
 import com.ibm.icu.impl.number.Format;
@@ -26,12 +28,12 @@ import com.ibm.icu.text.DecimalFormatSymbols;
 import com.ibm.icu.util.CurrencyAmount;
 import com.ibm.icu.util.ULocale;
 
-public class ShanesDataDrivenTester extends CodeUnderTest {
+public class ShanesDataDrivenTestUtility extends CodeUnderTest {
   static final String dataPath =
       "../../../icu4j-core-tests/src/com/ibm/icu/dev/data/numberformattestspecification.txt";
 
   public static void run() {
-    CodeUnderTest tester = new ShanesDataDrivenTester();
+    CodeUnderTest tester = new ShanesDataDrivenTestUtility();
     DataDrivenNumberFormatTestUtility.runFormatSuiteIncludingKnownFailures(dataPath, tester);
   }
 

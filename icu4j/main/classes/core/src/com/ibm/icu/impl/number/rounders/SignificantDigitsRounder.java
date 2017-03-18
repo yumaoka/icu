@@ -10,19 +10,6 @@ import com.ibm.icu.impl.number.Rounder;
 
 public class SignificantDigitsRounder extends Rounder {
 
-  /**
-   * Sets whether the minimum significant digits should override the maximum integer and fraction
-   * digits. This affects both display and rounding. Default is true.
-   *
-   * <p>For example, if this option is enabled, formatting the number 4.567 with 3 min/max
-   * significant digits against the pattern "0.0" (1 min/max fraction digits) will result in "4.57"
-   * in locale <em>en-US</em> with the default rounding mode. If this option is disabled, the max
-   * fraction digits take priority instead, and the output will be "4.6".
-   *
-   * @param significantDigitsOverride true to ensure that the minimum significant digits are always
-   *     shown; false to ensure that the maximum integer and fraction digits are obeyed.
-   * @return The property bag, for chaining.
-   */
   public static enum SignificantDigitsMode {
     OVERRIDE_MAXIMUM_FRACTION,
     RESPECT_MAXIMUM_FRACTION,

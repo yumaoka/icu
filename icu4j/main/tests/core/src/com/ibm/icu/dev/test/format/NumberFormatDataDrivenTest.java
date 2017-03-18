@@ -7,6 +7,7 @@ import java.text.ParsePosition;
 
 import org.junit.Test;
 
+import com.ibm.icu.dev.test.number.ShanesDataDrivenTestUtility;
 import com.ibm.icu.text.DecimalFormatSymbols;
 import com.ibm.icu.text.DecimalFormat_ICU58;
 import com.ibm.icu.util.CurrencyAmount;
@@ -428,6 +429,6 @@ public class NumberFormatDataDrivenTest {
 
   @Test
   public void TestDataDrivenShane() {
-    ShanesDataDrivenTester.run();
+    ShanesDataDrivenTestUtility.run();
   }
 }
