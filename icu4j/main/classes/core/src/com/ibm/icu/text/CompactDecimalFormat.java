@@ -55,6 +55,8 @@ import com.ibm.icu.util.ULocale;
  */
 public class CompactDecimalFormat extends DecimalFormat {
 
+    private static final long serialVersionUID = 4716293295276629682L;
+
   /**
    * Style parameter for CompactDecimalFormat.
    *
