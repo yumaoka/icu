@@ -5398,7 +5398,7 @@ public abstract class Calendar implements Serializable, Cloneable, Comparable<Ca
 
         long millis = julianDayToMillis(julianDay);
 
-        int millisInDay;
+        long millisInDay;
 
         // We only use MILLISECONDS_IN_DAY if it has been set by the user.
         // This makes it possible for the caller to set the calendar to a
@@ -5409,7 +5409,18 @@ public abstract class Calendar implements Serializable, Cloneable, Comparable<Ca
                 newestStamp(AM_PM, MILLISECOND, UNSET) <= stamp[MILLISECONDS_IN_DAY]) {
             millisInDay = internalGet(MILLISECONDS_IN_DAY);
         } else {
-            millisInDay = computeMillisInDay();
+            int hour = Math.abs(internalGet(HOUR_OF_DAY));
+            hour = Math.max(hour, Math.abs(internalGet(HOUR)));
+            // if hour field value is greater than 596, then the
+            // milliseconds value exceeds integer range, hence
+            // using a conservative estimate of 24, we invoke
+            // the long return version of the compute millis method if
+            // the hour value exceeds 24
+            if (hour > 24) {
+                millisInDay = computeMillisInDayLong();
+            } else {
+                millisInDay = computeMillisInDay();
+            }
         }
 
         if (stamp[ZONE_OFFSET] >= MINIMUM_USER_STAMP ||
@@ -5598,11 +5609,57 @@ public abstract class Calendar implements Serializable, Cloneable, Comparable<Ca
      * range, in which case it can be an arbitrary value.  This value
      * reflects local zone wall time.
      * @stable ICU 2.0
+     * @deprecated This is now marked internal, use computeMillisInDayLong
      */
+    @Deprecated
     protected int computeMillisInDay() {
         // Do the time portion of the conversion.
 
         int millisInDay = 0;
+
+        // Find the best set of fields specifying the time of day.  There
+        // are only two possibilities here; the HOUR_OF_DAY or the
+        // AM_PM and the HOUR.
+        int hourOfDayStamp = stamp[HOUR_OF_DAY];
+        int hourStamp = Math.max(stamp[HOUR], stamp[AM_PM]);
+        int bestStamp = (hourStamp > hourOfDayStamp) ? hourStamp : hourOfDayStamp;
+
+        // Hours
+        if (bestStamp != UNSET) {
+            if (bestStamp == hourOfDayStamp) {
+                // Don't normalize here; let overflow bump into the next period.
+                // This is consistent with how we handle other fields.
+                millisInDay += internalGet(HOUR_OF_DAY);
+            } else {
+                // Don't normalize here; let overflow bump into the next period.
+                // This is consistent with how we handle other fields.
+                millisInDay += internalGet(HOUR);
+                millisInDay += 12 * internalGet(AM_PM); // Default works for unset AM_PM
+            }
+        }
+
+        // We use the fact that unset == 0; we start with millisInDay
+        // == HOUR_OF_DAY.
+        millisInDay *= 60;
+        millisInDay += internalGet(MINUTE); // now have minutes
+        millisInDay *= 60;
+        millisInDay += internalGet(SECOND); // now have seconds
+        millisInDay *= 1000;
+        millisInDay += internalGet(MILLISECOND); // now have millis
+
+        return millisInDay;
+    }
+
+    /**
+     * Compute the milliseconds in the day from the fields.  The standard
+     * value range is from 0 to 23:59:59.999 inclusive. This value
+     * reflects local zone wall time.
+     * @stable ICU 2.0
+     */
+    protected long computeMillisInDayLong() {
+        // Do the time portion of the conversion.
+
+        long millisInDay = 0;
 
         // Find the best set of fields specifying the time of day.  There
         // are only two possibilities here; the HOUR_OF_DAY or the
@@ -5644,8 +5701,63 @@ public abstract class Calendar implements Serializable, Cloneable, Comparable<Ca
      * or range.
      * @return total zone offset (raw + DST) for the given moment
      * @stable ICU 2.0
+     * @deprecated This is internal ICU method,
+     *   use protected int computeZoneOffset(long millis, long millisInDay)
+     *   instead
      */
+    @Deprecated
     protected int computeZoneOffset(long millis, int millisInDay) {
+        int[] offsets = new int[2];
+        long wall = millis + millisInDay;
+        if (zone instanceof BasicTimeZone) {
+            int duplicatedTimeOpt = (repeatedWallTime == WALLTIME_FIRST) ? BasicTimeZone.LOCAL_FORMER : BasicTimeZone.LOCAL_LATTER;
+            int nonExistingTimeOpt = (skippedWallTime == WALLTIME_FIRST) ? BasicTimeZone.LOCAL_LATTER : BasicTimeZone.LOCAL_FORMER;
+            ((BasicTimeZone)zone).getOffsetFromLocal(wall, nonExistingTimeOpt, duplicatedTimeOpt, offsets);
+        } else {
+            // By default, TimeZone#getOffset behaves WALLTIME_LAST for both.
+            zone.getOffset(wall, true, offsets);
+
+            boolean sawRecentNegativeShift = false;
+            if (repeatedWallTime == WALLTIME_FIRST) {
+                // Check if the given wall time falls into repeated time range
+                long tgmt = wall - (offsets[0] + offsets[1]);
+
+                // Any negative zone transition within last 6 hours?
+                // Note: The maximum historic negative zone transition is -3 hours in the tz database.
+                // 6 hour window would be sufficient for this purpose.
+                int offsetBefore6 = zone.getOffset(tgmt - 6*60*60*1000);
+                int offsetDelta = (offsets[0] + offsets[1]) - offsetBefore6;
+
+                assert offsetDelta > -6*60*60*1000 : offsetDelta;
+                if (offsetDelta < 0) {
+                    sawRecentNegativeShift = true;
+                    // Negative shift within last 6 hours. When WALLTIME_FIRST is used and the given wall time falls
+                    // into the repeated time range, use offsets before the transition.
+                    // Note: If it does not fall into the repeated time range, offsets remain unchanged below.
+                    zone.getOffset(wall + offsetDelta, true, offsets);
+                }
+            }
+            if (!sawRecentNegativeShift && skippedWallTime == WALLTIME_FIRST) {
+                // When skipped wall time option is WALLTIME_FIRST,
+                // recalculate offsets from the resolved time (non-wall).
+                // When the given wall time falls into skipped wall time,
+                // the offsets will be based on the zone offsets AFTER
+                // the transition (which means, earliest possibe interpretation).
+                long tgmt = wall - (offsets[0] + offsets[1]);
+                zone.getOffset(tgmt, false, offsets);
+            }
+        }
+        return offsets[0] + offsets[1];
+    }
+
+    /**
+     * This method can assume EXTENDED_YEAR has been set.
+     * @param millis milliseconds of the date fields (local midnight millis)
+     * @param millisInDay milliseconds of the time fields
+     * @return total zone offset (raw + DST) for the given moment
+     * @internal
+     */
+    protected int computeZoneOffset(long millis, long millisInDay) {
         int[] offsets = new int[2];
         long wall = millis + millisInDay;
         if (zone instanceof BasicTimeZone) {
