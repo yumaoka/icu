@@ -1740,7 +1740,6 @@ protected:
      * range, in which case it can be an arbitrary value.  This value
      * reflects local zone wall time.
      * @internal
-     * @deprecated
      */
     int32_t computeMillisInDay();
 
@@ -1760,7 +1759,6 @@ protected:
      * @param ec Output param set to failure code on function return
      *          when this function fails.
      * @internal
-     * @deprecated
      */
     int32_t computeZoneOffset(double millis, int32_t millisInDay, UErrorCode &ec);
 

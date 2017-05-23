@@ -5608,8 +5608,7 @@ public abstract class Calendar implements Serializable, Cloneable, Comparable<Ca
      * value from 0 to 23:59:59.999 inclusive, unless fields are out of
      * range, in which case it can be an arbitrary value.  This value
      * reflects local zone wall time.
-     * @stable ICU 2.0
-     * @deprecated This is now marked internal, use computeMillisInDayLong
+     * @deprecated ICU 60
      */
     @Deprecated
     protected int computeMillisInDay() {
@@ -5654,8 +5653,10 @@ public abstract class Calendar implements Serializable, Cloneable, Comparable<Ca
      * Compute the milliseconds in the day from the fields.  The standard
      * value range is from 0 to 23:59:59.999 inclusive. This value
      * reflects local zone wall time.
-     * @stable ICU 2.0
+     * @internal
+     * @deprecated This API is ICU internal only.
      */
+    @Deprecated
     protected long computeMillisInDayLong() {
         // Do the time portion of the conversion.
 
@@ -5700,10 +5701,7 @@ public abstract class Calendar implements Serializable, Cloneable, Comparable<Ca
      * @param millisInDay milliseconds of the time fields; may be out
      * or range.
      * @return total zone offset (raw + DST) for the given moment
-     * @stable ICU 2.0
-     * @deprecated This is internal ICU method,
-     *   use protected int computeZoneOffset(long millis, long millisInDay)
-     *   instead
+     * @deprecated ICU 60
      */
     @Deprecated
     protected int computeZoneOffset(long millis, int millisInDay) {
@@ -5756,7 +5754,9 @@ public abstract class Calendar implements Serializable, Cloneable, Comparable<Ca
      * @param millisInDay milliseconds of the time fields
      * @return total zone offset (raw + DST) for the given moment
      * @internal
+     * @deprecated This API is ICU internal only.
      */
+    @Deprecated
     protected int computeZoneOffset(long millis, long millisInDay) {
         int[] offsets = new int[2];
         long wall = millis + millisInDay;

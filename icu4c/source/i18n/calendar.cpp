@@ -3106,8 +3106,6 @@ UBool Calendar::getImmediatePreviousZoneTransition(UDate base, UDate *transition
 * value from 0 to 23:59:59.999 inclusive, unless fields are out of
 * range, in which case it can be an arbitrary value.  This value
 * reflects local zone wall time.
-* @stable ICU 2.0
-* @deprecated
 */
 int32_t Calendar::computeMillisInDay() {
   // Do the time portion of the conversion.
