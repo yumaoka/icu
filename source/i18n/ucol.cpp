@@ -1,6 +1,8 @@
+// Copyright (C) 2017 and later: Unicode, Inc. and others.
+// License & terms of use: http://www.unicode.org/copyright.html
 /*
 *******************************************************************************
-*   Copyright (C) 1996-2010, International Business Machines
+*   Copyright (C) 1996-2010 International Business Machines
 *   Corporation and others.  All Rights Reserved.
 *******************************************************************************
 *   file name:  ucol.cpp
@@ -106,7 +108,8 @@ inline void IInit_collIterate(const UCollator *collator, const UChar *sourceStri
     (s)->offsetReturn = (s)->offsetStore = NULL;
     (s)->offsetRepeatCount = (s)->offsetRepeatValue = 0;
     (s)->coll = (collator);
-    (s)->nfd = Normalizer2Factory::getNFDInstance(*status);
+    (s)->nfd = (const Normalizer2*)(collator)->normNFD;
+    (s)->fcd = (const Normalizer2*)(collator)->normFCD;
     (s)->fcdPosition = 0;
     if(collator->normalizationMode == UCOL_ON) {
         (s)->flags |= UCOL_ITER_NORM;
@@ -801,6 +804,10 @@ UCollator* ucol_initCollator(const UCATableHeader *image, UCollator *fillIn, con
     } else {
         result->freeOnClose = FALSE;
     }
+
+    // init Normalizer instances - these are singletons, initialized once for each
+    result->normNFD = (const UNormalizer2 *)Normalizer2Factory::getNFDInstance(*status);
+    result->normFCD = (const UNormalizer2 *)Normalizer2Factory::getFCDInstance(*status);
 
     // init FCD data
     if (fcdTrieIndex == NULL) {
@@ -8243,11 +8250,11 @@ ucol_strcollIter( const UCollator    *coll,
 
     if(ucol_getAttribute(coll, UCOL_NORMALIZATION_MODE, status) == UCOL_ON) {
         sNormIter = unorm_openIter(stackNormIter1, sizeof(stackNormIter1), status);
-        sColl.iterator = unorm_setIter(sNormIter, sIter, UNORM_FCD, status);
+        sColl.iterator = unorm_setIter2(sNormIter, sIter, coll->normFCD, status);
         sColl.flags &= ~UCOL_ITER_NORM;
 
         tNormIter = unorm_openIter(stackNormIter2, sizeof(stackNormIter2), status);
-        tColl.iterator = unorm_setIter(tNormIter, tIter, UNORM_FCD, status);
+        tColl.iterator = unorm_setIter2(tNormIter, tIter, coll->normFCD, status);
         tColl.flags &= ~UCOL_ITER_NORM;
     }
 

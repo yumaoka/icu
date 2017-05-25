@@ -1,7 +1,9 @@
+// Copyright (C) 2017 and later: Unicode, Inc. and others.
+// License & terms of use: http://www.unicode.org/copyright.html
 /*
 *******************************************************************************
 *
-*   Copyright (C) 2003, International Business Machines
+*   Copyright (C) 2003 International Business Machines
 *   Corporation and others.  All Rights Reserved.
 *
 *******************************************************************************
@@ -23,6 +25,7 @@
 
 #include "unicode/uiter.h"
 #include "unicode/unorm.h"
+#include "unicode/unorm2.h"
 
 /**
  * Normalizing UCharIterator wrapper.
@@ -142,6 +145,10 @@ unorm_closeIter(UNormIterator *uni);
  */
 U_CAPI UCharIterator * U_EXPORT2
 unorm_setIter(UNormIterator *uni, UCharIterator *iter, UNormalizationMode mode, UErrorCode *pErrorCode);
+
+
+U_CAPI UCharIterator * U_EXPORT2
+unorm_setIter2(UNormIterator *uni, UCharIterator *iter, const UNormalizer2 *n2, UErrorCode *pErrorCode);
 
 #endif /* uconfig.h switches */
 

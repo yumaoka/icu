@@ -1,7 +1,9 @@
+// Copyright (C) 2017 and later: Unicode, Inc. and others.
+// License & terms of use: http://www.unicode.org/copyright.html
 /*
 *******************************************************************************
 *
-*   Copyright (C) 2003-2008, International Business Machines
+*   Copyright (C) 2003-2008 International Business Machines
 *   Corporation and others.  All Rights Reserved.
 *
 *******************************************************************************
@@ -18,10 +20,117 @@
 
 #if !UCONFIG_NO_COLLATION && !UCONFIG_NO_NORMALIZATION
 
+#include "unicode/normalizer2.h"
 #include "unicode/uiter.h"
 #include "unicode/unorm.h"
+#include "unicode/uniset.h"
+#include "unicode/ustring.h"
 #include "unorm_it.h"
 #include "cmemory.h"
+#include "normalizer2impl.h"
+#include "uprops.h"
+#include "ustr_imp.h"
+
+/* Modifed versions of unorm_previous/next. Original versions are found in unorm.cpp.*/
+/* These versions take const Normalizer2* instead of UNormalizationMode. */
+static int32_t
+unorm_iterate2(UCharIterator *src, UBool forward,
+              UChar *dest, int32_t destCapacity,
+              const Normalizer2 *n2, int32_t options,
+              UBool doNormalize, UBool *pNeededToNormalize,
+              UErrorCode *pErrorCode) {
+    const UnicodeSet *uni32;
+    if(options&UNORM_UNICODE_3_2) {
+        uni32=uniset_getUnicode32Instance(*pErrorCode);
+    } else {
+        uni32=NULL;  // unused
+    }
+    FilteredNormalizer2 fn2(*n2, *uni32);
+    if(options&UNORM_UNICODE_3_2) {
+        n2=&fn2;
+    }
+    if(U_FAILURE(*pErrorCode)) {
+        return 0;
+    }
+    if( destCapacity<0 || (dest==NULL && destCapacity>0) ||
+        src==NULL
+    ) {
+        *pErrorCode=U_ILLEGAL_ARGUMENT_ERROR;
+        return 0;
+    }
+
+    if(pNeededToNormalize!=NULL) {
+        *pNeededToNormalize=FALSE;
+    }
+    if(!(forward ? src->hasNext(src) : src->hasPrevious(src))) {
+        return u_terminateUChars(dest, destCapacity, 0, pErrorCode);
+    }
+
+    UnicodeString buffer;
+    UChar32 c;
+    if(forward) {
+        /* get one character and ignore its properties */
+        buffer.append(uiter_next32(src));
+        /* get all following characters until we see a boundary */
+        while((c=uiter_next32(src))>=0) {
+            if(n2->hasBoundaryBefore(c)) {
+                /* back out the latest movement to stop at the boundary */
+                src->move(src, -U16_LENGTH(c), UITER_CURRENT);
+                break;
+            } else {
+                buffer.append(c);
+            }
+        }
+    } else {
+        while((c=uiter_previous32(src))>=0) {
+            /* always write this character to the front of the buffer */
+            buffer.insert(0, c);
+            /* stop if this just-copied character is a boundary */
+            if(n2->hasBoundaryBefore(c)) {
+                break;
+            }
+        }
+    }
+
+    UnicodeString destString(dest, 0, destCapacity);
+    if(buffer.length()>0 && doNormalize) {
+        n2->normalize(buffer, destString, *pErrorCode).extract(dest, destCapacity, *pErrorCode);
+        if(pNeededToNormalize!=NULL && U_SUCCESS(*pErrorCode)) {
+            *pNeededToNormalize= destString!=buffer;
+        }
+        return destString.length();
+    } else {
+        /* just copy the source characters */
+        return buffer.extract(dest, destCapacity, *pErrorCode);
+    }
+}
+
+static int32_t
+unorm_previous2(UCharIterator *src,
+               UChar *dest, int32_t destCapacity,
+               const Normalizer2 *n2, int32_t options,
+               UBool doNormalize, UBool *pNeededToNormalize,
+               UErrorCode *pErrorCode) {
+    return unorm_iterate2(src, FALSE,
+                         dest, destCapacity,
+                         n2, options,
+                         doNormalize, pNeededToNormalize,
+                         pErrorCode);
+}
+
+static int32_t
+unorm_next2(UCharIterator *src,
+           UChar *dest, int32_t destCapacity,
+           const Normalizer2 *n2, int32_t options,
+           UBool doNormalize, UBool *pNeededToNormalize,
+           UErrorCode *pErrorCode) {
+    return unorm_iterate2(src, TRUE,
+                         dest, destCapacity,
+                         n2, options,
+                         doNormalize, pNeededToNormalize,
+                         pErrorCode);
+}
+
 
 /* UNormIterator ------------------------------------------------------------ */
 
@@ -57,7 +166,7 @@ struct UNormIterator {
     /* there are UChars available before start or after limit? */
     UBool hasPrevious, hasNext, isStackAllocated;
 
-    UNormalizationMode mode;
+    const Normalizer2 *n2;
 
     UChar charsBuffer[INITIAL_CAPACITY];
     uint32_t statesBuffer[INITIAL_CAPACITY+1]; /* one more than charsBuffer[]! */
@@ -215,7 +324,7 @@ readNext(UNormIterator *uni, UCharIterator *iter) {
         }
     }
 
-    room=unorm_next(iter, uni->chars+limit, capacity-limit, uni->mode, 0, TRUE, NULL, &errorCode);
+    room=unorm_next2(iter, uni->chars+limit, capacity-limit, uni->n2, 0, TRUE, NULL, &errorCode);
     if(errorCode==U_BUFFER_OVERFLOW_ERROR) {
         if(room<=capacity) {
             /* empty and re-use the arrays */
@@ -234,7 +343,7 @@ readNext(UNormIterator *uni, UCharIterator *iter) {
 
         errorCode=U_ZERO_ERROR;
         uiter_setState(iter, uni->states[limit], &errorCode);
-        room=unorm_next(iter, uni->chars+limit, capacity-limit, uni->mode, 0, TRUE, NULL, &errorCode);
+        room=unorm_next2(iter, uni->chars+limit, capacity-limit, uni->n2, 0, TRUE, NULL, &errorCode);
     }
     if(U_FAILURE(errorCode) || room==0) {
         uni->state=UITER_NO_STATE;
@@ -285,7 +394,7 @@ readPrevious(UNormIterator *uni, UCharIterator *iter) {
         }
     }
 
-    room=unorm_previous(iter, uni->chars, start, uni->mode, 0, TRUE, NULL, &errorCode);
+    room=unorm_previous2(iter, uni->chars, start, uni->n2, 0, TRUE, NULL, &errorCode);
     if(errorCode==U_BUFFER_OVERFLOW_ERROR) {
         if(room<=capacity) {
             /* empty and re-use the arrays */
@@ -304,7 +413,7 @@ readPrevious(UNormIterator *uni, UCharIterator *iter) {
 
         errorCode=U_ZERO_ERROR;
         uiter_setState(iter, uni->states[start], &errorCode);
-        room=unorm_previous(iter, uni->chars, start, uni->mode, 0, TRUE, NULL, &errorCode);
+        room=unorm_previous2(iter, uni->chars, start, uni->n2, 0, TRUE, NULL, &errorCode);
     }
     if(U_FAILURE(errorCode) || room==0) {
         uni->state=UITER_NO_STATE;
@@ -591,7 +700,7 @@ unorm_openIter(void *stackMem, int32_t stackMemSize, UErrorCode *pErrorCode) {
     uni->capacity=INITIAL_CAPACITY;
     uni->state=UITER_NO_STATE;
     uni->hasPrevious=uni->hasNext=FALSE;
-    uni->mode=UNORM_NONE;
+    uni->n2 = NULL;
 
     /* set a no-op iterator into the api */
     uiter_setString(&uni->api, NULL, 0);
@@ -621,9 +730,27 @@ unorm_setIter(UNormIterator *uni, UCharIterator *iter, UNormalizationMode mode, 
         *pErrorCode=U_ILLEGAL_ARGUMENT_ERROR;
         return NULL;
     }
-    if( iter==NULL || iter->getState==NULL || iter->setState==NULL ||
-        mode<UNORM_NONE || UNORM_MODE_COUNT<=mode
-    ) {
+    if (mode<UNORM_NONE || UNORM_MODE_COUNT<=mode) {
+        /* set a no-op iterator into the api */
+        uiter_setString(&uni->api, NULL, 0);
+        *pErrorCode=U_ILLEGAL_ARGUMENT_ERROR;
+        return NULL;
+    }
+    const Normalizer2 *n2 = Normalizer2Factory::getInstance(mode, *pErrorCode);
+    return unorm_setIter2(uni, iter, (const UNormalizer2*)n2, pErrorCode);
+}
+
+U_CAPI UCharIterator * U_EXPORT2
+unorm_setIter2(UNormIterator *uni, UCharIterator *iter, const UNormalizer2 *n2, UErrorCode *pErrorCode) {
+    /* argument checking */
+    if(pErrorCode==NULL || U_FAILURE(*pErrorCode)) {
+        return NULL;
+    }
+    if(uni==NULL) {
+        *pErrorCode=U_ILLEGAL_ARGUMENT_ERROR;
+        return NULL;
+    }
+    if( iter==NULL || iter->getState==NULL || iter->setState==NULL) {
         /* set a no-op iterator into the api */
         uiter_setString(&uni->api, NULL, 0);
         *pErrorCode=U_ILLEGAL_ARGUMENT_ERROR;
@@ -634,7 +761,7 @@ unorm_setIter(UNormIterator *uni, UCharIterator *iter, UNormalizationMode mode, 
     uprv_memcpy(&uni->api, &unormIterator, sizeof(unormIterator));
 
     uni->iter=iter;
-    uni->mode=mode;
+    uni->n2 = (const Normalizer2*)n2;
 
     initIndexes(uni, iter);
     uni->states[uni->api.limit]=uni->state=uiter_getState(iter);

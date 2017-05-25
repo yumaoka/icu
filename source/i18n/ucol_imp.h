@@ -1,7 +1,9 @@
+// Copyright (C) 2017 and later: Unicode, Inc. and others.
+// License & terms of use: http://www.unicode.org/copyright.html
 /*
 *******************************************************************************
 *
-*   Copyright (C) 1998-2011, International Business Machines
+*   Copyright (C) 1998-2011 International Business Machines
 *   Corporation and others.  All Rights Reserved.
 *
 *******************************************************************************
@@ -299,6 +301,7 @@ typedef struct collIterate : public U_NAMESPACE_QUALIFIER UMemory {
   const UChar *fcdPosition; /* Position in the original string to continue FCD check from. */
   const UCollator *coll;
   const U_NAMESPACE_QUALIFIER Normalizer2 *nfd;
+  const U_NAMESPACE_QUALIFIER Normalizer2 *fcd;
   uint8_t   flags;
   uint8_t   origFlags;
   uint32_t *extendCEs; /* This is use if CEs is not big enough */
@@ -1026,6 +1029,9 @@ struct UCollator {
     uint8_t tertiaryBottomCount;
 
     UVersionInfo dataVersion;               /* Data info of UCA table */
+
+    const UNormalizer2 *normNFD;
+    const UNormalizer2 *normFCD;
 };
 
 U_CDECL_END
