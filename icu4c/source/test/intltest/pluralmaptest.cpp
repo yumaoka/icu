@@ -209,7 +209,7 @@ void PluralMapTest::addVariant(
         PluralMapForPluralMapTest &map) {
     UErrorCode status = U_ZERO_ERROR;
     UnicodeString *current = map.getMutable(v, status);
-    if (!assertSuccess("", status)) {
+    if (!assertUSuccess("", status)) {
         return;
     }
     (*current) = value;

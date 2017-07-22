@@ -34,6 +34,7 @@
 
 #include "caltztst.h"
 #include "cmemory.h"
+#include "cstr.h"
 #include "cstring.h"
 #include "itmajor.h"
 #include "mutex.h"
@@ -1830,79 +1831,63 @@ uint32_t IntlTest::icu_rand::getSeed() {
     return (uint32_t) fLast;
 }
 
-
-
-static inline UChar toHex(int32_t i) {
-    return (UChar)(i + (i < 10 ? 0x30 : (0x41 - 10)));
-}
-
-static UnicodeString& escape(const UnicodeString& s, UnicodeString& result) {
-    for (int32_t i=0; i<s.length(); ++i) {
-        UChar c = s[i];
-        if (c <= (UChar)0x7F) {
-            result += c;
-        } else {
-            result += (UChar)0x5c;
-            result += (UChar)0x75;
-            result += toHex((c >> 12) & 0xF);
-            result += toHex((c >>  8) & 0xF);
-            result += toHex((c >>  4) & 0xF);
-            result += toHex( c        & 0xF);
-        }
-    }
-    return result;
-}
-
 #define VERBOSE_ASSERTIONS
 
-UBool IntlTest::assertTrue(const char* message, UBool condition, UBool quiet, UBool possibleDataError, const char *file, int line) {
-    if (file != NULL) {
-        if (!condition) {
-            if (possibleDataError) {
-                dataerrln("%s:%d: FAIL: assertTrue() failed: %s", file, line, message);
-            } else {
-                errln("%s:%d: FAIL: assertTrue() failed: %s", file, line, message);
-            }
-        } else if (!quiet) {
-            logln("%s:%d: Ok: %s", file, line, message);
-        }
-    } else {
-        if (!condition) {
-            if (possibleDataError) {
-                dataerrln("FAIL: assertTrue() failed: %s", message);
-            } else {
-                errln("FAIL: assertTrue() failed: %s", message);
-            }
-        } else if (!quiet) {
-            logln("Ok: %s", message);
-        }
+IntlTest::AssertMsg::AssertMsg(const UnicodeString &msg, const char *file, int line) :
+    umsg(&msg), cmsg(nullptr), ffile(file), fline(line), fcstr(nullptr) {};
 
+IntlTest::AssertMsg::AssertMsg(const char *msg, const char *file, int line) :
+    umsg(nullptr), cmsg(msg), ffile(file), fline(line), fcstr(nullptr) {};
+
+IntlTest::AssertMsg::~AssertMsg() {
+    if (fcstr) {
+       delete fcstr;
+    }
+}
+
+const char *IntlTest::AssertMsg::getMsg() {
+    if (cmsg) {
+        return cmsg;
+    } else if (umsg) {
+        fcstr = new CStr(*umsg);
+        return (*fcstr)();
+    } else {
+        return "";
+    }
+}
+
+UBool IntlTest::_assertTrue(IntlTest::AssertMsg message, UBool condition, UBool quiet, UBool possibleDataError) {
+    if (!condition) {
+        if (possibleDataError) {
+            dataerrln("FAIL: %s:%d: assertTrue() failed: %s", message.getFile(), message.getLine(), message.getMsg());
+        } else {
+            errln("FAIL: %s:%d: assertTrue() failed: %s", message.getFile(), message.getLine(), message.getMsg());
+        }
+    } else if (!quiet) {
+        logln("Ok: %s:%d: %s", message.getFile(), message.getLine(), message.getMsg());
     }
     return condition;
 }
 
-UBool IntlTest::assertFalse(const char* message, UBool condition, UBool quiet) {
+UBool IntlTest::_assertFalse(IntlTest::AssertMsg message, UBool condition, UBool quiet) {
     if (condition) {
-        errln("FAIL: assertFalse() failed: %s", message);
+        errln("FAIL: %s:%d assertFalse() failed: %s", message.getFile(), message.getLine(), message.getMsg());
     } else if (!quiet) {
-        logln("Ok: %s", message);
+        logln("Ok: %s:%d %s", message.getFile(), message.getLine(), message.getMsg());
     }
     return !condition;
 }
 
-UBool IntlTest::assertSuccess(const char* message, UErrorCode ec, UBool possibleDataError, const char *file, int line) {
-    if( file==NULL ) {
-      file = ""; // prevent failure if no file given
-    }
+UBool IntlTest::_assertUSuccess(IntlTest::AssertMsg message, UErrorCode ec, UBool possibleDataError) {
     if (U_FAILURE(ec)) {
         if (possibleDataError) {
-          dataerrln("FAIL: %s:%d: %s (%s)", file, line, message, u_errorName(ec));
+            dataerrln("FAIL: %s:%d: %s (%s)", message.getFile(), message.getLine(), message.getMsg(), u_errorName(ec));
         } else {
-          errcheckln(ec, "FAIL: %s:%d: %s (%s)", file, line, message, u_errorName(ec));
+            errcheckln(ec, "FAIL: %s:%d: %s (%s)", message.getFile(), message.getLine(), message.getMsg(), u_errorName(ec));
         }
         return FALSE;
     } else {
-      logln("OK: %s:%d: %s - (%s)", file, line, message, u_errorName(ec));
+        logln("OK: %s:%d: %s - (%s)", message.getFile(), message.getLine(), message.getMsg(), u_errorName(ec));
     }
     return TRUE;
 }
@@ -2043,61 +2028,40 @@ UBool IntlTest::assertEquals(const char* message,
 }
 #endif
 
-static char ASSERT_BUF[256];
-
-static const char* extractToAssertBuf(const UnicodeString& message) {
-    UnicodeString buf;
-    escape(message, buf);
-    buf.extract(0, 0x7FFFFFFF, ASSERT_BUF, sizeof(ASSERT_BUF)-1, 0);
-    ASSERT_BUF[sizeof(ASSERT_BUF)-1] = 0;
-    return ASSERT_BUF;
-}
-
-UBool IntlTest::assertTrue(const UnicodeString& message, UBool condition, UBool quiet) {
-    return assertTrue(extractToAssertBuf(message), condition, quiet);
-}
-
-UBool IntlTest::assertFalse(const UnicodeString& message, UBool condition, UBool quiet) {
-    return assertFalse(extractToAssertBuf(message), condition, quiet);
-}
-
-UBool IntlTest::assertSuccess(const UnicodeString& message, UErrorCode ec) {
-    return assertSuccess(extractToAssertBuf(message), ec);
-}
 
 UBool IntlTest::assertEquals(const UnicodeString& message,
                              const UnicodeString& expected,
                              const UnicodeString& actual,
                              UBool possibleDataError) {
-    return assertEquals(extractToAssertBuf(message), expected, actual, possibleDataError);
+    return assertEquals(CStr(message)(), expected, actual, possibleDataError);
 }
 
 UBool IntlTest::assertEquals(const UnicodeString& message,
                              const char* expected,
                              const char* actual) {
-    return assertEquals(extractToAssertBuf(message), expected, actual);
+    return assertEquals(CStr(message)(), expected, actual);
 }
 UBool IntlTest::assertEquals(const UnicodeString& message,
                              UBool expected,
                              UBool actual) {
-    return assertEquals(extractToAssertBuf(message), expected, actual);
+    return assertEquals(CStr(message)(), expected, actual);
 }
 UBool IntlTest::assertEquals(const UnicodeString& message,
                              int32_t expected,
                              int32_t actual) {
-    return assertEquals(extractToAssertBuf(message), expected, actual);
+    return assertEquals(CStr(message)(), expected, actual);
 }
 UBool IntlTest::assertEquals(const UnicodeString& message,
                              int64_t expected,
                              int64_t actual) {
-    return assertEquals(extractToAssertBuf(message), expected, actual);
+    return assertEquals(CStr(message)(), expected, actual);
 }
 
 #if !UCONFIG_NO_FORMATTING
 UBool IntlTest::assertEquals(const UnicodeString& message,
                              const Formattable& expected,
                              const Formattable& actual) {
-    return assertEquals(extractToAssertBuf(message), expected, actual);
+    return assertEquals(CStr(message)(), expected, actual);
 }
 #endif
 

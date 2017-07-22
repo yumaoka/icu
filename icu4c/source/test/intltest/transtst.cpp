@@ -210,16 +210,16 @@ TransliteratorTest::runIndexedTest(int32_t index, UBool exec,
 void TransliteratorTest::TestInstantiation() {
     UErrorCode ec = U_ZERO_ERROR;
     StringEnumeration* avail = Transliterator::getAvailableIDs(ec);
-    assertSuccess("getAvailableIDs()", ec);
+    assertUSuccess("getAvailableIDs()", ec);
     assertTrue("getAvailableIDs()!=NULL", avail!=NULL);
     int32_t n = Transliterator::countAvailableIDs();
     assertTrue("getAvailableIDs().count()==countAvailableIDs()",
                avail->count(ec) == n);
-    assertSuccess("count()", ec);
+    assertUSuccess("count()", ec);
     UnicodeString name;
     for (int32_t i=0; i<n; ++i) {
         const UnicodeString& id = *avail->snext(ec);
-        if (!assertSuccess("snext()", ec) ||
+        if (!assertUSuccess("snext()", ec) ||
             !assertTrue("snext()!=NULL", (&id)!=NULL, TRUE)) {
             break;
         }
@@ -284,7 +284,7 @@ void TransliteratorTest::TestInstantiation() {
         }
     }
     assertTrue("snext()==NULL", avail->snext(ec)==NULL);
-    assertSuccess("snext()", ec);
+    assertUSuccess("snext()", ec);
     delete avail;
 
     // Now test the failure path
@@ -854,7 +854,7 @@ void TransliteratorTest::TestJ243(void) {
     // \u, \U, u+, and U+
     Transliterator *hex =
         Transliterator::createInstance("Hex-Any", UTRANS_FORWARD, ec);
-    if (assertSuccess("getInstance", ec)) {
+    if (assertUSuccess("getInstance", ec)) {
         expect(*hex, UnicodeString("\\u0041+\\U00000042,U+0043uU+0044z", ""), "A+B,CuDz");
     }
     delete hex;
@@ -2438,7 +2438,7 @@ void TransliteratorTest::TestNewEngine() {
     assertEquals("getElement(0)", t->getElement(0, ec).getID(), "a_to_A");
     assertEquals("getElement(1)", t->getElement(1, ec).getID(), "NFD");
     assertEquals("getElement(2)", t->getElement(2, ec).getID(), "A_to_b");
-    assertSuccess("getElement", ec);
+    assertUSuccess("getElement", ec);
 
     delete a;
     delete A;

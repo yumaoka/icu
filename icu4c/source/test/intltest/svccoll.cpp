@@ -489,12 +489,12 @@ int32_t CollationServiceTest::checkStringEnumeration(const char* msg,
     UErrorCode ec = U_ZERO_ERROR;
     U_ASSERT(expectedCount >= 0 && expectedCount < 31); // [sic] 31 not 32
     int32_t i = 0, idxAfterReset = 0, n = iter.count(ec);
-    assertSuccess("count", ec);
+    assertUSuccess("count", ec);
     UnicodeString buf, buffAfterReset;
     int32_t seenMask = 0;
     for (;; ++i) {
         const UnicodeString* s = iter.snext(ec);
-        if (!assertSuccess("snext", ec) || s == NULL)
+        if (!assertUSuccess("snext", ec) || s == NULL)
             break;
         if (i != 0)
             buf.append(UNICODE_STRING_SIMPLE(", "));
@@ -520,7 +520,7 @@ int32_t CollationServiceTest::checkStringEnumeration(const char* msg,
     iter.reset(ec);
     for (;; ++idxAfterReset) {
         const UChar *s = iter.unext(NULL, ec);
-        if (!assertSuccess("unext", ec) || s == NULL)
+        if (!assertUSuccess("unext", ec) || s == NULL)
             break;
         if (idxAfterReset != 0)
             buffAfterReset.append(UNICODE_STRING_SIMPLE(", "));
@@ -568,13 +568,13 @@ void CollationServiceTest::TestSeparateTree() {
     UErrorCode ec = U_ZERO_ERROR;
     StringEnumeration *iter = Collator::getKeywords(ec);
     if (!assertTrue("getKeywords != NULL", iter!=NULL)) return;
-    if (!assertSuccess("getKeywords", ec)) return;
+    if (!assertUSuccess("getKeywords", ec)) return;
     checkStringEnumeration("getKeywords", *iter, KW, KW_COUNT);
     delete iter;
 
     iter = Collator::getKeywordValues(KW[0], ec);
     if (!assertTrue("getKeywordValues != NULL", iter!=NULL, FALSE, TRUE)) return;
-    if (!assertSuccess("getKeywordValues", ec)) return;
+    if (!assertUSuccess("getKeywordValues", ec)) return;
     checkStringEnumeration("getKeywordValues", *iter, KWVAL, KWVAL_COUNT);
     delete iter;
 
@@ -582,7 +582,7 @@ void CollationServiceTest::TestSeparateTree() {
     Locale equiv = Collator::getFunctionalEquivalent("collation",
                                                      Locale::createFromName("de"),
                                                      isAvailable, ec);
-    assertSuccess("getFunctionalEquivalent", ec);
+    assertUSuccess("getFunctionalEquivalent", ec);
     assertEquals("getFunctionalEquivalent(de)", "root", equiv.getName());
     assertTrue("getFunctionalEquivalent(de).isAvailable==TRUE",
                isAvailable == TRUE);
@@ -590,7 +590,7 @@ void CollationServiceTest::TestSeparateTree() {
     equiv = Collator::getFunctionalEquivalent("collation",
                                               Locale::createFromName("de_DE"),
                                               isAvailable, ec);
-    assertSuccess("getFunctionalEquivalent", ec);
+    assertUSuccess("getFunctionalEquivalent", ec);
     assertEquals("getFunctionalEquivalent(de_DE)", "root", equiv.getName());
     assertTrue("getFunctionalEquivalent(de_DE).isAvailable==FALSE",
                isAvailable == FALSE);
@@ -598,7 +598,7 @@ void CollationServiceTest::TestSeparateTree() {
     equiv = Collator::getFunctionalEquivalent("collation",
                                                      Locale::createFromName("sv"),
                                                      isAvailable, ec);
-    assertSuccess("getFunctionalEquivalent", ec);
+    assertUSuccess("getFunctionalEquivalent", ec);
     assertEquals("getFunctionalEquivalent(sv)", "sv", equiv.getName());
     assertTrue("getFunctionalEquivalent(sv).isAvailable==TRUE",
                isAvailable == TRUE);
@@ -606,7 +606,7 @@ void CollationServiceTest::TestSeparateTree() {
     equiv = Collator::getFunctionalEquivalent("collation",
                                               Locale::createFromName("sv_SE"),
                                               isAvailable, ec);
-    assertSuccess("getFunctionalEquivalent", ec);
+    assertUSuccess("getFunctionalEquivalent", ec);
     assertEquals("getFunctionalEquivalent(sv_SE)", "sv", equiv.getName());
     assertTrue("getFunctionalEquivalent(sv_SE).isAvailable==FALSE",
                isAvailable == FALSE);

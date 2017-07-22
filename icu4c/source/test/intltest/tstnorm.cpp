@@ -1545,7 +1545,7 @@ BasicNormalizerTest::TestNormalizeUTF8WithEdits() {
     StringByteSink<std::string> sink(&result, expected.length());
     Edits edits;
     nfkc_cf->normalizeUTF8(0, src, sink, &edits, errorCode);
-    assertSuccess("normalizeUTF8 with Edits", errorCode.get());
+    assertUSuccess("normalizeUTF8 with Edits", errorCode.get());
     assertEquals("normalizeUTF8 with Edits", expected.c_str(), result.c_str());
     static const EditChange expectedChanges[] = {
         { FALSE, 2, 2 },  // 2 spaces
@@ -1571,7 +1571,7 @@ BasicNormalizerTest::TestNormalizeUTF8WithEdits() {
     result.clear();
     edits.reset();
     nfkc_cf->normalizeUTF8(U_OMIT_UNCHANGED_TEXT, src, sink, &edits, errorCode);
-    assertSuccess("normalizeUTF8 omit unchanged", errorCode.get());
+    assertUSuccess("normalizeUTF8 omit unchanged", errorCode.get());
     assertEquals("normalizeUTF8 omit unchanged", expected.c_str(), result.c_str());
     TestUtility::checkEditsIter(*this, u"normalizeUTF8 omit unchanged",
             edits.getFineIterator(), edits.getFineIterator(),
@@ -1585,7 +1585,7 @@ BasicNormalizerTest::TestNormalizeUTF8WithEdits() {
     result.clear();
     edits.reset();
     fn2.normalizeUTF8(0, src, sink, &edits, errorCode);
-    assertSuccess("filtered normalizeUTF8", errorCode.get());
+    assertUSuccess("filtered normalizeUTF8", errorCode.get());
     assertEquals("filtered normalizeUTF8", expected.c_str(), result.c_str());
     static const EditChange filteredChanges[] = {
         { FALSE, 3, 3 },  // 2 spaces + A
@@ -1612,7 +1612,7 @@ BasicNormalizerTest::TestNormalizeUTF8WithEdits() {
     result.clear();
     edits.reset();
     fn2.normalizeUTF8(U_OMIT_UNCHANGED_TEXT, src, sink, &edits, errorCode);
-    assertSuccess("filtered normalizeUTF8 omit unchanged", errorCode.get());
+    assertUSuccess("filtered normalizeUTF8 omit unchanged", errorCode.get());
     assertEquals("filtered normalizeUTF8 omit unchanged", expected.c_str(), result.c_str());
     TestUtility::checkEditsIter(*this, u"filtered normalizeUTF8 omit unchanged",
             edits.getFineIterator(), edits.getFineIterator(),
@@ -1691,7 +1691,7 @@ BasicNormalizerTest::TestNormalizeIllFormedText() {
         append(u"ạ\u0308,").append((char16_t)0xDC00).
         append(u"가각갃  ").append((char16_t)0xDFFF);
     UnicodeString result = nfkc_cf->normalize(src, errorCode);
-    assertSuccess("normalize", errorCode.get());
+    assertUSuccess("normalize", errorCode.get());
     assertEquals("normalize", expected, result);
 
     std::string src8(u8"  A");
@@ -1707,7 +1707,7 @@ BasicNormalizerTest::TestNormalizeIllFormedText() {
     std::string result8;
     StringByteSink<std::string> sink(&result8);
     nfkc_cf->normalizeUTF8(0, src8, sink, nullptr, errorCode);
-    assertSuccess("normalizeUTF8", errorCode.get());
+    assertUSuccess("normalizeUTF8", errorCode.get());
     assertEquals("normalizeUTF8", expected8.c_str(), result8.c_str());
 }
 

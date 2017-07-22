@@ -411,7 +411,7 @@ void NumberFormat2Test::TestQuantize() {
         digits.quantize(quantity, status);
         verifyDigitList(".99792", digits);
     }
-    assertSuccess("", status);
+    assertUSuccess("", status);
 }
 
 void NumberFormat2Test::TestConvertScientificNotation() {
@@ -627,7 +627,7 @@ void NumberFormat2Test::TestBenchmark() {
 //       fmt.format(4.6692016, append, fpos, status);
     }
     errln("Took %f", (double) (clock() - start) / CLOCKS_PER_SEC);
-    assertSuccess("", status);
+    assertUSuccess("", status);
 */
 }
 
@@ -646,7 +646,7 @@ void NumberFormat2Test::TestBenchmark2() {
 //        fmt.format(4.6692016, append, fpos, status);
     }
     errln("Took %f", (double) (clock() - start) / CLOCKS_PER_SEC);
-    assertSuccess("", status);
+    assertUSuccess("", status);
 */
 }
 
@@ -806,7 +806,7 @@ void NumberFormat2Test::TestDigitFormatterDefaultCtor() {
     FixedPrecision precision;
     UErrorCode status = U_ZERO_ERROR;
     precision.initVisibleDigits(246.801, digits, status);
-    assertSuccess("", status);
+    assertUSuccess("", status);
     DigitGrouping grouping;
     DigitFormatterOptions options;
     verifyDigitFormatter(
@@ -821,7 +821,7 @@ void NumberFormat2Test::TestDigitFormatterDefaultCtor() {
 void NumberFormat2Test::TestDigitFormatterMonetary() {
     UErrorCode status = U_ZERO_ERROR;
     DecimalFormatSymbols symbols("en", status);
-    if (!assertSuccess("", status)) {
+    if (!assertUSuccess("", status)) {
         return;
     }
     symbols.setSymbol(
@@ -835,7 +835,7 @@ void NumberFormat2Test::TestDigitFormatterMonetary() {
     DigitGrouping grouping;
     FixedPrecision precision;
     precision.initVisibleDigits(43560.02, visibleDigits, status);
-    if (!assertSuccess("", status)) {
+    if (!assertUSuccess("", status)) {
         return;
     }
     DigitFormatterOptions options;
@@ -862,7 +862,7 @@ void NumberFormat2Test::TestDigitFormatterMonetary() {
 void NumberFormat2Test::TestDigitFormatter() {
     UErrorCode status = U_ZERO_ERROR;
     DecimalFormatSymbols symbols("en", status);
-    if (!assertSuccess("", status)) {
+    if (!assertUSuccess("", status)) {
         return;
     }
     DigitFormatter formatter(symbols);
@@ -872,7 +872,7 @@ void NumberFormat2Test::TestDigitFormatter() {
         DigitGrouping grouping;
         FixedPrecision precision;
         precision.initVisibleDigits((int64_t) 8192, visibleDigits, status);
-        if (!assertSuccess("", status)) {
+        if (!assertUSuccess("", status)) {
             return;
         }
         DigitFormatterOptions options;
@@ -919,7 +919,7 @@ void NumberFormat2Test::TestDigitFormatter() {
 
         // adding one more digit will enable grouping once again.
         precision.initVisibleDigits((int64_t) 43560, visibleDigits, status);
-        if (!assertSuccess("", status)) {
+        if (!assertUSuccess("", status)) {
             return;
         }
         verifyDigitFormatter(
@@ -936,7 +936,7 @@ void NumberFormat2Test::TestDigitFormatter() {
         VisibleDigits visibleDigits;
         precision.initVisibleDigits(
                 31415926.0078125, visibleDigits, status);
-        if (!assertSuccess("", status)) {
+        if (!assertUSuccess("", status)) {
             return;
         }
         DigitFormatterOptions options;
@@ -964,7 +964,7 @@ void NumberFormat2Test::TestDigitFormatter() {
         precision.fMin.setFracDigitCount(10);
         precision.initVisibleDigits(
                 31415926.0078125, visibleDigits, status);
-        if (!assertSuccess("", status)) {
+        if (!assertUSuccess("", status)) {
             return;
         }
         NumberFormat2Test_Attributes expectedAttributes[] = {
@@ -992,7 +992,7 @@ void NumberFormat2Test::TestDigitFormatter() {
         precision.fMax.setFracDigitCount(0);
         precision.initVisibleDigits(
                 3125.0, visibleDigits, status);
-        if (!assertSuccess("", status)) {
+        if (!assertUSuccess("", status)) {
             return;
         }
         NumberFormat2Test_Attributes expectedAttributes[] = {
@@ -1027,7 +1027,7 @@ void NumberFormat2Test::TestDigitFormatter() {
         precision.fMin.setFracDigitCount(1);
         precision.initVisibleDigits(
                 3125.0, visibleDigits, status);
-        if (!assertSuccess("", status)) {
+        if (!assertUSuccess("", status)) {
             return;
         }
         NumberFormat2Test_Attributes expectedAttributes[] = {
@@ -1053,7 +1053,7 @@ void NumberFormat2Test::TestSciFormatterDefaultCtor() {
     UErrorCode status = U_ZERO_ERROR;
     precision.initVisibleDigitsWithExponent(
             6.02E23, visibleDigits, status);
-    if (!assertSuccess("", status)) {
+    if (!assertUSuccess("", status)) {
         return;
     }
     SciFormatterOptions options;
@@ -1065,7 +1065,7 @@ void NumberFormat2Test::TestSciFormatterDefaultCtor() {
             NULL);
     precision.initVisibleDigitsWithExponent(
             6.62E-34, visibleDigits, status);
-    if (!assertSuccess("", status)) {
+    if (!assertUSuccess("", status)) {
         return;
     }
     verifySciFormatter(
@@ -1088,7 +1088,7 @@ void NumberFormat2Test::TestSciFormatter() {
     UErrorCode status = U_ZERO_ERROR;
     precision.initVisibleDigitsWithExponent(
             1.248E26, visibleDigits, status);
-    if (!assertSuccess("", status)) {
+    if (!assertUSuccess("", status)) {
         return;
     }
     SciFormatterOptions options;
@@ -1129,7 +1129,7 @@ void NumberFormat2Test::TestSciFormatter() {
 void NumberFormat2Test::TestValueFormatterIsFastFormattable() {
     UErrorCode status = U_ZERO_ERROR;
     DecimalFormatSymbols symbols("en", status);
-    if (!assertSuccess("", status)) {
+    if (!assertUSuccess("", status)) {
         return;
     }
     DigitFormatter formatter(symbols);
@@ -1407,7 +1407,7 @@ void NumberFormat2Test::TestCurrencyAffixInfo() {
     UErrorCode status = U_ZERO_ERROR;
     static UChar USD[] = {0x55, 0x53, 0x44, 0x0};
     LocalPointer<PluralRules> rules(PluralRules::forLocale("en", status));
-    if (!assertSuccess("", status)) {
+    if (!assertUSuccess("", status)) {
         return;
     }
     info.set("en", rules.getAlias(), USD, status);
@@ -1430,7 +1430,7 @@ void NumberFormat2Test::TestCurrencyAffixInfo() {
     assertTrue("", info.isDefault());
     info.setISO("USD");
     assertFalse("", info.isDefault());
-    assertSuccess("", status);
+    assertUSuccess("", status);
 }
 
 void NumberFormat2Test::TestAffixPattern() {
@@ -1485,7 +1485,7 @@ void NumberFormat2Test::TestAffixPatternDoubleQuote() {
     assertTrue("", expected.equals(actual));
     UnicodeString formattedString;
     assertEquals("", "Don''t", actual.toUserString(formattedString));
-    assertSuccess("", status);
+    assertUSuccess("", status);
 }
 
 void NumberFormat2Test::TestAffixPatternParser() {
@@ -1503,7 +1503,7 @@ void NumberFormat2Test::TestAffixPatternParser() {
     PluralAffix affix;
     UnicodeString str("'--y'''dz'%'\\u00a4\\u00a4\\u00a4\\u00a4 y '\\u00a4\\u00a4\\u00a4 or '\\u00a4\\u00a4 but '\\u00a4");
     str = str.unescape();
-    assertSuccess("", status);
+    assertUSuccess("", status);
     AffixPattern affixPattern;
     parser.parse(
             AffixPattern::parseAffixString(str, affixPattern, status),
@@ -1530,7 +1530,7 @@ void NumberFormat2Test::TestAffixPatternParser() {
             "-'-'y''dz%\\u00a4\\u00a4\\u00a4'\\u00a4' y \\u00a4\\u00a4\\u00a4 or \\u00a4\\u00a4 but \\u00a4");
     assertEquals("2", expectedFormattedUserStr.unescape(), formattedUserStr);
     assertTrue("", userAffixPattern2.equals(userAffixPattern));
-    assertSuccess("", status);
+    assertUSuccess("", status);
     assertTrue("", affixPattern.usesCurrency());
     assertTrue("", affixPattern.usesPercent());
     assertFalse("", affixPattern.usesPermill());
@@ -1573,7 +1573,7 @@ void NumberFormat2Test::TestAffixPatternParser() {
             currencyAffixInfo,
             affix,
             status);
-    assertSuccess("", status);
+    assertUSuccess("", status);
     assertFalse("", affixPattern.usesCurrency());
     assertFalse("", affixPattern.usesPercent());
     assertFalse("", affixPattern.usesPermill());
@@ -1607,7 +1607,7 @@ void NumberFormat2Test::TestAffixPatternParser() {
             currencyAffixInfo,
             affix,
             status);
-    assertSuccess("", status);
+    assertUSuccess("", status);
     assertFalse("", affixPattern.usesCurrency());
     assertFalse("", affixPattern.usesPercent());
     assertTrue("", affixPattern.usesPermill());
@@ -1648,7 +1648,7 @@ void NumberFormat2Test::TestAffixPatternAppend() {
           expectedPatternStr.unescape(), expectedPattern, status);
   
   assertTrue("", pattern.append(appendPattern).equals(expectedPattern));
-  assertSuccess("", status);
+  assertUSuccess("", status);
 }
 
 void NumberFormat2Test::TestAffixPatternAppendAjoiningLiterals() {
@@ -1669,7 +1669,7 @@ void NumberFormat2Test::TestAffixPatternAppendAjoiningLiterals() {
           expectedPatternStr, expectedPattern, status);
   
   assertTrue("", pattern.append(appendPattern).equals(expectedPattern));
-  assertSuccess("", status);
+  assertUSuccess("", status);
 }
 
 void NumberFormat2Test::TestLargeIntValue() {
@@ -1682,7 +1682,7 @@ void NumberFormat2Test::TestLargeIntValue() {
         verifyIntValue(
                 223372036854775807LL, 
                 precision.initVisibleDigits(U_INT64_MAX, digits, status));
-        assertSuccess("U_INT64_MAX", status);
+        assertUSuccess("U_INT64_MAX", status);
     }
     {
         UErrorCode status = U_ZERO_ERROR;
@@ -1694,7 +1694,7 @@ void NumberFormat2Test::TestLargeIntValue() {
                 75807LL, 
                 precision.initVisibleDigits(U_INT64_MAX, digits, status));
         verifySource(75807.0, digits);
-        assertSuccess("75807", status);
+        assertUSuccess("75807", status);
     }
     {
         UErrorCode status = U_ZERO_ERROR;
@@ -1704,7 +1704,7 @@ void NumberFormat2Test::TestLargeIntValue() {
         verifyIntValue(
                 223372036854775808LL, 
                 precision.initVisibleDigits(U_INT64_MIN, digits, status));
-        assertSuccess("U_INT64_MIN", status);
+        assertUSuccess("U_INT64_MIN", status);
     }
     {
         UErrorCode status = U_ZERO_ERROR;
@@ -1716,7 +1716,7 @@ void NumberFormat2Test::TestLargeIntValue() {
                 75808LL, 
                 precision.initVisibleDigits(U_INT64_MIN, digits, status));
         verifySource(75808.0, digits);
-        assertSuccess("75808", status);
+        assertUSuccess("75808", status);
     }
         
 }
@@ -1730,7 +1730,7 @@ void NumberFormat2Test::TestIntInitVisibleDigits() {
                 "13",
                 FALSE,
                 precision.initVisibleDigits((int64_t) 13LL, digits, status));
-        assertSuccess("13", status);
+        assertUSuccess("13", status);
     }
     {
         UErrorCode status = U_ZERO_ERROR;
@@ -1739,7 +1739,7 @@ void NumberFormat2Test::TestIntInitVisibleDigits() {
                 "17",
                 TRUE,
                 precision.initVisibleDigits((int64_t) -17LL, digits, status));
-        assertSuccess("-17", status);
+        assertUSuccess("-17", status);
     }
     {
         UErrorCode status = U_ZERO_ERROR;
@@ -1748,7 +1748,7 @@ void NumberFormat2Test::TestIntInitVisibleDigits() {
                 "9223372036854775808",
                 TRUE,
                 precision.initVisibleDigits(U_INT64_MIN, digits, status));
-        assertSuccess("-9223372036854775808", status);
+        assertUSuccess("-9223372036854775808", status);
     }
     {
         UErrorCode status = U_ZERO_ERROR;
@@ -1757,7 +1757,7 @@ void NumberFormat2Test::TestIntInitVisibleDigits() {
                 "9223372036854775807",
                 FALSE,
                 precision.initVisibleDigits(U_INT64_MAX, digits, status));
-        assertSuccess("9223372036854775807", status);
+        assertUSuccess("9223372036854775807", status);
     }
     {
         UErrorCode status = U_ZERO_ERROR;
@@ -1766,7 +1766,7 @@ void NumberFormat2Test::TestIntInitVisibleDigits() {
                 "31536000",
                 TRUE,
                 precision.initVisibleDigits((int64_t) -31536000LL, digits, status));
-        assertSuccess("-31536000", status);
+        assertUSuccess("-31536000", status);
     }
     {
         UErrorCode status = U_ZERO_ERROR;
@@ -1775,7 +1775,7 @@ void NumberFormat2Test::TestIntInitVisibleDigits() {
                 "0",
                 FALSE,
                 precision.initVisibleDigits((int64_t) 0LL, digits, status));
-        assertSuccess("0", status);
+        assertUSuccess("0", status);
     }
     {
         UErrorCode status = U_ZERO_ERROR;
@@ -1786,7 +1786,7 @@ void NumberFormat2Test::TestIntInitVisibleDigits() {
                 "0000.00",
                 FALSE,
                 precision.initVisibleDigits((int64_t) 0LL, digits, status));
-        assertSuccess("0", status);
+        assertUSuccess("0", status);
     }
     {
         UErrorCode status = U_ZERO_ERROR;
@@ -1797,7 +1797,7 @@ void NumberFormat2Test::TestIntInitVisibleDigits() {
                 "0057.00",
                 FALSE,
                 precision.initVisibleDigits((int64_t) 57LL, digits, status));
-        assertSuccess("57", status);
+        assertUSuccess("57", status);
     }
     {
         UErrorCode status = U_ZERO_ERROR;
@@ -1808,7 +1808,7 @@ void NumberFormat2Test::TestIntInitVisibleDigits() {
                 "0057.00",
                 TRUE,
                 precision.initVisibleDigits((int64_t) -57LL, digits, status));
-        assertSuccess("-57", status);
+        assertUSuccess("-57", status);
     }
     {
         UErrorCode status = U_ZERO_ERROR;
@@ -1819,7 +1819,7 @@ void NumberFormat2Test::TestIntInitVisibleDigits() {
                 "35.0",
                 FALSE,
                 precision.initVisibleDigits((int64_t) 235LL, digits, status));
-        assertSuccess("235", status);
+        assertUSuccess("235", status);
     }
     {
         UErrorCode status = U_ZERO_ERROR;
@@ -1840,7 +1840,7 @@ void NumberFormat2Test::TestIntInitVisibleDigits() {
                 "153.00",
                 FALSE,
                 precision.initVisibleDigits((int64_t) 153LL, digits, status));
-        assertSuccess("153", status);
+        assertUSuccess("153", status);
     }
     {
         UErrorCode status = U_ZERO_ERROR;
@@ -1860,7 +1860,7 @@ void NumberFormat2Test::TestIntInitVisibleDigits() {
                 "150",
                 FALSE,
                 precision.initVisibleDigits((int64_t) 150LL, digits, status));
-        assertSuccess("150", status);
+        assertUSuccess("150", status);
     }
 }
 
@@ -1874,7 +1874,7 @@ void NumberFormat2Test::TestIntInitVisibleDigitsToDigitList() {
                 "29.2",
                 TRUE,
                 precision.initVisibleDigits((int64_t) -30LL, digits, status));
-        assertSuccess("-29.2", status);
+        assertUSuccess("-29.2", status);
     }
     {
         UErrorCode status = U_ZERO_ERROR;
@@ -1885,7 +1885,7 @@ void NumberFormat2Test::TestIntInitVisibleDigitsToDigitList() {
                 "36.5",
                 TRUE,
                 precision.initVisibleDigits((int64_t) -30LL, digits, status));
-        assertSuccess("-36.5", status);
+        assertUSuccess("-36.5", status);
     }
     {
         UErrorCode status = U_ZERO_ERROR;
@@ -1896,7 +1896,7 @@ void NumberFormat2Test::TestIntInitVisibleDigitsToDigitList() {
                 "1390",
                 FALSE,
                 precision.initVisibleDigits((int64_t) 1381LL, digits, status));
-        assertSuccess("1390", status);
+        assertUSuccess("1390", status);
     }
     {
         UErrorCode status = U_ZERO_ERROR;
@@ -1907,7 +1907,7 @@ void NumberFormat2Test::TestIntInitVisibleDigitsToDigitList() {
                 "2000",
                 TRUE,
                 precision.initVisibleDigits((int64_t) -1381LL, digits, status));
-        assertSuccess("-2000", status);
+        assertUSuccess("-2000", status);
     }
 }
 
@@ -1920,7 +1920,7 @@ void NumberFormat2Test::TestDoubleInitVisibleDigits() {
                 "2.05",
                 FALSE,
                 precision.initVisibleDigits(2.05, digits, status));
-        assertSuccess("2.05", status);
+        assertUSuccess("2.05", status);
     }
     {
         UErrorCode status = U_ZERO_ERROR;
@@ -1929,7 +1929,7 @@ void NumberFormat2Test::TestDoubleInitVisibleDigits() {
                 "3547",
                 FALSE,
                 precision.initVisibleDigits(3547.0, digits, status));
-        assertSuccess("3547", status);
+        assertUSuccess("3547", status);
     }
     {
         UErrorCode status = U_ZERO_ERROR;
@@ -1942,7 +1942,7 @@ void NumberFormat2Test::TestDoubleInitVisibleDigits() {
                 "2.05",
                 TRUE,
                 precision.initVisibleDigits(-2.05, digits, status));
-        assertSuccess("-2.05", status);
+        assertUSuccess("-2.05", status);
     }
     {
         UErrorCode status = U_ZERO_ERROR;
@@ -1978,7 +1978,7 @@ void NumberFormat2Test::TestDoubleInitVisibleDigits() {
                 "06245.30",
                 FALSE,
                 precision.initVisibleDigits(6245.3, digits, status));
-        assertSuccess("06245.30", status);
+        assertUSuccess("06245.30", status);
     }
     {
         UErrorCode status = U_ZERO_ERROR;
@@ -1989,7 +1989,7 @@ void NumberFormat2Test::TestDoubleInitVisibleDigits() {
                 "6245.3",
                 FALSE,
                 precision.initVisibleDigits(6245.3, digits, status));
-        assertSuccess("6245.3", status);
+        assertUSuccess("6245.3", status);
     }
     {
         UErrorCode status = U_ZERO_ERROR;
@@ -2010,7 +2010,7 @@ void NumberFormat2Test::TestDoubleInitVisibleDigits() {
                 "384.90",
                 FALSE,
                 precision.initVisibleDigits(2384.9, digits, status));
-        assertSuccess("380.00", status);
+        assertUSuccess("380.00", status);
     }
     {
         UErrorCode status = U_ZERO_ERROR;
@@ -2036,7 +2036,7 @@ void NumberFormat2Test::TestDoubleInitVisibleDigitsToDigitList() {
                 "2.01",
                 TRUE,
                 precision.initVisibleDigits(-2.01, digits, status));
-        assertSuccess("-2.01", status);
+        assertUSuccess("-2.01", status);
     }
     {
         UErrorCode status = U_ZERO_ERROR;
@@ -2047,7 +2047,7 @@ void NumberFormat2Test::TestDoubleInitVisibleDigitsToDigitList() {
                 "2380.00",
                 FALSE,
                 precision.initVisibleDigits(2385.0, digits, status));
-        assertSuccess("2380.00", status);
+        assertUSuccess("2380.00", status);
     }
     {
         UErrorCode status = U_ZERO_ERROR;
@@ -2057,7 +2057,7 @@ void NumberFormat2Test::TestDoubleInitVisibleDigitsToDigitList() {
                 "45.83",
                 TRUE,
                 precision.initVisibleDigits(-45.8251, digits, status));
-        assertSuccess("45.83", status);
+        assertUSuccess("45.83", status);
     }
 }
 
@@ -2100,7 +2100,7 @@ void NumberFormat2Test::TestSpecialInitVisibleDigits() {
         assertFalse("", digits.isNaN());
         assertTrue("", digits.isInfinite());
         assertTrue("", digits.isNegative());
-        assertSuccess("-Inf", status);
+        assertUSuccess("-Inf", status);
     }
     {
         UErrorCode status = U_ZERO_ERROR;
@@ -2109,14 +2109,14 @@ void NumberFormat2Test::TestSpecialInitVisibleDigits() {
         assertFalse("", digits.isNaN());
         assertTrue("", digits.isInfinite());
         assertFalse("", digits.isNegative());
-        assertSuccess("Inf", status);
+        assertUSuccess("Inf", status);
     }
     {
         UErrorCode status = U_ZERO_ERROR;
         FixedPrecision precision;
         precision.initVisibleDigits(uprv_getNaN(), digits, status);
         assertTrue("", digits.isNaN());
-        assertSuccess("Inf", status);
+        assertUSuccess("Inf", status);
     }
 }
 
@@ -2128,7 +2128,7 @@ void NumberFormat2Test::TestVisibleDigitsWithExponent() {
         precision.initVisibleDigitsWithExponent(389.256, digits, status);
         verifyVisibleDigitsWithExponent(
                 "3.89256E2", FALSE, digits);
-        assertSuccess("3.89256E2", status);
+        assertUSuccess("3.89256E2", status);
     }
     {
         UErrorCode status = U_ZERO_ERROR;
@@ -2136,7 +2136,7 @@ void NumberFormat2Test::TestVisibleDigitsWithExponent() {
         precision.initVisibleDigitsWithExponent(-389.256, digits, status);
         verifyVisibleDigitsWithExponent(
                 "3.89256E2", TRUE, digits);
-        assertSuccess("-3.89256E2", status);
+        assertUSuccess("-3.89256E2", status);
     }
     {
         UErrorCode status = U_ZERO_ERROR;
@@ -2147,7 +2147,7 @@ void NumberFormat2Test::TestVisibleDigitsWithExponent() {
         precision.initVisibleDigitsWithExponent(12345.67, digits, status);
         verifyVisibleDigitsWithExponent(
                 "12.34567E003", FALSE, digits);
-        assertSuccess("12.34567E003", status);
+        assertUSuccess("12.34567E003", status);
     }
     {
         UErrorCode status = U_ZERO_ERROR;
@@ -2158,14 +2158,14 @@ void NumberFormat2Test::TestVisibleDigitsWithExponent() {
         precision.initVisibleDigitsWithExponent(999.74, digits, status);
         verifyVisibleDigitsWithExponent(
                 "10.001E2", FALSE, digits);
-        assertSuccess("10.001E2", status);
+        assertUSuccess("10.001E2", status);
     }
 }
 
 void NumberFormat2Test::TestDigitAffixesAndPadding() {
     UErrorCode status = U_ZERO_ERROR;
     DecimalFormatSymbols symbols("en", status);
-    if (!assertSuccess("", status)) {
+    if (!assertUSuccess("", status)) {
         return;
     }
     DigitFormatter formatter(symbols);
@@ -2289,7 +2289,7 @@ void NumberFormat2Test::TestDigitAffixesAndPadding() {
     aap.fNegativeSuffix = aap.fPositiveSuffix;
     
     LocalPointer<PluralRules> rules(PluralRules::forLocale("en", status));
-    if (!assertSuccess("", status)) {
+    if (!assertUSuccess("", status)) {
         return;
     }
 
@@ -2363,7 +2363,7 @@ void NumberFormat2Test::TestDigitAffixesAndPadding() {
 void NumberFormat2Test::TestPluralsAndRounding() {
     UErrorCode status = U_ZERO_ERROR;
     DecimalFormatSymbols symbols("en", status);
-    if (!assertSuccess("", status)) {
+    if (!assertUSuccess("", status)) {
         return;
     }
     DigitFormatter formatter(symbols);
@@ -2390,7 +2390,7 @@ void NumberFormat2Test::TestPluralsAndRounding() {
     aap.fNegativeSuffix = aap.fPositiveSuffix;
     aap.fWidth = 14;
     LocalPointer<PluralRules> rules(PluralRules::forLocale("en", status));
-    if (!assertSuccess("", status)) {
+    if (!assertUSuccess("", status)) {
         return;
     }
     {
@@ -2475,7 +2475,7 @@ void NumberFormat2Test::TestPluralsAndRounding() {
 void NumberFormat2Test::TestPluralsAndRoundingScientific() {
     UErrorCode status = U_ZERO_ERROR;
     DecimalFormatSymbols symbols("en", status);
-    if (!assertSuccess("", status)) {
+    if (!assertUSuccess("", status)) {
         return;
     }
     DigitFormatter formatter(symbols);
@@ -2498,7 +2498,7 @@ void NumberFormat2Test::TestPluralsAndRoundingScientific() {
     }
     aap.fNegativeSuffix = aap.fPositiveSuffix;
     LocalPointer<PluralRules> rules(PluralRules::forLocale("en", status));
-    if (!assertSuccess("", status)) {
+    if (!assertUSuccess("", status)) {
         return;
     }
     {
@@ -2800,7 +2800,7 @@ void NumberFormat2Test::TestToPatternScientific11648() {
     assertEquals("", "0.00E0", fmt.toPattern(pattern));
     DecimalFormat fmt2(pattern, status);
     // Fails, bad pattern.
-    assertSuccess("", status);
+    assertUSuccess("", status);
 */
 }
 
@@ -2824,7 +2824,7 @@ void NumberFormat2Test::verifyAffixesAndPadding(
                     optPluralRules,
                     appendTo,
                     status));
-    if (!assertSuccess("", status)) {
+    if (!assertUSuccess("", status)) {
         return;
     }
     if (expectedAttributes != NULL) {
@@ -2852,7 +2852,7 @@ void NumberFormat2Test::verifyAffixesAndPaddingInt32(
                     optPluralRules,
                     appendTo,
                     status));
-    if (!assertSuccess("", status)) {
+    if (!assertUSuccess("", status)) {
         return;
     }
     if (expectedAttributes != NULL) {
@@ -2893,7 +2893,7 @@ void NumberFormat2Test::verifyDigitList(
     DigitList dlCopy(digits);
     precision.initVisibleDigits(
             dlCopy, visibleDigits, status);
-    if (!assertSuccess("", status)) {
+    if (!assertUSuccess("", status)) {
         return;
     }
     verifyDigitFormatter(

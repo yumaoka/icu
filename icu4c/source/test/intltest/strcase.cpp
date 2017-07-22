@@ -725,14 +725,14 @@ StringCaseTest::assertGreekUpper(const char16_t *s, const char16_t *expected) {
 
     UErrorCode errorCode = U_ZERO_ERROR;
     LocalUCaseMapPointer csm(ucasemap_open("el", 0, &errorCode));
-    assertSuccess("ucasemap_open", errorCode);
+    assertUSuccess("ucasemap_open", errorCode);
     std::string s8;
     s16.toUTF8String(s8);
     msg = UnicodeString("ucasemap_utf8ToUpper/Greek(\"") + s16 + "\")";
     char dest8[1000];
     length = ucasemap_utf8ToUpper(csm.getAlias(), dest8, UPRV_LENGTHOF(dest8),
                                   s8.data(), s8.length(), &errorCode);
-    assertSuccess("ucasemap_utf8ToUpper", errorCode);
+    assertUSuccess("ucasemap_utf8ToUpper", errorCode);
     StringPiece result8(dest8, length);
     UnicodeString result16From8 = UnicodeString::fromUTF8(result8);
     assertEquals(msg, expected16, result16From8);

@@ -386,7 +386,7 @@ void TestMessageFormat::sample()
     assertEquals("format",
                  "There are abc files on def",
                  form->format(testArgs1, 2, buffer2, fieldpos, success));
-    assertSuccess("format", success);
+    assertUSuccess("format", success);
     delete form;
 }
 

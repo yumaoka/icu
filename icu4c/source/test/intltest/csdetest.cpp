@@ -552,7 +552,7 @@ void CharsetDetectionTest::DetectionTest()
     }
 
     UXMLElement *root   = parser->parseFile(testFilePath, status);
-    if (!assertSuccess( "parseFile",status)) return;
+    if (!assertUSuccess( "parseFile",status)) return;
 
     UnicodeString test_case = UNICODE_STRING_SIMPLE("test-case");
     UnicodeString id_attr   = UNICODE_STRING_SIMPLE("id");

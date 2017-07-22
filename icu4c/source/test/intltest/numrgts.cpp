@@ -2946,7 +2946,7 @@ void NumberFormatRegressionTest::Test9677(void) {
   if (U_SUCCESS(status)) {
     unum_applyPattern(f.getAlias(), FALSE, pattern, -1, NULL, &status);
     unum_setTextAttribute(f.getAlias(), UNUM_POSITIVE_PREFIX, positivePrefix, -1, &status);
-    assertSuccess("setting attributes", status);
+    assertUSuccess("setting attributes", status);
   }
 
   if(U_SUCCESS(status)) {
@@ -2963,7 +2963,7 @@ void NumberFormatRegressionTest::Test9677(void) {
 
   if (U_SUCCESS(status)) {
     unum_setTextAttribute(f.getAlias(), UNUM_POSITIVE_PREFIX, NULL, 0, &status);
-    assertSuccess("setting attributes", status);
+    assertUSuccess("setting attributes", status);
     logln("removed positive prefix");
   }
 
@@ -2997,7 +2997,7 @@ void NumberFormatRegressionTest::Test9677(void) {
 
   if (U_SUCCESS(status)) {
     unum_setTextAttribute(f.getAlias(), UNUM_NEGATIVE_PREFIX, negativePrefix, -1, &status);
-    assertSuccess("setting attributes", status);
+    assertUSuccess("setting attributes", status);
     logln("Set a different neg prefix prefix");
   }
 

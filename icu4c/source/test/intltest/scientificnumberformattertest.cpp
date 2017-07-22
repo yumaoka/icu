@@ -55,7 +55,7 @@ void ScientificNumberFormatterTest::TestBasic() {
     LocalPointer<ScientificNumberFormatter> fmt(
             ScientificNumberFormatter::createMarkupInstance(
                     "en" , "<sup>", "</sup>", status));
-    if (!assertSuccess("Can't create ScientificNumberFormatter", status)) {
+    if (!assertUSuccess("Can't create ScientificNumberFormatter", status)) {
         return;
     }
     fmt->format(1.23456e-78, appendTo, status);
@@ -69,7 +69,7 @@ void ScientificNumberFormatterTest::TestBasic() {
     fmt.adoptInstead(
             ScientificNumberFormatter::createSuperscriptInstance(
                     "en", status));
-    if (!assertSuccess("Can't create ScientificNumberFormatter2", status)) {
+    if (!assertUSuccess("Can't create ScientificNumberFormatter2", status)) {
         return;
     }
     appendTo = prefix;
@@ -93,7 +93,7 @@ void ScientificNumberFormatterTest::TestBasic() {
             "superscript style",
             UnicodeString(expected).unescape(),
             appendTo);
-    assertSuccess("", status);
+    assertUSuccess("", status);
 }
 
 void ScientificNumberFormatterTest::TestFarsi() {
@@ -103,7 +103,7 @@ void ScientificNumberFormatterTest::TestFarsi() {
     LocalPointer<ScientificNumberFormatter> fmt(
             ScientificNumberFormatter::createMarkupInstance(
                     "fa", "<sup>", "</sup>", status));
-    if (!assertSuccess("Can't create ScientificNumberFormatter", status)) {
+    if (!assertUSuccess("Can't create ScientificNumberFormatter", status)) {
         return;
     }
     fmt->format(1.23456e-78, appendTo, status);
@@ -112,7 +112,7 @@ void ScientificNumberFormatterTest::TestFarsi() {
             "",
             UnicodeString(expected).unescape(),
             appendTo);
-    assertSuccess("", status);
+    assertUSuccess("", status);
 }
 
 void ScientificNumberFormatterTest::TestPlusSignInExponentMarkup() {
@@ -123,14 +123,14 @@ void ScientificNumberFormatterTest::TestPlusSignInExponentMarkup() {
         return;
     }
     decfmt->applyPattern("0.00E+0", status);
-    if (!assertSuccess("", status)) {
+    if (!assertUSuccess("", status)) {
         return;
     }
     UnicodeString appendTo;
     LocalPointer<ScientificNumberFormatter> fmt(
             ScientificNumberFormatter::createMarkupInstance(
                     new DecimalFormat(*decfmt), "<sup>", "</sup>", status));
-    if (!assertSuccess("Can't create ScientificNumberFormatter", status)) {
+    if (!assertUSuccess("Can't create ScientificNumberFormatter", status)) {
         return;
     }
     fmt->format(6.02e23, appendTo, status);
@@ -139,7 +139,7 @@ void ScientificNumberFormatterTest::TestPlusSignInExponentMarkup() {
             "",
             UnicodeString(expected).unescape(),
             appendTo);
-    assertSuccess("", status);
+    assertUSuccess("", status);
 }
 
 void ScientificNumberFormatterTest::TestPlusSignInExponentSuperscript() {
@@ -150,14 +150,14 @@ void ScientificNumberFormatterTest::TestPlusSignInExponentSuperscript() {
         return;
     }
     decfmt->applyPattern("0.00E+0", status);
-    if (!assertSuccess("", status)) {
+    if (!assertUSuccess("", status)) {
         return;
     }
     UnicodeString appendTo;
     LocalPointer<ScientificNumberFormatter> fmt(
             ScientificNumberFormatter::createSuperscriptInstance(
                     new DecimalFormat(*decfmt), status));
-    if (!assertSuccess("Can't create ScientificNumberFormatter", status)) {
+    if (!assertUSuccess("Can't create ScientificNumberFormatter", status)) {
         return;
     }
     fmt->format(6.02e23, appendTo, status);
@@ -166,19 +166,19 @@ void ScientificNumberFormatterTest::TestPlusSignInExponentSuperscript() {
             "",
             UnicodeString(expected).unescape(),
             appendTo);
-    assertSuccess("", status);
+    assertUSuccess("", status);
 }
 
 void ScientificNumberFormatterTest::TestFixedDecimalMarkup() {
     UErrorCode status = U_ZERO_ERROR;
     LocalPointer<DecimalFormat> decfmt((DecimalFormat *) NumberFormat::createInstance("en", status));
-    if (assertSuccess("NumberFormat::createInstance", status, TRUE) == FALSE) {
+    if (assertUSuccess("NumberFormat::createInstance", status, TRUE) == FALSE) {
         return;
     }
     LocalPointer<ScientificNumberFormatter> fmt(
             ScientificNumberFormatter::createMarkupInstance(
                     new DecimalFormat(*decfmt), "<sup>", "</sup>", status));
-    if (!assertSuccess("Can't create ScientificNumberFormatter", status)) {
+    if (!assertUSuccess("Can't create ScientificNumberFormatter", status)) {
         return;
     }
     UnicodeString appendTo;
@@ -188,19 +188,19 @@ void ScientificNumberFormatterTest::TestFixedDecimalMarkup() {
             "",
             UnicodeString(expected).unescape(),
             appendTo);
-    assertSuccess("", status);
+    assertUSuccess("", status);
 }
 
 void ScientificNumberFormatterTest::TestFixedDecimalSuperscript() {
     UErrorCode status = U_ZERO_ERROR;
     LocalPointer<DecimalFormat> decfmt((DecimalFormat *) NumberFormat::createInstance("en", status));
-    if (assertSuccess("NumberFormat::createInstance", status, TRUE) == FALSE) {
+    if (assertUSuccess("NumberFormat::createInstance", status, TRUE) == FALSE) {
         return;
     }
     LocalPointer<ScientificNumberFormatter> fmt(
             ScientificNumberFormatter::createSuperscriptInstance(
                     new DecimalFormat(*decfmt), status));
-    if (!assertSuccess("Can't create ScientificNumberFormatter", status)) {
+    if (!assertUSuccess("Can't create ScientificNumberFormatter", status)) {
         return;
     }
     UnicodeString appendTo;
@@ -210,7 +210,7 @@ void ScientificNumberFormatterTest::TestFixedDecimalSuperscript() {
             "",
             UnicodeString(expected).unescape(),
             appendTo);
-    assertSuccess("", status);
+    assertUSuccess("", status);
 }
 
 extern IntlTest *createScientificNumberFormatterTest() {

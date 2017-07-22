@@ -1067,18 +1067,18 @@ void DateIntervalFormatTest::expect(const char** data, int32_t data_length) {
         const char* datestr_2 = data[i++];
         logln("original date: %s - %s\n", datestr, datestr_2);
         UDate date = ref.parse(ctou(datestr), ec);
-        if (!assertSuccess("parse 1st data in expect", ec)) return;
+        if (!assertUSuccess("parse 1st data in expect", ec)) return;
         UDate date_2 = ref.parse(ctou(datestr_2), ec);
-        if (!assertSuccess("parse 2nd data in expect", ec)) return;
+        if (!assertUSuccess("parse 2nd data in expect", ec)) return;
         DateInterval dtitv(date, date_2);
 
         const UnicodeString& oneSkeleton(ctou(data[i++]));
 
         DateIntervalFormat* dtitvfmt = DateIntervalFormat::createInstance(oneSkeleton, loc, ec);
-        if (!assertSuccess("createInstance(skeleton) in expect", ec)) return;
+        if (!assertUSuccess("createInstance(skeleton) in expect", ec)) return;
         FieldPosition pos(FieldPosition::DONT_CARE);
         dtitvfmt->format(&dtitv, str.remove(), pos, ec);
-        if (!assertSuccess("format in expect", ec)) return;
+        if (!assertUSuccess("format in expect", ec)) return;
         assertEquals((UnicodeString)"\"" + locName + "\\" + oneSkeleton + "\\" + ctou(datestr) + "\\" + ctou(datestr_2) + "\"", ctou(data[i++]), str);
 
         logln("interval date:" + str + "\"" + locName + "\", "
@@ -1265,9 +1265,9 @@ void DateIntervalFormatTest::expectUserDII(const char** data,
         const char* datestr = data[i++];
         const char* datestr_2 = data[i++];
         UDate date = ref.parse(ctou(datestr), ec);
-        if (!assertSuccess("parse in expectUserDII", ec)) return;
+        if (!assertUSuccess("parse in expectUserDII", ec)) return;
         UDate date_2 = ref.parse(ctou(datestr_2), ec);
-        if (!assertSuccess("parse in expectUserDII", ec)) return;
+        if (!assertUSuccess("parse in expectUserDII", ec)) return;
         DateInterval dtitv(date, date_2);
 
         ec = U_ZERO_ERROR;
@@ -1275,15 +1275,15 @@ void DateIntervalFormatTest::expectUserDII(const char** data,
         DateIntervalInfo* dtitvinf = new DateIntervalInfo(ec);
         dtitvinf->setFallbackIntervalPattern("{0} --- {1}", ec);
         dtitvinf->setIntervalPattern(UDAT_YEAR_ABBR_MONTH_DAY, UCAL_MONTH, "yyyy MMM d - MMM y",ec);
-        if (!assertSuccess("DateIntervalInfo::setIntervalPattern", ec)) return;
+        if (!assertUSuccess("DateIntervalInfo::setIntervalPattern", ec)) return;
         dtitvinf->setIntervalPattern(UDAT_YEAR_ABBR_MONTH_DAY, UCAL_HOUR_OF_DAY, "yyyy MMM d HH:mm - HH:mm", ec);
-        if (!assertSuccess("DateIntervalInfo::setIntervalPattern", ec)) return;
+        if (!assertUSuccess("DateIntervalInfo::setIntervalPattern", ec)) return;
         DateIntervalFormat* dtitvfmt = DateIntervalFormat::createInstance(UDAT_YEAR_ABBR_MONTH_DAY, loc, *dtitvinf, ec);
         delete dtitvinf;
-        if (!assertSuccess("createInstance(skeleton,dtitvinf) in expectUserDII", ec)) return;
+        if (!assertUSuccess("createInstance(skeleton,dtitvinf) in expectUserDII", ec)) return;
         FieldPosition pos(FieldPosition::DONT_CARE);
         dtitvfmt->format(&dtitv, str.remove(), pos, ec);
-        if (!assertSuccess("format in expectUserDII", ec)) return;
+        if (!assertUSuccess("format in expectUserDII", ec)) return;
         assertEquals((UnicodeString)"\"" + locName + "\\" + datestr + "\\" + datestr_2 + "\"", ctou(data[i++]), str);
 #ifdef DTIFMTTS_DEBUG
         char result[1000];
@@ -1408,7 +1408,7 @@ void DateIntervalFormatTest::stress(const char** data, int32_t data_length,
     UErrorCode ec = U_ZERO_ERROR;
     UnicodeString str, str2;
     SimpleDateFormat ref(data[i++], loc, ec);
-    if (!assertSuccess("construct SimpleDateFormat", ec)) return;
+    if (!assertUSuccess("construct SimpleDateFormat", ec)) return;
 
 #ifdef DTIFMTTS_DEBUG
     char result[1000];
@@ -1427,9 +1427,9 @@ void DateIntervalFormatTest::stress(const char** data, int32_t data_length,
         PRINTMESG(mesg)
 #endif
         UDate date = ref.parse(ctou(datestr), ec);
-        if (!assertSuccess("parse", ec)) return;
+        if (!assertUSuccess("parse", ec)) return;
         UDate date_2 = ref.parse(ctou(datestr_2), ec);
-        if (!assertSuccess("parse", ec)) return;
+        if (!assertUSuccess("parse", ec)) return;
         DateInterval dtitv(date, date_2);
 
         for ( uint32_t skeletonIndex = 0;
@@ -1437,24 +1437,24 @@ void DateIntervalFormatTest::stress(const char** data, int32_t data_length,
               ++skeletonIndex ) {
             const UnicodeString& oneSkeleton = skeleton[skeletonIndex];
             DateIntervalFormat* dtitvfmt = DateIntervalFormat::createInstance(oneSkeleton, loc, ec);
-            if (!assertSuccess("createInstance(skeleton)", ec)) return;
+            if (!assertUSuccess("createInstance(skeleton)", ec)) return;
             /*
             // reset the calendar to be Gregorian calendar for "th"
             if ( uprv_strcmp(locName, "th") == 0 ) {
                 GregorianCalendar* gregCal = new GregorianCalendar(loc, ec);
-                if (!assertSuccess("GregorianCalendar()", ec)) return;
+                if (!assertUSuccess("GregorianCalendar()", ec)) return;
                 const DateFormat* dformat = dtitvfmt->getDateFormat();
                 DateFormat* newOne = (DateFormat*)dformat->clone();
                 newOne->adoptCalendar(gregCal);
                 //dtitvfmt->adoptDateFormat(newOne, ec);
                 dtitvfmt->setDateFormat(*newOne, ec);
                 delete newOne;
-                if (!assertSuccess("adoptDateFormat()", ec)) return;
+                if (!assertUSuccess("adoptDateFormat()", ec)) return;
             }
             */
             FieldPosition pos(FieldPosition::DONT_CARE);
             dtitvfmt->format(&dtitv, str.remove(), pos, ec);
-            if (!assertSuccess("format", ec)) return;
+            if (!assertUSuccess("format", ec)) return;
 #ifdef DTIFMTTS_DEBUG
             oneSkeleton.extract(0,  oneSkeleton.length(), result, "UTF-8");
             sprintf(mesg, "interval by skeleton: %s\n", result);
@@ -1471,16 +1471,16 @@ void DateIntervalFormatTest::stress(const char** data, int32_t data_length,
         DateIntervalInfo* dtitvinf = new DateIntervalInfo(ec);
         dtitvinf->setFallbackIntervalPattern("{0} --- {1}", ec);
         dtitvinf->setIntervalPattern(UDAT_YEAR_ABBR_MONTH_DAY, UCAL_MONTH, "yyyy MMM d - MMM y",ec);
-        if (!assertSuccess("DateIntervalInfo::setIntervalPattern", ec)) return;
+        if (!assertUSuccess("DateIntervalInfo::setIntervalPattern", ec)) return;
         dtitvinf->setIntervalPattern(UDAT_YEAR_ABBR_MONTH_DAY, UCAL_HOUR_OF_DAY, "yyyy MMM d HH:mm - HH:mm", ec);
-        if (!assertSuccess("DateIntervalInfo::setIntervalPattern", ec)) return;
+        if (!assertUSuccess("DateIntervalInfo::setIntervalPattern", ec)) return;
         DateIntervalFormat* dtitvfmt = DateIntervalFormat::createInstance(UDAT_YEAR_ABBR_MONTH_DAY, loc, *dtitvinf, ec);
         delete dtitvinf;
-        if (!assertSuccess("createInstance(skeleton,dtitvinf)", ec)) return;
+        if (!assertUSuccess("createInstance(skeleton,dtitvinf)", ec)) return;
         FieldPosition pos(FieldPosition::DONT_CARE);
         dtitvfmt->format(&dtitv, str.remove(), pos, ec);
         if ( uprv_strcmp(locName, "th") ) {
-            if (!assertSuccess("format", ec)) return;
+            if (!assertUSuccess("format", ec)) return;
 #ifdef DTIFMTTS_DEBUG
             PRINTMESG("interval format using user defined DateIntervalInfo\n");
             str.extract(0,  str.length(), result, "UTF-8");
@@ -1501,7 +1501,7 @@ void DateIntervalFormatTest::testTicket11583_2() {
     UErrorCode status = U_ZERO_ERROR;
     LocalPointer<DateIntervalFormat> fmt(
             DateIntervalFormat::createInstance("yMMM", "es-US", status));
-    if (!assertSuccess("Error create format object", status)) {
+    if (!assertUSuccess("Error create format object", status)) {
         return;
     }
     DateInterval interval((UDate) 1232364615000.0, (UDate) 1328787015000.0);
@@ -1512,7 +1512,7 @@ void DateIntervalFormatTest::testTicket11583_2() {
             "",
             expected.unescape(),
             fmt->format(&interval, appendTo, fpos, status));
-    if (!assertSuccess("Error formatting", status)) {
+    if (!assertUSuccess("Error formatting", status)) {
         return;
     }
 }
@@ -1522,7 +1522,7 @@ void DateIntervalFormatTest::testTicket11985() {
     UErrorCode status = U_ZERO_ERROR;
     LocalPointer<DateIntervalFormat> fmt(
             DateIntervalFormat::createInstance(UDAT_HOUR_MINUTE, Locale::getEnglish(), status));
-    if (!assertSuccess("createInstance", status)) {
+    if (!assertUSuccess("createInstance", status)) {
         return;
     }
     UnicodeString pattern;

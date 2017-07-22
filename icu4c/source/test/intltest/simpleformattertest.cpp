@@ -84,7 +84,7 @@ void SimpleFormatterTest::TestNoArguments() {
             "formatAndReplace",
             "This doesn't have templates {0}", 
             fmt.formatAndReplace(NULL, 0, appendTo, NULL, 0, status));
-    assertSuccess("Status", status);
+    assertUSuccess("Status", status);
 }
 
 void SimpleFormatterTest::TestSyntaxErrors() {
@@ -100,7 +100,7 @@ void SimpleFormatterTest::TestOneArgument() {
     UErrorCode status = U_ZERO_ERROR;
     SimpleFormatter fmt;
     fmt.applyPattern("{0} meter", status);
-    if (!assertSuccess("Status", status)) {
+    if (!assertUSuccess("Status", status)) {
         return;
     }
     assertEquals("getArgumentLimit", 1, fmt.getArgumentLimit());
@@ -126,13 +126,13 @@ void SimpleFormatterTest::TestOneArgument() {
             "Copy constructor",
             "1 meter",
             r.format("1", appendTo, status));
-    assertSuccess("Status", status);
+    assertUSuccess("Status", status);
 }
 
 void SimpleFormatterTest::TestBigArgument() {
     UErrorCode status = U_ZERO_ERROR;
     SimpleFormatter fmt("a{20}c", status);
-    if (!assertSuccess("Status", status)) {
+    if (!assertUSuccess("Status", status)) {
         return;
     }
     assertEquals("{20} count", 21, fmt.getArgumentLimit());
@@ -144,7 +144,7 @@ void SimpleFormatterTest::TestBigArgument() {
     };
     UnicodeString result;
     assertEquals("{20}=b", "abc", fmt.formatAndAppend(values, 21, result, NULL, 0, status));
-    assertSuccess("Status", status);
+    assertUSuccess("Status", status);
 }
 
 void SimpleFormatterTest::TestManyArguments() {
@@ -152,7 +152,7 @@ void SimpleFormatterTest::TestManyArguments() {
     SimpleFormatter fmt;
     fmt.applyPattern(
             "Templates {2}{1}{5} and {4} are out of order.", status);
-    if (!assertSuccess("Status", status)) {
+    if (!assertUSuccess("Status", status)) {
         return;
     }
     assertEquals("getArgumentLimit", 6, fmt.getArgumentLimit());
@@ -173,7 +173,7 @@ void SimpleFormatterTest::TestManyArguments() {
                     offsets,
                     UPRV_LENGTHOF(offsets),
                     status));
-    if (!assertSuccess("Status", status)) {
+    if (!assertUSuccess("Status", status)) {
         return;
     }
     verifyOffsets(expectedOffsets, offsets, UPRV_LENGTHOF(expectedOffsets));
@@ -241,7 +241,7 @@ void SimpleFormatterTest::TestManyArguments() {
             "3 arg",
             "foo, bar and baz",
             r.format("foo", "bar", "baz", appendTo, status));
-    assertSuccess("Status", status);
+    assertUSuccess("Status", status);
 }
 
 void SimpleFormatterTest::TestTooFewArgumentValues() {
@@ -282,7 +282,7 @@ void SimpleFormatterTest::TestBadArguments() {
             NULL, 0, appendTo, NULL, 0, status);
     fmt.formatAndReplace(
             NULL, 0, appendTo, NULL, 0, status);
-    assertSuccess("", status);
+    assertUSuccess("", status);
     status = U_ZERO_ERROR;
 
     // fails
@@ -339,7 +339,7 @@ void SimpleFormatterTest::TestFormatReplaceNoOptimization() {
     UErrorCode status = U_ZERO_ERROR;
     SimpleFormatter fmt;
     fmt.applyPattern("{2}, {0}, {1} and {3}", status);
-    if (!assertSuccess("Status", status)) {
+    if (!assertUSuccess("Status", status)) {
         return;
     }
     UnicodeString result("original");
@@ -358,7 +358,7 @@ void SimpleFormatterTest::TestFormatReplaceNoOptimization() {
                     offsets,
                     UPRV_LENGTHOF(offsets),
                     status));
-    if (!assertSuccess("Status", status)) {
+    if (!assertUSuccess("Status", status)) {
         return;
     }
     int32_t expectedOffsets[] = {6, 16, 0, 27};
@@ -369,7 +369,7 @@ void SimpleFormatterTest::TestFormatReplaceNoOptimizationLeadingText() {
     UErrorCode status = U_ZERO_ERROR;
     SimpleFormatter fmt;
     fmt.applyPattern("boo {2}, {0}, {1} and {3}", status);
-    if (!assertSuccess("Status", status)) {
+    if (!assertUSuccess("Status", status)) {
         return;
     }
     UnicodeString result("original");
@@ -388,7 +388,7 @@ void SimpleFormatterTest::TestFormatReplaceNoOptimizationLeadingText() {
                     offsets,
                     UPRV_LENGTHOF(offsets),
                     status));
-    if (!assertSuccess("Status", status)) {
+    if (!assertUSuccess("Status", status)) {
         return;
     }
     int32_t expectedOffsets[] = {14, 22, 4, 31};
@@ -399,7 +399,7 @@ void SimpleFormatterTest::TestFormatReplaceOptimization() {
     UErrorCode status = U_ZERO_ERROR;
     SimpleFormatter fmt;
     fmt.applyPattern("{2}, {0}, {1} and {3}", status);
-    if (!assertSuccess("Status", status)) {
+    if (!assertUSuccess("Status", status)) {
         return;
     }
     UnicodeString result("original");
@@ -418,7 +418,7 @@ void SimpleFormatterTest::TestFormatReplaceOptimization() {
                     offsets,
                     UPRV_LENGTHOF(offsets),
                     status));
-    if (!assertSuccess("Status", status)) {
+    if (!assertUSuccess("Status", status)) {
         return;
     }
     int32_t expectedOffsets[] = {10, 18, 0, 27};
@@ -429,7 +429,7 @@ void SimpleFormatterTest::TestFormatReplaceNoOptimizationLeadingArgumentUsedTwic
     UErrorCode status = U_ZERO_ERROR;
     SimpleFormatter fmt;
     fmt.applyPattern("{2}, {0}, {1} and {3} {2}", status);
-    if (!assertSuccess("Status", status)) {
+    if (!assertUSuccess("Status", status)) {
         return;
     }
     UnicodeString result("original");
@@ -448,7 +448,7 @@ void SimpleFormatterTest::TestFormatReplaceNoOptimizationLeadingArgumentUsedTwic
                     offsets,
                     UPRV_LENGTHOF(offsets),
                     status));
-    if (!assertSuccess("Status", status)) {
+    if (!assertUSuccess("Status", status)) {
         return;
     }
     int32_t expectedOffsets[] = {10, 18, 30, 27};
@@ -459,7 +459,7 @@ void SimpleFormatterTest::TestFormatReplaceOptimizationNoOffsets() {
     UErrorCode status = U_ZERO_ERROR;
     SimpleFormatter fmt;
     fmt.applyPattern("{2}, {0}, {1} and {3}", status);
-    if (!assertSuccess("Status", status)) {
+    if (!assertUSuccess("Status", status)) {
         return;
     }
     UnicodeString result("original");
@@ -477,7 +477,7 @@ void SimpleFormatterTest::TestFormatReplaceOptimizationNoOffsets() {
                     NULL,
                     0,
                     status));
-    assertSuccess("Status", status);
+    assertUSuccess("Status", status);
 }
 
 void SimpleFormatterTest::TestFormatReplaceNoOptimizationNoOffsets() {
@@ -496,7 +496,7 @@ void SimpleFormatterTest::TestFormatReplaceNoOptimizationNoOffsets() {
                     NULL,
                     0,
                     status));
-    assertSuccess("Status", status);
+    assertUSuccess("Status", status);
 }
 
 void SimpleFormatterTest::TestQuotingLikeMessageFormat() {

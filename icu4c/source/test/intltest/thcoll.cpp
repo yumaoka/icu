@@ -114,7 +114,7 @@ void CollationThaiTest::TestNamesList(void) {
         lastWord = word;
     }
 
-    assertSuccess("readLine", ec);
+    assertUSuccess("readLine", ec);
 
     logln((UnicodeString)"Words checked: " + wordCount);
 }
@@ -185,7 +185,7 @@ void CollationThaiTest::TestDictionary(void) {
         lastWord = word;
     }
 
-    assertSuccess("readLine", ec);
+    assertUSuccess("readLine", ec);
 
     if (failed != 0) {
         if (failed > MAX_FAILURES_TO_SHOW) {

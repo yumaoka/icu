@@ -120,7 +120,7 @@ void UnifiedCacheTest::TestEvictionPolicy() {
     // complete control over it. Real clients should never ever create
     // their own cache!
     UnifiedCache cache(status);
-    assertSuccess("", status);
+    assertUSuccess("", status);
 
     // Don't allow unused entries to exeed more than 100% of in use entries.
     cache.setEvictionPolicy(0, 100, status);
@@ -164,7 +164,7 @@ void UnifiedCacheTest::TestEvictionPolicy() {
     // This should free up all cache items
     assertEquals("", 0, cache.keyCount());
 
-    assertSuccess("", status);
+    assertUSuccess("", status);
 }
 
 
@@ -181,7 +181,7 @@ void UnifiedCacheTest::TestBounded() {
     // complete control over it. Real clients should never ever create
     // their own cache!
     UnifiedCache cache(status);
-    assertSuccess("", status);
+    assertUSuccess("", status);
 
     // Maximum unused count is 3.
     cache.setEvictionPolicy(3, 0, status);
@@ -290,14 +290,14 @@ void UnifiedCacheTest::TestBounded() {
     // Be sure nothing happens setting the eviction policy in the middle of
     // a run.
     cache.setEvictionPolicy(3, 0, status);
-    assertSuccess("", status);
+    assertUSuccess("", status);
     
 }
 
 void UnifiedCacheTest::TestBasic() {
     UErrorCode status = U_ZERO_ERROR;
     const UnifiedCache *cache = UnifiedCache::getInstance(status);
-    assertSuccess("", status);
+    assertUSuccess("", status);
     cache->flush();
     int32_t baseCount = cache->keyCount();
     const UCTItem *en = NULL;
@@ -322,7 +322,7 @@ void UnifiedCacheTest::TestBasic() {
     if (enGb == fr) {
         errln("Expected en_GB and fr to return different objects.");
     }
-    assertSuccess("", status);
+    assertUSuccess("", status);
     // en_US, en_GB, en share one object; fr_FR and fr don't share.
     // 5 keys in all.
     assertEquals("", baseCount + 5, cache->keyCount());
@@ -346,13 +346,13 @@ void UnifiedCacheTest::TestBasic() {
     SharedObject::clearPtr(frFr);
     cache->flush();
     assertEquals("", baseCount + 0, cache->keyCount());
-    assertSuccess("", status);
+    assertUSuccess("", status);
 }
 
 void UnifiedCacheTest::TestError() {
     UErrorCode status = U_ZERO_ERROR;
     const UnifiedCache *cache = UnifiedCache::getInstance(status);
-    assertSuccess("", status);
+    assertUSuccess("", status);
     cache->flush();
     int32_t baseCount = cache->keyCount();
     const UCTItem *zh = NULL;

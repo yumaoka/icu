@@ -586,7 +586,7 @@ void RelativeDateTimeFormatterTest::TestEnglishCaps() {
     // Test assignment and copy constructor with capitalization on.
     RelativeDateTimeFormatter fmt2(fmt);
     fmt3 = fmt2;
-    assertSuccess("", status);
+    assertUSuccess("", status);
     RunTest(fmt3, kEnglishCaps, UPRV_LENGTHOF(kEnglishCaps), "en caps");
 }
 
@@ -618,7 +618,7 @@ void RelativeDateTimeFormatterTest::TestEnglishNoQuantityCaps() {
             UDAT_STYLE_LONG,
             UDISPCTX_CAPITALIZATION_FOR_BEGINNING_OF_SENTENCE,
             status);
-    if (assertSuccess("RelativeDateTimeFormatter", status, TRUE) == FALSE) {
+    if (assertUSuccess("RelativeDateTimeFormatter", status, TRUE) == FALSE) {
         return;
     }
     RunTest(
@@ -719,7 +719,7 @@ void RelativeDateTimeFormatterTest::TestGetters() {
             "context",
             (int32_t)UDISPCTX_CAPITALIZATION_FOR_MIDDLE_OF_SENTENCE,
             fmt3.getCapitalizationContext());
-    assertSuccess("", status);
+    assertUSuccess("", status);
 }
 
 void RelativeDateTimeFormatterTest::TestCombineDateAndTime() {

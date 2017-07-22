@@ -1081,7 +1081,7 @@ void IntlTestDateTimePatternGeneratorAPI::testStaticGetSkeleton(/*char *par*/)
     for (size_t i = 0; i < UPRV_LENGTHOF(testData); i++) {
         UErrorCode status = U_ZERO_ERROR;
         UnicodeString skeleton = DateTimePatternGenerator::staticGetSkeleton(testData[i], status);
-        if (!assertSuccess("staticGetSkeleton", status)) {
+        if (!assertUSuccess("staticGetSkeleton", status)) {
             return;
         }
         assertEquals("Skeleton", testData[i], skeleton);

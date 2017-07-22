@@ -603,7 +603,7 @@ void IntlTestDecimalFormatAPI::TestScale()
 
 
 #define ASSERT_EQUAL(expect, actual) { char tmp[200]; sprintf(tmp, "(%g==%g)", (double)(expect), (double)(actual)); \
-    assertTrue(tmp, ((expect)==(actual)), FALSE, TRUE, __FILE__, __LINE__); }
+    assertTrue(tmp, ((expect)==(actual)), FALSE, TRUE); }
 
 void IntlTestDecimalFormatAPI::TestFixedDecimal() {
     UErrorCode status = U_ZERO_ERROR;

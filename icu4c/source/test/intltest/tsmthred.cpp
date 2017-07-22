@@ -827,7 +827,7 @@ void MultithreadTest::TestThreadedIntl()
     UErrorCode threadSafeErr = U_ZERO_ERROR;
 
     ThreadSafeFormatSharedData sharedData(threadSafeErr);
-    assertSuccess("initializing ThreadSafeFormat", threadSafeErr, TRUE);
+    assertUSuccess("initializing ThreadSafeFormat", threadSafeErr, TRUE);
 
     //
     //  Create and start the test threads

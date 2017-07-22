@@ -201,7 +201,7 @@ void NumberFormatSpecificationTest::TestPadding() {
         } else {
             fmt.setCurrency(kJPY);
             fmt.format(433.22, result);
-            assertSuccess("", status);
+            assertUSuccess("", status);
             assertEquals("", "JPY ****433", result, TRUE);
         }
     }
@@ -219,7 +219,7 @@ void NumberFormatSpecificationTest::TestPadding() {
             dataerrln("Error creating DecimalFormat - %s", u_errorName(status));
         } else {
             fmt.format(-433.22, result);
-            assertSuccess("", status);
+            assertUSuccess("", status);
             assertEquals("", "USD (433.22)", result, TRUE);
         }
     }
@@ -238,7 +238,7 @@ void NumberFormatSpecificationTest::TestPadding() {
         } else {
             UnicodeString result;
             fmt.format(4.33, result);
-            assertSuccess("", status);
+            assertUSuccess("", status);
             assertEquals("", "QU**43,3EE-1", result, TRUE);
         }
     }
@@ -265,7 +265,7 @@ void NumberFormatSpecificationTest::assertPatternFr(
     }
     fmt.format(x, result);
     fixNonBreakingSpace(result);
-    assertSuccess("", status);
+    assertUSuccess("", status);
     assertEquals("", uexpected, result, possibleDataError);
 }
 

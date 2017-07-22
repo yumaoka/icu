@@ -1993,7 +1993,7 @@ void TimeZoneTest::TestCanonicalIDAPI() {
     canonicalID.setToBogus();
     ec = U_ZERO_ERROR;
     pResult = &TimeZone::getCanonicalID(berlin, canonicalID, ec);
-    assertSuccess("TimeZone::getCanonicalID(bogus dest) should succeed", ec, TRUE);
+    assertUSuccess("TimeZone::getCanonicalID(bogus dest) should succeed", ec, TRUE);
     assertTrue("TimeZone::getCanonicalID(bogus dest) should return the dest string", pResult == &canonicalID);
     assertFalse("TimeZone::getCanonicalID(bogus dest) should un-bogus the dest string", canonicalID.isBogus());
     assertEquals("TimeZone::getCanonicalID(bogus dest) unexpected result", canonicalID, berlin, TRUE);
@@ -2444,7 +2444,7 @@ void TimeZoneTest::TestGetWindowsID(void) {
         UnicodeString windowsID;
 
         TimeZone::getWindowsID(UnicodeString(TESTDATA[i].id), windowsID, sts);
-        assertSuccess(TESTDATA[i].id, sts);
+        assertUSuccess(TESTDATA[i].id, sts);
         assertEquals(TESTDATA[i].id, UnicodeString(TESTDATA[i].winid), windowsID, TRUE);
     }
 }
@@ -2473,7 +2473,7 @@ void TimeZoneTest::TestGetIDForWindowsID(void) {
 
         TimeZone::getIDForWindowsID(UnicodeString(TESTDATA[i].winid), TESTDATA[i].region,
                                     id, sts);
-        assertSuccess(UnicodeString(TESTDATA[i].winid) + "/" + TESTDATA[i].region, sts);
+        assertUSuccess(UnicodeString(TESTDATA[i].winid) + "/" + TESTDATA[i].region, sts);
         assertEquals(UnicodeString(TESTDATA[i].winid) + "/" + TESTDATA[i].region, TESTDATA[i].id, id, TRUE);
     }
 }

@@ -17,6 +17,7 @@
 #include "unicode/fmtable.h"
 #include "unicode/testlog.h"
 
+#include "cstr.h"
 
 #if U_NO_DEFAULT_INCLUDE_UTF_HEADERS
 /* deprecated  - make tests pass with U_NO_DEFAULT_INCLUDE_UTF_HEADERS */
@@ -131,11 +132,8 @@ UnicodeString toString(UBool b);
         break; \
     }
 
-#define TEST_ASSERT_TRUE(x) \
-  assertTrue(#x, (x), FALSE, FALSE, __FILE__, __LINE__)
-
 #define TEST_ASSERT_STATUS(x) \
-  assertSuccess(#x, (x), FALSE, __FILE__, __LINE__)
+  assertUSuccess(#x, (x))
 
 class IntlTest : public TestLog {
 public:
@@ -285,13 +283,36 @@ public:
     virtual const char* getProperty(const char* prop);
 
     /* JUnit-like assertions. Each returns TRUE if it succeeds. */
-    UBool assertTrue(const char* message, UBool condition, UBool quiet=FALSE, UBool possibleDataError=FALSE, const char *file=NULL, int line=0);
-    UBool assertFalse(const char* message, UBool condition, UBool quiet=FALSE);
+
+    class AssertMsg {
+      public:
+        AssertMsg(const UnicodeString &msg, const char *file, int line);
+        AssertMsg(const char *msg, const char *file, int line);
+        ~AssertMsg();
+        const char *getMsg();
+        const char *getFile() const {return ffile;};
+        int getLine() const {return fline;};
+      private:
+        const UnicodeString *umsg;
+        const char *cmsg;
+        const char *ffile;
+        const int fline;
+        CStr  *fcstr;
+    };
+
+    #define assertFalse(message, ...) _assertFalse(IntlTest::AssertMsg(message, __FILE__, __LINE__), __VA_ARGS__)
+    UBool _assertFalse(AssertMsg msg, UBool condition, UBool quiet=FALSE);
+
+    #define assertTrue(message, ...) _assertTrue(IntlTest::AssertMsg(message, __FILE__, __LINE__), __VA_ARGS__)
+    UBool _assertTrue(AssertMsg message, UBool condition, UBool quiet=FALSE, UBool possibleDataError=FALSE);
+
     /**
      * @param possibleDataError - if TRUE, use dataerrln instead of errcheckln on failure
      * @return TRUE on success, FALSE on failure.
      */
-    UBool assertSuccess(const char* message, UErrorCode ec, UBool possibleDataError=FALSE, const char *file=NULL, int line=0);
+    #define assertUSuccess(message, ...) _assertUSuccess(IntlTest::AssertMsg(message, __FILE__, __LINE__), __VA_ARGS__)
+    UBool _assertUSuccess(AssertMsg message, UErrorCode ec, UBool possibleDataError=FALSE);
+
     UBool assertEquals(const char* message, const UnicodeString& expected,
                        const UnicodeString& actual, UBool possibleDataError=FALSE);
     UBool assertEquals(const char* message, const char* expected,
@@ -307,9 +328,9 @@ public:
     UBool assertEquals(const UnicodeString& message, const Formattable& expected,
                        const Formattable& actual);
 #endif
-    UBool assertTrue(const UnicodeString& message, UBool condition, UBool quiet=FALSE);
-    UBool assertFalse(const UnicodeString& message, UBool condition, UBool quiet=FALSE);
-    UBool assertSuccess(const UnicodeString& message, UErrorCode ec);
+//    UBool assertTrue(const UnicodeString& message, UBool condition, UBool quiet=FALSE);
+//    UBool _assertFalse(const UnicodeString& message, const char *file, int line, UBool condition, UBool quiet=FALSE);
+//    UBool assertSuccess(const UnicodeString& message, UErrorCode ec);
     UBool assertEquals(const UnicodeString& message, const UnicodeString& expected,
                        const UnicodeString& actual, UBool possibleDataError=FALSE);
     UBool assertEquals(const UnicodeString& message, const char* expected,

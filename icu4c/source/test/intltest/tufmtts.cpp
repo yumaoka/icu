@@ -109,9 +109,9 @@ void TimeUnitTest::testBasic() {
         Locale loc(locales[locIndex]);
         TimeUnitFormat** formats = new TimeUnitFormat*[2];
         formats[UTMUTFMT_FULL_STYLE] = new TimeUnitFormat(loc, status);
-        if (!assertSuccess("TimeUnitFormat(full)", status, TRUE)) return;
+        if (!assertUSuccess("TimeUnitFormat(full)", status, TRUE)) return;
         formats[UTMUTFMT_ABBREVIATED_STYLE] = new TimeUnitFormat(loc, UTMUTFMT_ABBREVIATED_STYLE, status);
-        if (!assertSuccess("TimeUnitFormat(short)", status)) return;
+        if (!assertUSuccess("TimeUnitFormat(short)", status)) return;
 #ifdef TUFMTTS_DEBUG
         std::cout << "locale: " << locales[locIndex] << "\n";
 #endif
@@ -130,12 +130,12 @@ void TimeUnitTest::testBasic() {
                 std::cout << "number: " << tests[i] << "\n";
 #endif
                 TimeUnitAmount* source = new TimeUnitAmount(tests[i], j, status);
-                if (!assertSuccess("TimeUnitAmount()", status)) return;
+                if (!assertUSuccess("TimeUnitAmount()", status)) return;
                 UnicodeString formatted;
                 Formattable formattable;
                 formattable.adoptObject(source);
                 formatted = ((Format*)formats[style])->format(formattable, formatted, status);
-                if (!assertSuccess("format()", status)) return;
+                if (!assertUSuccess("format()", status)) return;
 #ifdef TUFMTTS_DEBUG
                 char formatResult[1000];
                 formatted.extract(0, formatted.length(), formatResult, "UTF-8");
@@ -143,14 +143,14 @@ void TimeUnitTest::testBasic() {
 #endif
                 Formattable result;
                 ((Format*)formats[style])->parseObject(formatted, result, status);
-                if (!assertSuccess("parseObject()", status)) return;
+                if (!assertUSuccess("parseObject()", status)) return;
                 if (!tmaEqual(*((TimeUnitAmount *)result.getObject()), *((TimeUnitAmount *) formattable.getObject()))) {
                     dataerrln("No round trip: ");
                 }
                 // other style parsing
                 Formattable result_1;
                 ((Format*)formats[1-style])->parseObject(formatted, result_1, status);
-                if (!assertSuccess("parseObject()", status)) return;
+                if (!assertUSuccess("parseObject()", status)) return;
                 if (!tmaEqual(*((TimeUnitAmount *)result_1.getObject()), *((TimeUnitAmount *) formattable.getObject()))) {
                     dataerrln("No round trip: ");
                 }
@@ -169,7 +169,7 @@ void TimeUnitTest::testAPI() {
     UErrorCode status = U_ZERO_ERROR;
 
     TimeUnit* tmunit = TimeUnit::createInstance(TimeUnit::UTIMEUNIT_YEAR, status);
-    if (!assertSuccess("TimeUnit::createInstance", status)) return;
+    if (!assertUSuccess("TimeUnit::createInstance", status)) return;
 
     TimeUnit* another = (TimeUnit*)tmunit->clone();
     TimeUnit third(*tmunit);
@@ -194,13 +194,13 @@ void TimeUnitTest::testAPI() {
     ptrs[TimeUnit::UTIMEUNIT_HOUR] = MeasureUnit::createHour(status);
     ptrs[TimeUnit::UTIMEUNIT_MINUTE] = MeasureUnit::createMinute(status);
     ptrs[TimeUnit::UTIMEUNIT_SECOND] = MeasureUnit::createSecond(status);
-    if (!assertSuccess("TimeUnit::createInstance", status)) return;
+    if (!assertUSuccess("TimeUnit::createInstance", status)) return;
 
     for (TimeUnit::UTimeUnitFields j = TimeUnit::UTIMEUNIT_YEAR; 
             j < TimeUnit::UTIMEUNIT_FIELD_COUNT; 
             j = (TimeUnit::UTimeUnitFields)(j+1)) {
         MeasureUnit *ptr = TimeUnit::createInstance(j, status);
-        if (!assertSuccess("TimeUnit::createInstance", status)) return;
+        if (!assertUSuccess("TimeUnit::createInstance", status)) return;
         // We have to convert *ptr to a MeasureUnit or else == will fail over
         // differing types (TimeUnit vs. MeasureUnit).
         assertTrue(
@@ -221,21 +221,21 @@ void TimeUnitTest::testAPI() {
 
     Formattable formattable((int32_t)2);
     TimeUnitAmount tma_long(formattable, TimeUnit::UTIMEUNIT_DAY, status);
-    if (!assertSuccess("TimeUnitAmount(formattable...)", status)) return;
+    if (!assertUSuccess("TimeUnitAmount(formattable...)", status)) return;
 
     formattable.setDouble(2);
     TimeUnitAmount tma_double(formattable, TimeUnit::UTIMEUNIT_DAY, status);
-    if (!assertSuccess("TimeUnitAmount(formattable...)", status)) return;
+    if (!assertUSuccess("TimeUnitAmount(formattable...)", status)) return;
 
     formattable.setDouble(3);
     TimeUnitAmount tma_double_3(formattable, TimeUnit::UTIMEUNIT_DAY, status);
-    if (!assertSuccess("TimeUnitAmount(formattable...)", status)) return;
+    if (!assertUSuccess("TimeUnitAmount(formattable...)", status)) return;
 
     TimeUnitAmount tma(2, TimeUnit::UTIMEUNIT_DAY, status);
-    if (!assertSuccess("TimeUnitAmount(number...)", status)) return;
+    if (!assertUSuccess("TimeUnitAmount(number...)", status)) return;
 
     TimeUnitAmount tma_h(2, TimeUnit::UTIMEUNIT_HOUR, status);
-    if (!assertSuccess("TimeUnitAmount(number...)", status)) return;
+    if (!assertUSuccess("TimeUnitAmount(number...)", status)) return;
 
     TimeUnitAmount second(tma);
     TimeUnitAmount third_tma = tma;
@@ -254,9 +254,9 @@ void TimeUnitTest::testAPI() {
     //================= TimeUnitFormat =================
     //
     TimeUnitFormat* tmf_en = new TimeUnitFormat(Locale("en"), status);
-    if (!assertSuccess("TimeUnitFormat(en...)", status, TRUE)) return;
+    if (!assertUSuccess("TimeUnitFormat(en...)", status, TRUE)) return;
     TimeUnitFormat tmf_fr(Locale("fr"), status);
-    if (!assertSuccess("TimeUnitFormat(fr...)", status)) return;
+    if (!assertUSuccess("TimeUnitFormat(fr...)", status)) return;
 
     assertTrue("TimeUnitFormat: en and fr diff", (*tmf_en != tmf_fr));
 
@@ -271,29 +271,29 @@ void TimeUnitTest::testAPI() {
     delete tmf_clone;
 
     tmf_en->setLocale(Locale("fr"), status);
-    if (!assertSuccess("setLocale(fr...)", status)) return;
+    if (!assertUSuccess("setLocale(fr...)", status)) return;
 
     NumberFormat* numberFmt = NumberFormat::createInstance(
                                  Locale("fr"), status);
-    if (!assertSuccess("NumberFormat::createInstance()", status)) return;
+    if (!assertUSuccess("NumberFormat::createInstance()", status)) return;
     tmf_en->setNumberFormat(*numberFmt, status);
-    if (!assertSuccess("setNumberFormat(en...)", status)) return;
+    if (!assertUSuccess("setNumberFormat(en...)", status)) return;
     assertTrue("TimeUnitFormat: setLocale", (*tmf_en == tmf_fr));
 
     delete tmf_en;
 
     TimeUnitFormat* en_long = new TimeUnitFormat(Locale("en"), UTMUTFMT_FULL_STYLE, status);
-    if (!assertSuccess("TimeUnitFormat(en...)", status)) return;
+    if (!assertUSuccess("TimeUnitFormat(en...)", status)) return;
     delete en_long;
 
     TimeUnitFormat* en_short = new TimeUnitFormat(Locale("en"), UTMUTFMT_ABBREVIATED_STYLE, status);
-    if (!assertSuccess("TimeUnitFormat(en...)", status)) return;
+    if (!assertUSuccess("TimeUnitFormat(en...)", status)) return;
     delete en_short;
 
     TimeUnitFormat* format = new TimeUnitFormat(status);
     format->setLocale(Locale("zh"), status);
     format->setNumberFormat(*numberFmt, status);
-    if (!assertSuccess("TimeUnitFormat(en...)", status)) return;
+    if (!assertUSuccess("TimeUnitFormat(en...)", status)) return;
     delete numberFmt;
     delete format;
 }
@@ -409,7 +409,7 @@ void TimeUnitTest::testGreekWithFallback() {
 
                     fmt.adoptObject(tamt);
                     str = ((Format *)tfmt)->format(fmt, str, status);
-                    if (!assertSuccess("formatting relative time failed", status)) {
+                    if (!assertUSuccess("formatting relative time failed", status)) {
                         delete tfmt;
 #ifdef TUFMTTS_DEBUG
                         std::cout <<  "Failed to format" << "\n";
@@ -445,11 +445,11 @@ void TimeUnitTest::testGreekWithSanitization() {
     UErrorCode status = U_ZERO_ERROR;
     Locale elLoc("el");
     NumberFormat* numberFmt = NumberFormat::createInstance(Locale("el"), status);
-    if (!assertSuccess("NumberFormat::createInstance for el locale", status, TRUE)) return;
+    if (!assertUSuccess("NumberFormat::createInstance for el locale", status, TRUE)) return;
     numberFmt->setMaximumFractionDigits(1);
 
     TimeUnitFormat* timeUnitFormat = new TimeUnitFormat(elLoc, status);
-    if (!assertSuccess("TimeUnitFormat::TimeUnitFormat for el locale", status)) return;
+    if (!assertUSuccess("TimeUnitFormat::TimeUnitFormat for el locale", status)) return;
 
     timeUnitFormat->setNumberFormat(*numberFmt, status);
 
@@ -523,7 +523,7 @@ void TimeUnitTest::TestBritishShortHourFallback() {
     TimeUnitFormat formatter(en_GB, UTMUTFMT_ABBREVIATED_STYLE, status);
     UnicodeString result;
     formatter.format(oneHour, result, status);
-    assertSuccess("TestBritishShortHourFallback()", status);
+    assertUSuccess("TestBritishShortHourFallback()", status);
     assertEquals("TestBritishShortHourFallback()", UNICODE_STRING_SIMPLE("1 hr"), result, TRUE);
 }
 

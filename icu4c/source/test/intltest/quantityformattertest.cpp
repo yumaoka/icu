@@ -144,7 +144,7 @@ void QuantityFormatterTest::TestBasic() {
     fmt.reset();
     assertFalse("isValid after reset", fmt.isValid());
 #endif
-    assertSuccess("", status);
+    assertUSuccess("", status);
 }
 
 extern IntlTest *createQuantityFormatterTest() {

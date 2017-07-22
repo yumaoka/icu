@@ -937,7 +937,7 @@ void TimeZoneRegressionTest::Test4176686() {
     }
     fmt1->setTimeZone(*z1); // Format uses standard zone
     DateFormat* fmt2 = new SimpleDateFormat(UnicodeString("z"), status);
-    if(!assertSuccess("trying to construct", status))return;
+    if(!assertUSuccess("trying to construct", status))return;
     fmt2->setTimeZone(*z2); // Format uses DST zone
     Calendar* tempcal = Calendar::createInstance(status);
     tempcal->clear();

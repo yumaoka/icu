@@ -26,14 +26,14 @@ void DataDrivenNumberFormatTestSuite::run(const char *fileName, UBool runAllTest
         delete fPreviousFormatters[i];
         fPreviousFormatters[i] = newFormatter(status);
     }
-    if (!assertSuccess("Can't create previous formatters", status)) {
+    if (!assertUSuccess("Can't create previous formatters", status)) {
         return;
     }
     CharString path(getSourceTestData(status), status);
     path.appendPathPart(fileName, status);
     const char *codePage = "UTF-8";
     LocalUCHARBUFPointer f(ucbuf_open(path.data(), &codePage, TRUE, FALSE, &status));
-    if (!assertSuccess("Can't open data file", status)) {
+    if (!assertUSuccess("Can't open data file", status)) {
         return;
     }
     UnicodeString columnValues[kNumberFormatTestTupleFieldCount];

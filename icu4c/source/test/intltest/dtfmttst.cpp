@@ -2035,16 +2035,16 @@ void DateFormatTest::expect(const char** data, int32_t data_length,
             const char* datestr = data[i++];
             const char* string = data[i++];
             UDate date = ref.parse(ctou(datestr), ec);
-            if (!assertSuccess("parse", ec)) return;
+            if (!assertUSuccess("parse", ec)) return;
             assertEquals((UnicodeString)"\"" + currentPat + "\".format(" + datestr + ")",
                          ctou(string),
                          fmt.format(date, str.remove()));
             // 'p'
             datestr = data[i++];
             date = ref.parse(ctou(datestr), ec);
-            if (!assertSuccess("parse", ec)) return;
+            if (!assertUSuccess("parse", ec)) return;
             UDate parsedate = fmt.parse(ctou(string), ec);
-            if (assertSuccess((UnicodeString)"\"" + currentPat + "\".parse(" + string + ")", ec)) {
+            if (assertUSuccess((UnicodeString)"\"" + currentPat + "\".parse(" + string + ")", ec)) {
                 assertEquals((UnicodeString)"\"" + currentPat + "\".parse(" + string + ")",
                              univ.format(date, str.remove()),
                              univ.format(parsedate, str2.remove()));
@@ -2056,9 +2056,9 @@ void DateFormatTest::expect(const char** data, int32_t data_length,
             const char* string = data[i++];
             const char* datestr = data[i++];
             UDate date = ref.parse(ctou(datestr), ec);
-            if (!assertSuccess("parse", ec)) return;
+            if (!assertUSuccess("parse", ec)) return;
             UDate parsedate = fmt.parse(ctou(string), ec);
-            if (assertSuccess((UnicodeString)"\"" + currentPat + "\".parse(" + string + ")", ec)) {
+            if (assertUSuccess((UnicodeString)"\"" + currentPat + "\".parse(" + string + ")", ec)) {
                 assertEquals((UnicodeString)"\"" + currentPat + "\".parse(" + string + ")",
                              univ.format(date, str.remove()),
                              univ.format(parsedate, str2.remove()));
@@ -2074,13 +2074,13 @@ void DateFormatTest::expect(const char** data, int32_t data_length,
             const char* datestr  = data[i++];
             const char* string   = data[i++];
             UDate date = ref.parse(ctou(datestr), ec);
-            if (!assertSuccess("parse", ec)) return;
+            if (!assertUSuccess("parse", ec)) return;
             assertEquals((UnicodeString)"\"" + currentPat + "\".format(" + datestr + ")",
                          ctou(string),
                          fmt.format(date, str.remove()));
 
             UDate parsedate = fmt.parse(string, ec);
-            if (assertSuccess((UnicodeString)"\"" + currentPat + "\".parse(" + string + ")", ec)) {
+            if (assertUSuccess((UnicodeString)"\"" + currentPat + "\".parse(" + string + ")", ec)) {
                 assertEquals((UnicodeString)"\"" + currentPat + "\".parse(" + string + ")",
                              univ.format(date, str.remove()),
                              univ.format(parsedate, str2.remove()));
@@ -2136,7 +2136,7 @@ void DateFormatTest::expectFormat(const char** data, int32_t data_length,
         const char* datestr = data[i++];
         const char* string = data[i++];
         UDate date = ref.parse(ctou(datestr), ec);
-        if (!assertSuccess("parse", ec)) return;
+        if (!assertUSuccess("parse", ec)) return;
         assertEquals((UnicodeString)"\"" + currentPat + "\".format(" + datestr + ")",
                         ctou(string),
                         fmt.format(date, str.remove()));
@@ -4720,22 +4720,22 @@ void DateFormatTest::TestNumberFormatOverride() {
 
     LocalPointer<SimpleDateFormat> fmt;
     fmt.adoptInsteadAndCheckErrorCode(new SimpleDateFormat((UnicodeString)"MM d", status), status);
-    if (!assertSuccess("SimpleDateFormat with pattern MM d", status)) {
+    if (!assertUSuccess("SimpleDateFormat with pattern MM d", status)) {
         return;
     }
 
 
     for(int i=0; i<3; i++){
         NumberFormat* check_nf = NumberFormat::createInstance(Locale("en_US"), status);
-        assertSuccess("NumberFormat en_US", status);
+        assertUSuccess("NumberFormat en_US", status);
         fmt->adoptNumberFormat(fields, check_nf, status);
-        assertSuccess("adoptNumberFormat check_nf", status);
+        assertUSuccess("adoptNumberFormat check_nf", status);
 
         const NumberFormat* get_nf = fmt->getNumberFormatForField((UChar)0x004D /*'M'*/);
         if (get_nf != check_nf) errln("FAIL: getter and setter do not work");
     }
     NumberFormat* check_nf = NumberFormat::createInstance(Locale("en_US"), status);
-    assertSuccess("NumberFormat en_US", status);
+    assertUSuccess("NumberFormat en_US", status);
     fmt->adoptNumberFormat(check_nf); // make sure using the same NF will not crash
 
     const char * DATA [][2] = {
@@ -4754,19 +4754,19 @@ void DateFormatTest::TestNumberFormatOverride() {
 
         LocalPointer<SimpleDateFormat> fmt;
         fmt.adoptInsteadAndCheckErrorCode(new SimpleDateFormat((UnicodeString)"MM d", status), status);
-        assertSuccess("SimpleDateFormat with pattern MM d", status);
+        assertUSuccess("SimpleDateFormat with pattern MM d", status);
         NumberFormat* overrideNF = NumberFormat::createInstance(Locale::createFromName("zh@numbers=hanidays"),status);
-        assertSuccess("NumberFormat zh@numbers=hanidays", status);
+        assertUSuccess("NumberFormat zh@numbers=hanidays", status);
 
         if (fields == (UnicodeString) "") { // use the one w/o fields
             fmt->adoptNumberFormat(overrideNF);
         } else if (fields == (UnicodeString) "mixed") { // set 1 field at first but then full override, both(M & d) should be override
             NumberFormat* singleOverrideNF = NumberFormat::createInstance(Locale::createFromName("en@numbers=hebr"),status);
-            assertSuccess("NumberFormat en@numbers=hebr", status);
+            assertUSuccess("NumberFormat en@numbers=hebr", status);
 
             fields = (UnicodeString) "M";
             fmt->adoptNumberFormat(fields, singleOverrideNF, status);
-            assertSuccess("adoptNumberFormat singleOverrideNF", status);
+            assertUSuccess("adoptNumberFormat singleOverrideNF", status);
 
             fmt->adoptNumberFormat(overrideNF);
         } else if (fields == (UnicodeString) "Mo"){ // o is invlid field
@@ -4777,7 +4777,7 @@ void DateFormatTest::TestNumberFormatOverride() {
             }
         } else {
             fmt->adoptNumberFormat(fields, overrideNF, status);
-            assertSuccess("adoptNumberFormat overrideNF", status);
+            assertUSuccess("adoptNumberFormat overrideNF", status);
         }
 
         UnicodeString result;
@@ -4795,7 +4795,7 @@ void DateFormatTest::TestCreateInstanceForSkeleton() {
     UErrorCode status = U_ZERO_ERROR;
     LocalPointer<DateFormat> fmt(DateFormat::createInstanceForSkeleton(
             "yMMMMd", "en", status));
-    if (!assertSuccess("Create with pattern yMMMMd", status)) {
+    if (!assertUSuccess("Create with pattern yMMMMd", status)) {
         return;
     }
     UnicodeString result;
@@ -4804,7 +4804,7 @@ void DateFormatTest::TestCreateInstanceForSkeleton() {
     assertEquals("format yMMMMd", "May 25, 1998", result);
     fmt.adoptInstead(DateFormat::createInstanceForSkeleton(
             "yMd", "en", status));
-    if (!assertSuccess("Create with pattern yMd", status)) {
+    if (!assertUSuccess("Create with pattern yMd", status)) {
         return;
     }
     result.remove();
@@ -4819,7 +4819,7 @@ void DateFormatTest::TestCreateInstanceForSkeletonDefault() {
     LocalPointer<DateFormat> fmt(DateFormat::createInstanceForSkeleton(
             "yMMMd", status));
     Locale::setDefault(savedLocale, status);
-    if (!assertSuccess("Create with pattern yMMMd", status)) {
+    if (!assertUSuccess("Create with pattern yMMMd", status)) {
         return;
     }
     UnicodeString result;
@@ -4836,7 +4836,7 @@ void DateFormatTest::TestCreateInstanceForSkeletonWithCalendar() {
                             TimeZone::createTimeZone("GMT-3:00"),
                             status),
                     "yMdHm", "en", status));
-    if (!assertSuccess("Create with pattern yMMMMd", status)) {
+    if (!assertUSuccess("Create with pattern yMMMMd", status)) {
         return;
     }
     UnicodeString result;
@@ -4845,7 +4845,7 @@ void DateFormatTest::TestCreateInstanceForSkeletonWithCalendar() {
     LocalPointer<Calendar> cal(Calendar::createInstance(
         TimeZone::createTimeZone("GMT-7:00"),
         status));
-    if (!assertSuccess("Creating GMT-7 time zone failed", status)) {
+    if (!assertUSuccess("Creating GMT-7 time zone failed", status)) {
         return;
     }
     cal->clear();
@@ -4854,7 +4854,7 @@ void DateFormatTest::TestCreateInstanceForSkeletonWithCalendar() {
     // date format time zone should be 4 hours ahead.
     fmt->format(cal->getTime(status), result, pos);
     assertEquals("format yMdHm", "5/25/1998, 04:00", result);
-    assertSuccess("", status);
+    assertUSuccess("", status);
 }
 
 void DateFormatTest::TestDFSCreateForLocaleNonGregorianLocale() {
@@ -4862,7 +4862,7 @@ void DateFormatTest::TestDFSCreateForLocaleNonGregorianLocale() {
     Locale fa("fa");
     LocalPointer<DateFormatSymbols> sym(
             DateFormatSymbols::createForLocale(fa, status));
-    if (!assertSuccess("", status)) {
+    if (!assertUSuccess("", status)) {
         return;
     }
 
@@ -4880,7 +4880,7 @@ void DateFormatTest::TestDFSCreateForLocaleWithCalendarInLocale() {
     Locale en_heb("en@calendar=hebrew");
     LocalPointer<DateFormatSymbols> sym(
             DateFormatSymbols::createForLocale(en_heb, status));
-    if (!assertSuccess("", status)) {
+    if (!assertUSuccess("", status)) {
         return;
     }
 
@@ -4900,11 +4900,11 @@ void DateFormatTest::TestChangeCalendar() {
     Locale en_heb("en@calendar=hebrew");
     LocalPointer<DateFormat> fmt(
             DateFormat::createInstanceForSkeleton("yMMMd", en, status));
-    if (!assertSuccess("", status)) {
+    if (!assertUSuccess("", status)) {
         return;
     }
     fmt->adoptCalendar(Calendar::createInstance(en_heb, status));
-    if (!assertSuccess("", status)) {
+    if (!assertUSuccess("", status)) {
         return;
     }
     UnicodeString result;
@@ -4931,7 +4931,7 @@ void DateFormatTest::TestPatternFromSkeleton() {
         LocalPointer<DateFormat> fmt(
                 DateFormat::createInstanceForSkeleton(
                         TESTDATA[i].skeleton, TESTDATA[i].locale, status));
-        if (!assertSuccess("createInstanceForSkeleton", status)) {
+        if (!assertUSuccess("createInstanceForSkeleton", status)) {
             return;
         }
         UnicodeString pattern;
