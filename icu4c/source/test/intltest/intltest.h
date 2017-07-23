@@ -13,9 +13,14 @@
 #ifndef _INTLTEST
 #define _INTLTEST
 
-// The following includes utypes.h, uobject.h and unistr.h
+#include <string>
+#include <typeinfo>
+
+#include "unicode/utypes.h"
+
 #include "unicode/fmtable.h"
 #include "unicode/testlog.h"
+#include "unicode/unistr.h"
 
 #include "cstr.h"
 
@@ -300,6 +305,62 @@ public:
         CStr  *fcstr;
     };
 
+    template<class T>
+    static std::string toString(const T& value) {
+        std::string result;
+        result.append("[value not displayable] (");
+        result.append(typeid(value).name()).append(")");
+        return result;
+    }
+
+
+    class AssertWrapperBase {
+      protected:
+        AssertWrapperBase(const UnicodeString &message, const char *file, int line, UBool possibleDataError) :
+                fMessage(), fFile(file), fLine(line), fPossibleDataError(possibleDataError) {
+            fMessage.append(CStr(message)());
+        }
+
+        AssertWrapperBase(const char *message, const char *file, int line, UBool possibleDataError) :
+                fMessage(), fFile(file), fLine(line), fPossibleDataError(possibleDataError) {
+            fMessage.append(message);
+        }
+
+        virtual UBool doAssert();
+        virtual std::string getExpectedString() = 0;
+        virtual std::string getActualString() = 0;
+
+        std::string fMessage;
+        const char *fFile;
+        int         fLine;
+        UBool       fPossibleDataError;
+        bool        fSuccess;
+    };
+
+    template <class T1, class T2>
+    class AssertWrapper : public AssertWrapperBase {
+      public:
+        AssertWrapper(const UnicodeString &message, const char *file, int line,
+                      const T1 &expected, const T2 &actual, UBool possibleDataError=FALSE) :
+                AssertWrapperBase(message, file, line, possibleDataError), 
+                fExpected(expected), fActual(actual) {
+            fSuccess = (expected == actual);
+        }
+        AssertWrapper(const char * message, const char *file, int line,
+                      const T1 &expected, const T2 &actual, UBool possibleDataError=FALSE) :
+                AssertWrapperBase(message, file, line, possibleDataError), 
+                fExpected(expected), fActual(actual) {
+            fSuccess = (expected == actual);
+        }
+        std::string getExpectedString() override { return toString(fExpected); };
+        std::string getActualString()   override { return toString(fActual); };
+
+      private:
+        const T1 &fExpected;
+        const T2 &fActual;
+    };
+
+
     #define assertFalse(message, ...) _assertFalse(IntlTest::AssertMsg(message, __FILE__, __LINE__), __VA_ARGS__)
     UBool _assertFalse(AssertMsg msg, UBool condition, UBool quiet=FALSE);
 
@@ -313,8 +374,11 @@ public:
     #define assertUSuccess(message, ...) _assertUSuccess(IntlTest::AssertMsg(message, __FILE__, __LINE__), __VA_ARGS__)
     UBool _assertUSuccess(AssertMsg message, UErrorCode ec, UBool possibleDataError=FALSE);
 
-    UBool assertEquals(const char* message, const UnicodeString& expected,
-                       const UnicodeString& actual, UBool possibleDataError=FALSE);
+    #define assertEquals(message, ...) \
+        IntlTest::AssertWrapper(message, __FILE__, __LINE__, __VA_ARGS__).doAssert()
+
+
+#if 0
     UBool assertEquals(const char* message, const char* expected,
                        const char* actual);
     UBool assertEquals(const char* message, UBool expected,
@@ -338,6 +402,8 @@ public:
     UBool assertEquals(const UnicodeString& message, UBool expected, UBool actual);
     UBool assertEquals(const UnicodeString& message, int32_t expected, int32_t actual);
     UBool assertEquals(const UnicodeString& message, int64_t expected, int64_t actual);
+#endif
+
 
     virtual void runIndexedTest( int32_t index, UBool exec, const char* &name, char* par = NULL ); // overide !
 

@@ -1892,6 +1892,8 @@ UBool IntlTest::_assertUSuccess(IntlTest::AssertMsg message, UErrorCode ec, UBoo
     return TRUE;
 }
 
+
+#if 0
 UBool IntlTest::assertEquals(const char* message,
                              const UnicodeString& expected,
                              const UnicodeString& actual,
@@ -2064,6 +2066,7 @@ UBool IntlTest::assertEquals(const UnicodeString& message,
     return assertEquals(CStr(message)(), expected, actual);
 }
 #endif
+#endif  // kill assertEquals variants.
 
 void IntlTest::setProperty(const char* propline) {
     if (numProps < kMaxProps) {
