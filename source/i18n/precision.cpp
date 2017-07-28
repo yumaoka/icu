@@ -239,7 +239,7 @@ FixedPrecision::initVisibleDigits(
         }
     }
     // Try fast path
-    if (n >= 0 && initVisibleDigits(scaled, -n, digits, status)) {
+    if (n >= 0 && initVisibleDigits(static_cast<int64_t>(scaled), -n, digits, status)) {
         digits.fAbsDoubleValue = fabs(value);
         digits.fAbsDoubleValueSet = U_SUCCESS(status) && !digits.isOverMaxDigits();
         // Adjust for negative 0 becuase when we cast to an int64,
