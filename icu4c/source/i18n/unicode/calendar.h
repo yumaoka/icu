@@ -1741,15 +1741,7 @@ protected:
      * reflects local zone wall time.
      * @internal
      */
-    int32_t computeMillisInDay();
-
-    /**
-     * Compute the milliseconds in the day from the fields.  This is a
-     * value typically from 0 to 23:59:59.999 but can accomodate larger
-     * values.  This value reflects local zone wall time.
-     * @internal
-     */
-    double computeMillisInDayLong();
+    double computeMillisInDay();
 
     /**
      * This method can assume EXTENDED_YEAR has been set.
@@ -1760,18 +1752,7 @@ protected:
      *          when this function fails.
      * @internal
      */
-    int32_t computeZoneOffset(double millis, int32_t millisInDay, UErrorCode &ec);
-
-    /**
-     * This method can assume EXTENDED_YEAR has been set.
-     * @param millis milliseconds of the date fields
-     * @param millisInDay milliseconds of the time fields
-     * @param ec Output param set to failure code on function return
-     *          when this function fails.
-     * @internal
-     */
     int32_t computeZoneOffset(double millis, double millisInDay, UErrorCode &ec);
-
 
     /**
      * Determine the best stamp in a range.

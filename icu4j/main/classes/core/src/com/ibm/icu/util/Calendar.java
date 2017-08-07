@@ -1301,6 +1301,11 @@ public abstract class Calendar implements Serializable, Cloneable, Comparable<Ca
      */
     protected static final Date MAX_DATE = new Date(MAX_MILLIS);
 
+    /**
+     * The maximum supported hours for millisecond calculations
+     */
+    private static final int MAX_HOURS = 548;
+
     // Internal notes:
     // Calendar contains two kinds of time representations: current "time" in
     // milliseconds, and a set of time "fields" representing the current time.
@@ -5413,10 +5418,10 @@ public abstract class Calendar implements Serializable, Cloneable, Comparable<Ca
             hour = Math.max(hour, Math.abs(internalGet(HOUR)));
             // if hour field value is greater than 596, then the
             // milliseconds value exceeds integer range, hence
-            // using a conservative estimate of 24, we invoke
+            // using a conservative estimate of 548, we invoke
             // the long return version of the compute millis method if
-            // the hour value exceeds 24
-            if (hour > 24) {
+            // the hour value exceeds 548
+            if (hour > MAX_HOURS) {
                 millisInDay = computeMillisInDayLong();
             } else {
                 millisInDay = computeMillisInDay();
@@ -5705,47 +5710,7 @@ public abstract class Calendar implements Serializable, Cloneable, Comparable<Ca
      */
     @Deprecated
     protected int computeZoneOffset(long millis, int millisInDay) {
-        int[] offsets = new int[2];
-        long wall = millis + millisInDay;
-        if (zone instanceof BasicTimeZone) {
-            int duplicatedTimeOpt = (repeatedWallTime == WALLTIME_FIRST) ? BasicTimeZone.LOCAL_FORMER : BasicTimeZone.LOCAL_LATTER;
-            int nonExistingTimeOpt = (skippedWallTime == WALLTIME_FIRST) ? BasicTimeZone.LOCAL_LATTER : BasicTimeZone.LOCAL_FORMER;
-            ((BasicTimeZone)zone).getOffsetFromLocal(wall, nonExistingTimeOpt, duplicatedTimeOpt, offsets);
-        } else {
-            // By default, TimeZone#getOffset behaves WALLTIME_LAST for both.
-            zone.getOffset(wall, true, offsets);
-
-            boolean sawRecentNegativeShift = false;
-            if (repeatedWallTime == WALLTIME_FIRST) {
-                // Check if the given wall time falls into repeated time range
-                long tgmt = wall - (offsets[0] + offsets[1]);
-
-                // Any negative zone transition within last 6 hours?
-                // Note: The maximum historic negative zone transition is -3 hours in the tz database.
-                // 6 hour window would be sufficient for this purpose.
-                int offsetBefore6 = zone.getOffset(tgmt - 6*60*60*1000);
-                int offsetDelta = (offsets[0] + offsets[1]) - offsetBefore6;
-
-                assert offsetDelta > -6*60*60*1000 : offsetDelta;
-                if (offsetDelta < 0) {
-                    sawRecentNegativeShift = true;
-                    // Negative shift within last 6 hours. When WALLTIME_FIRST is used and the given wall time falls
-                    // into the repeated time range, use offsets before the transition.
-                    // Note: If it does not fall into the repeated time range, offsets remain unchanged below.
-                    zone.getOffset(wall + offsetDelta, true, offsets);
-                }
-            }
-            if (!sawRecentNegativeShift && skippedWallTime == WALLTIME_FIRST) {
-                // When skipped wall time option is WALLTIME_FIRST,
-                // recalculate offsets from the resolved time (non-wall).
-                // When the given wall time falls into skipped wall time,
-                // the offsets will be based on the zone offsets AFTER
-                // the transition (which means, earliest possibe interpretation).
-                long tgmt = wall - (offsets[0] + offsets[1]);
-                zone.getOffset(tgmt, false, offsets);
-            }
-        }
-        return offsets[0] + offsets[1];
+        return computeZoneOffset(millis, (long) millisInDay);
     }
 
     /**

@@ -2995,11 +2995,7 @@ void Calendar::computeTime(UErrorCode& status) {
           hour = hour*-1;
         }
         hour = hourOfDay > hour ? hourOfDay : hour;
-        if (hour < 24) {
-          millisInDay = computeMillisInDay();
-        } else {
-          millisInDay = computeMillisInDayLong();
-        }
+        millisInDay = computeMillisInDay();
     }
 
     UDate t = 0;
@@ -3107,50 +3103,7 @@ UBool Calendar::getImmediatePreviousZoneTransition(UDate base, UDate *transition
 * range, in which case it can be an arbitrary value.  This value
 * reflects local zone wall time.
 */
-int32_t Calendar::computeMillisInDay() {
-  // Do the time portion of the conversion.
-
-    int32_t millisInDay = 0;
-
-    // Find the best set of fields specifying the time of day.  There
-    // are only two possibilities here; the HOUR_OF_DAY or the
-    // AM_PM and the HOUR.
-    int32_t hourOfDayStamp = fStamp[UCAL_HOUR_OF_DAY];
-    int32_t hourStamp = (fStamp[UCAL_HOUR] > fStamp[UCAL_AM_PM])?fStamp[UCAL_HOUR]:fStamp[UCAL_AM_PM];
-    int32_t bestStamp = (hourStamp > hourOfDayStamp) ? hourStamp : hourOfDayStamp;
-
-    // Hours
-    if (bestStamp != kUnset) {
-        if (bestStamp == hourOfDayStamp) {
-            // Don't normalize here; let overflow bump into the next period.
-            // This is consistent with how we handle other fields.
-            millisInDay += internalGet(UCAL_HOUR_OF_DAY);
-        } else {
-            // Don't normalize here; let overflow bump into the next period.
-            // This is consistent with how we handle other fields.
-            millisInDay += internalGet(UCAL_HOUR);
-            millisInDay += 12 * internalGet(UCAL_AM_PM); // Default works for unset AM_PM
-        }
-    }
-
-    // We use the fact that unset == 0; we start with millisInDay
-    // == HOUR_OF_DAY.
-    millisInDay *= 60;
-    millisInDay += internalGet(UCAL_MINUTE); // now have minutes
-    millisInDay *= 60;
-    millisInDay += internalGet(UCAL_SECOND); // now have seconds
-    millisInDay *= 1000;
-    millisInDay += internalGet(UCAL_MILLISECOND); // now have millis
-
-    return millisInDay;
-}
-
-/**
-* Compute the milliseconds in the day from the fields.  This is a
-* value typically from 0 to 23:59:59.999 inclusive.  This value
-* reflects local zone wall time.
-*/
-double Calendar::computeMillisInDayLong() {
+double Calendar::computeMillisInDay() {
   // Do the time portion of the conversion.
 
     double millisInDay = 0;
@@ -3194,59 +3147,6 @@ double Calendar::computeMillisInDayLong() {
 * @param millisInDay milliseconds of the time fields; may be out
 * or range.
 * @stable ICU 2.0
-* @deprecated
-*/
-int32_t Calendar::computeZoneOffset(double millis, int32_t millisInDay, UErrorCode &ec) {
-    int32_t rawOffset, dstOffset;
-    UDate wall = millis + millisInDay;
-    BasicTimeZone* btz = getBasicTimeZone();
-    if (btz) {
-        int duplicatedTimeOpt = (fRepeatedWallTime == UCAL_WALLTIME_FIRST) ? BasicTimeZone::kFormer : BasicTimeZone::kLatter;
-        int nonExistingTimeOpt = (fSkippedWallTime == UCAL_WALLTIME_FIRST) ? BasicTimeZone::kLatter : BasicTimeZone::kFormer;
-        btz->getOffsetFromLocal(wall, nonExistingTimeOpt, duplicatedTimeOpt, rawOffset, dstOffset, ec);
-    } else {
-        const TimeZone& tz = getTimeZone();
-        // By default, TimeZone::getOffset behaves UCAL_WALLTIME_LAST for both.
-        tz.getOffset(wall, TRUE, rawOffset, dstOffset, ec);
-
-        UBool sawRecentNegativeShift = FALSE;
-        if (fRepeatedWallTime == UCAL_WALLTIME_FIRST) {
-            // Check if the given wall time falls into repeated time range
-            UDate tgmt = wall - (rawOffset + dstOffset);
-
-            // Any negative zone transition within last 6 hours?
-            // Note: The maximum historic negative zone transition is -3 hours in the tz database.
-            // 6 hour window would be sufficient for this purpose.
-            int32_t tmpRaw, tmpDst;
-            tz.getOffset(tgmt - 6*60*60*1000, FALSE, tmpRaw, tmpDst, ec);
-            int32_t offsetDelta = (rawOffset + dstOffset) - (tmpRaw + tmpDst);
-
-            U_ASSERT(offsetDelta < -6*60*60*1000);
-            if (offsetDelta < 0) {
-                sawRecentNegativeShift = TRUE;
-                // Negative shift within last 6 hours. When UCAL_WALLTIME_FIRST is used and the given wall time falls
-                // into the repeated time range, use offsets before the transition.
-                // Note: If it does not fall into the repeated time range, offsets remain unchanged below.
-                tz.getOffset(wall + offsetDelta, TRUE, rawOffset, dstOffset, ec);
-            }
-        }
-        if (!sawRecentNegativeShift && fSkippedWallTime == UCAL_WALLTIME_FIRST) {
-            // When skipped wall time option is WALLTIME_FIRST,
-            // recalculate offsets from the resolved time (non-wall).
-            // When the given wall time falls into skipped wall time,
-            // the offsets will be based on the zone offsets AFTER
-            // the transition (which means, earliest possibe interpretation).
-            UDate tgmt = wall - (rawOffset + dstOffset);
-            tz.getOffset(tgmt, FALSE, rawOffset, dstOffset, ec);
-        }
-    }
-    return rawOffset + dstOffset;
-}
-
-/**
-* This method can assume EXTENDED_YEAR has been set.
-* @param millis milliseconds of the date fields
-* @param millisInDay milliseconds of the time fields;
 */
 int32_t Calendar::computeZoneOffset(double millis, double millisInDay, UErrorCode &ec) {
     int32_t rawOffset, dstOffset;
