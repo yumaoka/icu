@@ -34,10 +34,12 @@ DISTY_FILE_TGZ=$(DISTY_FILE_DIR)/$(DISTY_PREFIX)-src-$(DISTY_VER)-r$(SVNVER).tgz
 DISTY_FILE_ZIP=$(DISTY_FILE_DIR)/$(DISTY_PREFIX)-src-$(DISTY_VER)-r$(SVNVER).zip
 DISTY_DOC_ZIP=$(DISTY_FILE_DIR)/$(DISTY_PREFIX)-docs-$(DISTY_VER)-r$(SVNVER).zip
 DISTY_DATA_ZIP=$(DISTY_FILE_DIR)/$(DISTY_PREFIX)-data-$(DISTY_VER)-r$(SVNVER).zip
-DISTY_DAT=$(firstword $(wildcard data/out/tmp/icudt$(SO_TARGET_VERSION_MAJOR)*.dat))
+DISTY_DAT:=$(firstword $(wildcard data/out/tmp/icudt$(SO_TARGET_VERSION_MAJOR)*.dat))
 
 DISTY_FILES_SRC=$(DISTY_FILE_TGZ) $(DISTY_FILE_ZIP)
 DISTY_FILES=$(DISTY_FILES_SRC) $(DISTY_DOC_ZIP)
+# colon-equals because we watn to run this once!
+EXCLUDES_FILE:=$(shell mktemp)
 
 $(DISTY_FILE_DIR):
 	$(MKINSTALLDIRS) $(DISTY_FILE_DIR)
@@ -60,8 +62,11 @@ $(DISTY_FILE_TGZ) $(DISTY_FILE_ZIP) $(DISTY_DATA_ZIP):  $(DISTY_DAT) $(DISTY_TMP
 	svnversion $(SVNTOP)
 	-$(RMV) $(DISTY_FILE) $(DISTY_TMP)
 	$(MKINSTALLDIRS) $(DISTY_TMP)
-	echo exporting $(SVNVER)
-	svn export -r $(shell echo $(SVNVER) | tr -d 'a-zA-Z' ) $(SVNURL) "$(DISTY_TMP)/icu"
+	@echo collecting excludes to $(EXCLUDES_FILE)
+	(cd "$(SVNTOP)" ; svn status --no-ignore  | grep '^I' | cut -c2- > "$(EXCLUDES_FILE)" ) 
+	@echo pseudo-exporting $(SVNVER)
+	@#svn export -r $(shell echo $(SVNVER) | tr -d 'a-zA-Z' ) $(SVNURL) "$(DISTY_TMP)/icu"
+	rsync -a --exclude-from="$(EXCLUDES_FILE)" "$(SVNTOP)" "$(DISTY_TMP)/icu"
 	( cd $(DISTY_TMP)/icu/source ; zip -rlq $(DISTY_DATA_ZIP) data )
 	$(MKINSTALLDIRS) $(DISTY_IN)
 	echo DISTY_DAT=$(DISTY_DAT)
