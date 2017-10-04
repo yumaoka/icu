@@ -15,7 +15,7 @@ top_builddir = .
 
 include $(top_builddir)/icudefs.mk
 
-
+DISTY_DIR=dist
 DISTY_TMP=dist/tmp
 DISTY_ICU=$(DISTY_TMP)/icu
 DISTY_DATA=$(DISTY_ICU)/source/data
@@ -49,13 +49,16 @@ $(DISTY_TMP):
 
 $(DISTY_DOC_ZIP):  $(DOCZIP) $(DISTY_FILE_DIR)
 	cp $(DOCZIP) $(DISTY_DOC_ZIP)
+	ln -sf $(DISTY_DOC_ZIP) $(DISTY_FILE_DIR)/icu4c-docs.zip
 
 $(DISTY_DAT): 
 	echo Missing $@
 	/bin/false
 
+# make sure we get the non-lgpl docs
 $(DOCZIP):
-	$(MAKE) -C . srcdir="$(srcdir)" top_srcdir="$(top_srcdir)" builddir=. $@
+	-$(RMV) "$(top_builddir)"/doc
+	"$(MAKE)" -C . srcdir="$(srcdir)" top_srcdir="$(top_srcdir)" builddir=. $@
 
 $(DISTY_FILE_TGZ) $(DISTY_FILE_ZIP) $(DISTY_DATA_ZIP):  $(DISTY_DAT) $(DISTY_TMP)
 	@echo "svnversion of $(SVNTOP) is as follows (if this fails, make sure svn is installed..)"
@@ -76,7 +79,11 @@ $(DISTY_FILE_TGZ) $(DISTY_FILE_ZIP) $(DISTY_DATA_ZIP):  $(DISTY_DAT) $(DISTY_TMP
 	$(RMV) $(DISTY_RMDIR)
 	( cd $(DISTY_TMP)/icu ; python as_is/bomlist.py > as_is/bomlist.txt || rm -f as_is/bomlist.txt )
 	( cd $(DISTY_TMP) ; tar cfpz $(DISTY_FILE_TGZ) icu )
-	ls -l $(DISTY_FILE)
+	ln -sf $(DISTY_FILE_ZIP) $(DISTY_FILE_DIR)/icu4c-src.zip
+	ln -sf $(DISTY_FILE_TGZ) $(DISTY_FILE_DIR)/icu4c-src.tgz
+	ln -sf $(DISTY_DATA_ZIP) $(DISTY_FILE_DIR)/icu4c-data.zip
+	ls -l $(DISTY_FILE_TGZ) $(DISTY_FILE_ZIP) $(DISTY_DATA_ZIP)
+
 
 dist-local: $(DISTY_FILES)
 
