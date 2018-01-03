@@ -289,23 +289,17 @@ void DateFormatRegressionTest::Test4059917(void)
 {
     UErrorCode status = U_ZERO_ERROR;
     
-    SimpleDateFormat *fmt;
     UnicodeString myDate;
 
-    fmt = new SimpleDateFormat( UnicodeString("yyyy/MM/dd"), status );
+    SimpleDateFormat fmt(UnicodeString(u"yyyy/MM/dd"), status );
     if (failure(status, "new SimpleDateFormat", TRUE)) return;
     myDate = "1997/01/01";
-    aux917( fmt, myDate );
-    
-    delete fmt;
-    fmt = NULL;
-    
-    fmt = new SimpleDateFormat( UnicodeString("yyyyMMdd"), status );
+    aux917( &fmt, myDate );
+      
+    SimpleDateFormat fmt2( UnicodeString(u"yyyyMMdd"), status );
     if(failure(status, "new SimpleDateFormat")) return;
     myDate = "19970101";
-    aux917( fmt, myDate );
-              
-    delete fmt;
+    aux917(&fmt2, myDate );              
 }
 
 void DateFormatRegressionTest::aux917( SimpleDateFormat *fmt, UnicodeString& str ) {
@@ -348,23 +342,22 @@ void DateFormatRegressionTest::Test4060212(void)
     logln( "dateString= " + dateString );
     logln("Using yyyy-DDD.hh:mm:ss");
     UErrorCode status = U_ZERO_ERROR;
-    SimpleDateFormat *formatter = new SimpleDateFormat(UnicodeString("yyyy-DDD.hh:mm:ss"), status);
+    SimpleDateFormat formatter(UnicodeString("yyyy-DDD.hh:mm:ss"), status);
     if (failure(status, "new SimpleDateFormat", TRUE)) return;
     ParsePosition pos(0);
-    UDate myDate = formatter->parse( dateString, pos );
+    UDate myDate = formatter.parse( dateString, pos );
     UnicodeString myString;
-    DateFormat *fmt = DateFormat::createDateTimeInstance( DateFormat::FULL,
-                                                            DateFormat::LONG);
-    if (fmt == NULL) {
+    LocalPointer<DateFormat> fmt(DateFormat::createDateTimeInstance( DateFormat::FULL,
+                                                            DateFormat::LONG));
+    if (!fmt.isValid()) {
         dataerrln("Error calling DateFormat::createDateTimeInstance");
-        delete formatter;
         return;
     }
 
     myString = fmt->format( myDate, myString);
     logln( myString );
 
-    Calendar *cal = new GregorianCalendar(status);
+    LocalPointer<Calendar> cal(new GregorianCalendar(status));
     failure(status, "new GregorianCalendar");
     cal->setTime(myDate, status);
     failure(status, "cal->setTime");
@@ -375,12 +368,10 @@ void DateFormatRegressionTest::Test4060212(void)
     // this is an odd usage of "ddd" and it doesn't
     // work now that date values are range checked per #3579.
     logln("Using yyyy-ddd.hh:mm:ss");
-    delete formatter;
-    formatter = NULL;
-    formatter = new SimpleDateFormat(UnicodeString("yyyy-ddd.hh:mm:ss"), status);
+    SimpleDateFormat formatter2(UnicodeString(u"yyyy-ddd.hh:mm:ss"), status);
     if(failure(status, "new SimpleDateFormat")) return;
     pos.setIndex(0);
-    myDate = formatter->parse( dateString, pos );
+    myDate = formatter2.parse( dateString, pos );
     myString = fmt->format( myDate, myString );
     logln( myString );
     cal->setTime(myDate, status);
@@ -388,10 +379,6 @@ void DateFormatRegressionTest::Test4060212(void)
     if ((cal->get(UCAL_DAY_OF_YEAR, status) != 40) || failure(status, "cal->get"))
         errln((UnicodeString) "Fail: Got " + cal->get(UCAL_DAY_OF_YEAR, status) +
                             " Want 40");
-
-    delete formatter;
-    delete fmt;
-    delete cal;
 }
 
 /**
@@ -751,22 +738,20 @@ void DateFormatRegressionTest::Test4103340(void)
     // choose a date that is the FIRST of some month 
     // and some arbitrary time 
     UDate d = date(97, 3, 1, 1, 1, 1); 
-    SimpleDateFormat *df = new SimpleDateFormat(UnicodeString("MMMM"), Locale::getUS(), status); 
+    SimpleDateFormat df(UnicodeString(u"MMMM"), Locale::getUS(), status); 
     if (failure(status, "new SimpleDateFormat", TRUE)) return;
 
     UnicodeString s;
     s = dateToString(d, s);
     UnicodeString s2;
     FieldPosition pos(FieldPosition::DONT_CARE);
-    s2 = df->format(d, s2, pos);
+    s2 = df.format(d, s2, pos);
     logln("Date=" + s); 
     logln("DF=" + s2);
     UnicodeString substr;
     s2.extract(0,2, substr);
     if (s.indexOf(substr) == -1)
-      errln("Months should match");
-    
-    delete df;
+        errln("Months should match");
 }
 
 /**
@@ -1039,19 +1024,17 @@ void DateFormatRegressionTest::Test4151631(void)
     UnicodeString pattern = "'TO_DATE('''dd'-'MM'-'yyyy HH:mm:ss''' , ''DD-MM-YYYY HH:MI:SS'')'";
     logln("pattern=" + pattern);
     UErrorCode status = U_ZERO_ERROR;
-    SimpleDateFormat *format = new SimpleDateFormat(pattern, Locale::getUS(), status);
+    SimpleDateFormat format(pattern, Locale::getUS(), status);
     if (failure(status, "new SimpleDateFormat", TRUE)) return;
     UnicodeString result;
     FieldPosition pos(FieldPosition::DONT_CARE);
-    result = format->format(date(1998-1900, UCAL_JUNE, 30, 13, 30, 0), result, pos);
+    result = format.format(date(1998-1900, UCAL_JUNE, 30, 13, 30, 0), result, pos);
     if (result != "TO_DATE('30-06-1998 13:30:00' , 'DD-MM-YYYY HH:MI:SS')") {
         errln("Fail: result=" + result);
     }
     else {
         logln("Pass: result=" + result);
     }
-
-    delete format;
 }
 
 /**

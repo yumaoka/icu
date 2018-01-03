@@ -1442,31 +1442,26 @@ void CalendarRegressionTest::test4118384()
 void CalendarRegressionTest::test4125881()
 {
     UErrorCode status = U_ZERO_ERROR;
-    GregorianCalendar *cal = (GregorianCalendar*) Calendar::createInstance(status);
+    LocalPointer<GregorianCalendar> cal((GregorianCalendar*) Calendar::createInstance(status), status);
     if(U_FAILURE(status)) {
-      dataerrln("Error creating calendar %s", u_errorName(status));
-      delete cal;
-      return;
+        dataerrln("Error creating calendar %s", u_errorName(status));
+        return;
     }
-    DateFormat *fmt = new SimpleDateFormat(UnicodeString("MMMM d, yyyy G"),status);
+    SimpleDateFormat fmt(UnicodeString("MMMM d, yyyy G"),status);
     if(U_FAILURE(status)) {
-      dataerrln("Error creating SimpleDateFormat - %s", u_errorName(status));
-      delete cal;
-      return;
+        dataerrln("Error creating SimpleDateFormat - %s", u_errorName(status));
+        return;
     }
     cal->clear();
     for (int32_t y=-20; y<=10; ++y) {
         cal->set(UCAL_ERA, y < 1 ? GregorianCalendar::BC : GregorianCalendar::AD);
         cal->set(UCAL_YEAR, y < 1 ? 1 - y : y);
         UnicodeString temp;
-        logln(UnicodeString("") + y + UnicodeString(" = ") + fmt->format(cal->getTime(status), temp) + " " +
+        logln(UnicodeString("") + y + UnicodeString(" = ") + fmt.format(cal->getTime(status), temp) + " " +
                            cal->isLeapYear(y));
         if (cal->isLeapYear(y) != ((y+40)%4 == 0))
             errln("Leap years broken");
     }
-
-    delete cal;
-    delete fmt;
 }
 
 /**
@@ -1478,15 +1473,14 @@ void CalendarRegressionTest::test4125892() {
     UErrorCode status = U_ZERO_ERROR;
     GregorianCalendar *cal = (GregorianCalendar*) Calendar::createInstance(status);
     if(U_FAILURE(status)) {
-      dataerrln("Error creating calendar %s", u_errorName(status));
-      delete cal;
-      return;
+        dataerrln("Error creating calendar %s", u_errorName(status));
+        delete cal;
+        return;
     }
-    DateFormat *fmt = new SimpleDateFormat(UnicodeString("MMMM d, yyyy G"),status);
     if(U_FAILURE(status)) {
-      dataerrln("Error creating SimpleDateFormat - %s", u_errorName(status));
-      delete cal;
-      return;
+        dataerrln("Error creating SimpleDateFormat - %s", u_errorName(status));
+        delete cal;
+        return;
     }
     cal->clear();
     cal->set(UCAL_ERA, GregorianCalendar::BC);
@@ -1501,7 +1495,6 @@ void CalendarRegressionTest::test4125892() {
         errln("Calendar not proleptic");
 
     delete cal;
-    delete fmt;
 }
 
 /**
@@ -1900,22 +1893,21 @@ CalendarRegressionTest::Test4167060()
 {
     UErrorCode status = U_ZERO_ERROR;
     UCalendarDateFields field = UCAL_YEAR;
-    DateFormat *format = new SimpleDateFormat(UnicodeString("EEE MMM dd HH:mm:ss zzz yyyy G"),
-        Locale::getUS(), status);
+    LocalPointer<DateFormat> format (new SimpleDateFormat(UnicodeString("EEE MMM dd HH:mm:ss zzz yyyy G"),
+        Locale::getUS(), status));
     if(U_FAILURE(status)) {
         dataerrln("Couldn't create SimpleDateFormat - %s", u_errorName(status));
         return;
     }
 
-    GregorianCalendar *calendars [] = {
-        new GregorianCalendar(100, UCAL_NOVEMBER, 1, status),
-        new GregorianCalendar(-99 /*100BC*/, UCAL_JANUARY, 1, status),
-        new GregorianCalendar(1996, UCAL_FEBRUARY, 29, status),
+    GregorianCalendar calendars [] = {
+        {100, UCAL_NOVEMBER, 1, status},
+        {-99 /*100BC*/, UCAL_JANUARY, 1, status},
+        {1996, UCAL_FEBRUARY, 29, status}
     };
     if(U_FAILURE(status)) {
         errln("Couldn't create GregorianCalendars");
         return;
-        // could leak
     }
 
     UnicodeString id [] = { "Hybrid", "Gregorian", "Julian" };
@@ -1924,7 +1916,7 @@ CalendarRegressionTest::Test4167060()
         logln("--- " + id[k] + " ---");
 
         for (int32_t j=0; j < 3; ++j) {
-            GregorianCalendar *calendar = calendars[j];
+            GregorianCalendar *calendar = &calendars[j];
             if (k == 1) {
                 calendar->setGregorianChange(EARLIEST_SUPPORTED_MILLIS, status);
             }
@@ -1975,11 +1967,6 @@ CalendarRegressionTest::Test4167060()
             }
         }
     }
-
-    delete format;
-    delete calendars[0];
-    delete calendars[1];
-    delete calendars[2];
 }
 
 /**
@@ -2270,15 +2257,18 @@ void CalendarRegressionTest::TestJ438(void) {
         1999, UCAL_JUNE, 4,       1964, UCAL_SEPTEMBER, 7,
     };
     int32_t DATA_length = UPRV_LENGTHOF(DATA);
-    Calendar* pcal = Calendar::createInstance(Locale::getUS(), ec);
+    LocalPointer<Calendar> pcal(Calendar::createInstance(Locale::getUS(), ec));
     if(U_FAILURE(ec)) {
-      dataerrln("Error creating calendar %s", u_errorName(ec));
-      delete pcal;
-      return;
+        dataerrln("Error creating calendar %s", u_errorName(ec));
+        return;
     }
     Calendar& cal = *pcal;
     int32_t i;
     SimpleDateFormat fmt(UnicodeString("MMM dd yyyy",""), ec);
+    if (U_FAILURE(ec)) {
+        dataerrln("Error creating calendar %s", u_errorName(ec));
+        return;
+    }
     fmt.setCalendar(cal);
     UnicodeString s, t, u;
     if (U_SUCCESS(ec)) {
@@ -2310,7 +2300,7 @@ void CalendarRegressionTest::TestJ438(void) {
                 break;
 
             {
-                Calendar *cal2 = cal.clone();
+                LocalPointer<Calendar> cal2(cal.clone());
                 UErrorCode ec2 = U_ZERO_ERROR;
 
                 cal2->setTime(date1, ec2);
@@ -2325,7 +2315,6 @@ void CalendarRegressionTest::TestJ438(void) {
                     (dy2 != dy)){
                     errln("fieldDifference(UCAL_...) and fieldDifference(Calendar::...) give different results!\n");
                 }
-                delete cal2;
             }
 
 
@@ -2361,7 +2350,6 @@ void CalendarRegressionTest::TestJ438(void) {
     } else {
         dataerrln("Error creating SimpleDateFormat - %s", u_errorName(ec));
     }
-    delete pcal;
 }
 
 void CalendarRegressionTest::TestT5555()

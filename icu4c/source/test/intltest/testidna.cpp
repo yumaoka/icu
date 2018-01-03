@@ -1530,12 +1530,17 @@ void TestIDNA::TestCompareReferenceImpl(){
 
     // data even OK?
     {
-      UErrorCode dataStatus = U_ZERO_ERROR;
-      loadTestData(dataStatus);
-      if(U_FAILURE(dataStatus)) {
-        dataerrln("Couldn't load test data: %s\n", u_errorName(dataStatus)); // save us from thousands and thousands of errors
-        return;
-      }
+        UErrorCode dataStatus = U_ZERO_ERROR;
+        loadTestData(dataStatus);
+        if(U_FAILURE(dataStatus)) {
+            dataerrln("Couldn't load test data: %s\n", u_errorName(dataStatus)); // save us from thousands and thousands of errors
+            return;
+        }
+        LocalUIDNAPointer pidna(uidna_openUTS46(0, &dataStatus));
+        if(U_FAILURE(dataStatus) || pidna.isNull()) {
+            dataerrln("uidna_openUTS46() fails: %s\n", u_errorName(dataStatus)); // save us from thousands and thousands of errors
+            return;
+        }
     }
 
     for (int32_t i = 0; i <= 0x10FFFF; i++){
@@ -1589,25 +1594,22 @@ void TestIDNA::TestRefIDNA(){
 void TestIDNA::TestDataFile(){
      testData(*this);
 }
+
 TestIDNA::~TestIDNA(){
-    if(gPrep!=NULL){
-        delete gPrep;
-        gPrep = NULL;
-    }
+    delete gPrep;
+    gPrep = NULL;
 }
 
-NamePrepTransform* TestIDNA::gPrep = NULL;
-
 NamePrepTransform* TestIDNA::getInstance(UErrorCode& status){
-    if(TestIDNA::gPrep == NULL){
+    if(gPrep == NULL){
         UParseError parseError;
-        TestIDNA::gPrep = NamePrepTransform::createInstance(parseError, status);
-        if(TestIDNA::gPrep ==NULL){
+        gPrep = NamePrepTransform::createInstance(parseError, status);
+        if(gPrep == NULL){
            //status = U_MEMORY_ALLOCATION_ERROR;
            return NULL;
         }
     }
-    return TestIDNA::gPrep;
+    return gPrep;
 
 }
 #endif /* #if !UCONFIG_NO_IDNA */
