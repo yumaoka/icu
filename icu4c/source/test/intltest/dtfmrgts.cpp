@@ -705,22 +705,20 @@ void DateFormatRegressionTest::Test4100302(void)
 void DateFormatRegressionTest::Test4101483(void) 
 {
     UErrorCode status = U_ZERO_ERROR;
-    SimpleDateFormat *sdf = new SimpleDateFormat(UnicodeString("z"), Locale::getUS(), status);
+    SimpleDateFormat sdf(UnicodeString("z"), Locale::getUS(), status);
     if (failure(status, "new SimpleDateFormat", TRUE)) return;
     FieldPosition fp(UDAT_TIMEZONE_FIELD);
     //Date d = date(9234567890L);
     UDate d = 9234567890.0;
     //StringBuffer buf = new StringBuffer("");
     UnicodeString buf;
-    sdf->format(d, buf, fp);
+    sdf.format(d, buf, fp);
     //logln(sdf.format(d, buf, fp).toString());
     logln(dateToString(d) + " => " + buf);
     logln(UnicodeString("beginIndex = ") + fp.getBeginIndex());
     logln(UnicodeString("endIndex = ") + fp.getEndIndex());
     if (fp.getBeginIndex() == fp.getEndIndex()) 
         errln("Fail: Empty field");
-
-    delete sdf;
 }
 
 /**
@@ -759,29 +757,24 @@ void DateFormatRegressionTest::Test4103340(void)
  */
 void DateFormatRegressionTest::Test4103341(void) 
 {
-    TimeZone *saveZone  =TimeZone::createDefault();
+    LocalPointer<TimeZone> saveZone(TimeZone::createDefault());
     //try {
         
     // {sfb} changed from setDefault to adoptDefault
     TimeZone::adoptDefault(TimeZone::createTimeZone("CST"));
     UErrorCode status = U_ZERO_ERROR;
-    SimpleDateFormat *simple = new SimpleDateFormat(UnicodeString("MM/dd/yyyy HH:mm"), status);
+    SimpleDateFormat simple(UnicodeString("MM/dd/yyyy HH:mm"), status);
     if(U_FAILURE(status)) {
-      dataerrln("Couldn't create SimpleDateFormat, error %s", u_errorName(status));
-      delete simple;
-      return;
+        dataerrln("Couldn't create SimpleDateFormat, error %s", u_errorName(status));
+        return;
     }
-    failure(status, "new SimpleDateFormat");
-    TimeZone *temp = TimeZone::createDefault();
-    if(simple->getTimeZone() != *temp)
-            errln("Fail: SimpleDateFormat not using default zone");
+    LocalPointer<TimeZone> temp(TimeZone::createDefault());
+    if(simple.getTimeZone() != *temp)
+        errln("Fail: SimpleDateFormat not using default zone");
     //}
     //finally {
-        TimeZone::adoptDefault(saveZone);
+        TimeZone::adoptDefault(saveZone.orphan());
     //}
-
-    delete temp;
-    delete simple;
 }
 
 /**
@@ -1002,17 +995,15 @@ void DateFormatRegressionTest::Test4134203(void)
 {
     UErrorCode status = U_ZERO_ERROR;
     UnicodeString dateFormat = "MM/dd/yy HH:mm:ss zzz";
-    SimpleDateFormat *fmt = new SimpleDateFormat(dateFormat, status);
+    SimpleDateFormat fmt (dateFormat, status);
     if (failure(status, "new SimpleDateFormat", TRUE)) return;
     ParsePosition p0(0);
-    UDate d = fmt->parse("01/22/92 04:52:00 GMT", p0);
+    UDate d = fmt.parse("01/22/92 04:52:00 GMT", p0);
     logln(dateToString(d));
     if(p0 == ParsePosition(0))
         errln("Fail: failed to parse 'GMT'");
     // In the failure case an exception is thrown by parse();
     // if no exception is thrown, the test passes.
-
-    delete fmt;
 }
 
 /**
