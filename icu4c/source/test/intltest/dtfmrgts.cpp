@@ -758,23 +758,22 @@ void DateFormatRegressionTest::Test4103340(void)
 void DateFormatRegressionTest::Test4103341(void) 
 {
     LocalPointer<TimeZone> saveZone(TimeZone::createDefault());
-    //try {
-        
+    if (!saveZone.isValid()) {
+        dataerrln("TimeZone::createDefault() failed.");
+        return;
+    }
     // {sfb} changed from setDefault to adoptDefault
     TimeZone::adoptDefault(TimeZone::createTimeZone("CST"));
     UErrorCode status = U_ZERO_ERROR;
     SimpleDateFormat simple(UnicodeString("MM/dd/yyyy HH:mm"), status);
     if(U_FAILURE(status)) {
         dataerrln("Couldn't create SimpleDateFormat, error %s", u_errorName(status));
-        return;
+    } else {
+        LocalPointer<TimeZone> temp(TimeZone::createDefault());
+        if(simple.getTimeZone() != *temp)
+            errln("Fail: SimpleDateFormat not using default zone");
     }
-    LocalPointer<TimeZone> temp(TimeZone::createDefault());
-    if(simple.getTimeZone() != *temp)
-        errln("Fail: SimpleDateFormat not using default zone");
-    //}
-    //finally {
-        TimeZone::adoptDefault(saveZone.orphan());
-    //}
+    TimeZone::adoptDefault(saveZone.orphan());
 }
 
 /**
