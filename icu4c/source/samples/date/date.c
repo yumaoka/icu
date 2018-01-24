@@ -53,6 +53,9 @@ static UDate getWhen(const char *millis, const char *seconds, const char *format
 
 UConverter *cnv = NULL;
 
+static UBool eMode = FALSE;
+extern UDateFormat set_emode(UDateFormat *fmt, UErrorCode *status);
+
 /* The version of date */
 #define DATE_VERSION "1.0"
 
@@ -66,23 +69,25 @@ int
 main(int argc,
      char **argv)
 {
+  UErrorCode status = U_ZERO_ERROR;
+  uloc_setDefault("am_ET@calendar=ethiopic", &status);
+  // puts(u_errorName(status));
+  // puts(uloc_getDefault());
   int printUsage = 0;
   int printVersion = 0;
   int optInd = 1;
   char *arg;
   const UChar *tz = 0;
   UDateFormatStyle style = UDAT_DEFAULT;
-  UErrorCode status = U_ZERO_ERROR;
   const char *format = NULL;
   char *parse = NULL;
   char *seconds = NULL;
   char *millis = NULL;
   UDate when;
-
   /* parse the options */
   for(optInd = 1; optInd < argc; ++optInd) {
     arg = argv[optInd];
-    
+
     /* version info */
     if(strcmp(arg, "-v") == 0 || strcmp(arg, "--version") == 0) {
       printVersion = 1;
@@ -94,6 +99,9 @@ main(int argc,
     /* display date in gmt */
     else if(strcmp(arg, "-u") == 0 || strcmp(arg, "--gmt") == 0) {
       tz = GMT_ID;
+    }
+    else if(strcmp(arg, "-E") == 0) {
+      eMode = TRUE;
     }
     /* display date in gmt */
     else if(strcmp(arg, "-f") == 0 || strcmp(arg, "--full") == 0) {
@@ -112,22 +120,22 @@ main(int argc,
       style = UDAT_SHORT;
     }
     else if(strcmp(arg, "-F") == 0 || strcmp(arg, "--format") == 0) {
-      if ( optInd + 1 < argc ) { 
+      if ( optInd + 1 < argc ) {
          optInd++;
          format = argv[optInd];
       }
     } else if(strcmp(arg, "-r") == 0) {
-      if ( optInd + 1 < argc ) { 
+      if ( optInd + 1 < argc ) {
          optInd++;
          seconds = argv[optInd];
       }
     } else if(strcmp(arg, "-R") == 0) {
-      if ( optInd + 1 < argc ) { 
+      if ( optInd + 1 < argc ) {
          optInd++;
          millis = argv[optInd];
       }
     } else if(strcmp(arg, "-P") == 0) {
-      if ( optInd + 1 < argc ) { 
+      if ( optInd + 1 < argc ) {
          optInd++;
          parse = argv[optInd];
       }
@@ -179,7 +187,7 @@ main(int argc,
 /* Usage information */
 static void
 usage()
-{  
+{
   puts("Usage: icudate [OPTIONS]");
   puts("Options:");
   puts("  -h, --help        Print this message and exit.");
@@ -194,6 +202,7 @@ usage()
   puts("  -r <seconds>      Use <seconds> as the time (Epoch 1970) rather than now.");
   puts("  -R <millis>       Use <millis> as the time (Epoch 1970) rather than now.");
   puts("  -P <string>       Parse <string> as the time, output in millis format.");
+  puts(" -E  ethiopian time mode");
 }
 
 /* Version information */
@@ -204,12 +213,12 @@ version()
   const char *tzVer;
   int len = 256;
   UChar tzName[256];
-  printf("icudate version %s, created by Stephen F. Booth.\n", 
+  printf("icudate version %s, created by Stephen F. Booth.\n",
 	 DATE_VERSION);
   puts(U_COPYRIGHT_STRING);
   tzVer = ucal_getTZDataVersion(&status);
-  if(U_FAILURE(status)) {  
-      tzVer = u_errorName(status);  
+  if(U_FAILURE(status)) {
+      tzVer = u_errorName(status);
   }
   printf("\n");
   printf("ICU Version:               %s\n", U_ICU_VERSION);
@@ -265,10 +274,27 @@ date(UDate when,
   }
 
   fmt = udat_open(style, style, 0, tz, -1,NULL,0, status);
+    if(U_FAILURE(*status)) {
+      puts("Fail to open");
+      goto finish;
+    }
   if ( format != NULL ) {
     charsToUCharsDefault(uFormat,sizeof(uFormat)/sizeof(uFormat[0]),format,-1,status);
     udat_applyPattern(fmt,FALSE,uFormat,-1);
+    if(U_FAILURE(*status)) {
+      puts("Fail to applypat");
+      goto finish;
+    }
   }
+
+  if(eMode) {
+    fmt = set_emode(fmt, status);
+    if(U_FAILURE(*status)) {
+      puts("Fail to set emode");
+      goto finish;
+    }
+  }
+
   len = udat_format(fmt, when, 0, len, 0, status);
   if(*status == U_BUFFER_OVERFLOW_ERROR) {
     *status = U_ZERO_ERROR;
@@ -292,9 +318,9 @@ date(UDate when,
   free(s);
 }
 
-static UDate getWhen(const char *millis, const char *seconds, const char *format, 
+static UDate getWhen(const char *millis, const char *seconds, const char *format,
                      UDateFormatStyle style, const char *parse, const UChar *tz, UErrorCode *status) {
-  UDateFormat *fmt = NULL; 
+  UDateFormat *fmt = NULL;
   UChar uFormat[100];
   UChar uParse[256];
   UDate when=0;
@@ -324,7 +350,7 @@ static UDate getWhen(const char *millis, const char *seconds, const char *format
       charsToUCharsDefault(uFormat,sizeof(uFormat)/sizeof(uFormat[0]), format,-1,status);
       udat_applyPattern(fmt,FALSE,uFormat,-1);
     }
-    
+
     charsToUCharsDefault(uParse,sizeof(uParse)/sizeof(uParse[0]), parse,-1,status);
     when = udat_parse(fmt, uParse, -1, &parsepos, status);
     if(U_FAILURE(*status)) {
@@ -333,7 +359,7 @@ static UDate getWhen(const char *millis, const char *seconds, const char *format
         fprintf(stderr, "ERR>\"%s\" @%d\n"
                         "ERR> %*s^\n",
                 parse,parsepos,parsepos,"");
-                
+
       }
     }
 
