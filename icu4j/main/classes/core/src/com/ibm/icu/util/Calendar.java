@@ -641,6 +641,11 @@ import com.ibm.icu.util.ULocale.Category;
  */
 public abstract class Calendar implements Serializable, Cloneable, Comparable<Calendar> {
 
+    /**
+     *
+     */
+    private static final String DAYSTART_KEYWORD = "ds";
+
     // Data flow in Calendar
     // ---------------------
 
@@ -1556,6 +1561,8 @@ public abstract class Calendar implements Serializable, Cloneable, Comparable<Ca
      */
     private transient int gregorianDayOfMonth;
 
+    private DayStart dayStart;
+
     /**
      * Constructs a Calendar with the default time zone
      * and the default <code>FORMAT</code> locale.
@@ -1595,6 +1602,8 @@ public abstract class Calendar implements Serializable, Cloneable, Comparable<Ca
         // set valid/actual locale
         setCalendarLocale(locale);
 
+        dayStart = DayStart.forLocale(locale);
+
         initInternal();
     }
 
@@ -1628,6 +1637,10 @@ public abstract class Calendar implements Serializable, Cloneable, Comparable<Ca
             String calType = locale.getKeywordValue("calendar");
             if (calType != null) {
                 buf.append("@calendar=").append(calType);
+            }
+            String dayStart = locale.getKeywordValue(DAYSTART_KEYWORD);
+            if (dayStart != null) {
+                buf.append("@"+DAYSTART_KEYWORD+"=").append(calType);
             }
 
             calLocale = new ULocale(buf.toString());
@@ -1810,6 +1823,40 @@ public abstract class Calendar implements Serializable, Cloneable, Comparable<Ca
         }
     }
 
+    private enum DayStart {
+        midnight(0),           // midnight
+        sunrise(ONE_DAY/4); // minus six hours
+
+        private long offset;
+
+        DayStart(long millis) {
+            this.offset = millis;
+        }
+
+        /**
+         * @return delta offset (relative to midnight)
+         */
+        long getOffset() {
+            return this.offset;
+        }
+
+        /**
+         * @param keywordValue
+         * @return
+         */
+        public static DayStart forKeywordValue(String keywordValue) {
+            if(keywordValue==null || keywordValue.isEmpty() || keywordValue.equals("standard")) {
+                return midnight;
+            } else {
+                return valueOf(keywordValue);
+            }
+        }
+
+        public static DayStart forLocale(ULocale l) {
+            return forKeywordValue(l.getKeywordValue(DAYSTART_KEYWORD));
+        }
+    }
+
     private static CalType getCalendarTypeForLocale(ULocale l) {
         String s = CalendarUtil.getCalendarType(l);
         if (s != null) {
@@ -1934,6 +1981,7 @@ public abstract class Calendar implements Serializable, Cloneable, Comparable<Ca
      */
     public static final String[] getKeywordValuesForLocale(String key, ULocale locale,
             boolean commonlyUsed) {
+        //TODO
         // Resolve region
         String prefRegion = ULocale.getRegionForSupplementalData(locale, true);
 
@@ -4993,7 +5041,8 @@ public abstract class Calendar implements Serializable, Cloneable, Comparable<Ca
         // JULIAN_DAY field and also removes some inelegant code. - Liu
         // 11/6/00
 
-        long days = floorDivide(localMillis, ONE_DAY);
+        final long dayStartOffset = dayStart.getOffset();
+        long days = floorDivide(localMillis - dayStartOffset, ONE_DAY);
 
         fields[JULIAN_DAY] = (int) days + EPOCH_JULIAN_DAY;
 
@@ -5012,7 +5061,7 @@ public abstract class Calendar implements Serializable, Cloneable, Comparable<Ca
         // Compute time-related fields.  These are indepent of the date and
         // of the subclass algorithm.  They depend only on the local zone
         // wall milliseconds in day.
-        int millisInDay = (int) (localMillis - (days * ONE_DAY));
+        int millisInDay = (int) (localMillis - (days * ONE_DAY) - dayStartOffset);
         fields[MILLISECONDS_IN_DAY] = millisInDay;
         fields[MILLISECOND] = millisInDay % 1000;
         millisInDay /= 1000;
@@ -5400,8 +5449,9 @@ public abstract class Calendar implements Serializable, Cloneable, Comparable<Ca
 
         // Compute the Julian day
         int julianDay = computeJulianDay();
+        final long dayStartOffset = dayStart.getOffset();
 
-        long millis = julianDayToMillis(julianDay);
+        long millis = julianDayToMillis(julianDay) - dayStartOffset;
 
         long millisInDay;
 
