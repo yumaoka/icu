@@ -67,7 +67,7 @@ public:
     void     removeColumn(int32_t column);
 
     /** Check for, and remove dupicate states (table rows). */
-    void     removeDuplicateStates();
+    int32_t  removeDuplicateStates();
 
     /** Build the safe reverse table from the already-constructed forward table. */
     void     buildSafeReverseTable(UErrorCode &status);

@@ -94,13 +94,15 @@ LB15:        QU CM* SP* OP;
 LB16:        (CL | CP)CM* SP* NS;
 LB17:        B2 CM* SP* B2;
 
+# LB8, break after ZW SP*, precedes LB7 because they will both match the sequences like ZW SP,
+# and LB8 should take precedence.
+
+LB8:        ZW SP* ÷ [^ZW SP BK CR LF NL];
+
+# LB7 Do not break before spaces or zero width space.
+
 LB7.1:      [^ZW SP] CM* [SP ZW];
 LB7.2:      [ZW SP] [SP ZW];
-
-# LB8, ICU differs from UAX-14,
-#    ICU:    ZW ÷;
-#    UAX 14: ZW SP* ÷;
-LB8:        ZW ÷;
 
 # LB8a
 #      ZWJ x
