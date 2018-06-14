@@ -2848,14 +2848,12 @@ int32_t RBBILineMonkey::next(int32_t startPos) {
         // LB 8  Break after zero width space
         //       ZW SP* ÷
         //       Scan backwards from prevChar for SP* ZW
-        {
-            int tPos = prevPos;
-            while (tPos>0 && fSP->contains(fText->char32At(tPos))) {
-                tPos = fText->moveIndex32(tPos, -1);
-            }
-            if (fZW->contains(fText->char32At(tPos))) {
-                break;
-            }
+        tPos = prevPos;
+        while (tPos>0 && fSP->contains(fText->char32At(tPos))) {
+            tPos = fText->moveIndex32(tPos, -1);
+        }
+        if (fZW->contains(fText->char32At(tPos))) {
+            break;
         }
 
         // LB 25    Numbers
@@ -3155,7 +3153,7 @@ int32_t RBBILineMonkey::next(int32_t startPos) {
             break;
         }
         if (fRI->contains(prevChar) && fRI->contains(thisChar)) {
-            // Two Retional Indicators have been paired.
+            // Two Regional Indicators have been paired.
             // Over-write the trailing one (thisChar) to prevent it from forming another pair with a
             // following RI. This is a hack.
             thisChar = -1;
