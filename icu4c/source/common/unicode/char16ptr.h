@@ -28,6 +28,8 @@ U_NAMESPACE_BEGIN
     // Use the predefined value.
 #elif (defined(__clang__) || defined(__GNUC__)) && U_PLATFORM != U_PF_BROWSER_NATIVE_CLIENT
 #   define U_ALIASING_BARRIER(ptr) asm volatile("" : : "rm"(ptr) : "memory")
+#elif defined(U_IN_DOXYGEN)
+#   define U_ALIASING_BARRIER(ptr)
 #endif
 
 /**

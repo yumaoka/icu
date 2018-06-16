@@ -125,6 +125,9 @@
  * May result in an error if it applied to something not an override.
  * @internal
  */
+#ifndef U_OVERRIDE
+#define U_OVERRIDE override
+#endif
 
 /**
  * \def U_FINAL
@@ -133,24 +136,10 @@
  * May result in an error if subclasses attempt to override.
  * @internal
  */
-
-#if U_CPLUSPLUS_VERSION >= 11
-/* C++11 */
-#ifndef U_OVERRIDE
-#define U_OVERRIDE override
-#endif
 #ifndef U_FINAL
 #define U_FINAL final
 #endif
-#else
-/* not C++11 - define to nothing */
-#ifndef U_OVERRIDE
-#define U_OVERRIDE
-#endif
-#ifndef U_FINAL
-#define U_FINAL
-#endif
-#endif
+
 
 /*==========================================================================*/
 /* limits for int32_t etc., like in POSIX inttypes.h                        */

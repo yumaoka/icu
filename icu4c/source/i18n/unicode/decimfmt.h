@@ -63,13 +63,16 @@ class NumberParserImpl;
 }
 }
 
-// explicit template instantiation. see digitlst.h
-// (When building DLLs for Windows this is required.)
+/** \cond
+ * explicit template instantiation. see digitlst.h
+ * (When building DLLs for Windows this is required.)
+ */
 #if U_PF_WINDOWS <= U_PLATFORM && U_PLATFORM <= U_PF_CYGWIN
 template class U_I18N_API    EnumSet<UNumberFormatAttribute,
             UNUM_MAX_NONBOOLEAN_ATTRIBUTE+1,
             UNUM_LIMIT_BOOLEAN_ATTRIBUTE>;
 #endif
+/** \endcond */
 
 /**
  * <p><strong>IMPORTANT:</strong> New users are strongly encouraged to see if
@@ -138,8 +141,8 @@ template class U_I18N_API    EnumSet<UNumberFormatAttribute,
  * <P>
  * Another example use createInstance(style)
  * <P>
- * <pre>
- * <strong>// Print out a number using the localized number, currency,
+ * \code
+ * // Print out a number using the localized number, currency,
  * // percent, scientific, integer, iso currency, and plural currency
  * // format for each locale</strong>
  * Locale* locale = new Locale("en", "US");
@@ -150,11 +153,13 @@ template class U_I18N_API    EnumSet<UNumberFormatAttribute,
  * for (int j=NumberFormat::kNumberStyle;
  *      j<=NumberFormat::kPluralCurrencyStyle;
  *      ++j) {
- *     NumberFormat* format = NumberFormat::createInstance(locale, j, success);
+ *     NumberFormat* form = NumberFormat::createInstance(locale, j, success);
  *     str.remove();
  *     cout << "format result " << form->format(myNumber, str) << endl;
  *     format->parse(form->format(myNumber, str), fmtable, success);
- * }</pre>
+ *     delete form;
+ * }
+ * \endcode
  *
  *
  * <p><strong>Patterns</strong>
