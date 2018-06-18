@@ -307,7 +307,7 @@ typedef int8_t UBool;
  * UChar is configurable by defining the macro UCHAR_TYPE
  * on the preprocessor or compiler command line:
  * -DUCHAR_TYPE=uint16_t or -DUCHAR_TYPE=wchar_t (if U_SIZEOF_WCHAR_T==2) etc.
- * (The UCHAR_TYPE can also be #defined earlier in this file, for outside the ICU library code.)
+ * (The UCHAR_TYPE can also be \#defined earlier in this file, for outside the ICU library code.)
  * This is for transitional use from application code that uses uint16_t or wchar_t for UTF-16.
  *
  * The default is UChar=char16_t.

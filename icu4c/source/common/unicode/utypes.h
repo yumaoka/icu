@@ -240,6 +240,10 @@ typedef double UDate;
  * needs to be the first one tested to override U_COMMON_API, U_I18N_API, etc.
  * @stable ICU 2.0
  */
+#ifdef U_IN_DOXYGEN
+// A definition is required when generating the API docs.
+#define U_COMBINED_IMPLEMENTATION 1
+#endif
 
 /**
  * \def U_DATA_API

@@ -2078,14 +2078,11 @@ PREDEFINED             = U_EXPORT2= \
                          U_CALLCONV= \
                          U_CDECL_BEGIN= \
                          U_CDECL_END= \
-                         U_NO_THROW=\ \
                          "U_NAMESPACE_BEGIN=namespace icu{" \
                          "U_NAMESPACE_END=}" \
                          U_SHOW_CPLUSPLUS_API=1 \
                          U_DEFINE_LOCAL_OPEN_POINTER()= \
                          U_IN_DOXYGEN=1 \
-                         U_OVERRIDE= \
-                         U_FINAL=final \
                          U_CHAR16_IS_TYPEDEF=0 \
                          U_CPLUSPLUS_VERSION=11 \
                          U_WCHAR_IS_UTF16
