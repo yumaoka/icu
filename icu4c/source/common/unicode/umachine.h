@@ -136,7 +136,7 @@
  * May result in an error if subclasses attempt to override.
  * @internal
  */
-#ifndef U_FINAL
+#if !defined(U_FINAL) || defined(U_IN_DOXYGEN)
 #define U_FINAL final
 #endif
 
