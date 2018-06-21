@@ -496,7 +496,7 @@ public:
      * untransliterated text
      * @param index an array of three integers.
      * @param status    Output param to filled in with a success or an error.
-     * @see #transliterate(Replaceable, int[], String)
+     * @see #transliterate(Replaceable&, UTransPosition&, const UnicodeString&, UErrorCode &) const
      * @stable ICU 2.0
      */
     virtual void transliterate(Replaceable& text, UTransPosition& index,
