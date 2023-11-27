@@ -33,7 +33,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.ibm.icu.dev.test.TestFmwk;
+import com.ibm.icu.dev.test.CoreTestFmwk;
 import com.ibm.icu.dev.test.TestUtil;
 import com.ibm.icu.dev.test.TestUtil.JavaVendor;
 import com.ibm.icu.text.DateFormat;
@@ -59,7 +59,7 @@ import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 
 @RunWith(JUnitParamsRunner.class)
-public class ULocaleTest extends TestFmwk {
+public class ULocaleTest extends CoreTestFmwk {
 
     // Ticket #8078 and #11674
     private static final boolean JAVA7_OR_LATER =
@@ -1949,6 +1949,18 @@ public class ULocaleTest extends TestFmwk {
                     // ICU-22546
                     "zh_Hani",
                     "zh_Hani_CN" // If change, please also update ULocale.java
+                }, {
+                    // ICU-22545
+                    "en_XA",
+                    "en_XA",
+                }, {
+                    // ICU-22545
+                    "en_XB",
+                    "en_XB",
+                }, {
+                    // ICU-22545
+                    "en_XC",
+                    "en_XC",
                 }
         };
 
@@ -4157,7 +4169,7 @@ public class ULocaleTest extends TestFmwk {
 
         cldrVersion = LocaleData.getCLDRVersion();
 
-        TestFmwk.logln("uloc_getCLDRVersion() returned: '"+cldrVersion+"'");
+        logln("uloc_getCLDRVersion() returned: '"+cldrVersion+"'");
 
         // why isn't this public for tests somewhere?
         final ClassLoader testLoader = ICUResourceBundleTest.class.getClassLoader();

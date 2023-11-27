@@ -23,9 +23,9 @@ import java.util.TreeSet;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.ibm.icu.dev.test.TestFmwk;
+import com.ibm.icu.dev.test.CoreTestFmwk;
+import com.ibm.icu.impl.locale.LikelySubtags;
 import com.ibm.icu.impl.locale.XCldrStub.FileUtilities;
-import com.ibm.icu.impl.locale.XLikelySubtags;
 import com.ibm.icu.util.LocaleMatcher;
 import com.ibm.icu.util.LocaleMatcher.FavorSubtag;
 import com.ibm.icu.util.LocalePriorityList;
@@ -40,7 +40,7 @@ import junitparams.Parameters;
  * @author markdavis
  */
 @RunWith(JUnitParamsRunner.class)
-public class LocaleMatcherTest extends TestFmwk {
+public class LocaleMatcherTest extends CoreTestFmwk {
     private static final ULocale ZH_MO = new ULocale("zh_MO");
     private static final ULocale ZH_HK = new ULocale("zh_HK");
 
@@ -868,7 +868,7 @@ public class LocaleMatcherTest extends TestFmwk {
         long start = System.nanoTime();
         for (int i = iterations; i > 0; --i) {
             for (ULocale locale : list) {
-                XLikelySubtags.INSTANCE.makeMaximizedLsrFrom(locale, false);
+                LikelySubtags.INSTANCE.makeMaximizedLsrFrom(locale, false);
             }
         }
         return System.nanoTime() - start;

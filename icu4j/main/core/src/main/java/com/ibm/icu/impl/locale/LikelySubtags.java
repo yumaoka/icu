@@ -18,7 +18,7 @@ import com.ibm.icu.util.BytesTrie;
 import com.ibm.icu.util.Region;
 import com.ibm.icu.util.ULocale;
 
-public final class XLikelySubtags {
+public final class LikelySubtags {
     private static final String PSEUDO_ACCENTS_PREFIX = "'";  // -XA, -PSACCENT
     private static final String PSEUDO_BIDI_PREFIX = "+";  // -XB, -PSBIDI
     private static final String PSEUDO_CRACKED_PREFIX = ",";  // -XC, -PSCRACK
@@ -109,7 +109,7 @@ public final class XLikelySubtags {
     }
 
     // VisibleForTesting
-    public static final XLikelySubtags INSTANCE = new XLikelySubtags(Data.load());
+    public static final LikelySubtags INSTANCE = new LikelySubtags(Data.load());
 
     private final Map<String, String> languageAliases;
     private final Map<String, String> regionAliases;
@@ -124,7 +124,7 @@ public final class XLikelySubtags {
     private final long[] trieFirstLetterStates = new long[26];
     private final LSR[] lsrs;
 
-    private XLikelySubtags(XLikelySubtags.Data data) {
+    private LikelySubtags(LikelySubtags.Data data) {
         languageAliases = data.languageAliases;
         regionAliases = data.regionAliases;
         trie = new BytesTrie(data.trie, 0);
@@ -216,12 +216,21 @@ public final class XLikelySubtags {
         if (region.length() == 2 && region.charAt(0) == 'X') {
             switch (region.charAt(1)) {
             case 'A':
+                if (returnInputIfUnmatch) {
+                    return new LSR(language, script, region, LSR.EXPLICIT_LSR);
+                }
                 return new LSR(PSEUDO_ACCENTS_PREFIX + language,
                         PSEUDO_ACCENTS_PREFIX + script, region, LSR.EXPLICIT_LSR);
             case 'B':
+                if (returnInputIfUnmatch) {
+                    return new LSR(language, script, region, LSR.EXPLICIT_LSR);
+                }
                 return new LSR(PSEUDO_BIDI_PREFIX + language,
                         PSEUDO_BIDI_PREFIX + script, region, LSR.EXPLICIT_LSR);
             case 'C':
+                if (returnInputIfUnmatch) {
+                    return new LSR(language, script, region, LSR.EXPLICIT_LSR);
+                }
                 return new LSR(PSEUDO_CRACKED_PREFIX + language,
                         PSEUDO_CRACKED_PREFIX + script, region, LSR.EXPLICIT_LSR);
             default:  // normal locale
