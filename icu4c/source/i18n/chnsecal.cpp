@@ -222,7 +222,11 @@ int32_t ChineseCalendar::handleGetLimit(UCalendarDateFields field, ELimitType li
  * field as the continuous year count, depending on which is newer.
  * @stable ICU 2.8
  */
-int32_t ChineseCalendar::handleGetExtendedYear() {
+int32_t ChineseCalendar::handleGetExtendedYear(UErrorCode& status) {
+    if (U_FAILURE(status)) {
+        return 0;
+    }
+
     int32_t year;
     if (newestStamp(UCAL_ERA, UCAL_YEAR, kUnset) <= fStamp[UCAL_EXTENDED_YEAR]) {
         year = internalGet(UCAL_EXTENDED_YEAR, 1); // Default to year 1
@@ -324,9 +328,7 @@ const UFieldResolutionTable* ChineseCalendar::getFieldResolutionTable() const {
  * day of the given month and year
  * @stable ICU 2.8
  */
-int32_t ChineseCalendar::handleComputeMonthStart(int32_t eyear, int32_t month, UBool useMonth) const {
-    ChineseCalendar *nonConstThis = (ChineseCalendar*)this; // cast away const
-
+int64_t ChineseCalendar::handleComputeMonthStart(int32_t eyear, int32_t month, UBool useMonth) const {
     // If the month is out of range, adjust it into range, and
     // modify the extended year value accordingly.
     if (month < 0 || month > 11) {
@@ -339,34 +341,31 @@ int32_t ChineseCalendar::handleComputeMonthStart(int32_t eyear, int32_t month, U
     int32_t theNewYear = newYear(gyear);
     int32_t newMoon = newMoonNear(theNewYear + month * 29, true);
     
-    int32_t julianDay = newMoon + kEpochStartAsJulianDay;
-
-    // Save fields for later restoration
-    int32_t saveMonth = internalGet(UCAL_MONTH);
-    int32_t saveOrdinalMonth = internalGet(UCAL_ORDINAL_MONTH);
-    int32_t saveIsLeapMonth = internalGet(UCAL_IS_LEAP_MONTH);
+    int64_t julianDay = newMoon + kEpochStartAsJulianDay;
 
     // Ignore IS_LEAP_MONTH field if useMonth is false
-    int32_t isLeapMonth = useMonth ? saveIsLeapMonth : 0;
+    int32_t isLeapMonth = useMonth ? internalGet(UCAL_IS_LEAP_MONTH) : 0;
+
+    // Clone the calendar so we don't mess with the real one.
+    LocalPointer<ChineseCalendar> work(clone());
+    if (work.isNull())
+        return 0;
 
     UErrorCode status = U_ZERO_ERROR;
-    nonConstThis->computeGregorianFields(julianDay, status);
+    work->computeGregorianFields(julianDay, status);
     if (U_FAILURE(status))
         return 0;
-    
-    // This will modify the MONTH and IS_LEAP_MONTH fields (only)
-    nonConstThis->computeChineseFields(newMoon, getGregorianYear(),
-                         getGregorianMonth(), false);        
 
-    if (month != internalGet(UCAL_MONTH) ||
-        isLeapMonth != internalGet(UCAL_IS_LEAP_MONTH)) {
+    // This will modify the MONTH and IS_LEAP_MONTH fields (only)
+    work->computeChineseFields(newMoon, work->getGregorianYear(),
+                               work->getGregorianMonth(), false);
+
+    if (month != work->internalGet(UCAL_MONTH) ||
+        isLeapMonth != work->internalGet(UCAL_IS_LEAP_MONTH)) {
         newMoon = newMoonNear(newMoon + SYNODIC_GAP, true);
         julianDay = newMoon + kEpochStartAsJulianDay;
     }
 
-    nonConstThis->internalSet(UCAL_MONTH, saveMonth);
-    nonConstThis->internalSet(UCAL_ORDINAL_MONTH, saveOrdinalMonth);
-    nonConstThis->internalSet(UCAL_IS_LEAP_MONTH, saveIsLeapMonth);
     return julianDay - 1;
 }
 
@@ -551,7 +550,12 @@ int32_t ChineseCalendar::winterSolstice(int32_t gyear) const {
         umtx_unlock(&astroLock);
 
         // Winter solstice is 270 degrees solar longitude aka Dongzhi
-        cacheValue = (int32_t)millisToDays(solarLong);
+        double days = millisToDays(solarLong);
+        if (days < INT32_MIN || days > INT32_MAX) {
+            status = U_ILLEGAL_ARGUMENT_ERROR;
+            return 0;
+        }
+        cacheValue = (int32_t) days;
         CalendarCache::put(&gChineseCalendarWinterSolsticeCache, gyear, cacheValue, status);
     }
     if(U_FAILURE(status)) {

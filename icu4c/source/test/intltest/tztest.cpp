@@ -156,10 +156,18 @@ TimeZoneTest::TestGenericAPI()
         // Africa/Casablanca Europe/Dublin America/Godthab America/Nuuk
         if (id == u"Africa/Casablanca" || id == u"Europe/Dublin" ||
             id == u"America/Godthab" || id == u"America/Nuuk" ||
-            id == u"Africa/El_Aaiun") {
+            id == u"Africa/El_Aaiun" ||
+            id == u"Asia/Qostanay" ||  // Due to changes in tz2024a
+            id == u"Asia/Almaty" ||  // Due to changes in tz2024a
+            id == u"America/Scoresbysund"  // break after the update of tz2023d
+            ) {
           logKnownIssue( "ICU-22274", "detectHostTimeZone()'s raw offset != host timezone's offset in TimeZone " + id);
         } else {
-          errln("FAIL: detectHostTimeZone()'s raw offset != host timezone's offset");
+          errln("FAIL: detectHostTimeZone()'s raw offset != host timezone's offset.\n"
+                "hostZone->getRawOffset()=%d\n"
+                "but uprv_timezone() return %d and "
+                "uprv_timezone() * -1000=%d",
+                hostZoneRawOffset, tzoffset, tzoffset * -1000);
         }
     }
     delete hostZone;
@@ -1171,36 +1179,56 @@ void TimeZoneTest::TestCustomParse()
 
     struct
     {
-        const char *customId;
+        const char16_t *customId;
         int32_t expectedOffset;
     }
     kData[] =
     {
         // ID        Expected offset in seconds
-        {"GMT",       kUnparseable},   //Isn't custom. [returns normal GMT]
-        {"GMT-YOUR.AD.HERE", kUnparseable},
-        {"GMT0",      kUnparseable},
-        {"GMT+0",     (0)},
-        {"GMT+1",     (1*60*60)},
-        {"GMT-0030",  (-30*60)},
-        {"GMT+15:99", kUnparseable},
-        {"GMT+",      kUnparseable},
-        {"GMT-",      kUnparseable},
-        {"GMT+0:",    kUnparseable},
-        {"GMT-:",     kUnparseable},
-        {"GMT-YOUR.AD.HERE",    kUnparseable},
-        {"GMT+0010",  (10*60)}, // Interpret this as 00:10
-        {"GMT-10",    (-10*60*60)},
-        {"GMT+30",    kUnparseable},
-        {"GMT-3:30",  (-(3*60+30)*60)},
-        {"GMT-230",   (-(2*60+30)*60)},
-        {"GMT+05:13:05",    ((5*60+13)*60+5)},
-        {"GMT-71023",       (-((7*60+10)*60+23))},
-        {"GMT+01:23:45:67", kUnparseable},
-        {"GMT+01:234",      kUnparseable},
-        {"GMT-2:31:123",    kUnparseable},
-        {"GMT+3:75",        kUnparseable},
-        {"GMT-01010101",    kUnparseable},
+        {u"GMT",       kUnparseable},   //Isn't custom. [returns normal GMT]
+        {u"GMT-YOUR.AD.HERE", kUnparseable},
+        {u"GMT0",      kUnparseable},
+        {u"GMT+0",     (0)},
+        {u"GMT+1",     (1*60*60)},
+        {u"GMT-0030",  (-30*60)},
+        {u"GMT+15:99", kUnparseable},
+        {u"GMT+",      kUnparseable},
+        {u"GMT-",      kUnparseable},
+        {u"GMT+0:",    kUnparseable},
+        {u"GMT-:",     kUnparseable},
+        {u"GMT-YOUR.AD.HERE",    kUnparseable},
+        {u"GMT+0010",  (10*60)}, // Interpret this as 00:10
+        {u"GMT-10",    (-10*60*60)},
+        {u"GMT+30",    kUnparseable},
+        {u"GMT-3:30",  (-(3*60+30)*60)},
+        {u"GMT-230",   (-(2*60+30)*60)},
+        {u"GMT+05:13:05",    ((5*60+13)*60+5)},
+        {u"GMT-71023",       (-((7*60+10)*60+23))},
+        {u"GMT+01:23:45:67", kUnparseable},
+        {u"GMT+01:234",      kUnparseable},
+        {u"GMT-2:31:123",    kUnparseable},
+        {u"GMT+3:75",        kUnparseable},
+        {u"GMT-01010101",    kUnparseable},
+        {u"GMT-4E58",        kUnparseable}, // ICU-22637
+        {u"GMT-4e58",        kUnparseable}, // ICU-22637
+        {u"GMT-1E01",        kUnparseable}, // ICU-22637
+        {u"GMT-2E01",        kUnparseable}, // ICU-22637
+        {u"GMT-2e01",        kUnparseable}, // ICU-22637
+        {u"GMT-9e02",        kUnparseable}, // ICU-22637
+        {u"GMT-1e03",        kUnparseable}, // ICU-22637
+        {u"GMT-2e03",        kUnparseable}, // ICU-22637
+        {u"GMT-500M",        kUnparseable}, // ICU-22637
+        {u"GMT-500T",        kUnparseable}, // ICU-22637
+        {u"GMT-9E00",        kUnparseable}, // ICU-22637
+        {u"GMT-0X0F",        kUnparseable}, // ICU-22637
+        {u"GMT-0x0F",        kUnparseable}, // ICU-22637
+        {u"GMT-0x12",        kUnparseable}, // ICU-22637
+        {u"GMT-B111",        kUnparseable}, // ICU-22637
+        {u"GMT-b111",        kUnparseable}, // ICU-22637
+        {u"GMT-0b11",        kUnparseable}, // ICU-22637
+        {u"GMT-๑๒",          (-((12*60)*60))}, // ICU-22637
+        {u"GMT-๑๒:๓๔",       (-((12*60+34)*60))}, // ICU-22637
+        {u"GMT+๑๒:๓๔:๕๖",    ((12*60+34)*60+56)}, // ICU-22637
         {0,           0}
     };
 
@@ -2143,7 +2171,6 @@ void TimeZoneTest::TestCanonicalID() {
         {"Asia/Muscat", "Asia/Dubai"},
         {"Asia/Phnom_Penh", "Asia/Bangkok"},
         {"Asia/Qatar", "Asia/Bahrain"},
-        {"Asia/Urumqi", "Antarctica/Vostok"},
         {"Asia/Vientiane", "Asia/Bangkok"},
         {"Atlantic/Jan_Mayen", "Europe/Berlin"},
         {"Atlantic/Reykjavik", "Africa/Abidjan"},

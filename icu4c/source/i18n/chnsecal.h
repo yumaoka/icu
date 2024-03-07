@@ -208,8 +208,8 @@ class U_I18N_API ChineseCalendar : public Calendar {
  protected:
   virtual int32_t handleGetLimit(UCalendarDateFields field, ELimitType limitType) const override;
   virtual int32_t handleGetMonthLength(int32_t extendedYear, int32_t month) const override;
-  virtual int32_t handleComputeMonthStart(int32_t eyear, int32_t month, UBool useMonth) const override;
-  virtual int32_t handleGetExtendedYear() override;
+  virtual int64_t handleComputeMonthStart(int32_t eyear, int32_t month, UBool useMonth) const override;
+  virtual int32_t handleGetExtendedYear(UErrorCode& status) override;
   virtual void handleComputeFields(int32_t julianDay, UErrorCode &status) override;
   virtual const UFieldResolutionTable* getFieldResolutionTable() const override;
 
@@ -325,6 +325,10 @@ class U_I18N_API ChineseCalendar : public Calendar {
   int32_t          internalGetDefaultCenturyStartYear() const;
 
   ChineseCalendar() = delete; // default constructor not implemented
+
+#ifdef __CalendarTest__
+  friend void CalendarTest::TestChineseCalendarComputeMonthStart();
+#endif
 };
 
 U_NAMESPACE_END

@@ -536,7 +536,7 @@ int32_t GregorianCalendar::handleComputeJulianDay(UCalendarDateFields bestField,
         return jd;
 }
 
-int32_t GregorianCalendar::handleComputeMonthStart(int32_t eyear, int32_t month,
+int64_t GregorianCalendar::handleComputeMonthStart(int32_t eyear, int32_t month,
 
                                                    UBool /* useMonth */) const
 {
@@ -550,7 +550,8 @@ int32_t GregorianCalendar::handleComputeMonthStart(int32_t eyear, int32_t month,
 
     UBool isLeap = eyear%4 == 0;
     int64_t y = (int64_t)eyear-1;
-    int64_t julianDay = 365*y + ClockMath::floorDivide(y, (int64_t)4) + (kJan1_1JulianDay - 3);
+    int64_t julianDay = 365LL * y +
+        ClockMath::floorDivideInt64(y, 4LL) + kJan1_1JulianDay - 3LL;
 
     nonConstThis->fIsGregorian = (eyear >= fGregorianCutoverYear);
 #if defined (U_DEBUG_CAL)
@@ -580,7 +581,7 @@ int32_t GregorianCalendar::handleComputeMonthStart(int32_t eyear, int32_t month,
         julianDay += isLeap?kLeapNumDays[month]:kNumDays[month];
     }
 
-    return static_cast<int32_t>(julianDay);
+    return julianDay;
 }
 
 int32_t GregorianCalendar::handleGetMonthLength(int32_t extendedYear, int32_t month)  const
@@ -1157,7 +1158,10 @@ int32_t GregorianCalendar::getActualMaximum(UCalendarDateFields field, UErrorCod
 }
 
 
-int32_t GregorianCalendar::handleGetExtendedYear() {
+int32_t GregorianCalendar::handleGetExtendedYear(UErrorCode& status) {
+    if (U_FAILURE(status)) {
+        return 0;
+    }
     // the year to return
     int32_t year = kEpochYear;
 
@@ -1183,8 +1187,11 @@ int32_t GregorianCalendar::handleGetExtendedYear() {
             int32_t era = internalGet(UCAL_ERA, AD);
             if (era == BC) {
                 year = 1 - internalGet(UCAL_YEAR, 1); // Convert to extended year
-            } else {
+            } else if (era == AD) {
                 year = internalGet(UCAL_YEAR, kEpochYear);
+            } else {
+                status = U_ILLEGAL_ARGUMENT_ERROR;
+                return 0;
             }
         }
         break;

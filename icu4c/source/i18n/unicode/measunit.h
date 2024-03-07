@@ -690,7 +690,7 @@ class U_I18N_API MeasureUnit: public UObject {
      * @return          The class ID for all objects of this class.
      * @stable ICU 53
      */
-    static UClassID U_EXPORT2 getStaticClassID(void);
+    static UClassID U_EXPORT2 getStaticClassID();
 
     /**
      * Returns a unique class ID POLYMORPHICALLY. Pure virtual override. This
@@ -703,7 +703,7 @@ class U_I18N_API MeasureUnit: public UObject {
      *                  other classes have different class IDs.
      * @stable ICU 53
      */
-    virtual UClassID getDynamicClassID(void) const override;
+    virtual UClassID getDynamicClassID() const override;
 
 #ifndef U_HIDE_INTERNAL_API
     /**
@@ -3068,23 +3068,21 @@ class U_I18N_API MeasureUnit: public UObject {
      */
     static MeasureUnit getPoundPerSquareInch();
 
-#ifndef U_HIDE_DRAFT_API
     /**
      * Returns by pointer, unit of speed: beaufort.
      * Caller owns returned value and must free it.
      * Also see {@link #getBeaufort()}.
      * @param status ICU error code.
-     * @draft ICU 73
+     * @stable ICU 73
      */
     static MeasureUnit *createBeaufort(UErrorCode &status);
 
     /**
      * Returns by value, unit of speed: beaufort.
      * Also see {@link #createBeaufort()}.
-     * @draft ICU 73
+     * @stable ICU 73
      */
     static MeasureUnit getBeaufort();
-#endif /* U_HIDE_DRAFT_API */
 
     /**
      * Returns by pointer, unit of speed: kilometer-per-hour.

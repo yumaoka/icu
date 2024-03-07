@@ -3916,7 +3916,7 @@ public class MeasureUnitTest extends CoreTestFmwk {
                 System.out.println("     * Returns by value, unit of " + type + ": " + code + ".");
                 System.out.printf("     * Also see {@link #create%s()}.\n", name);
                 String getterVersion = getVersion(javaName, thisVersion);
-                if (Integer.valueOf(getterVersion) < 64) {
+                if (Integer.parseInt(getterVersion) < 64) {
                     getterVersion = "64";
                 }
                 if (isDraft(javaName)) {
@@ -4675,8 +4675,7 @@ public class MeasureUnitTest extends CoreTestFmwk {
 
             // Prove that all built-in units are parseable, except "generic" temperature
             // (and for now, beaufort units)
-            if (unit == MeasureUnit.GENERIC_TEMPERATURE ||
-                    (unit == MeasureUnit.BEAUFORT && logKnownIssue("CLDR-16327", "beaufort currently not convertible"))) {
+            if (unit == MeasureUnit.GENERIC_TEMPERATURE) {
                 try {
                     MeasureUnit.forIdentifier(unit.getIdentifier());
                     Assert.fail("GENERIC_TEMPERATURE should not be parseable (BEAUFORT also currently non-parseable)");

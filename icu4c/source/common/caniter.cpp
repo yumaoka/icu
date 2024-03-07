@@ -64,6 +64,7 @@ U_NAMESPACE_BEGIN
 
 UOBJECT_DEFINE_RTTI_IMPLEMENTATION(CanonicalIterator)
 
+
 /**
  *@param source string to get results for
  */
@@ -73,10 +74,10 @@ CanonicalIterator::CanonicalIterator(const UnicodeString &sourceStr, UErrorCode 
     pieces_lengths(nullptr),
     current(nullptr),
     current_length(0),
-    nfd(*Normalizer2::getNFDInstance(status)),
-    nfcImpl(*Normalizer2Factory::getNFCImpl(status))
+    nfd(Normalizer2::getNFDInstance(status)),
+    nfcImpl(Normalizer2Factory::getNFCImpl(status))
 {
-    if(U_SUCCESS(status) && nfcImpl.ensureCanonIterData(status)) {
+    if(U_SUCCESS(status) && nfcImpl->ensureCanonIterData(status)) {
       setSource(sourceStr, status);
     }
 }
@@ -172,7 +173,7 @@ void CanonicalIterator::setSource(const UnicodeString &newSource, UErrorCode &st
     int32_t i = 0;
     UnicodeString *list = nullptr;
 
-    nfd.normalize(newSource, source, status);
+    nfd->normalize(newSource, source, status);
     if(U_FAILURE(status)) {
       return;
     }
@@ -219,7 +220,7 @@ void CanonicalIterator::setSource(const UnicodeString &newSource, UErrorCode &st
     // on the NFD form - see above).
     for (; i < source.length(); i += U16_LENGTH(cp)) {
         cp = source.char32At(i);
-        if (nfcImpl.isCanonSegmentStarter(cp)) {
+        if (nfcImpl->isCanonSegmentStarter(cp)) {
             source.extract(start, i-start, list[list_length++]); // add up to i
             start = i;
         }
@@ -264,8 +265,17 @@ CleanPartialInitialization:
  * @param source the string to find permutations for
  * @return the results in a set.
  */
-void U_EXPORT2 CanonicalIterator::permute(UnicodeString &source, UBool skipZeros, Hashtable *result, UErrorCode &status) {
+void U_EXPORT2 CanonicalIterator::permute(UnicodeString &source, UBool skipZeros, Hashtable *result, UErrorCode &status, int32_t depth) {
     if(U_FAILURE(status)) {
+        return;
+    }
+    // To avoid infinity loop caused by permute, we limit the depth of recursive
+    // call to permute and return U_UNSUPPORTED_ERROR.
+    // We know in some unit test we need at least 4. Set to 8 just in case some
+    // unforseen use cases.
+    constexpr int32_t kPermuteDepthLimit = 8;
+    if (depth > kPermuteDepthLimit) {
+        status = U_UNSUPPORTED_ERROR;
         return;
     }
     //if (PROGRESS) printf("Permute: %s\n", UToS(Tr(source)));
@@ -311,7 +321,7 @@ void U_EXPORT2 CanonicalIterator::permute(UnicodeString &source, UBool skipZeros
 
         // see what the permutations of the characters before and after this one are
         //Hashtable *subpermute = permute(source.substring(0,i) + source.substring(i + UTF16.getCharCount(cp)));
-        permute(subPermuteString.remove(i, U16_LENGTH(cp)), skipZeros, &subpermute, status);
+        permute(subPermuteString.remove(i, U16_LENGTH(cp)), skipZeros, &subpermute, status, depth+1);
         /* Test for buffer overflows */
         if(U_FAILURE(status)) {
             return;
@@ -381,7 +391,7 @@ UnicodeString* CanonicalIterator::getEquivalents(const UnicodeString &segment, i
             //UnicodeString *possible = new UnicodeString(*((UnicodeString *)(ne2->value.pointer)));
             UnicodeString possible(*((UnicodeString *)(ne2->value.pointer)));
             UnicodeString attempt;
-            nfd.normalize(possible, attempt, status);
+            nfd->normalize(possible, attempt, status);
 
             // TODO: check if operator == is semanticaly the same as attempt.equals(segment)
             if (attempt==segment) {
@@ -448,7 +458,7 @@ Hashtable *CanonicalIterator::getEquivalents2(Hashtable *fillinResult, const cha
     for (int32_t i = 0; i < segLen; i += U16_LENGTH(cp)) {
         // see if any character is at the start of some decomposition
         U16_GET(segment, 0, i, segLen, cp);
-        if (!nfcImpl.getCanonStartSet(cp, starts)) {
+        if (!nfcImpl->getCanonStartSet(cp, starts)) {
             continue;
         }
         // if so, see which decompositions match
@@ -509,7 +519,7 @@ Hashtable *CanonicalIterator::extract(Hashtable *fillinResult, UChar32 comp, con
     UnicodeString temp(comp);
     int32_t inputLen=temp.length();
     UnicodeString decompString;
-    nfd.normalize(temp, decompString, status);
+    nfd->normalize(temp, decompString, status);
     if (U_FAILURE(status)) {
         return nullptr;
     }
@@ -573,7 +583,7 @@ Hashtable *CanonicalIterator::extract(Hashtable *fillinResult, UChar32 comp, con
     // brute force approach
     // check to make sure result is canonically equivalent
     UnicodeString trial;
-    nfd.normalize(temp, trial, status);
+    nfd->normalize(temp, trial, status);
     if(U_FAILURE(status) || trial.compare(segment+segmentPos, segLen - segmentPos) != 0) {
         return nullptr;
     }

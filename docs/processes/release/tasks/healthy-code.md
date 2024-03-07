@@ -586,7 +586,7 @@ To use Eclipse, do the following:
 For ICU4J,
 
 ```sh
-$ mvn verify -DICU.exhaustive=10
+$ mvn install -DICU.exhaustive=10
 ```
 
 For ICU4C, testing with an optimized build will help reduce the elapsed time
@@ -605,7 +605,7 @@ tests. These instructions run the sanitizer on the entire test suite. The clang
 compiler is required.
 
 ```sh
-$ CPPFLAGS=-fsanitize=thread LDFLAGS=-fsanitize=thread ./runConfigureICU --enable-debug --disable-release Linux --disable-renaming
+$ CPPFLAGS=-fsanitize=thread LDFLAGS=-fsanitize=thread ./runConfigureICU --enable-debug --disable-release Linux/clang --disable-renaming
 $ make clean
 $ make -j -l2.5 check
 ```

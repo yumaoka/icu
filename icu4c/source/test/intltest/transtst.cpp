@@ -219,35 +219,35 @@ void TransliteratorTest::TestInstantiation() {
     assertSuccess("count()", ec);
     UnicodeString name;
     for (int32_t i=0; i<n; ++i) {
-        const UnicodeString& id = *avail->snext(ec);
+        const UnicodeString* const id = avail->snext(ec);
         if (!assertSuccess("snext()", ec) ||
-            !assertTrue("snext()!=nullptr", (&id)!=nullptr, true)) {
+            !assertTrue("snext()!=nullptr", id != nullptr, true)) {
             break;
         }
         UnicodeString id2 = Transliterator::getAvailableID(i);
-        if (id.length() < 1) {
+        if (id->length() < 1) {
             errln(UnicodeString("FAIL: getAvailableID(") +
                   i + ") returned empty string");
             continue;
         }
-        if (id != id2) {
+        if (*id != id2) {
             errln(UnicodeString("FAIL: getAvailableID(") +
                   i + ") != getAvailableIDs().snext()");
             continue;
         }
         UParseError parseError;
         UErrorCode status = U_ZERO_ERROR;
-        Transliterator* t = Transliterator::createInstance(id,
+        Transliterator* t = Transliterator::createInstance(*id,
                               UTRANS_FORWARD, parseError,status);
         name.truncate(0);
-        Transliterator::getDisplayName(id, name);
+        Transliterator::getDisplayName(*id, name);
         if (t == 0) {
 #if UCONFIG_NO_BREAK_ITERATION
             // If UCONFIG_NO_BREAK_ITERATION is on, then only Thai should fail.
-            if (id.compare((UnicodeString)"Thai-Latn") != 0 &&
-                id.compare((UnicodeString)"Thai-Latin") != 0)
+            if (id->compare((UnicodeString)"Thai-Latn") != 0 &&
+                id->compare((UnicodeString)"Thai-Latin") != 0)
 #endif
-                dataerrln(UnicodeString("FAIL: Couldn't create ") + id +
+                dataerrln(UnicodeString("FAIL: Couldn't create ") + *id +
                       /*", parse error " + parseError.code +*/
                       ", line " + parseError.line +
                       ", offset " + parseError.offset +
@@ -263,7 +263,7 @@ void TransliteratorTest::TestInstantiation() {
                 --i; // Compensate for deleted entry
             }
         } else {
-            logln(UnicodeString("OK: ") + name + " (" + id + ")");
+            logln(UnicodeString("OK: ") + name + " (" + *id + ")");
 
             // Now test toRules
             UnicodeString rules;
@@ -271,7 +271,7 @@ void TransliteratorTest::TestInstantiation() {
             Transliterator *u = Transliterator::createFromRules("x",
                                     rules, UTRANS_FORWARD, parseError,status);
             if (u == 0) {
-                errln(UnicodeString("FAIL: ") + id +
+                errln(UnicodeString("FAIL: ") + *id +
                       ".createFromRules() => bad rules" +
                       /*", parse error " + parseError.code +*/
                       ", line " + parseError.line +
@@ -2151,7 +2151,7 @@ void TransliteratorTest::TestSTV() {
         for (j=0; j<3; ++j) {
             if (SOURCES[j] == nullptr) continue;
             if (s.caseCompare(SOURCES[j],0)==0) {
-                if (j!=2 || !logKnownIssue("21911", "ICU4C cannot create inverse of (or unregister) Any-Xxxx/Variant transform created from both-direction transform")) {
+                if (j!=2 || !logKnownIssue("ICU-21911", "ICU4C cannot create inverse of (or unregister) Any-Xxxx/Variant transform created from both-direction transform")) {
                     errln((UnicodeString)"FAIL: unregister(" + s + "-*) failed");
                 }
             }
@@ -3685,7 +3685,7 @@ void TransliteratorTest::TestIncrementalProgress() {
 #if UCONFIG_NO_BREAK_ITERATION
                          && id.compare((UnicodeString)"Latin-Thai/") != 0
 #endif
-                         && !(logKnownIssue("21911", "ICU4C cannot create inverse of Any-Xxxx/Variant transform created from both-direction transform") &&
+                         && !(logKnownIssue("ICU-21911", "ICU4C cannot create inverse of Any-Xxxx/Variant transform created from both-direction transform") &&
                                 id.startsWith((UnicodeString)"Any-") &&
                                 (id.endsWith((UnicodeString)"/UNGEGN") || id.startsWith((UnicodeString)"Any-Ethiopic/") || id.startsWith((UnicodeString)"Any-Braille/") ||
                                  id.endsWith((UnicodeString)"/Gurage_2013") || id.endsWith((UnicodeString)"/Gutgarts") || id.endsWith((UnicodeString)"/Tekie_Alibekit") ||

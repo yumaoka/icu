@@ -144,6 +144,12 @@ void RBBITest::runIndexedTest( int32_t index, UBool exec, const char* &name, cha
     TESTCASE_AUTO(TestRandomAccess);
     TESTCASE_AUTO(TestExternalBreakEngineWithFakeTaiLe);
     TESTCASE_AUTO(TestExternalBreakEngineWithFakeYue);
+    TESTCASE_AUTO(TestBug22579);
+    TESTCASE_AUTO(TestBug22581);
+    TESTCASE_AUTO(TestBug22584);
+    TESTCASE_AUTO(TestBug22585);
+    TESTCASE_AUTO(TestBug22602);
+    TESTCASE_AUTO(TestBug22636);
 
 #if U_ENABLE_TRACING
     TESTCASE_AUTO(TestTraceCreateCharacter);
@@ -3538,6 +3544,9 @@ RBBILineMonkey::~RBBILineMonkey() {
 //
 //       type = char | word | line | sent | title
 //
+//       export = (path)   Export test cases to (path)_(type).txt in the UCD
+//                         test case format.
+//
 //  Example:
 //     intltest  rbbi/RBBITest/TestMonkey@"type=line loop=-1"
 //
@@ -3974,6 +3983,8 @@ void RBBITest::TestMonkey() {
     UnicodeString  breakType = "all";
     Locale         locale("en");
     UBool          useUText  = false;
+    UBool          scalarsOnly = false;
+    std::string    exportPath;
 
     if (quick == false) {
         loopCount = 10000;
@@ -3998,6 +4009,19 @@ void RBBITest::TestMonkey() {
             p = u.replaceFirst("", status);
         }
 
+        RegexMatcher pathMatcher(" *export *= *([^ ]+) *", p, 0, status);
+        if (pathMatcher.find()) {
+            pathMatcher.group(1, status).toUTF8String(exportPath);
+            pathMatcher.reset();
+            p = pathMatcher.replaceFirst("", status);
+        }
+
+        RegexMatcher s(" *scalars_only", p, 0, status);
+        if (s.find()) {
+            scalarsOnly = true;
+            s.reset();
+            p = s.replaceFirst("", status);
+        }
 
         // m.reset(p);
         if (RegexMatcher(UNICODE_STRING_SIMPLE("\\S"), p, 0, status).find()) {
@@ -4013,64 +4037,80 @@ void RBBITest::TestMonkey() {
     }
 
     if (breakType == "char" || breakType == "all") {
+        FILE *file = exportPath.empty() ? nullptr : fopen((exportPath + "_char.txt").c_str(), "w");
         RBBICharMonkey  m;
         BreakIterator  *bi = BreakIterator::createCharacterInstance(locale, status);
         if (U_SUCCESS(status)) {
-            RunMonkey(bi, m, "char", seed, loopCount, useUText);
+            RunMonkey(bi, m, "char", seed, loopCount, useUText, file, scalarsOnly);
             if (breakType == "all" && useUText==false) {
                 // Also run a quick test with UText when "all" is specified
-                RunMonkey(bi, m, "char", seed, loopCount, true);
+                RunMonkey(bi, m, "char", seed, loopCount, true, nullptr, scalarsOnly);
             }
         }
         else {
             errcheckln(status, "Creation of character break iterator failed %s", u_errorName(status));
         }
         delete bi;
+        if (file != nullptr) {
+            fclose(file);
+        }
     }
 
     if (breakType == "word" || breakType == "all") {
         logln("Word Break Monkey Test");
+        FILE *file = exportPath.empty() ? nullptr : fopen((exportPath + "_word.txt").c_str(), "w");
         RBBIWordMonkey  m;
         BreakIterator  *bi = BreakIterator::createWordInstance(locale, status);
         if (U_SUCCESS(status)) {
-            RunMonkey(bi, m, "word", seed, loopCount, useUText);
+            RunMonkey(bi, m, "word", seed, loopCount, useUText, file, scalarsOnly);
         }
         else {
             errcheckln(status, "Creation of word break iterator failed %s", u_errorName(status));
         }
         delete bi;
+        if (file != nullptr) {
+            fclose(file);
+        }
     }
 
     if (breakType == "line" || breakType == "all") {
         logln("Line Break Monkey Test");
+        FILE *file = exportPath.empty() ? nullptr : fopen((exportPath + "_line.txt").c_str(), "w");
         RBBILineMonkey  m;
         BreakIterator  *bi = BreakIterator::createLineInstance(locale, status);
         if (loopCount >= 10) {
             loopCount = loopCount / 5;   // Line break runs slower than the others.
         }
         if (U_SUCCESS(status)) {
-            RunMonkey(bi, m, "line", seed, loopCount, useUText);
+            RunMonkey(bi, m, "line", seed, loopCount, useUText, file, scalarsOnly);
         }
         else {
             errcheckln(status, "Creation of line break iterator failed %s", u_errorName(status));
         }
         delete bi;
+        if (file != nullptr) {
+            fclose(file);
+        }
     }
 
     if (breakType == "sent" || breakType == "all"  ) {
         logln("Sentence Break Monkey Test");
+        FILE *file = exportPath.empty() ? nullptr : fopen((exportPath + "_sent.txt").c_str(), "w");
         RBBISentMonkey  m;
         BreakIterator  *bi = BreakIterator::createSentenceInstance(locale, status);
         if (loopCount >= 10) {
             loopCount = loopCount / 10;   // Sentence runs slower than the other break types
         }
         if (U_SUCCESS(status)) {
-            RunMonkey(bi, m, "sent", seed, loopCount, useUText);
+            RunMonkey(bi, m, "sent", seed, loopCount, useUText, file, scalarsOnly);
         }
         else {
             errcheckln(status, "Creation of line break iterator failed %s", u_errorName(status));
         }
         delete bi;
+        if (file != nullptr) {
+            fclose(file);
+        }
     }
 
 #endif
@@ -4079,14 +4119,19 @@ void RBBITest::TestMonkey() {
 //
 //  Run a RBBI monkey test.  Common routine, for all break iterator types.
 //    Parameters:
-//       bi      - the break iterator to use
-//       mk      - MonkeyKind, abstraction for obtaining expected results
-//       name    - Name of test (char, word, etc.) for use in error messages
-//       seed    - Seed for starting random number generator (parameter from user)
+//       bi          - the break iterator to use
+//       mk          - MonkeyKind, abstraction for obtaining expected results
+//       name        - Name of test (char, word, etc.) for use in error messages
+//       seed        - Seed for starting random number generator (parameter from user)
 //       numIterations
+//       exportFile  - Pointer to a file to which the test cases will be written in
+//                     UCD format.  May be null.
+//       scalarsOnly - Only test sequences of Unicode scalar values; if this is false,
+//                     arbitrary sequences of code points (including unpaired surrogates)
+//                     are tested.
 //
 void RBBITest::RunMonkey(BreakIterator *bi, RBBIMonkeyKind &mk, const char *name, uint32_t  seed,
-                         int32_t numIterations, UBool useUText) {
+                         int32_t numIterations, UBool useUText, FILE *exportFile, UBool scalarsOnly) {
 
 #if !UCONFIG_NO_REGULAR_EXPRESSIONS
 
@@ -4151,6 +4196,9 @@ void RBBITest::RunMonkey(BreakIterator *bi, RBBIMonkeyKind &mk, const char *name
                 errln("%s:%d c < 0", __FILE__, __LINE__);
                 break;
             }
+            if (scalarsOnly && U16_IS_SURROGATE(c)) {
+              continue;
+            }
             // Do not assemble a supplementary character from randomly generated separate surrogates.
             //   (It could be a dictionary character)
             if (U16_IS_TRAIL(c) && testText.length() > 0 && U16_IS_LEAD(testText.charAt(testText.length()-1))) {
@@ -4178,6 +4226,7 @@ void RBBITest::RunMonkey(BreakIterator *bi, RBBIMonkeyKind &mk, const char *name
             expectedBreaks[breakPos] = 1;
             expectedCount++;
             U_ASSERT(expectedCount<testText.length());
+	    (void)expectedCount;  // Used by U_ASSERT().
         }
 
         // Find the break positions using forward iteration
@@ -4265,6 +4314,16 @@ void RBBITest::RunMonkey(BreakIterator *bi, RBBIMonkeyKind &mk, const char *name
                 }
                 lastBreakPos = breakPos;
             }
+        }
+
+        if (exportFile != nullptr) {
+            for (i = 0; i < testText.length();) {
+                fprintf(exportFile, expectedBreaks[i] ? "÷ " : "× ");
+                char32_t const c = testText.char32At(i);
+                fprintf(exportFile, "%04X ", static_cast<uint32_t>(c));
+                i += U16_LENGTH(c);
+            }
+            fprintf(exportFile, expectedBreaks[testText.length()] ? "÷  # 🐒\n" : "×  # 🐒\n");
         }
 
         // Compare the expected and actual results.
@@ -5857,4 +5916,76 @@ void RBBITest::TestExternalBreakEngineWithFakeTaiLe() {
                expected2 == actual2);
 }
 
+// Test a single unpaired unpaired char (either surrogate low or high) in
+// an Unicode set will not cause infinity loop.
+void RBBITest::TestBug22585() {
+    UnicodeString rule = u"$a=[";
+    rule.append(0xdecb) // an unpaired surrogate high
+        .append("];");
+    UParseError pe {};
+    UErrorCode ec {U_ZERO_ERROR};
+    RuleBasedBreakIterator bi(rule, pe, ec);
+
+    rule = u"$a=[";
+    rule.append(0xd94e) // an unpaired surrogate low
+        .append("];");
+    ec = U_ZERO_ERROR;
+    RuleBasedBreakIterator bi2(rule, pe, ec);
+}
+
+// Test a long string with a ; in the end will not cause stack overflow.
+void RBBITest::TestBug22602() {
+    UnicodeString rule(25000, (UChar32)'A', 25000-1);
+    rule.append(u";");
+    UParseError pe {};
+    UErrorCode ec {U_ZERO_ERROR};
+    RuleBasedBreakIterator bi(rule, pe, ec);
+}
+
+void RBBITest::TestBug22636() {
+    UParseError pe {};
+    UErrorCode ec {U_ZERO_ERROR};
+    RuleBasedBreakIterator bi(u"A{77777777777777};", pe, ec);
+    assertEquals(WHERE, ec, U_BRK_RULE_SYNTAX);
+    ec = U_ZERO_ERROR;
+    RuleBasedBreakIterator bi2(u"A{2147483648};", pe, ec);
+    assertEquals(WHERE, ec, U_BRK_RULE_SYNTAX);
+    ec = U_ZERO_ERROR;
+    RuleBasedBreakIterator bi3(u"A{2147483647};", pe, ec);
+    assertEquals(WHERE, ec, U_ZERO_ERROR);
+}
+
+void RBBITest::TestBug22584() {
+    // Creating a break iterator from a rule consisting of a very long
+    // literal input string caused a stack overflow when deleting the
+    // parse tree for the input during the rule building process.
+
+    // Failure of this test showed as a crash during the break iterator construction.
+
+    UnicodeString ruleStr(100000, (UChar32)0, 100000);
+    UParseError pe {};
+    UErrorCode ec {U_ZERO_ERROR};
+
+    RuleBasedBreakIterator bi(ruleStr, pe, ec);
+    ec = U_ZERO_ERROR;
+    ruleStr = u"a/b;c";
+    RuleBasedBreakIterator bi2(ruleStr, pe, ec);
+}
+
+void RBBITest::TestBug22579() {
+    // Test not causing null deref in cloneTree
+    UnicodeString ruleStr = u"[{ab}];";
+    UParseError pe {};
+    UErrorCode ec {U_ZERO_ERROR};
+
+    RuleBasedBreakIterator bi(ruleStr, pe, ec);
+}
+void RBBITest::TestBug22581() {
+    // Test duplicate variable setting will not leak the rule compilation
+    UnicodeString ruleStr = u"$foo=[abc]; $foo=[xyz]; $foo;";
+    UParseError pe {};
+    UErrorCode ec {U_ZERO_ERROR};
+
+    RuleBasedBreakIterator bi(ruleStr, pe, ec);
+}
 #endif // #if !UCONFIG_NO_BREAK_ITERATION

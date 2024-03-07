@@ -332,7 +332,19 @@ public: // package
     void TestDangiOverflowIsLeapMonthBetween22507();
 
     void TestFWWithISO8601();
+    void TestAddOverflow();
     void TestRollWeekOfYear();
+    void Test22633ChineseOverflow();
+    void Test22633IndianOverflow();
+    void Test22633IslamicUmalquraOverflow();
+    void Test22633PersianOverflow();
+    void Test22633HebrewOverflow();
+    void Test22633AMPMOverflow();
+
+    void verifyFirstDayOfWeek(const char* locale, UCalendarDaysOfWeek expected);
+    void TestFirstDayOfWeek();
+
+    void TestChineseCalendarComputeMonthStart();
 
     void RunChineseCalendarInTemporalLeapYearTest(Calendar* cal);
     void RunIslamicCalendarInTemporalLeapYearTest(Calendar* cal);

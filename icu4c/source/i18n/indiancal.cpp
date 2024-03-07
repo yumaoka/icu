@@ -203,7 +203,7 @@ static double IndianToJD(int32_t year, int32_t month, int32_t date) {
  * @param eyear The year in Indian Calendar measured from Saka Era (78 AD).
  * @param month The month in Indian calendar
  */
-int32_t IndianCalendar::handleComputeMonthStart(int32_t eyear, int32_t month, UBool /* useMonth */ ) const {
+int64_t IndianCalendar::handleComputeMonthStart(int32_t eyear, int32_t month, UBool /* useMonth */ ) const {
 
    //month is 0 based; converting it to 1-based 
    int32_t imonth;
@@ -219,16 +219,19 @@ int32_t IndianCalendar::handleComputeMonthStart(int32_t eyear, int32_t month, UB
        imonth = month + 1; 
    }
    
-   double jd = IndianToJD(eyear ,imonth, 1);
+   int64_t jd = IndianToJD(eyear ,imonth, 1);
 
-   return (int32_t)jd;
+   return jd;
 }
 
 //-------------------------------------------------------------------------
 // Functions for converting from milliseconds to field values
 //-------------------------------------------------------------------------
 
-int32_t IndianCalendar::handleGetExtendedYear() {
+int32_t IndianCalendar::handleGetExtendedYear(UErrorCode& status) {
+    if (U_FAILURE(status)) {
+        return 0;
+    }
     int32_t year;
 
     if (newerField(UCAL_EXTENDED_YEAR, UCAL_YEAR) == UCAL_EXTENDED_YEAR) {

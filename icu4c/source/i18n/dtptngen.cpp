@@ -29,7 +29,6 @@
 #include "unicode/ustring.h"
 #include "unicode/rep.h"
 #include "unicode/region.h"
-#include "bytesinkutil.h"
 #include "cpputils.h"
 #include "mutex.h"
 #include "umutex.h"
@@ -658,10 +657,9 @@ void DateTimePatternGenerator::getAllowedHourFormats(const Locale &locale, UErro
     if (U_FAILURE(status)) { return; }
 
     const char *language = locale.getLanguage();
-    char baseCountry[8];
-    ulocimp_getRegionForSupplementalData(locale.getName(), false, baseCountry, 8, &status);
-    const char* country = baseCountry;
-    
+    CharString baseCountry = ulocimp_getRegionForSupplementalData(locale.getName(), false, status);
+    const char* country = baseCountry.data();
+
     Locale maxLocale;  // must be here for correct lifetime
     if (*language == '\0' || *country == '\0') {
         maxLocale = locale;
@@ -905,15 +903,7 @@ DateTimePatternGenerator::getCalendarTypeToUse(const Locale& locale, CharString&
             &localStatus);
         localeWithCalendarKey[ULOC_LOCALE_IDENTIFIER_CAPACITY-1] = 0; // ensure null termination
         // now get the calendar key value from that locale
-        destination.clear();
-        {
-            CharStringByteSink sink(&destination);
-            ulocimp_getKeywordValue(
-                localeWithCalendarKey,
-                "calendar",
-                sink,
-                &localStatus);
-        }
+        destination = ulocimp_getKeywordValue(localeWithCalendarKey, "calendar", localStatus);
         // If the input locale was invalid, don't fail with missing resource error, instead
         // continue with default of Gregorian.
         if (U_FAILURE(localStatus) && localStatus != U_MISSING_RESOURCE_ERROR) {
@@ -1023,7 +1013,7 @@ struct DateTimePatternGenerator::AvailableFormatsSink : public ResourceSink {
     AvailableFormatsSink(DateTimePatternGenerator& _dtpg) : dtpg(_dtpg) {}
     virtual ~AvailableFormatsSink();
 
-    virtual void put(const char *key, ResourceValue &value, UBool isRoot,
+    virtual void put(const char *key, ResourceValue &value, UBool /*isRoot*/,
             UErrorCode &errorCode) override {
         const UnicodeString formatKey(key, -1, US_INV);
         if (!dtpg.isAvailableFormatSet(formatKey) ) {
@@ -1032,7 +1022,7 @@ struct DateTimePatternGenerator::AvailableFormatsSink : public ResourceSink {
             // derived from std patterns, but not a previous availableFormats entry:
             const UnicodeString& formatValue = value.getUnicodeString(errorCode);
             conflictingPattern.remove();
-            dtpg.addPatternWithSkeleton(formatValue, &formatKey, !isRoot, conflictingPattern, errorCode);
+            dtpg.addPatternWithSkeleton(formatValue, &formatKey, true, conflictingPattern, errorCode);
         }
     }
 };

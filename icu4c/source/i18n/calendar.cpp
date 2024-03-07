@@ -63,7 +63,6 @@
 #include "sharedcalendar.h"
 #include "unifiedcache.h"
 #include "ulocimp.h"
-#include "bytesinkutil.h"
 #include "charstr.h"
 
 #if !UCONFIG_NO_SERVICE
@@ -259,20 +258,12 @@ static ECalType getCalendarTypeForLocale(const char *locid) {
     // e.g ja_JP_TRADITIONAL -> ja_JP@calendar=japanese
     // NOTE: Since ICU-20187, ja_JP_TRADITIONAL no longer canonicalizes, and
     // the Gregorian calendar is returned instead.
-    CharString canonicalName;
-    {
-        CharStringByteSink sink(&canonicalName);
-        ulocimp_canonicalize(locid, sink, &status);
-    }
+    CharString canonicalName = ulocimp_canonicalize(locid, status);
     if (U_FAILURE(status)) {
         return CALTYPE_GREGORIAN;
     }
 
-    CharString calTypeBuf;
-    {
-        CharStringByteSink sink(&calTypeBuf);
-        ulocimp_getKeywordValue(canonicalName.data(), "calendar", sink, &status);
-    }
+    CharString calTypeBuf = ulocimp_getKeywordValue(canonicalName.data(), "calendar", status);
     if (U_SUCCESS(status)) {
         calType = getCalendarType(calTypeBuf.data());
         if (calType != CALTYPE_UNKNOWN) {
@@ -283,8 +274,7 @@ static ECalType getCalendarTypeForLocale(const char *locid) {
 
     // when calendar keyword is not available or not supported, read supplementalData
     // to get the default calendar type for the locale's region
-    char region[ULOC_COUNTRY_CAPACITY];
-    (void)ulocimp_getRegionForSupplementalData(canonicalName.data(), true, region, sizeof(region), &status);
+    CharString region = ulocimp_getRegionForSupplementalData(canonicalName.data(), true, status);
     if (U_FAILURE(status)) {
         return CALTYPE_GREGORIAN;
     }
@@ -292,7 +282,7 @@ static ECalType getCalendarTypeForLocale(const char *locid) {
     // Read preferred calendar values from supplementalData calendarPreference
     UResourceBundle *rb = ures_openDirect(nullptr, "supplementalData", &status);
     ures_getByKey(rb, "calendarPreferenceData", rb, &status);
-    UResourceBundle *order = ures_getByKey(rb, region, nullptr, &status);
+    UResourceBundle *order = ures_getByKey(rb, region.data(), nullptr, &status);
     if (status == U_MISSING_RESOURCE_ERROR && rb != nullptr) {
         status = U_ZERO_ERROR;
         order = ures_getByKey(rb, "001", nullptr, &status);
@@ -1462,9 +1452,15 @@ void Calendar::computeFields(UErrorCode &ec)
     // 11/6/00
 
     int32_t millisInDay;
-    int32_t days = ClockMath::floorDivide(localMillis, kOneDay, &millisInDay);
+    double days = ClockMath::floorDivide(
+        localMillis, U_MILLIS_PER_DAY, &millisInDay) +
+        kEpochStartAsJulianDay;
+    if (days > INT32_MAX || days < INT32_MIN) {
+        ec = U_ILLEGAL_ARGUMENT_ERROR;
+        return;
+    }
 
-    internalSet(UCAL_JULIAN_DAY,days + kEpochStartAsJulianDay);
+    internalSet(UCAL_JULIAN_DAY, static_cast<int32_t>(days));
 
 #if defined (U_DEBUG_CAL)
     //fprintf(stderr, "%s:%d- Hmm! Jules @ %d, as per %.0lf millis\n",
@@ -1580,7 +1576,14 @@ void Calendar::computeGregorianFields(int32_t julianDay, UErrorCode& ec) {
         return;
     }
     int32_t gregorianDayOfWeekUnused;
-    Grego::dayToFields(julianDay - kEpochStartAsJulianDay, fGregorianYear, fGregorianMonth, fGregorianDayOfMonth, gregorianDayOfWeekUnused, fGregorianDayOfYear);
+    if (uprv_add32_overflow(
+            julianDay, -kEpochStartAsJulianDay, &julianDay)) {
+        ec = U_ILLEGAL_ARGUMENT_ERROR;
+        return;
+    }
+    Grego::dayToFields(julianDay, fGregorianYear, fGregorianMonth,
+                       fGregorianDayOfMonth, gregorianDayOfWeekUnused,
+                       fGregorianDayOfYear);
 }
 
 /**
@@ -2072,7 +2075,12 @@ void Calendar::roll(UCalendarDateFields field, int32_t amount, UErrorCode& statu
             return;
         }
     case UCAL_JULIAN_DAY:
-        set(field, internalGet(field) + amount);
+        if (uprv_add32_overflow(
+            amount, internalGet(field), &amount)) {
+            status = U_ILLEGAL_ARGUMENT_ERROR;
+            return;
+        }
+        set(field, amount);
         return;
     default:
         // Other fields cannot be rolled by this method
@@ -2129,9 +2137,19 @@ void Calendar::add(UCalendarDateFields field, int32_t amount, UErrorCode& status
 
     switch (field) {
     case UCAL_ERA:
-        set(field, get(field, status) + amount);
+      {
+        int32_t era = get(UCAL_ERA, status);
+        if (U_FAILURE(status)) {
+            return;
+        }
+        if (uprv_add32_overflow(era, amount, &era)) {
+            status = U_ILLEGAL_ARGUMENT_ERROR;
+            return;
+        }
+        set(UCAL_ERA, era);
         pinField(UCAL_ERA, status);
         return;
+      }
 
     case UCAL_YEAR:
     case UCAL_YEAR_WOY:
@@ -2147,7 +2165,10 @@ void Calendar::add(UCalendarDateFields field, int32_t amount, UErrorCode& status
         if (era == 0) {
           const char * calType = getType();
           if ( uprv_strcmp(calType,"gregorian")==0 || uprv_strcmp(calType,"roc")==0 || uprv_strcmp(calType,"coptic")==0 ) {
-            amount = -amount;
+            if (uprv_mul32_overflow(amount, -1, &amount)) {
+                status = U_ILLEGAL_ARGUMENT_ERROR;
+                return;
+            }
           }
         }
       }
@@ -2159,7 +2180,16 @@ void Calendar::add(UCalendarDateFields field, int32_t amount, UErrorCode& status
       {
         UBool oldLenient = isLenient();
         setLenient(true);
-        set(field, get(field, status) + amount);
+        int32_t value = get(field, status);
+        if (U_FAILURE(status)) {
+            return;
+        }
+        if (uprv_add32_overflow(value, amount, &value)) {
+            status = U_ILLEGAL_ARGUMENT_ERROR;
+            return;
+        }
+        set(field, value);
+
         pinField(UCAL_DAY_OF_MONTH, status);
         if(oldLenient==false) {
           complete(status); /* force recalculate */
@@ -2895,11 +2925,17 @@ void Calendar::validateField(UCalendarDateFields field, UErrorCode &status) {
     int32_t y;
     switch (field) {
     case UCAL_DAY_OF_MONTH:
-        y = handleGetExtendedYear();
+        y = handleGetExtendedYear(status);
+        if (U_FAILURE(status)) {
+           return;
+        }
         validateField(field, 1, handleGetMonthLength(y, internalGetMonth()), status);
         break;
     case UCAL_DAY_OF_YEAR:
-        y = handleGetExtendedYear();
+        y = handleGetExtendedYear(status);
+        if (U_FAILURE(status)) {
+           return;
+        }
         validateField(field, 1, handleGetYearLength(y), status);
         break;
     case UCAL_DAY_OF_WEEK_IN_MONTH:
@@ -3239,7 +3275,9 @@ double Calendar::computeMillisInDay() {
             // Don't normalize here; let overflow bump into the next period.
             // This is consistent with how we handle other fields.
             millisInDay += internalGet(UCAL_HOUR);
-            millisInDay += 12 * internalGet(UCAL_AM_PM); // Default works for unset AM_PM
+            // Treat even number as AM and odd nubmber as PM to align with the
+            // logic in roll()
+            millisInDay += (internalGet(UCAL_AM_PM) % 2 == 0) ? 0 : 12;
         }
     }
 
@@ -3353,7 +3391,10 @@ int32_t Calendar::handleComputeJulianDay(UCalendarDateFields bestField, UErrorCo
     if (bestField == UCAL_WEEK_OF_YEAR && newerField(UCAL_YEAR_WOY, UCAL_YEAR) == UCAL_YEAR_WOY) {
         year = internalGet(UCAL_YEAR_WOY);
     } else {
-        year = handleGetExtendedYear();
+        year = handleGetExtendedYear(status);
+        if (U_FAILURE(status)) {
+           return 0;
+        }
     }
 
     internalSet(UCAL_EXTENDED_YEAR, year);
@@ -3391,11 +3432,20 @@ int32_t Calendar::handleComputeJulianDay(UCalendarDateFields bestField, UErrorCo
         } else {
             dayOfMonth = getDefaultDayInMonth(year, month);
         }
-        return julianDay + dayOfMonth;
+        if (uprv_add32_overflow(dayOfMonth, julianDay, &dayOfMonth)) {
+            status = U_ILLEGAL_ARGUMENT_ERROR;
+            return 0;
+        }
+        return dayOfMonth;
     }
 
     if (bestField == UCAL_DAY_OF_YEAR) {
-        return julianDay + internalGet(UCAL_DAY_OF_YEAR);
+        int32_t result;
+        if (uprv_add32_overflow(internalGet(UCAL_DAY_OF_YEAR), julianDay, &result)) {
+            status = U_ILLEGAL_ARGUMENT_ERROR;
+            return 0;
+        }
+        return result;
     }
 
     int32_t firstDayOfWeek = getFirstDayOfWeek(); // Localized fdw
@@ -3699,7 +3749,8 @@ int32_t Calendar::handleGetMonthLength(int32_t extendedYear, int32_t month) cons
         handleComputeMonthStart(extendedYear, month, true);
 }
 
-int32_t Calendar::handleGetYearLength(int32_t eyear) const  {
+int32_t Calendar::handleGetYearLength(int32_t eyear) const
+{
     return handleComputeMonthStart(eyear+1, 0, false) -
         handleComputeMonthStart(eyear, 0, false);
 }
@@ -4004,13 +4055,12 @@ Calendar::setWeekData(const Locale& desiredLocale, const char *type, UErrorCode&
         return;
     }
 
-    char region[ULOC_COUNTRY_CAPACITY];
-    (void)ulocimp_getRegionForSupplementalData(desiredLocale.getName(), true, region, sizeof(region), &status);
+    CharString region = ulocimp_getRegionForSupplementalData(desiredLocale.getName(), true, status);
 
     // Read week data values from supplementalData week data
     UResourceBundle *rb = ures_openDirect(nullptr, "supplementalData", &status);
     ures_getByKey(rb, "weekData", rb, &status);
-    UResourceBundle *weekData = ures_getByKey(rb, region, nullptr, &status);
+    UResourceBundle *weekData = ures_getByKey(rb, region.data(), nullptr, &status);
     if (status == U_MISSING_RESOURCE_ERROR && rb != nullptr) {
         status = U_ZERO_ERROR;
         weekData = ures_getByKey(rb, "001", nullptr, &status);

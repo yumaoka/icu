@@ -324,7 +324,7 @@ public:
      * @return   The Gregorian cutover time for this calendar.
      * @stable ICU 2.0
      */
-    UDate getGregorianChange(void) const;
+    UDate getGregorianChange() const;
 
     /**
      * Return true if the given year is a leap year. Determination of whether a year is
@@ -435,7 +435,7 @@ public:
      *           same class ID. Objects of other classes have different class IDs.
      * @stable ICU 2.0
      */
-    virtual UClassID getDynamicClassID(void) const override;
+    virtual UClassID getDynamicClassID() const override;
 
     /**
      * Return the class ID for this class. This is useful only for comparing to a return
@@ -448,7 +448,7 @@ public:
      * @return   The class ID for all objects of this class.
      * @stable ICU 2.0
      */
-    static UClassID U_EXPORT2 getStaticClassID(void);
+    static UClassID U_EXPORT2 getStaticClassID();
 
     /**
      * Returns the calendar type name string for this Calendar object.
@@ -487,7 +487,7 @@ public:
      * day of the given month and year
      * @internal
      */
-    virtual int32_t handleComputeMonthStart(int32_t eyear, int32_t month,
+    virtual int64_t handleComputeMonthStart(int32_t eyear, int32_t month,
                                                    UBool useMonth) const override;
 
     /**
@@ -542,7 +542,7 @@ public:
      * @return    the length of the year field
      * @internal
      */
-    int32_t yearLength(void) const;
+  int32_t yearLength() const;
 
 #endif  /* U_HIDE_INTERNAL_API */
 
@@ -583,10 +583,11 @@ public:
      * use the UCAL_EXTENDED_YEAR field or the UCAL_YEAR and supra-year fields (such
      * as UCAL_ERA) specific to the calendar system, depending on which set of
      * fields is newer.
+     * @param status
      * @return the extended year
      * @internal
      */
-    virtual int32_t handleGetExtendedYear() override;
+    virtual int32_t handleGetExtendedYear(UErrorCode& status) override;
 
     /** 
      * Subclasses may override this to convert from week fields 
@@ -631,7 +632,7 @@ public:
      * Validates the values of the set time fields.  True if they're all valid.
      * @return    True if the set time fields are all valid.
      */
-    UBool validateFields(void) const;
+    UBool validateFields() const;
 
     /**
      * Validates the value of the given time field.  True if it's valid.

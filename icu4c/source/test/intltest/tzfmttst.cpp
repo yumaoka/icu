@@ -87,6 +87,9 @@ TimeZoneFormatTest::runIndexedTest( int32_t index, UBool exec, const char* &name
         TESTCASE(7, TestFormatTZDBNamesAllZoneCoverage);
         TESTCASE(8, TestAdoptDefaultThreadSafe);
         TESTCASE(9, TestCentralTime);
+        TESTCASE(10, TestBogusLocale);
+        TESTCASE(11, Test22614GetMetaZoneNamesNotCrash);
+        TESTCASE(12, Test22615NonASCIIID);
     default: name = ""; break;
     }
 }
@@ -613,6 +616,14 @@ void TimeZoneFormatTest::RunTimeRoundTripTests(int32_t threadNumber) {
                     && logKnownIssue("11052", "Ambiguous zone name - Samoa Time")) {
                 continue;
             }
+
+            if ((*tzid == "America/Miquelon" || *tzid == "America/Hermosillo" || *tzid == "America/Mazatlan")
+                    && uprv_strncmp(gLocaleData->locales[locidx].getName(),"ku",2) == 0
+                    && uprv_strcmp(PATTERNS[patidx], "v") == 0
+                    && logKnownIssue("CLDR-17024", "TestTimeRoundTrip fail with tz=America/Miquelon, pattern=v, locale=ku")) {
+                continue;
+            }
+
 
             BasicTimeZone *tz = dynamic_cast<BasicTimeZone*>(TimeZone::createTimeZone(*tzid));
             sdf->setTimeZone(*tz);
@@ -1307,6 +1318,63 @@ TimeZoneFormatTest::TestFormatCustomZone() {
 }
 
 void
+TimeZoneFormatTest::Test22615NonASCIIID() {
+    UErrorCode status = U_ZERO_ERROR;
+    LocalPointer<TimeZoneNames> tzdb(TimeZoneNames::createTZDBInstance(Locale("en"), status));
+    // A test to ensure under the debugging build non ASCII id will not cause
+    // internal assertion error.
+    UnicodeString id(9, u'\u00C0', 8);
+    UnicodeString output;
+    tzdb->getMetaZoneDisplayName(id, UTZNM_SHORT_STANDARD, output);
+    assertTrue("getMetaZoneID of non ASCII id should return bogus string",
+               output.isBogus());
+
+    status = U_ZERO_ERROR;
+    std::unique_ptr<icu::StringEnumeration> enumeration(
+        tzdb->getAvailableMetaZoneIDs(id, status));
+    assertSuccess("getAvailableMetaZoneIDs should success", status);
+    assertEquals("getAvailableMetaZoneIDs with non ASCII id return 0 ids",
+                 0, enumeration->count(status));
+    assertSuccess("count should success", status);
+
+    output.remove();
+    tzdb->getMetaZoneID(id, 0, output);
+    assertTrue("getMetaZoneID of non ASCII id should return bogus string",
+               output.isBogus());
+
+    output.remove();
+    tzdb->getMetaZoneDisplayName(id, UTZNM_EXEMPLAR_LOCATION, output);
+    assertTrue("getMetaZoneDisplayName of non ASCII id should return bogus string",
+               output.isBogus());
+
+    output.remove();
+    tzdb->getTimeZoneDisplayName(id, UTZNM_SHORT_DAYLIGHT, output);
+    assertTrue("getTimeZoneDisplayName of non ASCII id should return bogus string",
+               output.isBogus());
+
+    output.remove();
+    tzdb->getExemplarLocationName(id, output);
+    assertTrue("getExemplarLocationName of non ASCII id should return bogus string",
+               output.isBogus());
+
+    output.remove();
+    tzdb->getDisplayName(id, UTZNM_LONG_GENERIC, 0, output);
+    assertTrue("getDisplayName of non ASCII id should return bogus string",
+               output.isBogus());
+}
+
+void
+TimeZoneFormatTest::Test22614GetMetaZoneNamesNotCrash() {
+    UErrorCode status = U_ZERO_ERROR;
+    LocalPointer<TimeZoneNames> tzdbNames(TimeZoneNames::createTZDBInstance(Locale("en"), status));
+    UnicodeString name;
+    for (int32_t i = 124; i < 150; i++) {
+        name.remove();
+        UnicodeString mzId(i+1, u'A', i);
+        tzdbNames->getMetaZoneDisplayName(mzId, UTZNM_SHORT_STANDARD, name);
+    }
+}
+void
 TimeZoneFormatTest::TestFormatTZDBNamesAllZoneCoverage() {
     UErrorCode status = U_ZERO_ERROR;
     LocalPointer<StringEnumeration> tzids(TimeZone::createEnumeration(status));
@@ -1400,6 +1468,16 @@ TimeZoneFormatTest::TestCentralTime() {
         if (dUS != dBZ) {
             errln((UnicodeString)"Parse results should be same for input: " + testInputs[i]);
         }
+    }
+}
+void
+TimeZoneFormatTest::TestBogusLocale() {
+    Locale bogus("not a lang");
+    UErrorCode status = U_ZERO_ERROR;
+    std::unique_ptr<icu::TimeZoneFormat> tzfmt(
+        icu::TimeZoneFormat::createInstance(bogus, status));
+    if (U_FAILURE(status)) {
+        errln(u"Failed to createInstance with bogus locale");
     }
 }
 #endif /* #if !UCONFIG_NO_FORMATTING */

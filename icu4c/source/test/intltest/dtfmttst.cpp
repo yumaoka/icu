@@ -135,6 +135,8 @@ void DateFormatTest::runIndexedTest( int32_t index, UBool exec, const char* &nam
     TESTCASE_AUTO(TestNumericFieldStrictParse);
     TESTCASE_AUTO(TestHourCycle);
     TESTCASE_AUTO(TestHCInLocale);
+    TESTCASE_AUTO(TestBogusLocale);
+    TESTCASE_AUTO(TestLongLocale);
 
     TESTCASE_AUTO_END;
 }
@@ -5874,6 +5876,25 @@ void DateFormatTest::TestHourCycle() {
         errorMessage.append(TEST_CASES[i].languageTag, err);
         assertEquals(errorMessage.data(), TEST_CASES[i].expectedResult, actualResult);
     }
+}
+
+void DateFormatTest::TestBogusLocale() {
+    IcuTestErrorCode status(*this, "TestBogusLocale");
+    LocalPointer<DateFormat> df;
+
+    df.adoptInstead(DateFormat::createDateTimeInstance(DateFormat::kNone, DateFormat::kMedium,
+                    Locale("notalanguage")));
+}
+
+void DateFormatTest::TestLongLocale() {
+    IcuTestErrorCode status(*this, "TestLongLocale");
+    LocalPointer<DateFormat> df;
+
+    // This should not cause a crash
+    std::string s(1023, ' ');
+    s[1] = '-';
+    df.adoptInstead(DateFormat::createDateTimeInstance(DateFormat::kDateTime, DateFormat::kMedium,
+                    Locale(s.c_str())));
 }
 
 void DateFormatTest::TestHCInLocale() {

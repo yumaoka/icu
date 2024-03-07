@@ -189,6 +189,19 @@ void CalendarTest::runIndexedTest( int32_t index, UBool exec, const char* &name,
     TESTCASE_AUTO(TestFWWithISO8601);
     TESTCASE_AUTO(TestDangiOverflowIsLeapMonthBetween22507);
     TESTCASE_AUTO(TestRollWeekOfYear);
+    TESTCASE_AUTO(TestFirstDayOfWeek);
+
+    TESTCASE_AUTO(Test22633ChineseOverflow);
+    TESTCASE_AUTO(Test22633IndianOverflow);
+    TESTCASE_AUTO(Test22633IslamicUmalquraOverflow);
+    TESTCASE_AUTO(Test22633PersianOverflow);
+    TESTCASE_AUTO(Test22633HebrewOverflow);
+    TESTCASE_AUTO(Test22633AMPMOverflow);
+
+    TESTCASE_AUTO(TestAddOverflow);
+
+
+    TESTCASE_AUTO(TestChineseCalendarComputeMonthStart);
 
     TESTCASE_AUTO_END;
 }
@@ -5551,6 +5564,221 @@ void CalendarTest::TestRollWeekOfYear() {
     cal->roll(UCAL_WEEK_OF_YEAR, 0x7fffff, status);
     U_ASSERT(U_SUCCESS(status));
     cal->roll(UCAL_WEEK_OF_YEAR, 1, status);
+}
+
+void CalendarTest::verifyFirstDayOfWeek(const char* locale, UCalendarDaysOfWeek expected) {
+    UErrorCode status = U_ZERO_ERROR;
+    Locale l = Locale::forLanguageTag(locale, status);
+    U_ASSERT(U_SUCCESS(status));
+    LocalPointer<Calendar> cal(Calendar::createInstance(l, status), status);
+    U_ASSERT(U_SUCCESS(status));
+    assertEquals(locale,
+                 expected, cal->getFirstDayOfWeek(status));
+    U_ASSERT(U_SUCCESS(status));
+}
+
+/**
+ * Test "First Day Overrides" behavior
+ * https://unicode.org/reports/tr35/tr35-dates.html#first-day-overrides
+ * And data in <firstDay> of
+ * https://github.com/unicode-org/cldr/blob/main/common/supplemental/supplementalData.xml
+ *
+ * Examples of region for First Day of a week
+ * Friday: MV
+ * Saturday: AE AF
+ * Sunday: US JP
+ * Monday: GB
+ */
+void CalendarTest::TestFirstDayOfWeek() {
+    // Test -u-fw- value
+    verifyFirstDayOfWeek("en-MV-u-ca-iso8601-fw-sun-rg-mvzzzz-sd-usca", UCAL_SUNDAY);
+    verifyFirstDayOfWeek("en-MV-u-ca-iso8601-fw-mon-rg-mvzzzz-sd-usca", UCAL_MONDAY);
+    verifyFirstDayOfWeek("en-MV-u-ca-iso8601-fw-tue-rg-mvzzzz-sd-usca", UCAL_TUESDAY);
+    verifyFirstDayOfWeek("en-MV-u-ca-iso8601-fw-wed-rg-mvzzzz-sd-usca", UCAL_WEDNESDAY);
+    verifyFirstDayOfWeek("en-MV-u-ca-iso8601-fw-thu-rg-mvzzzz-sd-usca", UCAL_THURSDAY);
+    verifyFirstDayOfWeek("en-AE-u-ca-iso8601-fw-fri-rg-aezzzz-sd-usca", UCAL_FRIDAY);
+    verifyFirstDayOfWeek("en-MV-u-ca-iso8601-fw-sat-rg-mvzzzz-sd-usca", UCAL_SATURDAY);
+
+    // Test -u-rg- value
+    verifyFirstDayOfWeek("en-MV-u-ca-iso8601-rg-mvzzzz-sd-usca", UCAL_FRIDAY);
+    verifyFirstDayOfWeek("en-MV-u-ca-iso8601-rg-aezzzz-sd-usca", UCAL_SATURDAY);
+    verifyFirstDayOfWeek("en-MV-u-ca-iso8601-rg-uszzzz-sd-usca", UCAL_SUNDAY);
+    verifyFirstDayOfWeek("en-MV-u-ca-iso8601-rg-gbzzzz-sd-usca", UCAL_MONDAY);
+
+    // Test -u-ca-iso8601
+    verifyFirstDayOfWeek("en-MV-u-ca-iso8601-sd-mv00", UCAL_MONDAY);
+    verifyFirstDayOfWeek("en-AE-u-ca-iso8601-sd-aeaj", UCAL_MONDAY);
+    verifyFirstDayOfWeek("en-US-u-ca-iso8601-sd-usca", UCAL_MONDAY);
+
+    // Test Region Tags only
+    verifyFirstDayOfWeek("en-MV", UCAL_FRIDAY);
+    verifyFirstDayOfWeek("en-AE", UCAL_SATURDAY);
+    verifyFirstDayOfWeek("en-US", UCAL_SUNDAY);
+    verifyFirstDayOfWeek("dv-GB", UCAL_MONDAY);
+
+    // Test -u-sd-
+    verifyFirstDayOfWeek("en-u-sd-mv00", UCAL_FRIDAY);
+    verifyFirstDayOfWeek("en-u-sd-aeaj", UCAL_SATURDAY);
+    verifyFirstDayOfWeek("en-u-sd-usca", UCAL_SUNDAY);
+    verifyFirstDayOfWeek("dv-u-sd-gbsct", UCAL_MONDAY);
+
+    // Test Add Likely Subtags algorithm produces a region
+    // dv => dv_Thaa_MV => Friday
+    verifyFirstDayOfWeek("dv", UCAL_FRIDAY);
+    // und_Thaa => dv_Thaa_MV => Friday
+    verifyFirstDayOfWeek("und-Thaa", UCAL_FRIDAY);
+
+    // ssh => ssh_Arab_AE => Saturday
+    verifyFirstDayOfWeek("ssh", UCAL_SATURDAY);
+    // wbl_Arab => wbl_Arab_AF => Saturday
+    verifyFirstDayOfWeek("wbl-Arab", UCAL_SATURDAY);
+
+    // en => en_Latn_US => Sunday
+    verifyFirstDayOfWeek("en", UCAL_SUNDAY);
+    // und_Hira => ja_Hira_JP => Sunday
+    verifyFirstDayOfWeek("und-Hira", UCAL_SUNDAY);
+
+    verifyFirstDayOfWeek("zxx", UCAL_MONDAY);
+}
+
+void CalendarTest::Test22633ChineseOverflow() {
+    UErrorCode status = U_ZERO_ERROR;
+    LocalPointer<Calendar> cal(Calendar::createInstance(Locale("en@calendar=chinese"), status), status);
+    U_ASSERT(U_SUCCESS(status));
+    cal->setTime(2043071457431218011677338081118001787485161156097100985923226601036925437809699842362992455895409920480414647512899096575018732258582416938813614617757317338664031880042592085084690242819214720523061081124318514531466365480449329351434046537728.000000, status);
+    U_ASSERT(U_SUCCESS(status));
+    cal->set(UCAL_EXTENDED_YEAR, -1594662558);
+    cal->get(UCAL_YEAR, status);
+    assertTrue("Should return success", U_SUCCESS(status));
+}
+void CalendarTest::Test22633IndianOverflow() {
+    UErrorCode status = U_ZERO_ERROR;
+    LocalPointer<Calendar> cal(Calendar::createInstance(Locale("en@calendar=indian"), status), status);
+    U_ASSERT(U_SUCCESS(status));
+    cal->roll(UCAL_EXTENDED_YEAR, -2120158417, status);
+    assertTrue("Should return success", U_SUCCESS(status));
+}
+void CalendarTest::Test22633IslamicUmalquraOverflow() {
+    UErrorCode status = U_ZERO_ERROR;
+    LocalPointer<Calendar> cal(Calendar::createInstance(Locale("en@calendar=islamic-umalqura"), status), status);
+    U_ASSERT(U_SUCCESS(status));
+    cal->roll(UCAL_YEAR, -134404585, status);
+    assertTrue("Should return success", U_SUCCESS(status));
+}
+
+void CalendarTest::Test22633PersianOverflow() {
+    UErrorCode status = U_ZERO_ERROR;
+    LocalPointer<Calendar> cal(Calendar::createInstance(Locale("en@calendar=persian"), status), status);
+    U_ASSERT(U_SUCCESS(status));
+    cal->add(UCAL_ORDINAL_MONTH, 1594095615, status);
+    assertTrue("Should return success", U_SUCCESS(status));
+
+    cal->clear();
+    cal->fieldDifference(
+        -874417153152678003697180890506448687181167523704194267774844295805672585701302166100950793070884718009504322601688549650298776623158701367393457997817732662883592665106020013730689242515513560464852918376875667091108609655859551000798163265126400.000000,
+        UCAL_YEAR, status);
+    assertFalse("Should not return success", U_SUCCESS(status));
+}
+
+void CalendarTest::Test22633HebrewOverflow() {
+    UErrorCode status = U_ZERO_ERROR;
+    LocalPointer<Calendar> cal(Calendar::createInstance(Locale("en@calendar=hebrew"), status), status);
+    U_ASSERT(U_SUCCESS(status));
+    cal->clear();
+    cal->roll(UCAL_JULIAN_DAY, -335544321, status);
+    assertTrue("Should return success", U_SUCCESS(status));
+    cal->roll(UCAL_JULIAN_DAY, -1812424430, status);
+    assertEquals("Should return U_ILLEGAL_ARGUMENT_ERROR",
+                 U_ILLEGAL_ARGUMENT_ERROR, status);
+}
+
+void CalendarTest::Test22633AMPMOverflow() {
+    UErrorCode status = U_ZERO_ERROR;
+    LocalPointer<Calendar> cal(Calendar::createInstance(Locale("en"), status), status);
+    U_ASSERT(U_SUCCESS(status));
+    cal->setTimeZone(*TimeZone::getGMT());
+    cal->clear();
+    // Test to set a value > limit should not cause internal overflow.
+    cal->set(UCAL_AM_PM, 370633137);
+    assertEquals("set large odd value for UCAL_AM_PM should be treated as PM",
+                 12.0 * 60.0 * 60.0 *1000.0, cal->getTime(status));
+    assertTrue("Should return success", U_SUCCESS(status));
+
+    cal->set(UCAL_AM_PM, 370633138);
+    assertEquals("set large even value for UCAL_AM_PM should be treated as AM",
+                 0.0, cal->getTime(status));
+    assertTrue("Should return success", U_SUCCESS(status));
+}
+
+void CalendarTest::TestChineseCalendarComputeMonthStart() {  // ICU-22639
+    UErrorCode status = U_ZERO_ERROR;
+
+    // An extended year for which hasLeapMonthBetweenWinterSolstices is true.
+    constexpr int32_t eyear = 4643;
+    constexpr int64_t monthStart = 2453764;
+
+    LocalPointer<Calendar> calendar(
+        Calendar::createInstance(Locale("en_US@calendar=chinese"), status),
+        status);
+    if (failure(status, "Calendar::createInstance")) return;
+
+    // This test case is a friend of ChineseCalendar and may access internals.
+    const ChineseCalendar& chinese =
+        *dynamic_cast<ChineseCalendar*>(calendar.getAlias());
+
+    // The initial value of hasLeapMonthBetweenWinterSolstices should be false.
+    assertFalse("hasLeapMonthBetweenWinterSolstices [#1]",
+                chinese.hasLeapMonthBetweenWinterSolstices);
+
+    assertEquals("monthStart", monthStart,
+                 chinese.handleComputeMonthStart(eyear, 0, false));
+
+    // Calling a const method must not haved changed the state of the object.
+    assertFalse("hasLeapMonthBetweenWinterSolstices [#2]",
+                chinese.hasLeapMonthBetweenWinterSolstices);
+}
+
+void CalendarTest::TestAddOverflow() {
+    UErrorCode status = U_ZERO_ERROR;
+
+    LocalPointer<Calendar> calendar(
+        Calendar::createInstance(Locale("en"), status),
+        status);
+    if (failure(status, "Calendar::createInstance")) return;
+    for (int32_t i = 0; i < UCAL_FIELD_COUNT; i++) {
+        status = U_ZERO_ERROR;
+        calendar->setTime(0, status);
+        calendar->add(static_cast<UCalendarDateFields>(i), INT32_MAX / 2, status);
+        calendar->add(static_cast<UCalendarDateFields>(i), INT32_MAX, status);
+        if ((i == UCAL_ERA) ||
+            (i == UCAL_YEAR) ||
+            (i == UCAL_YEAR_WOY) ||
+            (i == UCAL_EXTENDED_YEAR) ||
+            (i == UCAL_IS_LEAP_MONTH) ||
+            (i == UCAL_MONTH) ||
+            (i == UCAL_ORDINAL_MONTH) ||
+            (i == UCAL_ZONE_OFFSET) ||
+            (i == UCAL_DST_OFFSET)) {
+            assertTrue("add INT32_MAX should fail", U_FAILURE(status));
+        } else {
+            assertTrue("add INT32_MAX should still success", U_SUCCESS(status));
+        }
+
+        status = U_ZERO_ERROR;
+        calendar->setTime(0, status);
+        calendar->add(static_cast<UCalendarDateFields>(i), INT32_MIN / 2, status);
+        calendar->add(static_cast<UCalendarDateFields>(i), INT32_MIN, status);
+        if ((i == UCAL_YEAR) ||
+            (i == UCAL_YEAR_WOY) ||
+            (i == UCAL_EXTENDED_YEAR) ||
+            (i == UCAL_IS_LEAP_MONTH) ||
+            (i == UCAL_ZONE_OFFSET) ||
+            (i == UCAL_DST_OFFSET)) {
+            assertTrue("add INT32_MIN should fail", U_FAILURE(status));
+        } else {
+            assertTrue("add INT32_MIN should still success", U_SUCCESS(status));
+        }
+    }
 }
 #endif /* #if !UCONFIG_NO_FORMATTING */
 

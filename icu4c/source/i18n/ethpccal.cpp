@@ -56,8 +56,11 @@ EthiopicCalendar::getType() const
 //-------------------------------------------------------------------------
 
 int32_t
-EthiopicCalendar::handleGetExtendedYear()
+EthiopicCalendar::handleGetExtendedYear(UErrorCode& status)
 {
+    if (U_FAILURE(status)) {
+        return 0;
+    }
     // Ethiopic calendar uses EXTENDED_YEAR aligned to
     // Amelete Hihret year always.
     if (newerField(UCAL_EXTENDED_YEAR, UCAL_YEAR) == UCAL_EXTENDED_YEAR) {
@@ -150,21 +153,6 @@ EthiopicCalendar::getJDEpochOffset() const
 }
 
 
-#if 0
-// We do not want to introduce this API in ICU4C.
-// It was accidentally introduced in ICU4J as a public API.
-
-//-------------------------------------------------------------------------
-// Calendar system Conversion methods...
-//-------------------------------------------------------------------------
-
-int32_t
-EthiopicCalendar::ethiopicToJD(int32_t year, int32_t month, int32_t date)
-{
-    return ceToJD(year, month, date, JD_EPOCH_OFFSET_AMETE_MIHRET);
-}
-#endif
-
 //-------------------------------------------------------------------------
 // Constructors...
 //-------------------------------------------------------------------------
@@ -196,8 +184,11 @@ EthiopicAmeteAlemCalendar::getType() const
 }
 
 int32_t
-EthiopicAmeteAlemCalendar::handleGetExtendedYear()
+EthiopicAmeteAlemCalendar::handleGetExtendedYear(UErrorCode& status)
 {
+    if (U_FAILURE(status)) {
+        return 0;
+    }
     // Ethiopic calendar uses EXTENDED_YEAR aligned to
     // Amelete Hihret year always.
     if (newerField(UCAL_EXTENDED_YEAR, UCAL_YEAR) == UCAL_EXTENDED_YEAR) {

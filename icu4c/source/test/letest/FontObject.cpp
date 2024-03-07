@@ -9,9 +9,11 @@
 
 #include <stdio.h>
 
-#include "LETypes.h"
+#include "layout/LETypes.h"
 #include "FontObject.h"
-#include "LESwaps.h"
+#include "layout/LESwaps.h"
+
+using icu::LESwaps;
 
 FontObject::FontObject(char *fileName)
   : directory(nullptr), numTables(0), searchRange(0),entrySelector(0),
