@@ -1547,6 +1547,13 @@ protected:
      * @internal
      */
     inline int32_t internalGet(UCalendarDateFields field) const {return fFields[field];}
+
+    /**
+     * The year in this calendar is counting from 1 backward if the era is 0.
+     * @return The year in era 0 of this calendar is counting backward from 1.
+     * @internal
+     */
+    virtual bool isEra0CountingBackward() const { return false; }
 #endif  /* U_HIDE_INTERNAL_API */
 
     /**
@@ -1558,7 +1565,7 @@ protected:
      * @return       The value for the UCAL_MONTH.
      * @internal
      */
-    virtual int32_t internalGetMonth() const;
+    virtual int32_t internalGetMonth(UErrorCode& status) const;
 
     /**
      * Use this function instead of internalGet(UCAL_MONTH, defaultValue). The implementation
@@ -1568,10 +1575,12 @@ protected:
      *
      * @param defaultValue a default value used if the UCAL_MONTH and
      *   UCAL_ORDINAL are both unset.
+     * @param status Output param set to failure code on function return
+     *          when this function fails.
      * @return       The value for the UCAL_MONTH.
      * @internal
      */
-    virtual int32_t internalGetMonth(int32_t defaultValue) const;
+    virtual int32_t internalGetMonth(int32_t defaultValue, UErrorCode& status) const;
 
 #ifndef U_HIDE_DEPRECATED_API
     /**
@@ -1660,12 +1669,14 @@ protected:
      * @param useMonth if false, compute the day before the first day of
      * the given year, otherwise, compute the day before the first day of
      * the given month
+     * @param status Output param set to failure code on function return
+     *          when this function fails.
      * @return the Julian day number of the day before the first
      * day of the given month and year
      * @internal
      */
     virtual int64_t handleComputeMonthStart(int32_t eyear, int32_t month,
-                                                   UBool useMonth) const  = 0;
+                                            UBool useMonth, UErrorCode& status) const  = 0;
 
     /**
      * Return the number of days in the given month of the given extended
@@ -1674,7 +1685,7 @@ protected:
      * implementation than the default implementation in Calendar.
      * @internal
      */
-    virtual int32_t handleGetMonthLength(int32_t extendedYear, int32_t month) const ;
+    virtual int32_t handleGetMonthLength(int32_t extendedYear, int32_t month, UErrorCode& status) const ;
 
     /**
      * Return the number of days in the given extended year of this
@@ -1716,7 +1727,7 @@ protected:
      * @return the extended year, UCAL_EXTENDED_YEAR
      * @internal
      */
-    virtual int32_t handleGetExtendedYearFromWeekFields(int32_t yearWoy, int32_t woy);
+    virtual int32_t handleGetExtendedYearFromWeekFields(int32_t yearWoy, int32_t woy, UErrorCode& status);
 
     /**
      * Validate a single field of this calendar.  Subclasses should
@@ -2022,9 +2033,11 @@ protected:
      * Called by computeJulianDay.  Returns the default month (0-based) for the year,
      * taking year and era into account.  Defaults to 0 for Gregorian, which doesn't care.
      * @param eyear The extended year
+     * @param status Output param set to failure code on function return
+     *          when this function fails.
      * @internal
      */
-    virtual int32_t getDefaultMonthInYear(int32_t eyear) ;
+    virtual int32_t getDefaultMonthInYear(int32_t eyear, UErrorCode& status);
 
 
     /**
@@ -2032,9 +2045,11 @@ protected:
      * taking currently-set year and era into account.  Defaults to 1 for Gregorian.
      * @param eyear the extended year
      * @param month the month in the year
+     * @param status Output param set to failure code on function return
+     *          when this function fails.
      * @internal
      */
-    virtual int32_t getDefaultDayInMonth(int32_t eyear, int32_t month);
+    virtual int32_t getDefaultDayInMonth(int32_t eyear, int32_t month, UErrorCode& status);
 
     //-------------------------------------------------------------------------
     // Protected utility methods for use by subclasses.  These are very handy
@@ -2155,7 +2170,7 @@ protected:
      * returns the local DOW, valid range 0..6
      * @internal
      */
-    int32_t getLocalDOW();
+    int32_t getLocalDOW(UErrorCode& status);
 #endif  /* U_HIDE_INTERNAL_API */
 
 private:
@@ -2551,6 +2566,16 @@ Calendar::internalSet(UCalendarDateFields field, int32_t value)
     fIsSet[field]     = true; // Remove later
 }
 
+/**
+ * Macro for the class to declare it override
+ * haveDefaultCentury, defaultCenturyStart, and
+ * defaultCenturyStartYear functions in this class.
+ * @internal
+ */
+#define DECLARE_OVERRIDE_SYSTEM_DEFAULT_CENTURY \
+    virtual UBool haveDefaultCentury() const override; \
+    virtual UDate defaultCenturyStart() const override; \
+    virtual int32_t defaultCenturyStartYear() const override;
 
 #ifndef U_HIDE_INTERNAL_API
 inline int32_t  Calendar::weekNumber(int32_t dayOfPeriod, int32_t dayOfWeek)

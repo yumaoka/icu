@@ -46,11 +46,6 @@
 // First, the platform type. Need this for U_PLATFORM.
 #include "unicode/platform.h"
 
-#if U_PLATFORM == U_PF_MINGW && defined __STRICT_ANSI__
-/* tzset isn't defined in strict ANSI on MinGW. */
-#undef __STRICT_ANSI__
-#endif
-
 /*
  * Cygwin with GCC requires inclusion of time.h after the above disabling strict asci mode statement.
  */
@@ -1498,7 +1493,6 @@ static void U_CALLCONV dataDirectoryInitFn() {
     }
 
     u_setDataDirectory(path);
-    return;
 }
 
 U_CAPI const char * U_EXPORT2
@@ -1622,7 +1616,7 @@ static const char *uprv_getPOSIXIDForCategory(int category)
         * of nullptr, will modify the libc behavior.
         */
         posixID = setlocale(category, nullptr);
-        if ((posixID == 0)
+        if ((posixID == nullptr)
             || (uprv_strcmp("C", posixID) == 0)
             || (uprv_strcmp("POSIX", posixID) == 0))
         {
@@ -1636,16 +1630,16 @@ static const char *uprv_getPOSIXIDForCategory(int category)
                 posixID = getenv(category == LC_MESSAGES ? "LC_MESSAGES" : "LC_CTYPE");
                 if ((posixID == 0) || (posixID[0] == '\0')) {
 #else
-            if (posixID == 0) {
+            if (posixID == nullptr) {
                 posixID = getenv(category == LC_MESSAGES ? "LC_MESSAGES" : "LC_CTYPE");
-                if (posixID == 0) {
+                if (posixID == nullptr) {
 #endif
                     posixID = getenv("LANG");
                 }
             }
         }
     }
-    if ((posixID==0)
+    if ((posixID == nullptr)
         || (uprv_strcmp("C", posixID) == 0)
         || (uprv_strcmp("POSIX", posixID) == 0))
     {
@@ -1665,7 +1659,7 @@ static const char *uprv_getPOSIXIDForCategory(int category)
 static const char *uprv_getPOSIXIDForDefaultLocale()
 {
     static const char* posixID = nullptr;
-    if (posixID == 0) {
+    if (posixID == nullptr) {
         posixID = uprv_getPOSIXIDForCategory(LC_MESSAGES);
     }
     return posixID;

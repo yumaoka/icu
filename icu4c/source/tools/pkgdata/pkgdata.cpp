@@ -133,7 +133,7 @@ static struct {
     const char *name, *alt_name;
     const char *desc;
 } modes[] = {
-        { "files", 0,           "Uses raw data files (no effect). Installation copies all files to the target location." },
+        { "files", nullptr,     "Uses raw data files (no effect). Installation copies all files to the target location." },
 #if U_PLATFORM_HAS_WIN32_API
         { "dll",    "library",  "Generates one common data file and one shared library, <package>.dll"},
         { "common", "archive",  "Generates just the common file, <package>.dat"},
@@ -370,7 +370,7 @@ main(int argc, char* argv[]) {
     uprv_memset(&o, 0, sizeof(o));
 
     o.mode      = options[MODE].value;
-    o.version   = options[REVISION].doesOccur ? options[REVISION].value : 0;
+    o.version   = options[REVISION].doesOccur ? options[REVISION].value : nullptr;
 
     o.shortName = options[NAME].value;
     {
@@ -923,6 +923,10 @@ static int32_t initializePkgDataFlags(UPKGOptions *o) {
 static void createFileNames(UPKGOptions *o, const char mode, const char *version_major, const char *version, const char *libName, UBool reverseExt, UBool noVersion) {
     const char* FILE_EXTENSION_SEP = uprv_strlen(pkgDataFlags[SO_EXT]) == 0 ? "" : ".";
     const char* FILE_SUFFIX = pkgDataFlags[LIB_EXT_ORDER][0] == '.' ? "." : "";
+#if defined(__GNUC__) && !defined(__clang__)
+    _Pragma("GCC diagnostic push")
+    _Pragma("GCC diagnostic ignored \"-Wformat-truncation\"")
+#endif
 
 #if U_PLATFORM == U_PF_MINGW
         /* MinGW does not need the library prefix when building in dll mode. */
@@ -1036,6 +1040,10 @@ static void createFileNames(UPKGOptions *o, const char mode, const char *version
               fprintf(stdout, "# libFileName[LIB_FILE_VERSION] = %s  (static)\n", libFileNames[LIB_FILE_VERSION]);
             }
         }
+#if defined(__GNUC__) && !defined(__clang__)
+    _Pragma("GCC diagnostic pop")
+#endif
+
 }
 
 /* Create the symbolic links for the final library file. */
@@ -1132,7 +1140,7 @@ normal_symlink_mode:
 
 static int32_t pkg_installLibrary(const char *installDir, const char *targetDir, UBool noVersion) {
     int32_t result = 0;
-    char cmd[SMALL_BUFFER_MAX_SIZE];
+    char cmd[SMALL_BUFFER_MAX_SIZE * 2];
 
     auto ret = snprintf(cmd,
             sizeof(cmd),
@@ -1309,11 +1317,19 @@ static int32_t pkg_archiveLibrary(const char *targetDir, const char *version, UB
      * archive file suffix is the same, then the final library needs to be archived.
      */
     if (uprv_strcmp(pkgDataFlags[SOBJ_EXT], pkgDataFlags[SO_EXT]) != 0 && uprv_strcmp(pkgDataFlags[A_EXT], pkgDataFlags[SO_EXT]) == 0) {
+#if defined(__GNUC__) && !defined(__clang__)
+    _Pragma("GCC diagnostic push")
+    _Pragma("GCC diagnostic ignored \"-Wformat-truncation\"")
+#endif
+
         snprintf(libFileNames[LIB_FILE_VERSION], sizeof(libFileNames[LIB_FILE_VERSION]), "%s%s%s.%s",
                 libFileNames[LIB_FILE],
                 pkgDataFlags[LIB_EXT_ORDER][0] == '.' ? "." : "",
                 reverseExt ? version : pkgDataFlags[SO_EXT],
                 reverseExt ? pkgDataFlags[SO_EXT] : version);
+#if defined(__GNUC__) && !defined(__clang__)
+    _Pragma("GCC diagnostic pop")
+#endif
 
         snprintf(cmd, sizeof(cmd), "%s %s %s%s %s%s",
                 pkgDataFlags[AR],

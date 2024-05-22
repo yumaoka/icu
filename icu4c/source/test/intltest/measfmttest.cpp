@@ -43,7 +43,8 @@ public:
     MeasureFormatTest() {
     }
 
-    void runIndexedTest(int32_t index, UBool exec, const char *&name, char *par=0) override;
+    void runIndexedTest(int32_t index, UBool exec, const char*& name, char* par = nullptr) override;
+
 private:
     void TestBasic();
     void TestCompatible53();
@@ -5835,7 +5836,7 @@ void MeasureFormatTest::TestParseToBuiltIn() {
         {"square-yard-yard", MeasureUnit::getCubicYard()},
     };
 
-    for (auto &cas : cases) {
+    for (const auto& cas : cases) {
         MeasureUnit fromIdent = MeasureUnit::forIdentifier(cas.identifier, status);
         status.assertSuccess();
         assertEquals("forIdentifier returns a normal built-in unit when it exists",

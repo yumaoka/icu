@@ -266,7 +266,7 @@ OlsonTimeZone::OlsonTimeZone(const UResourceBundle* top,
  * Copy constructor
  */
 OlsonTimeZone::OlsonTimeZone(const OlsonTimeZone& other) :
-    BasicTimeZone(other), finalZone(0) {
+    BasicTimeZone(other), finalZone(nullptr) {
     *this = other;
 }
 
@@ -290,7 +290,7 @@ OlsonTimeZone& OlsonTimeZone::operator=(const OlsonTimeZone& other) {
     typeMapData = other.typeMapData;
 
     delete finalZone;
-    finalZone = (other.finalZone != 0) ? other.finalZone->clone() : 0;
+    finalZone = other.finalZone != nullptr ? other.finalZone->clone() : nullptr;
 
     finalStartYear = other.finalStartYear;
     finalStartMillis = other.finalStartMillis;
@@ -569,7 +569,10 @@ UBool OlsonTimeZone::useDaylightTime() const {
     }
 
     int32_t year, month, dom, dow, doy, mid;
-    Grego::timeToFields(current, year, month, dom, dow, doy, mid);
+    UErrorCode status = U_ZERO_ERROR;
+    Grego::timeToFields(current, year, month, dom, dow, doy, mid, status);
+    U_ASSERT(U_SUCCESS(status));
+    if (U_FAILURE(status)) return false; // If error, just return false.
 
     // Find start of this year, and start of next year
     double start = Grego::fieldsToDay(year, 0, 1) * SECONDS_PER_DAY;
@@ -664,18 +667,10 @@ OlsonTimeZone::clearTransitionRules() {
 
 void
 OlsonTimeZone::deleteTransitionRules() {
-    if (initialRule != nullptr) {
-        delete initialRule;
-    }
-    if (firstTZTransition != nullptr) {
-        delete firstTZTransition;
-    }
-    if (firstFinalTZTransition != nullptr) {
-        delete firstFinalTZTransition;
-    }
-    if (finalZoneWithStartYear != nullptr) {
-        delete finalZoneWithStartYear;
-    }
+    delete initialRule;
+    delete firstTZTransition;
+    delete firstFinalTZTransition;
+    delete finalZoneWithStartYear;
     if (historicRules != nullptr) {
         for (int i = 0; i < historicRuleCount; i++) {
             if (historicRules[i] != nullptr) {

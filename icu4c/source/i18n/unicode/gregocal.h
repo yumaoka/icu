@@ -483,12 +483,13 @@ public:
      * @param useMonth if false, compute the day before the first day of
      * the given year, otherwise, compute the day before the first day of
      * the given month
+     * @param status Fill-in parameter which receives the status of this operation.
      * @return the Julian day number of the day before the first
      * day of the given month and year
      * @internal
      */
     virtual int64_t handleComputeMonthStart(int32_t eyear, int32_t month,
-                                                   UBool useMonth) const override;
+                                            UBool useMonth, UErrorCode& status) const override;
 
     /**
      * Subclasses may override this.  This method calls
@@ -508,7 +509,7 @@ public:
      * implementation than the default implementation in Calendar.
      * @internal
      */
-    virtual int32_t handleGetMonthLength(int32_t extendedYear, int32_t month) const override;
+    virtual int32_t handleGetMonthLength(int32_t extendedYear, int32_t month, UErrorCode& status) const override;
 
     /**
      * Return the number of days in the given extended year of this
@@ -522,10 +523,11 @@ public:
     /**
      * return the length of the given month.
      * @param month    the given month.
+     * @param status Fill-in parameter which receives the status of this operation.
      * @return    the length of the given month.
      * @internal
      */
-    virtual int32_t monthLength(int32_t month) const;
+    virtual int32_t monthLength(int32_t month, UErrorCode& status) const;
 
     /**
      * return the length of the month according to the given year.
@@ -597,7 +599,7 @@ public:
      * @return the extended year, UCAL_EXTENDED_YEAR
      * @internal
      */
-    virtual int32_t handleGetExtendedYearFromWeekFields(int32_t yearWoy, int32_t woy) override;
+    virtual int32_t handleGetExtendedYearFromWeekFields(int32_t yearWoy, int32_t woy, UErrorCode& status) override;
 
 
     /**
@@ -616,6 +618,15 @@ public:
      * @internal
      */
     virtual void handleComputeFields(int32_t julianDay, UErrorCode &status) override;
+
+#ifndef U_HIDE_INTERNAL_API
+    /**
+     * The year in this calendar is counting from 1 backward if the era is 0.
+     * @return The year in era 0 of this calendar is counting backward from 1.
+     * @internal
+     */
+    virtual bool isEra0CountingBackward() const override { return true; }
+#endif  // U_HIDE_INTERNAL_API
 
  private:
     /**
@@ -711,23 +722,8 @@ public:
 
  public: // internal implementation
 
-    /**
-     * @return true if this calendar has the notion of a default century
-     * @internal 
-     */
-    virtual UBool haveDefaultCentury() const override;
+    DECLARE_OVERRIDE_SYSTEM_DEFAULT_CENTURY
 
-    /**
-     * @return the start of the default century
-     * @internal
-     */
-    virtual UDate defaultCenturyStart() const override;
-
-    /**
-     * @return the beginning year of the default century
-     * @internal 
-     */
-    virtual int32_t defaultCenturyStartYear() const override;
 };
 
 U_NAMESPACE_END

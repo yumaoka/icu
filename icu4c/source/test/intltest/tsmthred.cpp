@@ -207,7 +207,6 @@ void TestArabicShapeThreads::doTailTest() {
             return;
         }
     }
-    return;
 }
 	
 
@@ -825,17 +824,17 @@ void MultithreadTest::TestCollators()
 
     testFile = fopen(buffer, "rb");
 
-    if(testFile == 0) {
+    if (testFile == nullptr) {
         strcpy(buffer+bufLen, "_SHORT");
         strcat(buffer, ext);
         testFile = fopen(buffer, "rb");
 
-        if(testFile == 0) {
+        if (testFile == nullptr) {
             strcpy(buffer+bufLen, "_STUB");
             strcat(buffer, ext);
             testFile = fopen(buffer, "rb");
 
-            if (testFile == 0) {
+            if (testFile == nullptr) {
                 *(buffer+bufLen) = 0;
                 dataerrln("could not open any of the conformance test files, tried opening base %s", buffer);
                 return;
@@ -849,8 +848,10 @@ void MultithreadTest::TestCollators()
         }
     }
 
-    LocalArray<Line> lines(new Line[200000]);
-    memset(lines.getAlias(), 0, sizeof(Line)*200000);
+    // UCA 16.0 CollationTest_CLDR_SHIFTED_SHORT.txt has over 225000 lines.
+    constexpr int32_t MAX_LINES_IN_COLLATION_TEST_FILE = 500000;
+    LocalArray<Line> lines(new Line[MAX_LINES_IN_COLLATION_TEST_FILE]);
+    memset(lines.getAlias(), 0, sizeof(Line)*MAX_LINES_IN_COLLATION_TEST_FILE);
     int32_t lineNum = 0;
 
     char16_t bufferU[1024];

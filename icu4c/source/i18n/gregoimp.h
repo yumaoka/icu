@@ -14,6 +14,7 @@
 #ifndef GREGOIMP_H
 #define GREGOIMP_H
 #include "unicode/utypes.h"
+#include "unicode/calendar.h"
 #if !UCONFIG_NO_FORMATTING
 
 #include "unicode/ures.h"
@@ -207,9 +208,10 @@ class Grego {
      * @param dom output parameter to receive day-of-month (1-based)
      * @param dow output parameter to receive day-of-week (1-based, 1==Sun)
      * @param doy output parameter to receive day-of-year (1-based)
+     * @param status error code.
      */
     static void dayToFields(int32_t day, int32_t& year, int32_t& month,
-                            int32_t& dom, int32_t& dow, int32_t& doy);
+                            int32_t& dom, int32_t& dow, int32_t& doy, UErrorCode& status);
 
     /**
      * Convert a 1970-epoch day number to proleptic Gregorian year,
@@ -219,9 +221,10 @@ class Grego {
      * @param month output parameter to receive month (0-based, 0==Jan)
      * @param dom output parameter to receive day-of-month (1-based)
      * @param dow output parameter to receive day-of-week (1-based, 1==Sun)
+     * @param status error code.
      */
     static inline void dayToFields(int32_t day, int32_t& year, int32_t& month,
-                                   int32_t& dom, int32_t& dow);
+                                   int32_t& dom, int32_t& dow, UErrorCode& status);
 
     /**
      * Convert a 1970-epoch milliseconds to proleptic Gregorian year,
@@ -233,9 +236,10 @@ class Grego {
      * @param dow output parameter to receive day-of-week (1-based, 1==Sun)
      * @param doy output parameter to receive day-of-year (1-based)
      * @param mid output parameter to receive millis-in-day
+     * @param status error code.
      */
     static void timeToFields(UDate time, int32_t& year, int32_t& month,
-                            int32_t& dom, int32_t& dow, int32_t& doy, int32_t& mid);
+                            int32_t& dom, int32_t& dow, int32_t& doy, int32_t& mid, UErrorCode& status);
 
     /**
      * Return the day of week on the 1970-epoch day
@@ -302,9 +306,9 @@ Grego::previousMonthLength(int y, int m) {
 }
 
 inline void Grego::dayToFields(int32_t day, int32_t& year, int32_t& month,
-                               int32_t& dom, int32_t& dow) {
+                               int32_t& dom, int32_t& dow, UErrorCode& status) {
   int32_t doy_unused;
-  dayToFields(day,year,month,dom,dow,doy_unused);
+  dayToFields(day,year,month,dom,dow,doy_unused, status);
 }
 
 inline double Grego::julianDayToMillis(int32_t julian)
@@ -321,6 +325,46 @@ inline int32_t Grego::gregorianShift(int32_t eyear) {
   int64_t gregShift = ClockMath::floorDivideInt64(y, 400LL) - ClockMath::floorDivideInt64(y, 100LL) + 2;
   return static_cast<int32_t>(gregShift);
 }
+
+#define IMPL_SYSTEM_DEFAULT_CENTURY(T, U) \
+  /** \
+   * The system maintains a static default century start date and Year.  They \
+   * are initialized the first time they are used.  Once the system default \
+   * century date and year are set, they do not change \
+   */ \
+  namespace { \
+  static UDate           gSystemDefaultCenturyStart       = DBL_MIN; \
+  static int32_t         gSystemDefaultCenturyStartYear   = -1; \
+  static icu::UInitOnce  gSystemDefaultCenturyInit        {}; \
+  static void U_CALLCONV \
+  initializeSystemDefaultCentury() { \
+      UErrorCode status = U_ZERO_ERROR; \
+      T calendar(U, status); \
+      /* initialize systemDefaultCentury and systemDefaultCenturyYear based */ \
+      /* on the current time.  They'll be set to 80 years before */ \
+      /* the current time. */ \
+      if (U_FAILURE(status)) { \
+          return; \
+      } \
+      calendar.setTime(Calendar::getNow(), status); \
+      calendar.add(UCAL_YEAR, -80, status); \
+      gSystemDefaultCenturyStart = calendar.getTime(status); \
+      gSystemDefaultCenturyStartYear = calendar.get(UCAL_YEAR, status); \
+      /* We have no recourse upon failure unless we want to propagate the */ \
+      /* failure out. */ \
+  } \
+  }  /* namespace */ \
+  UDate T::defaultCenturyStart() const { \
+      /* lazy-evaluate systemDefaultCenturyStart */ \
+      umtx_initOnce(gSystemDefaultCenturyInit, &initializeSystemDefaultCentury); \
+      return gSystemDefaultCenturyStart; \
+  }   \
+  int32_t T::defaultCenturyStartYear() const { \
+      /* lazy-evaluate systemDefaultCenturyStart */ \
+      umtx_initOnce(gSystemDefaultCenturyInit, &initializeSystemDefaultCentury); \
+      return gSystemDefaultCenturyStartYear; \
+  } \
+  UBool T::haveDefaultCentury() const { return true; }
 
 U_NAMESPACE_END
 

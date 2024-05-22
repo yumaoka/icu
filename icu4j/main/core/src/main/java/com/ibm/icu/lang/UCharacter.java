@@ -10,6 +10,7 @@
 package com.ibm.icu.lang;
 
 import java.lang.ref.SoftReference;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Locale;
@@ -1314,6 +1315,29 @@ public final class UCharacter implements ECharacterCategory, ECharacterDirection
         /** @stable ICU 74 */
         public static final int CJK_UNIFIED_IDEOGRAPHS_EXTENSION_I_ID = 328; /*[2EBF0]*/
 
+        // New blocks in Unicode 16.0
+
+        /** @stable ICU 76 */
+        public static final int EGYPTIAN_HIEROGLYPHS_EXTENDED_A_ID = 329; /*[13460]*/
+        /** @stable ICU 76 */
+        public static final int GARAY_ID = 330; /*[10D40]*/
+        /** @stable ICU 76 */
+        public static final int GURUNG_KHEMA_ID = 331; /*[16100]*/
+        /** @stable ICU 76 */
+        public static final int KIRAT_RAI_ID = 332; /*[16D40]*/
+        /** @stable ICU 76 */
+        public static final int MYANMAR_EXTENDED_C_ID = 333; /*[116D0]*/
+        /** @stable ICU 76 */
+        public static final int OL_ONAL_ID = 334; /*[1E5D0]*/
+        /** @stable ICU 76 */
+        public static final int SUNUWAR_ID = 335; /*[11BC0]*/
+        /** @stable ICU 76 */
+        public static final int SYMBOLS_FOR_LEGACY_COMPUTING_SUPPLEMENT_ID = 336; /*[1CC00]*/
+        /** @stable ICU 76 */
+        public static final int TODHRI_ID = 337; /*[105C0]*/
+        /** @stable ICU 76 */
+        public static final int TULU_TIGALARI_ID = 338; /*[11380]*/
+
         /**
          * One more than the highest normal UnicodeBlock value.
          * The highest value is available via UCharacter.getIntPropertyMaxValue(UProperty.BLOCK).
@@ -1321,7 +1345,7 @@ public final class UCharacter implements ECharacterCategory, ECharacterDirection
          * @deprecated ICU 58 The numeric value may change over time, see ICU ticket #12420.
          */
         @Deprecated
-        public static final int COUNT = 329;
+        public static final int COUNT = 339;
 
         // blocks objects ---------------------------------------------------
 
@@ -2759,6 +2783,36 @@ public final class UCharacter implements ECharacterCategory, ECharacterDirection
                 new UnicodeBlock("CJK_UNIFIED_IDEOGRAPHS_EXTENSION_I",
                         CJK_UNIFIED_IDEOGRAPHS_EXTENSION_I_ID); /*[2EBF0]*/
 
+        // New blocks in Unicode 16.0
+
+        /** @stable ICU 76 */
+        public static final UnicodeBlock EGYPTIAN_HIEROGLYPHS_EXTENDED_A =
+                new UnicodeBlock("EGYPTIAN_HIEROGLYPHS_EXTENDED_A",
+                        EGYPTIAN_HIEROGLYPHS_EXTENDED_A_ID);
+        /** @stable ICU 76 */
+        public static final UnicodeBlock GARAY = new UnicodeBlock("GARAY", GARAY_ID);
+        /** @stable ICU 76 */
+        public static final UnicodeBlock GURUNG_KHEMA =
+                new UnicodeBlock("GURUNG_KHEMA", GURUNG_KHEMA_ID);
+        /** @stable ICU 76 */
+        public static final UnicodeBlock KIRAT_RAI = new UnicodeBlock("KIRAT_RAI", KIRAT_RAI_ID);
+        /** @stable ICU 76 */
+        public static final UnicodeBlock MYANMAR_EXTENDED_C =
+                new UnicodeBlock("MYANMAR_EXTENDED_C", MYANMAR_EXTENDED_C_ID);
+        /** @stable ICU 76 */
+        public static final UnicodeBlock OL_ONAL = new UnicodeBlock("OL_ONAL", OL_ONAL_ID);
+        /** @stable ICU 76 */
+        public static final UnicodeBlock SUNUWAR = new UnicodeBlock("SUNUWAR", SUNUWAR_ID);
+        /** @stable ICU 76 */
+        public static final UnicodeBlock SYMBOLS_FOR_LEGACY_COMPUTING_SUPPLEMENT =
+                new UnicodeBlock("SYMBOLS_FOR_LEGACY_COMPUTING_SUPPLEMENT",
+                        SYMBOLS_FOR_LEGACY_COMPUTING_SUPPLEMENT_ID);
+        /** @stable ICU 76 */
+        public static final UnicodeBlock TODHRI = new UnicodeBlock("TODHRI", TODHRI_ID);
+        /** @stable ICU 76 */
+        public static final UnicodeBlock TULU_TIGALARI =
+                new UnicodeBlock("TULU_TIGALARI", TULU_TIGALARI_ID);
+
         /**
          * @stable ICU 2.4
          */
@@ -4066,6 +4120,8 @@ public final class UCharacter implements ECharacterCategory, ECharacterDirection
         public static final int VOWEL_DEPENDENT = 34;
         /** @stable ICU 63 */
         public static final int VOWEL_INDEPENDENT = 35;
+        /** @stable ICU 76 */
+        public static final int REORDERING_KILLER = 36;
     }
 
     /**
@@ -4083,6 +4139,54 @@ public final class UCharacter implements ECharacterCategory, ECharacterDirection
         public static final int TRANSFORMED_UPRIGHT = 2;
         /** @stable ICU 63 */
         public static final int UPRIGHT = 3;
+    }
+
+    /**
+     * Identifier Status constants.
+     * See https://www.unicode.org/reports/tr39/#Identifier_Status_and_Type.
+     *
+     * @see UProperty#IDENTIFIER_STATUS
+     * @draft ICU 75
+     */
+    public enum IdentifierStatus {
+        /** @draft ICU 75 */
+        RESTRICTED,
+        /** @draft ICU 75 */
+        ALLOWED,
+    }
+
+    /**
+     * Identifier Type constants.
+     * See https://www.unicode.org/reports/tr39/#Identifier_Status_and_Type.
+     *
+     * @see UProperty#IDENTIFIER_TYPE
+     * @draft ICU 75
+     */
+    public enum IdentifierType {
+        /** @draft ICU 75 */
+        NOT_CHARACTER,
+        /** @draft ICU 75 */
+        DEPRECATED,
+        /** @draft ICU 75 */
+        DEFAULT_IGNORABLE,
+        /** @draft ICU 75 */
+        NOT_NFKC,
+        /** @draft ICU 75 */
+        NOT_XID,
+        /** @draft ICU 75 */
+        EXCLUSION,
+        /** @draft ICU 75 */
+        OBSOLETE,
+        /** @draft ICU 75 */
+        TECHNICAL,
+        /** @draft ICU 75 */
+        UNCOMMON_USE,
+        /** @draft ICU 75 */
+        LIMITED_USE,
+        /** @draft ICU 75 */
+        INCLUSION,
+        /** @draft ICU 75 */
+        RECOMMENDED,
     }
 
     // public data members -----------------------------------------------
@@ -4578,6 +4682,47 @@ public final class UCharacter implements ECharacterCategory, ECharacterDirection
     public static boolean isUnicodeIdentifierStart(int ch)
     {
         return hasBinaryProperty(ch, UProperty.ID_START);  // single code point
+    }
+
+    /**
+     * Does the set of Identifier_Type values code point c contain the given type?
+     *
+     * <p>Used for UTS #39 General Security Profile for Identifiers
+     * (https://www.unicode.org/reports/tr39/#General_Security_Profile).
+     *
+     * <p>Each code point maps to a <i>set</i> of UIdentifierType values.
+     *
+     * @param c code point
+     * @param type Identifier_Type to check
+     * @return true if type is in Identifier_Type(c)
+     * @draft ICU 75
+     */
+    public static final boolean hasIdentifierType(int c, IdentifierType type) {
+        return UCharacterProperty.INSTANCE.hasIDType(c, type);
+    }
+
+    /**
+     * Writes code point c's Identifier_Type as a set of IdentifierType values and
+     * returns the number of types.
+     * The set is cleared before c's types are added.
+     *
+     * <p>Used for UTS #39 General Security Profile for Identifiers
+     * (https://www.unicode.org/reports/tr39/#General_Security_Profile).
+     *
+     * <p>Each code point maps to a <i>set</i> of IdentifierType values.
+     * There is always at least one type.
+     * Only some of the types can be combined with others,
+     * and usually only a small number of types occur together.
+     * Future versions might add additional types.
+     * See UTS #39 and its data files for details.
+     *
+     * @param c code point
+     * @param types output set
+     * @return number of values in c's Identifier_Type
+     * @draft ICU 75
+     */
+    public static final int getIdentifierTypes(int c, EnumSet<IdentifierType> types) {
+        return UCharacterProperty.INSTANCE.getIDTypes(c, types);
     }
 
     /**

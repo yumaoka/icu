@@ -207,6 +207,17 @@
 #endif
 
 /**
+ * \def U_REAL_MSVC
+ * Defined if the compiler is the real MSVC compiler (and not something like
+ * Clang setting _MSC_VER in order to compile Windows code that requires it).
+ * Otherwise undefined.
+ * @internal
+ */
+#if (defined(_MSC_VER) && !(defined(__clang__) && __clang__)) || defined(U_IN_DOXYGEN)
+#   define U_REAL_MSVC
+#endif
+
+/**
  * \def CYGWINMSVC
  * Defined if this is Windows with Cygwin, but using MSVC rather than gcc.
  * Otherwise undefined.
@@ -711,9 +722,9 @@
     /*
      * Notes:
      * C++11 and C11 require support for UTF-16 literals
-     * TODO: Fix for plain C. Doesn't work on Mac.
+     * Doesn't work on Mac C11 (see workaround in ptypes.h).
      */
-#   if U_CPLUSPLUS_VERSION >= 11 || (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L)
+#   if defined(__cplusplus) || !U_PLATFORM_IS_DARWIN_BASED
 #       define U_HAVE_CHAR16_T 1
 #   else
 #       define U_HAVE_CHAR16_T 0

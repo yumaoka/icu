@@ -340,11 +340,23 @@ public: // package
     void Test22633PersianOverflow();
     void Test22633HebrewOverflow();
     void Test22633AMPMOverflow();
+    void Test22633SetGetTimeOverflow();
+    void Test22633Set2FieldsGetTimeOverflow();
+    void Test22633SetAddGetTimeOverflow();
+    void Test22633SetRollGetTimeOverflow();
+    void Test22633AddTwiceGetTimeOverflow();
+    void Test22633RollTwiceGetTimeOverflow();
+    void Test22730JapaneseOverflow();
+
+    void Test22750Roll();
+
+    void RunTestOnCalendars(void(TestFunc)(Calendar*, UCalendarDateFields));
 
     void verifyFirstDayOfWeek(const char* locale, UCalendarDaysOfWeek expected);
     void TestFirstDayOfWeek();
 
     void TestChineseCalendarComputeMonthStart();
+    void Test22633HebrewLargeNegativeDay();
 
     void RunChineseCalendarInTemporalLeapYearTest(Calendar* cal);
     void RunIslamicCalendarInTemporalLeapYearTest(Calendar* cal);

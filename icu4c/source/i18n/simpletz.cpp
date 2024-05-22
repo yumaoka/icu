@@ -519,9 +519,15 @@ SimpleTimeZone::getOffsetFromLocal(UDate date, UTimeZoneLocalOption nonExistingT
 
     rawOffsetGMT = getRawOffset();
     int32_t year, month, dom, dow, millis;
-    int32_t day = ClockMath::floorDivide(date, U_MILLIS_PER_DAY, &millis);
+    double dday = ClockMath::floorDivide(date, U_MILLIS_PER_DAY, &millis);
+    if (dday > INT32_MAX || dday < INT32_MIN) {
+        status = U_ILLEGAL_ARGUMENT_ERROR;
+        return;
+    }
+    int32_t day = dday;
 
-    Grego::dayToFields(day, year, month, dom, dow);
+    Grego::dayToFields(day, year, month, dom, dow, status);
+    if (U_FAILURE(status)) return;
 
     savingsDST = getOffset(GregorianCalendar::AD, year, month, dom,
                           (uint8_t) dow, millis,
@@ -549,7 +555,8 @@ SimpleTimeZone::getOffsetFromLocal(UDate date, UTimeZoneLocalOption nonExistingT
     }
     if (recalc) {
         day = ClockMath::floorDivide(date, U_MILLIS_PER_DAY, &millis);
-        Grego::dayToFields(day, year, month, dom, dow);
+        Grego::dayToFields(day, year, month, dom, dow, status);
+        if (U_FAILURE(status)) return;
         savingsDST = getOffset(GregorianCalendar::AD, year, month, dom,
                           (uint8_t) dow, millis,
                           Grego::monthLength(year, month),
@@ -726,7 +733,7 @@ UBool SimpleTimeZone::inDaylightTime(UDate date, UErrorCode& status) const
     if (U_FAILURE(status)) return false;
     GregorianCalendar *gc = new GregorianCalendar(*this, status);
     /* test for nullptr */
-    if (gc == 0) {
+    if (gc == nullptr) {
         status = U_MEMORY_ALLOCATION_ERROR;
         return false;
     }
@@ -1049,18 +1056,10 @@ SimpleTimeZone::clearTransitionRules() {
 
 void
 SimpleTimeZone::deleteTransitionRules() {
-    if (initialRule != nullptr) {
-        delete initialRule;
-    }
-    if (firstTransition != nullptr) {
-        delete firstTransition;
-    }
-    if (stdRule != nullptr) {
-        delete stdRule;
-    }
-    if (dstRule != nullptr) {
-        delete dstRule;
-    }
+    delete initialRule;
+    delete firstTransition;
+    delete stdRule;
+    delete dstRule;
     clearTransitionRules();
  }
 

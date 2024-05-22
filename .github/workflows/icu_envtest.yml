@@ -14,6 +14,9 @@ on:
   schedule:
     # This cron schedule is set to run 10:23 UTC every SAT
     - cron: '23 10 * * SAT'
+    # In addition, during the major release cycle (in March/April, September/October),
+    # this cron schedule is set to run 10:21 UTC every Workday and Sunday.
+    - cron: '21 10 * MAR,APR,SEP,OCT MON-FRI,SUN'
 
 permissions:
   contents: read
@@ -43,7 +46,7 @@ jobs:
         run: |
           locale -a;
       - name: Checkout and setup
-        uses: actions/checkout@v3
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       - name: Build
         run: |
           cd icu4c/source/;
@@ -102,7 +105,7 @@ jobs:
           find /usr/share/zoneinfo/ -type f,l|egrep -v "/(right|posix)/"|egrep -v "\.tab"|wc -l;
           find /usr/share/zoneinfo/ -type f,l|egrep -v "/(right|posix)/"|egrep -v "\.tab"|cut -d '/' -f5-50;
       - name: Checkout and setup
-        uses: actions/checkout@v3
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       - name: Build
         run: |
           cd icu4c/source/;

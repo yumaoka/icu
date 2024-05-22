@@ -1339,14 +1339,30 @@ _getVariant(const char* localeID,
             char prev,
             ByteSink* sink,
             const char** pEnd,
-            bool needSeparator) {
-    bool hasVariant = false;
+            bool needSeparator,
+            UErrorCode& status) {
+    if (U_FAILURE(status)) return;
     if (pEnd != nullptr) { *pEnd = localeID; }
 
+    // Reasonable upper limit for variants
+    // There are no strict limitation of the syntax of variant in the legacy
+    // locale format. If the locale is constructed from unicode_locale_id
+    // as defined in UTS35, then we know each unicode_variant_subtag
+    // could have max length of 8 ((alphanum{5,8} | digit alphanum{3})
+    // 179 would allow 20 unicode_variant_subtag with sep in the
+    // unicode_locale_id
+    // 8*20 + 1*(20-1) = 179
+    constexpr int32_t MAX_VARIANTS_LENGTH = 179;
+
     /* get one or more variant tags and separate them with '_' */
-    if(_isIDSeparator(prev)) {
+    int32_t index = 0;
+    if (_isIDSeparator(prev)) {
         /* get a variant string after a '-' or '_' */
-        while(!_isTerminator(*localeID)) {
+        for (index=0; !_isTerminator(localeID[index]); index++) {
+            if (index >= MAX_VARIANTS_LENGTH) { // same as length > MAX_VARIANTS_LENGTH
+                status = U_ILLEGAL_ARGUMENT_ERROR;
+                return;
+            }
             if (needSeparator) {
                 if (sink != nullptr) {
                     sink->Append("_", 1);
@@ -1354,26 +1370,28 @@ _getVariant(const char* localeID,
                 needSeparator = false;
             }
             if (sink != nullptr) {
-                char c = (char)uprv_toupper(*localeID);
+                char c = (char)uprv_toupper(localeID[index]);
                 if (c == '-') c = '_';
                 sink->Append(&c, 1);
             }
-            hasVariant = true;
-            localeID++;
         }
-        if (pEnd != nullptr) { *pEnd = localeID; }
+        if (pEnd != nullptr) { *pEnd = localeID+index; }
     }
 
     /* if there is no variant tag after a '-' or '_' then look for '@' */
-    if(!hasVariant) {
-        if(prev=='@') {
+    if (index == 0) {
+        if (prev=='@') {
             /* keep localeID */
         } else if((localeID=locale_getKeywordsStart(localeID))!=nullptr) {
             ++localeID; /* point after the '@' */
         } else {
             return;
         }
-        while(!_isTerminator(*localeID)) {
+        for(; !_isTerminator(localeID[index]); index++) {
+            if (index >= MAX_VARIANTS_LENGTH) { // same as length > MAX_VARIANTS_LENGTH
+                status = U_ILLEGAL_ARGUMENT_ERROR;
+                return;
+            }
             if (needSeparator) {
                 if (sink != nullptr) {
                     sink->Append("_", 1);
@@ -1381,13 +1399,12 @@ _getVariant(const char* localeID,
                 needSeparator = false;
             }
             if (sink != nullptr) {
-                char c = (char)uprv_toupper(*localeID);
+                char c = (char)uprv_toupper(localeID[index]);
                 if (c == '-' || c == ',') c = '_';
                 sink->Append(&c, 1);
             }
-            localeID++;
         }
-        if (pEnd != nullptr) { *pEnd = localeID; }
+        if (pEnd != nullptr) { *pEnd = localeID + index; }
     }
 }
 
@@ -1560,7 +1577,8 @@ ulocimp_getSubtags(
         }
         const char* begin = localeID + 1;
         const char* end = nullptr;
-        _getVariant(begin, *localeID, variant, &end, false);
+        _getVariant(begin, *localeID, variant, &end, false, status);
+        if (U_FAILURE(status)) { return; }
         U_ASSERT(end != nullptr);
         if (end != begin && pEnd != nullptr) { *pEnd = end; }
     }
@@ -1662,7 +1680,7 @@ uloc_openKeywords(const char* localeID,
                         UErrorCode* status)
 {
     if(status==nullptr || U_FAILURE(*status)) {
-        return 0;
+        return nullptr;
     }
 
     CharString tempBuffer;
@@ -1687,7 +1705,7 @@ uloc_openKeywords(const char* localeID,
             &tmpLocaleID,
             *status);
     if (U_FAILURE(*status)) {
-        return 0;
+        return nullptr;
     }
 
     /* keywords are located after '@' */
@@ -1777,6 +1795,9 @@ _canonicalize(const char* localeID,
             &variant,
             &tmpLocaleID,
             err);
+    if (U_FAILURE(err)) {
+        return;
+    }
 
     if (tag.length() == I_DEFAULT_LENGTH &&
             uprv_strncmp(origLocaleID, i_default, I_DEFAULT_LENGTH) == 0) {
@@ -1805,20 +1826,27 @@ _canonicalize(const char* localeID,
 
     /* Copy POSIX-style charset specifier, if any [mr.utf8] */
     if (!OPTION_SET(options, _ULOC_CANONICALIZE) && *tmpLocaleID == '.') {
-        bool done = false;
-        do {
-            char c = *tmpLocaleID;
-            switch (c) {
-            case 0:
-            case '@':
-                done = true;
-                break;
-            default:
-                tag.append(c, err);
-                ++tmpLocaleID;
-                break;
-            }
-        } while (!done);
+        tag.append('.', err);
+        ++tmpLocaleID;
+        const char *atPos = nullptr;
+        size_t length;
+        if((atPos = uprv_strchr(tmpLocaleID, '@')) != nullptr) {
+            length = atPos - tmpLocaleID;
+        } else {
+            length = uprv_strlen(tmpLocaleID);
+        }
+        // The longest charset name we found in IANA charset registry
+        // https://www.iana.org/assignments/character-sets/ is
+        // "Extended_UNIX_Code_Packed_Format_for_Japanese" in length 45.
+        // we therefore restrict the length here to be 64 which is a power of 2
+        // number that is longer than 45.
+        constexpr size_t kMaxCharsetLength = 64;
+        if (length > kMaxCharsetLength) {
+           err = U_ILLEGAL_ARGUMENT_ERROR; /* malformed keyword name */
+           return;
+        }
+        tag.append(tmpLocaleID, static_cast<int32_t>(length), err);
+        tmpLocaleID += length;
     }
 
     /* Scan ahead to next '@' and determine if it is followed by '=' and/or ';'
@@ -1853,7 +1881,8 @@ _canonicalize(const char* localeID,
             }
 
             CharStringByteSink s(&tag);
-            _getVariant(tmpLocaleID+1, '@', &s, nullptr, !variant.isEmpty());
+            _getVariant(tmpLocaleID+1, '@', &s, nullptr, !variant.isEmpty(), err);
+            if (U_FAILURE(err)) { return; }
         }
 
         /* Look up the ID in the canonicalization map */

@@ -224,6 +224,7 @@ void addLocaleTest(TestNode** root)
     TESTCASE(TestBasicGetters);
     TESTCASE(TestNullDefault);
     TESTCASE(TestPrefixes);
+    TESTCASE(TestVariantLengthLimit);
     TESTCASE(TestSimpleResourceInfo);
     TESTCASE(TestDisplayNames);
     TESTCASE(TestGetDisplayScriptPreFlighting21160);
@@ -568,6 +569,82 @@ static void TestPrefixes(void) {
     }
 }
 
+static void TestVariantLengthLimit(void) {
+    static const char valid[] =
+        "_"
+        "_12345678"
+        "_12345678"
+        "_12345678"
+        "_12345678"
+        "_12345678"
+        "_12345678"
+        "_12345678"
+        "_12345678"
+        "_12345678"
+        "_12345678"
+        "_12345678"
+        "_12345678"
+        "_12345678"
+        "_12345678"
+        "_12345678"
+        "_12345678"
+        "_12345678"
+        "_12345678"
+        "_12345678"
+        "_12345678";
+
+    static const char invalid[] =
+        "_"
+        "_12345678"
+        "_12345678"
+        "_12345678"
+        "_12345678"
+        "_12345678"
+        "_12345678"
+        "_12345678"
+        "_12345678"
+        "_12345678"
+        "_12345678"
+        "_12345678"
+        "_12345678"
+        "_12345678"
+        "_12345678"
+        "_12345678"
+        "_12345678"
+        "_12345678"
+        "_12345678"
+        "_12345678"
+        "_12345678X";  // One character too long.
+
+    const char* const variantsExpected = valid + 2;  // Skip initial "__".
+    const int32_t reslenExpected = uprv_strlen(variantsExpected);
+
+    char buffer[UPRV_LENGTHOF(invalid)];
+    UErrorCode status;
+
+    status = U_ZERO_ERROR;
+    int32_t reslen =
+        uloc_getVariant(valid, buffer, UPRV_LENGTHOF(buffer), &status);
+    if (U_FAILURE(status)) {
+        log_err("Unexpected error in uloc_getVariant(): %s\n",
+                myErrorName(status));
+    } else if (reslenExpected != reslen) {
+        log_err("Expected length %d but got length %d.\n",
+                reslenExpected, reslen);
+    } else if (uprv_strcmp(variantsExpected, buffer) != 0) {
+        log_err("Expected variants \"%s\" but got variants \"%s\"\n",
+                variantsExpected, buffer);
+    }
+
+    status = U_ZERO_ERROR;
+    uloc_getVariant(invalid, buffer, UPRV_LENGTHOF(buffer), &status);
+    if (status != U_ILLEGAL_ARGUMENT_ERROR) {
+        // The variants are known to be too long, parsing must fail.
+        log_err("Unexpected error in uloc_getVariant(), expected "
+                "U_ILLEGAL_ARGUMENT_ERROR but got %s.\n",
+                myErrorName(status));
+    }
+}
 
 /* testing uloc_getISO3Language(), uloc_getISO3Country(),  */
 static void TestSimpleResourceInfo(void) {
@@ -3791,6 +3868,27 @@ const char* const basic_maximize_data[][2] = {
     "aaaa",
     "aaaa",
   }, {
+    // ICU-22727
+    // unicode_language_subtag = alpha{2,3} | alpha{5,8};
+    // so "bbbbb", "cccccc", "ddddddd", "eeeeeeee" are
+    // well-formed unicode_language_subtag and therefore
+    // well-formed unicode_language_id
+    // but "fffffffff" is not.
+    "bbbbb",
+    "bbbbb",
+  }, {
+    // ICU-22727
+    "cccccc",
+    "cccccc",
+  }, {
+    // ICU-22727
+    "ddddddd",
+    "ddddddd",
+  }, {
+    // ICU-22727
+    "eeeeeeee",
+    "eeeeeeee",
+  }, {
     // ICU-22546
     "und-Zzzz",
     "en_Latn_US" // If change, please also update common/unicode/uloc.h
@@ -3815,17 +3913,17 @@ const char* const basic_maximize_data[][2] = {
     "zh_Hani",
     "zh_Hani_CN" // If change, please also update common/unicode/uloc.h
   }, {
-    // ICU-22545
+    // ICU-22545 & ICU-22742
     "en_XA",
-    "en_XA"
+    "en_Latn_XA"
   }, {
-    // ICU-22545
-    "en_XB",
-    "en_XB"
+    // ICU-22545 & ICU-22742
+    "ar_XB",
+    "ar_Arab_XB"
   }, {
-    // ICU-22545
-    "en_XC",
-    "en_XC"
+    // ICU-22545 & ICU-22742
+    "ru_XC",
+    "ru_Cyrl_XC"
   }
 };
 
@@ -5971,6 +6069,16 @@ const errorData maximizeErrors[] = {
         "en_Latn_US_POSIX@currency=EURO",
         U_STRING_NOT_TERMINATED_WARNING,
         30
+    },
+    {
+        // ICU-22727
+        // unicode_language_subtag = alpha{2,3} | alpha{5,8};
+        // so "bbbbb", "cccccc", "ddddddd", "eeeeeeee" are
+        // well-formed unicode_language_id but "fffffffff" is not.
+        "fffffffff",
+        NULL,
+        U_ILLEGAL_ARGUMENT_ERROR,
+        0
     }
 };
 

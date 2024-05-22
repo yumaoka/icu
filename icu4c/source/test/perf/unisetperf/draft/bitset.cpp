@@ -22,6 +22,9 @@
 *   Uses the original set for supplementary code points.
 */
 
+#include "unicode/uniset.h"
+#include "unicode/uobject.h"
+#include "unicode/usetiter.h"
 #include "unicode/utypes.h"
 #include "unicont.h"
 #include "cmemory.h" // for UPRV_LENGTHOF
@@ -175,7 +178,7 @@ public:
         latin1Set[6]=(uint32_t)bits[3];
         latin1Set[7]=(uint32_t)(bits[3]>>32);
 
-        restSet.remove(0, 0xffff);
+        restSet->remove(0, 0xffff);
     }
 
     ~BitSet() {
@@ -185,7 +188,7 @@ public:
         delete restSet;
     }
 
-    UBool contains(UChar32 c) const {
+    UBool contains(UChar32 c) const override {
         if((uint32_t)c<=0xff) {
             return (UBool)((latin1Set[c>>5]&((uint32_t)1<<(c&0x1f)))!=0);
         } else if((uint32_t)c<0xffff) {
@@ -200,7 +203,7 @@ private:
     int64_t shortBits[32];
     int64_t *bits;
 
-    uint32_t latin1Bits[8];
+    uint32_t latin1Set[8];
 
     UnicodeSet *restSet;
 };

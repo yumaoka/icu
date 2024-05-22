@@ -89,7 +89,7 @@ inline int CompareStringW(DWORD, DWORD, char16_t *, int, char16_t *, int) {retur
 #include <sys/time.h>
 unsigned long timeGetTime() {
     struct timeval t;
-    gettimeofday(&t, 0);
+    gettimeofday(&t, nullptr);
     unsigned long val = t.tv_sec * 1000;  // Let it overflow.  Who cares.
     val += t.tv_usec / 1000;
     return val;
@@ -97,7 +97,6 @@ unsigned long timeGetTime() {
 inline int LCMapStringW(DWORD, DWORD, char16_t *, int, char16_t *, int) {return 0;}
 const int LCMAP_SORTKEY = 0;
 #define MAKELCID(a,b) 0
-const int SORT_DEFAULT = 0;
 #endif
 
 
@@ -106,10 +105,10 @@ const int SORT_DEFAULT = 0;
 //  Command line option variables
 //     These global variables are set according to the options specified
 //     on the command line by the user.
-char * opt_fName      = 0;
+char* opt_fName = nullptr;
 const char * opt_locale     = "en_US";
 int    opt_langid     = 0;         // Defaults to value corresponding to opt_locale.
-char * opt_rules      = 0;
+char* opt_rules = nullptr;
 UBool  opt_help       = false;
 int    opt_loopCount  = 1;
 int    opt_iLoopCount = 1;
@@ -177,7 +176,7 @@ OptSpec opts[] = {
     {"-dump",        OptSpec::FLAG,   &opt_dump},
     {"-help",        OptSpec::FLAG,   &opt_help},
     {"-?",           OptSpec::FLAG,   &opt_help},
-    {0, OptSpec::FLAG, 0}
+    {nullptr,        OptSpec::FLAG,   nullptr}
 };
 
 
@@ -229,7 +228,7 @@ UBool ProcessOptions(int argc, const char **argv, OptSpec opts[])
 
     for (argNum=1; argNum<argc; argNum++) {
         pArgName = argv[argNum];
-        for (pOpt = opts;  pOpt->name != 0; pOpt++) {
+        for (pOpt = opts; pOpt->name != nullptr; pOpt++) {
             if (strcmp(pOpt->name, pArgName) == 0) {
                 switch (pOpt->type) {
                 case OptSpec::FLAG:
@@ -260,7 +259,7 @@ UBool ProcessOptions(int argc, const char **argv, OptSpec opts[])
                 break;
             }
         }
-        if (pOpt->name == 0)
+        if (pOpt->name == nullptr)
         {
             fprintf(stderr, "Unrecognized option \"%s\"\n", pArgName);
             return false;
@@ -947,7 +946,6 @@ void doForwardIterTest(UBool haslen) {
     printf("elapsedTime %ld\n", elapsedTime);
     
     // empty loop recalculation
-    int tempgCount = 0;
     count = 0;
     startTime = timeGetTime();
     while (count < opt_loopCount) {
@@ -955,7 +953,6 @@ void doForwardIterTest(UBool haslen) {
         strindex = 0;
         ucol_setOffset(iter, strindex, &error);
         while (true) {
-            tempgCount ++;
             count5 --;
             if (count5 == 0) {
                 strindex += 10;
@@ -1111,14 +1108,12 @@ void doBackwardIterTest(UBool haslen) {
     
     // empty loop recalculation
     count = 0;
-    int tempgCount = 0;
     startTime = timeGetTime();
     while (count < opt_loopCount) {
         int count5 = 5;
         strindex = 5;
         ucol_setOffset(iter, strindex, &error);
         while (true) {
-             tempgCount ++;
              count5 --;
              if (count5 == 0) {
                  strindex += 10;
@@ -1174,10 +1169,10 @@ void  UnixConvert() {
 
     for (line=0; line < gNumFileLines; line++) {
         int sizeNeeded = ucnv_fromUChars(cvrtr,
-                                         0,            // ptr to target buffer.
-                                         0,            // length of target buffer.
+                                         nullptr, // ptr to target buffer.
+                                         0,       // length of target buffer.
                                          gFileLines[line].name,
-                                         -1,           //  source is null terminated
+                                         -1, //  source is null terminated
                                          &status);
         if (status != U_BUFFER_OVERFLOW_ERROR && status != U_ZERO_ERROR) {
             //fprintf(stderr, "Conversion from Unicode, something is wrong.\n");
@@ -1196,7 +1191,7 @@ void  UnixConvert() {
             exit(-1);
         }
         gFileLines[line].unixName[sizeNeeded] = 0;
-    };
+    }
     ucnv_close(cvrtr);
 }
 
@@ -1212,12 +1207,12 @@ public:
     UCharFile(const char *fileName);
     ~UCharFile();
     char16_t   get();
-    UBool   eof() {return fEof;};
-    UBool   error() {return fError;};
+    UBool   eof() {return fEof;}
+    UBool   error() {return fError;}
     
 private:
-    UCharFile (const UCharFile & /*other*/) {};                         // No copy constructor.
-    UCharFile & operator = (const UCharFile &/*other*/) {return *this;};   // No assignment op
+    UCharFile (const UCharFile & /*other*/) {}                         // No copy constructor.
+    UCharFile & operator = (const UCharFile &/*other*/) {return *this;}   // No assignment op
 
     FILE         *fFile;
     const char   *fName;
@@ -1357,7 +1352,7 @@ char16_t UCharFile::get() {
                 c = utf16Buf[0];
             }
             break;
-        };
+        }
     default:
         c = 0xFFFD; /* Error, unspecified codepage*/
         fprintf(stderr, "UCharFile: Error: unknown fEncoding\n");
@@ -1375,7 +1370,7 @@ char16_t UCharFile::get() {
 UCollator *openRulesCollator() {
     UCharFile f(opt_rules);
     if (f.error()) {
-        return 0;
+        return nullptr;
     }
 
     int  bufLen = 10000;
@@ -1389,7 +1384,7 @@ UCollator *openRulesCollator() {
             break;
         }
         if (f.error()) {
-            return 0;
+            return nullptr;
         }
         i++;
         if (i >= bufLen) {
@@ -1398,7 +1393,7 @@ UCollator *openRulesCollator() {
             buf = (char16_t *)realloc(buf, bufLen);
             if (buf == nullptr) {
                 free(tmp);
-                return 0;
+                return nullptr;
             }
         }
     }
@@ -1409,7 +1404,7 @@ UCollator *openRulesCollator() {
                                          UCOL_DEFAULT_STRENGTH, nullptr, &status);
     if (U_FAILURE(status)) {
         fprintf(stderr, "ICU ucol_openRules() open failed.: %d\n", status);
-        return 0;
+        return nullptr;
     }
     free(buf);
     return coll;
@@ -1426,7 +1421,7 @@ UCollator *openRulesCollator() {
 //
 //----------------------------------------------------------------------------------------
 int main(int argc, const char** argv) {
-    if (ProcessOptions(argc, argv, opts) != true || opt_help || opt_fName == 0) {
+    if (ProcessOptions(argc, argv, opts) != true || opt_help || opt_fName == nullptr) {
         printf(gUsageString);
         exit (1);
     }
@@ -1440,9 +1435,9 @@ int main(int argc, const char** argv) {
     //
     UErrorCode          status = U_ZERO_ERROR;
 
-    if (opt_rules != 0) {
+    if (opt_rules != nullptr) {
         gCol = openRulesCollator();
-        if (gCol == 0) {return -1;}
+        if (gCol == nullptr) { return -1; }
     }
     else {
         gCol = ucol_open(opt_locale, &status);
@@ -1527,7 +1522,7 @@ int main(int argc, const char** argv) {
     //  Set the UNIX locale
     //
     if (opt_unix) {
-        if (setlocale(LC_ALL, opt_locale) == 0) {
+        if (setlocale(LC_ALL, opt_locale) == nullptr) {
             fprintf(stderr, "setlocale(LC_ALL, %s) failed.\n", opt_locale);
             exit(-1);
         }

@@ -187,7 +187,6 @@ PortableFontInstance::PortableFontInstance(const char *fileName, float pointSize
 error_exit:
     fclose(fFile);
     fFile = nullptr;
-    return;
 }
 
 PortableFontInstance::~PortableFontInstance()
@@ -416,10 +415,8 @@ le_uint32 PortableFontInstance::getRawChecksum() const
   // now, calculate
   fseek(fFile, 0L, SEEK_SET);
   int r;
-  int count =0;
   while((r = fgetc(fFile)) != EOF) {
     chksum += r;
-    count ++;
   }
   return (le_uint32) chksum; // cast to signed
 }
