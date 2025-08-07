@@ -69,6 +69,7 @@ import com.ibm.icu.text.UnicodeSet;
 import com.ibm.icu.util.Currency;
 import com.ibm.icu.util.Currency.CurrencyUsage;
 import com.ibm.icu.util.CurrencyAmount;
+import com.ibm.icu.util.LocaleData;
 import com.ibm.icu.util.MeasureUnit;
 import com.ibm.icu.util.ULocale;
 
@@ -7184,4 +7185,49 @@ public class NumberFormatTest extends CoreTestFmwk {
                     testCase.expectedOutput, formatted);
         }
     }
+
+    @Test // ICU-23139
+    public void testStrictParse() throws java.text.ParseException {
+        // fr-FR: grouping separator '\u202F', decimal separator ','
+        // en-US: grouping separator ',', decimal separator '.'
+        // de: grouping separator '.', decimal separator ','
+        // de-CH: grouping separator '\u2019', decimal separator '.'
+        String[] locales = { "fr-FR", "en-US", "de", "de-CH" };
+        String[] toParse =
+            { "1.234", "1,234", "1\u00a0234", "1 234", "1.234,567" };
+        double[][] expectedLenient = {
+            {   1234,   1.234,         1234,    1234,    1234.567 }, // fr-FR
+            {  1.234,    1234,         1234,    1234,   1.234 }, // en-US
+            {   1234,   1.234,         1234,    1234,    1234.567 }, // de
+            {  1.234,    1234,         1234,    1234,   1.234 } // de-CH
+        };
+        double[][] expectedStrict  = {
+            {      1,   1.234,         1234,    1234,       1 }, // fr-FR
+            {  1.234,    1234,            1,       1,   1.234 }, // en-US
+            {   1234,   1.234,            1,       1,    1234.567 }, // de
+            {  1.234,       1,         1234,    1234,   1.234 } // de-CH
+        };
+
+        Number result;
+
+        for (int idxLocale = 0; idxLocale < locales.length; idxLocale++) {
+            Locale locale = Locale.forLanguageTag(locales[idxLocale]);
+            NumberFormat nf = NumberFormat.getInstance(locale);
+
+            nf.setParseStrict(false);
+            for (int i = 0; i < toParse.length; i++) {
+                String test = toParse[i];
+                result = nf.parse(test);
+                assertEquals("Lenient parsing", expectedLenient[idxLocale][i], result.doubleValue());
+            }
+
+            nf.setParseStrict(true);
+            for (int i = 0; i < toParse.length; i++) {
+                String test = toParse[i];
+                result = nf.parse(test);
+                assertEquals("Strict parsing", expectedStrict[idxLocale][i], result.doubleValue());
+            }
+        }
+    }
+
 }
