@@ -110,6 +110,7 @@ private:
     void TestStringIterator();
     void TestElementIterator();
 
+    void TestToPatternOutput();
     void TestParseErrors();
 
 private:
