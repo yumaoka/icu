@@ -58,8 +58,6 @@ U_NAMESPACE_END
 
 U_NAMESPACE_BEGIN
 
-class CharString;
-
 /**
  * The BreakIterator class implements methods for finding the location
  * of boundaries in text. BreakIterator is an abstract base class.
@@ -650,9 +648,9 @@ protected:
 private:
 
     /** @internal (private) */
-    CharString* actualLocale = nullptr;
-    CharString* validLocale = nullptr;
-    CharString* requestLocale = nullptr;
+    Locale actualLocale;
+    Locale validLocale;
+    Locale requestLocale;
 };
 
 #ifndef U_HIDE_DEPRECATED_API

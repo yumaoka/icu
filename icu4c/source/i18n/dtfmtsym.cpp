@@ -400,10 +400,8 @@ DateFormatSymbols::createZoneStrings(const UnicodeString *const * otherStrings)
  */
 void
 DateFormatSymbols::copyData(const DateFormatSymbols& other) {
-    UErrorCode status = U_ZERO_ERROR;
-    U_LOCALE_BASED(locBased, *this);
-    locBased.setLocaleIDs(other.validLocale, other.actualLocale, status);
-    U_ASSERT(U_SUCCESS(status));
+    validLocale = other.validLocale;
+    actualLocale = other.actualLocale;
     assignArray(fEras, fErasCount, other.fEras, other.fErasCount);
     assignArray(fEraNames, fEraNamesCount, other.fEraNames, other.fEraNamesCount);
     assignArray(fNarrowEras, fNarrowErasCount, other.fNarrowEras, other.fNarrowErasCount);
@@ -496,8 +494,6 @@ DateFormatSymbols& DateFormatSymbols::operator=(const DateFormatSymbols& other)
 DateFormatSymbols::~DateFormatSymbols()
 {
     dispose();
-    delete actualLocale;
-    delete validLocale;
 }
 
 void DateFormatSymbols::dispose()
@@ -537,10 +533,8 @@ void DateFormatSymbols::dispose()
     delete[] fStandaloneWideDayPeriods;
     delete[] fStandaloneNarrowDayPeriods;
 
-    delete actualLocale;
-    actualLocale = nullptr;
-    delete validLocale;
-    validLocale = nullptr;
+    actualLocale = Locale::getRoot();
+    validLocale = Locale::getRoot();
     disposeZoneStrings();
 }
 
@@ -2344,12 +2338,11 @@ DateFormatSymbols::initializeData(const Locale& locale, const char *type, UError
         }
     }
 
-    U_LOCALE_BASED(locBased, *this);
     // if we make it to here, the resource data is cool, and we can get everything out
     // of it that we need except for the time-zone and localized-pattern data, which
     // are stored in a separate file
-    locBased.setLocaleIDs(ures_getLocaleByType(cb.getAlias(), ULOC_VALID_LOCALE, &status),
-                          ures_getLocaleByType(cb.getAlias(), ULOC_ACTUAL_LOCALE, &status), status);
+    validLocale = Locale(ures_getLocaleByType(cb.getAlias(), ULOC_VALID_LOCALE, &status));
+    actualLocale = Locale(ures_getLocaleByType(cb.getAlias(), ULOC_ACTUAL_LOCALE, &status));
 
     // Load eras
     initField(&fEras, fErasCount, calendarSink, buildResourcePath(path, gErasTag, gNamesAbbrTag, status), status);

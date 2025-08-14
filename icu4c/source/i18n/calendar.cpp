@@ -702,7 +702,9 @@ fAreAllFieldsSet(false),
 fAreFieldsVirtuallySet(false),
 fLenient(true),
 fRepeatedWallTime(UCAL_WALLTIME_LAST),
-fSkippedWallTime(UCAL_WALLTIME_LAST)
+fSkippedWallTime(UCAL_WALLTIME_LAST),
+validLocale(Locale::getRoot()),
+actualLocale(Locale::getRoot())
 {
     clear();
     if (U_FAILURE(success)) {
@@ -725,7 +727,9 @@ fAreAllFieldsSet(false),
 fAreFieldsVirtuallySet(false),
 fLenient(true),
 fRepeatedWallTime(UCAL_WALLTIME_LAST),
-fSkippedWallTime(UCAL_WALLTIME_LAST)
+fSkippedWallTime(UCAL_WALLTIME_LAST),
+validLocale(Locale::getRoot()),
+actualLocale(Locale::getRoot())
 {
     LocalPointer<TimeZone> zone(adoptZone, success);
     if (U_FAILURE(success)) {
@@ -755,7 +759,9 @@ fAreAllFieldsSet(false),
 fAreFieldsVirtuallySet(false),
 fLenient(true),
 fRepeatedWallTime(UCAL_WALLTIME_LAST),
-fSkippedWallTime(UCAL_WALLTIME_LAST)
+fSkippedWallTime(UCAL_WALLTIME_LAST),
+validLocale(Locale::getRoot()),
+actualLocale(Locale::getRoot())
 {
     if (U_FAILURE(success)) {
         return;
@@ -774,8 +780,6 @@ fSkippedWallTime(UCAL_WALLTIME_LAST)
 Calendar::~Calendar()
 {
     delete fZone;
-    delete actualLocale;
-    delete validLocale;
 }
 
 // -------------------------------------
@@ -814,10 +818,8 @@ Calendar::operator=(const Calendar &right)
         fWeekendCease            = right.fWeekendCease;
         fWeekendCeaseMillis      = right.fWeekendCeaseMillis;
         fNextStamp               = right.fNextStamp;
-        UErrorCode status = U_ZERO_ERROR;
-        U_LOCALE_BASED(locBased, *this);
-        locBased.setLocaleIDs(right.validLocale, right.actualLocale, status);
-        U_ASSERT(U_SUCCESS(status));
+        validLocale = right.validLocale;
+        actualLocale = right.actualLocale;
     }
 
     return *this;
@@ -4135,9 +4137,8 @@ Calendar::setWeekData(const Locale& desiredLocale, const char *type, UErrorCode&
     }
 
     if (U_SUCCESS(status)) {
-        U_LOCALE_BASED(locBased,*this);
-        locBased.setLocaleIDs(ures_getLocaleByType(monthNames.getAlias(), ULOC_VALID_LOCALE, &status),
-                              ures_getLocaleByType(monthNames.getAlias(), ULOC_ACTUAL_LOCALE, &status), status);
+        validLocale = Locale(ures_getLocaleByType(monthNames.getAlias(), ULOC_VALID_LOCALE, &status));
+        actualLocale = Locale(ures_getLocaleByType(monthNames.getAlias(), ULOC_ACTUAL_LOCALE, &status));
     } else {
         status = U_USING_FALLBACK_WARNING;
         return;

@@ -43,7 +43,6 @@ U_NAMESPACE_BEGIN
 /* forward declaration */
 class SimpleDateFormat;
 class Hashtable;
-class CharString;
 
 /**
  * DateFormatSymbols is a public class for encapsulating localizable date-time
@@ -937,8 +936,8 @@ private:
     /** valid/actual locale information 
      *  these are always ICU locales, so the length should not be a problem
      */
-    CharString* validLocale = nullptr;
-    CharString* actualLocale = nullptr;
+    Locale validLocale;
+    Locale actualLocale;
 
     DateFormatSymbols() = delete; // default constructor not implemented
 
