@@ -15,6 +15,7 @@
 #include <string.h>
 
 #include <array>
+#include <map>
 #include <string_view>
 #include <unordered_map>
 
@@ -29,9 +30,11 @@
 #include "unicode/symtable.h"
 #include "unicode/utf8.h"
 #include "unicode/utf16.h"
+#include "unicode/utfiterator.h"
 #include "unicode/uversion.h"
 #include "cmemory.h"
 #include "hash.h"
+#include <variant>
 
 #define TEST_ASSERT_SUCCESS(status) UPRV_BLOCK_MACRO_BEGIN { \
     if (U_FAILURE(status)) { \
@@ -1882,53 +1885,122 @@ void UnicodeSetTest::TestSymbolTable() {
 
 void UnicodeSetTest::TestLookupSymbolTable() {
     UErrorCode errorCode = U_ZERO_ERROR;
+    // We let `variables` be empty by default in the test cases below.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
+    struct TestCase {
+        struct Variable {
+            std::u16string_view name;
+            std::u16string_view value;
+        };
+        std::u16string_view expression;
+        UErrorCode expectedErrorCode;
+        std::u16string_view expectedPattern;
+        std::u16string_view expectedRegeneratedPattern;
+        // Hyrum’s law at work: Some users (RBBI) depend on the sequencing of `lookup` and
+        // `lookupMatcher` calls, so we test that.
+        std::vector<std::variant<UnicodeString, UChar32>> expectedLookups;
+        // Variables for `lookup`.
+        std::vector<Variable> variables;
+    };
     class TestSymbolTable : public SymbolTable {
       public:
-        const UnicodeString *lookup(const UnicodeString &) const override {
-            return nullptr;
+        const UnicodeString *lookup(const UnicodeString &name) const override {
+            auto it = variables_.find(name);
+            lookupTrace_.push_back(name);
+            return it == variables_.end() ? nullptr : &it->second;
         }
 
         const UnicodeFunctor *lookupMatcher(UChar32 c) const override {
+            lookupTrace_.push_back(c);
             return symbols_.find(c) != symbols_.end() ? &symbols_.at(c)
                                                                     : nullptr;
         }
 
-        virtual UnicodeString parseReference(const UnicodeString &, ParsePosition &,
-                                             int32_t) const override {
-            return u"";
+        virtual UnicodeString parseReference(const UnicodeString &text, ParsePosition &pos,
+                                                 int32_t limit) const override {
+                const auto limitedText = std::u16string_view(text).substr(pos.getIndex(), limit);
+                for (auto codeUnits : header::utfStringCodePoints<UChar32, UTF_BEHAVIOR_FFFD>(limitedText)) {
+                    if (!u_isIDPart(codeUnits.codePoint())) {
+                        pos.setIndex(pos.getIndex() + (codeUnits.begin() - limitedText.begin()));
+                        // TODO(egg): In C++20, this could use the two-iterator constructor of
+                        // std::u16string_view.
+                        return limitedText.substr(0, codeUnits.begin() - limitedText.begin());
+                    }
+                }
+                pos.setIndex(limit);
+                return limitedText;
         }
 
         void add(UChar32 c, UnicodeSet set) {
             symbols_[c] = set;
         }
 
+        void setVariables(const std::vector<TestCase::Variable>& variables) {
+            for (const auto &[name, value] : variables) {
+                variables_[name] = value;
+            }
+        }
+
+        const std::vector<std::variant<UnicodeString, UChar32>>& getLookupTrace() const {
+            return lookupTrace_;
+        }
+
+        void clearLookupTrace() {
+            lookupTrace_.clear();
+        }
+
       private:
         std::unordered_map<UChar32, UnicodeSet> symbols_;
+        std::map<UnicodeString, UnicodeString> variables_;
+        mutable std::vector<std::variant<UnicodeString, UChar32>> lookupTrace_;
     };
     TestSymbolTable symbols;
     symbols.add(u'0', UnicodeSet(u"[ a-z ]", errorCode));
     symbols.add(u'1', UnicodeSet(u"[ b-c ]", errorCode));
     symbols.add(u'2', UnicodeSet(u"[: Co :]", errorCode));
-    struct TestCase {
-        std::u16string_view expression;
-        UErrorCode expectedErrorCode;
-        std::u16string_view expectedPattern;
-        std::u16string_view expectedRegeneratedPattern;
-    };
-    for (const auto &[expression, expectedErrorCode, expectedPattern, expectedRegeneratedPattern] :
-        std::vector<TestCase>{
-            {u"0", U_ZERO_ERROR, u"[a-z]", u"[a-z]"},
-            {u"[0-1]", U_ZERO_ERROR, u"[[a-z]-[bc]]", u"[ad-z]"},
-            {u"[!-0]", U_MALFORMED_SET, u"[]", u"[]"},
+    for (const auto &[expression, expectedErrorCode, expectedPattern, expectedRegeneratedPattern,
+                      expectedLookups, variables] : std::vector<TestCase>{
+            {u"0", U_ZERO_ERROR, u"[a-z]", u"[a-z]", {u'0'}},
+            {u"[0-1]", U_ZERO_ERROR, u"[[a-z]-[bc]]", u"[ad-z]", {u'0', u'-', u'1', u']'}},
+            {u"[!-0]", U_MALFORMED_SET, u"[]", u"[]", {u'!', u'-', u'0'}},
+            // A call to lookupMatcher with the first character of the content of a variable happens
+            // immediately after a corresponding call to lookup, although we may lookup the variable
+            // several times before we call lookupMatcher.
+            {u"[0-$one]",
+            U_ZERO_ERROR,
+            u"[[a-z]-[bc]]",
+            u"[ad-z]",
+            {u'0', u'-', u"one", u"one", u'1', u']'},
+            {{u"zero", u"0"}, {u"one", u"1"}}},
+            {u"[$zero-$one]",
+            U_ZERO_ERROR,
+            u"[[a-z]-[bc]]",
+            u"[ad-z]",
+            {u"zero", u"zero", u"zero", u"zero", u'0', u'-', u"one", u"one", u'1', u']'},
+            {{u"zero", u"0"}, {u"one", u"1"}}},
+            // If the variable expands to multiple symbols, only the first one is sequenced right after
+            // the variable lookup.
+            {u"[$ten]",
+            U_ZERO_ERROR,
+            u"[[bc][a-z]]",
+            u"[a-z]",
+            {u"ten", u"ten", u"ten", u"ten", u'1', u'0', u']'},
+            {{u"ten", u"10"}}},
             // Substitution of lookupMatcher symbols takes place after unescaping.
-            {uR"([!-\u0030])", U_MALFORMED_SET, u"[]", u"[]"},
+            {uR"([!-\u0030])", U_MALFORMED_SET, u"[]", u"[]", {u'!', u'-', u'0'}},
             // It does not take place in string literals.
-            {uR"([!-/{0}])", U_ZERO_ERROR, u"[!-0]", u"[!-0]"},
-            {uR"([ 2 & 1 ])", U_ZERO_ERROR, u"[[: Co :]&[bc]]", u"[]"},
-            {uR"([ 21 ])", U_ZERO_ERROR, u"[[: Co :][bc]]",
-            u"[bc\uE000-\uF8FF\U000F0000-\U000FFFFD\U00100000-\U0010FFFD]"},
-            {u"[ a-b 1 ]", U_ZERO_ERROR, u"[a-b[bc]]", u"[a-c]"},
+            {uR"([!-/{0}])", U_ZERO_ERROR, u"[!-0]", u"[!-0]", {u'!', u'-', u'/', u'{', u']'}},
+            {uR"([ 2 & 1 ])", U_ZERO_ERROR, u"[[: Co :]&[bc]]", u"[]", {u'2', u'&', u'1', u']'}},
+            {uR"([ 21 ])",
+            U_ZERO_ERROR,
+            u"[[: Co :][bc]]",
+            u"[bc\uE000-\uF8FF\U000F0000-\U000FFFFD\U00100000-\U0010FFFD]",
+            {u'2', u'1', u']'}},
+            {u"[ a-b 1 ]", U_ZERO_ERROR, u"[a-b[bc]]", u"[a-c]", {u'a', u'-', u'b', u'1', u']'}},
         }) {
+        symbols.setVariables(variables);
+        symbols.clearLookupTrace();
         UnicodeString actual;
         UErrorCode errorCode = U_ZERO_ERROR;
         const UnicodeSet set(expression, USET_IGNORE_SPACE, &symbols, errorCode);
@@ -1945,6 +2017,21 @@ void UnicodeSetTest::TestLookupSymbolTable() {
                   u")\").complement().complement().toPattern() expected " + expectedRegeneratedPattern +
                   ", got " + actual);
         }
+        if (symbols.getLookupTrace() != expectedLookups) {
+            UnicodeString expected;
+            UnicodeString actual;
+            for (const auto &l : expectedLookups) {
+                expected += std::holds_alternative<UChar32>(l)
+                                ? (u"u'" + UnicodeString(std::get<UChar32>(l)) + u"', ")
+                                : u"u\"" + std::get<UnicodeString>(l) + u"\", ";
+            }
+            for (const auto &l : symbols.getLookupTrace()) {
+                actual += std::holds_alternative<UChar32>(l)
+                              ? (u"u'" + UnicodeString(std::get<UChar32>(l)) + u"', ")
+                              : u"u\"" + std::get<UnicodeString>(l) + u"\", ";
+            }
+            errln(u"Unexpected sequence of lookups:\nExpected : " + expected + "\nActual   : " + actual);
+        }
     }
     // Test what happens when we define syntax characters as symbols.  It is an extraordinarily bad idea
     // to rely on this behaviour, but since it has been around since ICU 2.8, we probably should not
@@ -1957,8 +2044,8 @@ void UnicodeSetTest::TestLookupSymbolTable() {
     symbols.add(u'{', UnicodeSet(u"[{leftCurlyBracket}]", errorCode));
     symbols.add(u'}', UnicodeSet(u"[{rightCurlyBracket}]", errorCode));
     symbols.add(u'$', UnicodeSet(u"[{dollarSign}]", errorCode));
-    for (const auto &[expression, expectedErrorCode, expectedPattern, expectedRegeneratedPattern] :
-        std::vector<TestCase>{
+    for (const auto &[expression, expectedErrorCode, expectedPattern, expectedRegeneratedPattern,
+                      expectedLookups, variables] : std::vector<TestCase>{
             {u"-", U_ZERO_ERROR, u"[{hyphenMinus}]", u"[{hyphenMinus}]"},
             {u"0", U_ZERO_ERROR, u"[a-z]", u"[a-z]"},
             // The hyphen no longer works as set difference.
@@ -2004,8 +2091,8 @@ void UnicodeSetTest::TestLookupSymbolTable() {
     // If ] is defined as a symbol, everything breaks except a lone symbol or property-query, and the
     // constructor returns an error but not an empty set. Don’t do that.
     symbols.add(u']', UnicodeSet(u"[{rightSquareBracket}]", errorCode));
-    for (const auto &[expression, expectedErrorCode, expectedPattern, expectedRegeneratedPattern] :
-        std::vector<TestCase>{
+    for (const auto &[expression, expectedErrorCode, expectedPattern, expectedRegeneratedPattern,
+                      expectedLookups, variables] : std::vector<TestCase>{
             {u"]", U_ZERO_ERROR, u"[{rightSquareBracket}]", u"[{rightSquareBracket}]"},
             {u"[]", U_MALFORMED_SET, u"[{rightSquareBracket}]", u"[{rightSquareBracket}]"},
         }) {
@@ -2026,6 +2113,7 @@ void UnicodeSetTest::TestLookupSymbolTable() {
                   ", got " + actual);
         }
     }
+#pragma GCC diagnostic pop
 }
 
 void UnicodeSetTest::TestSurrogate() {
