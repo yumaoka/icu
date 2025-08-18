@@ -84,6 +84,7 @@ private:
     void TestInvalidCodePoint();
 
     void TestSymbolTable();
+    void TestLookupSymbolTable();
 
     void TestSurrogate();
 
