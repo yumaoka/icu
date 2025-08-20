@@ -77,8 +77,7 @@ sr_Latn_ME{
             }
             eras{
                 wide{
-                    "prije nove ere",
-                    "nove ere",
+                    0{"prije nove ere"}
                 }
             }
             monthNames{

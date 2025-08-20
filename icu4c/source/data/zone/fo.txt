@@ -151,9 +151,7 @@ fo{
             ls{"Suðurafrika vanlig tíð"}
         }
         "meta:Africa_Western"{
-            ld{"Vesturafrika summartíð"}
-            lg{"Vesturafrika tíð"}
-            ls{"Vesturafrika vanlig tíð"}
+            ls{"Vesturafrika tíð"}
         }
         "meta:Alaska"{
             ld{"Alaska summartíð"}
@@ -391,6 +389,9 @@ fo{
         }
         "meta:Guyana"{
             ls{"Gujana tíð"}
+        }
+        "meta:Hawaii"{
+            ls{"Hawaii-Aleutian vanlig tíð"}
         }
         "meta:Hawaii_Aleutian"{
             ld{"Hawaii-Aleutian summartíð"}

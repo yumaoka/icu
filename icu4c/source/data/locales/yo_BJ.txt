@@ -67,6 +67,9 @@ yo_BJ{
                 "Àárɔ̀",
                 "Ɔ̀sán",
             }
+            availableFormats{
+                h{"h a"}
+            }
             dayNames{
                 format{
                     abbreviated{
@@ -138,8 +141,50 @@ yo_BJ{
             }
             eras{
                 wide%variant{
-                    "Sáájú ìgbà mímɔ̀",
-                    "CE",
+                    0{"Sáájú ìgbà mímɔ̀"}
+                }
+            }
+            intervalFormats{
+                MEd{
+                    M{"MM-dd, E – MM-dd, E"}
+                    d{"MM-dd, E – MM-dd, E"}
+                }
+                MMMEd{
+                    M{"MMM d, E – MMM d, E"}
+                    d{"MMM d, E – MMM d, E"}
+                }
+                MMMd{
+                    M{"MMM d – MMM d"}
+                }
+                Md{
+                    M{"MM-dd – MM-dd"}
+                    d{"MM-dd – MM-dd"}
+                }
+                h{
+                    a{"h a – h a"}
+                    h{"h–h a"}
+                }
+                hv{
+                    a{"h a – h a v"}
+                    h{"h–h a v"}
+                }
+                yM{
+                    y{"y-MM – y-MM"}
+                }
+                yMEd{
+                    M{"y-MM-dd, E – y-MM-dd, E"}
+                    y{"y-MM-dd, E – y-MM-dd, E"}
+                }
+                yMMM{
+                    y{"y MMM – y MMM"}
+                }
+                yMMMd{
+                    y{"y MMM d – y MMM d"}
+                }
+                yMd{
+                    M{"y-MM-dd – y-MM-dd"}
+                    d{"y-MM-dd – y-MM-dd"}
+                    y{"y-MM-dd – y-MM-dd"}
                 }
             }
             monthNames{
@@ -237,7 +282,15 @@ yo_BJ{
             dn{"Àárɔ̀/ɔ̀sán"}
         }
         fri-narrow{
+            relative{
+                "-1"{"F tóko̩já"}
+                "0"{"F èyí"}
+                "1"{"F tómbò̩"}
+            }
             relativeTime{
+                future{
+                    other{"{0} F"}
+                }
                 past{
                     other{"{0} F tɛ́lɛ̀"}
                 }
@@ -250,6 +303,9 @@ yo_BJ{
                 "1"{"Et tónbɔ̀"}
             }
             relativeTime{
+                future{
+                    other{"{0} Et"}
+                }
                 past{
                     other{"{0} Et sɛ́yìn"}
                 }
@@ -295,6 +351,9 @@ yo_BJ{
                 "1"{"Ab tónbò"}
             }
             relativeTime{
+                future{
+                    other{"{0} Ab"}
+                }
                 past{
                     other{"{0} Ab ɛ̀yí"}
                 }
@@ -307,6 +366,9 @@ yo_BJ{
                 "1"{"Aba tónbɔ̀"}
             }
             relativeTime{
+                future{
+                    other{"{0} Aba"}
+                }
                 past{
                     other{"{0} Aba. sɛ́yìn"}
                 }
@@ -433,6 +495,9 @@ yo_BJ{
                 "1"{"O tóńbɔ̀"}
             }
             relativeTime{
+                future{
+                    other{"ní {0} O"}
+                }
                 past{
                     other{"{0} W tɛ́lɛ̀"}
                 }
@@ -514,6 +579,14 @@ yo_BJ{
                     other{"Ɔdún {0} sɛ́yìn"}
                 }
             }
+        }
+        zone-narrow{
+            dn{"Agbègbè"}
+        }
+    }
+    listPattern{
+        or-short{
+            start{"{0}, {1}"}
         }
     }
     measurementSystemNames{

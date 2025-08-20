@@ -1269,9 +1269,7 @@ kxv{
             ls{"dkiṇ aaprika belā"}
         }
         "meta:Africa_Western"{
-            ld{"veḍa kuṇpu aaprika karã belā"}
-            lg{"veḍakuṇpu aaprika belā"}
-            ls{"veḍa kuṇpu aaprika mananka belā"}
+            ls{"veḍakuṇpu aaprika belā"}
         }
         "meta:Alaska"{
             ld{"alaska ḍelaaiṭ belā"}
@@ -1509,6 +1507,9 @@ kxv{
         }
         "meta:Guyana"{
             ls{"guyān belā"}
+        }
+        "meta:Hawaii"{
+            ls{"hāwāe- aalūsān mānānka belā"}
         }
         "meta:Hawaii_Aleutian"{
             ld{"hāwāe- aalūsān ḍelāiṭ belā"}

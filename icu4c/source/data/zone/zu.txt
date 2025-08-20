@@ -1263,9 +1263,7 @@ zu{
             ls{"Isikhathi esivamile saseNingizimu Afrika"}
         }
         "meta:Africa_Western"{
-            ld{"Isikhathi sasehlobo saseNtshonalanga Afrika"}
-            lg{"Isikhathi saseNtshonalanga Afrika"}
-            ls{"Isikhathi esivamile saseNtshonalanga Afrika"}
+            ls{"Isikhathi saseNtshonalanga Afrika"}
         }
         "meta:Alaska"{
             ld{"Isikhathi sase-Alaska sasemini"}
@@ -1508,6 +1506,9 @@ zu{
         }
         "meta:Guyana"{
             ls{"Isikhathi sase-Guyana"}
+        }
+        "meta:Hawaii"{
+            ls{"Isikhathi sase-Hawaii-Aleutia esijwayelekile"}
         }
         "meta:Hawaii_Aleutian"{
             ld{"Isikhathi sase-Hawaii-Aleutia sasemini"}

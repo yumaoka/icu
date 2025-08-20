@@ -3,6 +3,14 @@
 // Generated using tools/cldr/cldr-to-icu/
 yo_BJ{
     units{
+        area{
+            acre{
+                dnam{"sare"}
+            }
+            hectare{
+                dnam{"hekita"}
+            }
+        }
         compound{
             1024p2{"mɛ́bì {0}"}
             1024p4{"tɛbi {0}"}
@@ -119,6 +127,9 @@ yo_BJ{
                 dnam{"àwɔn fɔ́lɔ́ɔ̀ngì"}
                 other{"{0} àwɔn fɔ́lɔ́ɔ̀ngì"}
             }
+            meter{
+                dnam{"mita"}
+            }
         }
         light{
             candela{
@@ -156,9 +167,20 @@ yo_BJ{
             dessert-spoon-imperial{
                 dnam{"shíbí oúnjɛ kékeré"}
             }
+            liter{
+                dnam{"lita"}
+            }
         }
     }
     unitsNarrow{
+        area{
+            acre{
+                dnam{"sare"}
+            }
+            hectare{
+                dnam{"hekita"}
+            }
+        }
         duration{
             day{
                 other{"ɔj {0}"}
@@ -184,6 +206,9 @@ yo_BJ{
             fathom{
                 dnam{"fatɔ́"}
             }
+            meter{
+                dnam{"mita"}
+            }
         }
         light{
             lux{
@@ -200,6 +225,12 @@ yo_BJ{
             bushel{
                 dnam{"búsɛ́li"}
                 other{"{0}búsɛ́ɛ̀li"}
+            }
+            cup{
+                dnam{"ife"}
+            }
+            liter{
+                dnam{"lita"}
             }
         }
     }

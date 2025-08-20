@@ -80,11 +80,6 @@ fr_CA{
         "meta:Africa_Southern"{
             ls{"heure normale d’Afrique du Sud"}
         }
-        "meta:Africa_Western"{
-            ld{"heure avancée d’Afrique de l’Ouest"}
-            lg{"heure d’Afrique de l’Ouest"}
-            ls{"heure normale d’Afrique de l’Ouest"}
-        }
         "meta:Alaska"{
             ld{"heure avancée de l’Alaska"}
             lg{"heure de l’Alaska"}
@@ -297,6 +292,9 @@ fr_CA{
             ld{"heure avancée de l’Ouest du Groenland"}
             lg{"heure de l’Ouest du Groenland"}
             ls{"heure normale de l’Ouest du Groenland"}
+        }
+        "meta:Hawaii"{
+            ls{"heure normale d’Hawaï-Aléoutiennes"}
         }
         "meta:Hawaii_Aleutian"{
             ld{"heure avancée d’Hawaï-Aléoutiennes"}

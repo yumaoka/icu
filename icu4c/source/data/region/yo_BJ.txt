@@ -83,6 +83,7 @@ yo_BJ{
         SH{"Hɛlena"}
         SJ{"Sífábáàdì àti Jánì Máyɛ̀nì"}
         SN{"Sɛnɛga"}
+        SO{"Somalia"}
         ST{"Sao tomi ati piriishipi"}
         SV{"Ɛɛsáfádò"}
         SX{"Síntì Mátɛ́ɛ̀nì"}

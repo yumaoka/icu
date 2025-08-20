@@ -759,9 +759,6 @@ uz{
         "Europe:Tallinn"{
             ec{"Tallin"}
         }
-        "Europe:Tirane"{
-            ec{"Tirana"}
-        }
         "Europe:Vaduz"{
             ec{"Vaduts"}
         }
@@ -886,9 +883,7 @@ uz{
             ls{"Janubiy Afrika standart vaqti"}
         }
         "meta:Africa_Western"{
-            ld{"Gʻarbiy Afrika yozgi vaqti"}
-            lg{"Gʻarbiy Afrika vaqti"}
-            ls{"Gʻarbiy Afrika standart vaqti"}
+            ls{"Gʻarbiy Afrika vaqti"}
         }
         "meta:Alaska"{
             ld{"Alyaska yozgi vaqti"}
@@ -1126,6 +1121,9 @@ uz{
         }
         "meta:Guyana"{
             ls{"Gayana vaqti"}
+        }
+        "meta:Hawaii"{
+            ls{"Gavayi-aleut standart vaqti"}
         }
         "meta:Hawaii_Aleutian"{
             ld{"Gavayi-aleut yozgi vaqti"}

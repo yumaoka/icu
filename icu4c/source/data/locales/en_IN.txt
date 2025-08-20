@@ -7,8 +7,62 @@ en_IN{
         latn{
             patterns{
                 currencyFormat{"¤#,##,##0.00"}
+                currencyFormat%alphaNextToNumber{"¤ #,##,##0.00"}
+                currencyFormat%noCurrency{"#,##,##0.00"}
                 decimalFormat{"#,##,##0.###"}
                 percentFormat{"#,##,##0%"}
+            }
+            patternsLong{
+                decimalFormat{
+                    1000{
+                        one{"0 thousand"}
+                        other{"0 thousand"}
+                    }
+                    10000{
+                        one{"00 thousand"}
+                        other{"00 thousand"}
+                    }
+                    100000{
+                        one{"0 lakh"}
+                        other{"0 lakh"}
+                    }
+                    1000000{
+                        one{"00 lakh"}
+                        other{"00 lakh"}
+                    }
+                    10000000{
+                        one{"0 crore"}
+                        other{"0 crore"}
+                    }
+                    100000000{
+                        one{"00 crore"}
+                        other{"00 crore"}
+                    }
+                    1000000000{
+                        one{"000 crore"}
+                        other{"000 crore"}
+                    }
+                    10000000000{
+                        one{"0000 crore"}
+                        other{"0000 crore"}
+                    }
+                    100000000000{
+                        one{"00000 crore"}
+                        other{"00000 crore"}
+                    }
+                    1000000000000{
+                        one{"0 lakh crore"}
+                        other{"0 lakh crore"}
+                    }
+                    10000000000000{
+                        one{"00 lakh crore"}
+                        other{"00 lakh crore"}
+                    }
+                    100000000000000{
+                        one{"000 lakh crore"}
+                        other{"000 lakh crore"}
+                    }
+                }
             }
             patternsShort{
                 currencyFormat{
@@ -373,6 +427,31 @@ en_IN{
                 yyyyMMMMEEEEd{"EEEE, d MMMM y"}
                 yyyyMMMd{"d MMM, y G"}
                 yyyyMd{"d/M/y G"}
+            }
+        }
+        japanese{
+            DateTimePatterns{
+                "h:mm:ss a zzzz",
+                "h:mm:ss a z",
+                "h:mm:ss a",
+                "h:mm a",
+                "EEEE, d MMMM y G",
+                "d MMMM y G",
+                "d MMM y G",
+                "d/M/y GGGGG",
+                "{1}, {0}",
+                "{1} 'at' {0}",
+                "{1} 'at' {0}",
+                "{1}, {0}",
+                "{1}, {0}",
+            }
+            availableFormats{
+                GyMd{"d/M/y GGGGG"}
+                MEEEEd{"EEEE, d/M"}
+                MEd{"E, d/M"}
+                Md{"d/M"}
+                yyyyMEd{"E, d/M/y GGGGG"}
+                yyyyMd{"d/M/y GGGGG"}
             }
         }
     }

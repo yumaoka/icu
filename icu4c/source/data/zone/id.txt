@@ -88,7 +88,7 @@ id{
             ls{"Waktu Universal Terkoordinasi"}
         }
         "Etc:Unknown"{
-            ec{"Kota Tidak Dikenal"}
+            ec{"Lokasi Tidak Dikenal"}
         }
         "Europe:Athens"{
             ec{"Athena"}
@@ -144,11 +144,17 @@ id{
         "Indian:Maldives"{
             ec{"Maladewa"}
         }
+        "Pacific:Enderbury"{
+            ec{"Pulau Canton"}
+        }
         "Pacific:Guadalcanal"{
             ec{"Guadalkanal"}
         }
         "Pacific:Honolulu"{
             ec{"Honolulu"}
+        }
+        "Pacific:Wake"{
+            ec{"Pulau Wake"}
         }
         "meta:Acre"{
             ld{"Waktu Musim Panas Acre"}
@@ -168,9 +174,7 @@ id{
             ls{"Waktu Standar Afrika Selatan"}
         }
         "meta:Africa_Western"{
-            ld{"Waktu Musim Panas Afrika Barat"}
-            lg{"Waktu Afrika Barat"}
-            ls{"Waktu Standar Afrika Barat"}
+            ls{"Waktu Afrika Barat"}
         }
         "meta:Alaska"{
             ld{"Waktu Musim Panas Alaska"}
@@ -458,6 +462,10 @@ id{
         }
         "meta:Guyana"{
             ls{"Waktu Guyana"}
+        }
+        "meta:Hawaii"{
+            ls{"Waktu Standar Hawaii-Aleutian"}
+            ss{"HAST"}
         }
         "meta:Hawaii_Aleutian"{
             ld{"Waktu Musim Panas Hawaii-Aleutian"}
@@ -768,6 +776,11 @@ id{
         }
         "meta:Truk"{
             ls{"Waktu Chuuk"}
+        }
+        "meta:Turkey"{
+            ld{"Waktu Musim Panas Turki"}
+            lg{"Waktu Turki"}
+            ls{"Waktu Standar Turki"}
         }
         "meta:Turkmenistan"{
             ld{"Waktu Musim Panas Turkmenistan"}

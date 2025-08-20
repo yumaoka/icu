@@ -331,6 +331,9 @@ is{
         "Pacific:Easter"{
             ec{"Páskaeyja"}
         }
+        "Pacific:Enderbury"{
+            ec{"Kanton-eyja"}
+        }
         "Pacific:Fiji"{
             ec{"Fídjí"}
         }
@@ -365,9 +368,7 @@ is{
             ls{"Suður-Afríkutími"}
         }
         "meta:Africa_Western"{
-            ld{"Sumartími í Vestur-Afríku"}
-            lg{"Vestur-Afríkutími"}
-            ls{"Staðaltími í Vestur-Afríku"}
+            ls{"Vestur-Afríkutími"}
         }
         "meta:Alaska"{
             ld{"Sumartími í Alaska"}
@@ -610,6 +611,9 @@ is{
         }
         "meta:Guyana"{
             ls{"Gvæjanatími"}
+        }
+        "meta:Hawaii"{
+            ls{"Staðaltími á Havaí og Aleúta"}
         }
         "meta:Hawaii_Aleutian"{
             ld{"Sumartími á Havaí og Aleúta"}

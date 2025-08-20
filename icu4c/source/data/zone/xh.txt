@@ -21,11 +21,17 @@ xh{
         "Etc:UTC"{
             ls{"Coordinated Universal Time"}
         }
+        "Etc:Unknown"{
+            ec{"Indawo Engaziwayo"}
+        }
         "Europe:Dublin"{
             ld{"Irish Standard Time"}
         }
         "Europe:London"{
             ld{"British Summer Time"}
+        }
+        "Pacific:Enderbury"{
+            ec{"ICanton Island"}
         }
         "meta:Afghanistan"{
             ls{"Afghanistan Time"}
@@ -40,9 +46,7 @@ xh{
             ls{"South Africa Standard Time"}
         }
         "meta:Africa_Western"{
-            ld{"West Africa Summer Time"}
-            lg{"West Africa Time"}
-            ls{"West Africa Standard Time"}
+            ls{"West Africa Time"}
         }
         "meta:Alaska"{
             ld{"Alaska Daylight Time"}
@@ -280,6 +284,9 @@ xh{
         }
         "meta:Guyana"{
             ls{"Guyana Time"}
+        }
+        "meta:Hawaii"{
+            ls{"Hawaii-Aleutian Standard Time"}
         }
         "meta:Hawaii_Aleutian"{
             ld{"Hawaii-Aleutian Daylight Time"}

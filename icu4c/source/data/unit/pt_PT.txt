@@ -250,6 +250,9 @@ pt_PT{
                 one{"{0} dracma"}
                 other{"{0} dracmas"}
             }
+            fluid-ounce-metric{
+                dnam{"onças fluidas métricas"}
+            }
         }
     }
     unitsNarrow{
@@ -271,8 +274,6 @@ pt_PT{
             }
             part-per-1e9{
                 dnam{"ppmm"}
-                one{"{0} ppmm"}
-                other{"{0} ppmm"}
             }
         }
         consumption{
@@ -521,8 +522,8 @@ pt_PT{
                 dnam{"metros"}
             }
             mile{
-                one{"{0} milha"}
-                other{"{0} milhas"}
+                one{"{0} mi"}
+                other{"{0} mi"}
             }
             nautical-mile{
                 dnam{"nmi"}

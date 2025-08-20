@@ -200,6 +200,7 @@ root{
         ZMW{"ZK"}
     }
     Currencies%variant{
+        SAR{"⃁"}
         TRY{"TL"}
     }
     CurrencyUnitPatterns{

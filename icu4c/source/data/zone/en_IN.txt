@@ -4,9 +4,6 @@
 en_IN{
     %%Parent{"en_001"}
     zoneStrings{
-        "Asia:Hovd"{
-            ec{"Khovd"}
-        }
         "meta:Gulf"{
             ss{"GST"}
         }

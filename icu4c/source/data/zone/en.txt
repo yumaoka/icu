@@ -96,11 +96,6 @@ en{
         "Pacific:Galapagos"{
             ec{"Galápagos Islands"}
         }
-        "Pacific:Honolulu"{
-            sd{"HDT"}
-            sg{"HST"}
-            ss{"HST"}
-        }
         "Pacific:Kwajalein"{
             ec{"Kwajalein Atoll"}
         }
@@ -137,9 +132,7 @@ en{
             ls{"South Africa Standard Time"}
         }
         "meta:Africa_Western"{
-            ld{"West Africa Summer Time"}
-            lg{"West Africa Time"}
-            ls{"West Africa Standard Time"}
+            ls{"West Africa Time"}
         }
         "meta:Alaska"{
             ld{"Alaska Daylight Time"}
@@ -427,6 +420,10 @@ en{
         }
         "meta:Guyana"{
             ls{"Guyana Time"}
+        }
+        "meta:Hawaii"{
+            ls{"Hawaii-Aleutian Standard Time"}
+            ss{"HST"}
         }
         "meta:Hawaii_Aleutian"{
             ld{"Hawaii-Aleutian Daylight Time"}
@@ -728,6 +725,11 @@ en{
         }
         "meta:Truk"{
             ls{"Chuuk Time"}
+        }
+        "meta:Turkey"{
+            ld{"Türkiye Summer Time"}
+            lg{"Türkiye Time"}
+            ls{"Türkiye Standard Time"}
         }
         "meta:Turkmenistan"{
             ld{"Turkmenistan Summer Time"}

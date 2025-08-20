@@ -24,11 +24,6 @@ en_001{
         "Atlantic:St_Helena"{
             ec{"St Helena"}
         }
-        "Pacific:Honolulu"{
-            sd{"∅∅∅"}
-            sg{"∅∅∅"}
-            ss{"∅∅∅"}
-        }
         "meta:Alaska"{
             sd{"∅∅∅"}
             sg{"∅∅∅"}
@@ -57,6 +52,9 @@ en_001{
         "meta:Atlantic"{
             sd{"∅∅∅"}
             sg{"∅∅∅"}
+            ss{"∅∅∅"}
+        }
+        "meta:Hawaii"{
             ss{"∅∅∅"}
         }
         "meta:Hawaii_Aleutian"{

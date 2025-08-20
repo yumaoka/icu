@@ -724,6 +724,7 @@ keyTypeData:table(nofallback){
             tibt{""}
             tirh{""}
             tnsa{""}
+            tols{""}
             traditional{"traditio"}
             vaii{""}
             wara{""}

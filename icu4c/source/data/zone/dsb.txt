@@ -283,9 +283,7 @@ dsb{
             ls{"Pódpołdnjowoafriski cas"}
         }
         "meta:Africa_Western"{
-            ld{"Pódwjacornoafriski lěśojski cas"}
-            lg{"Pódwjacornoafriski cas"}
-            ls{"Pódwjacornoafriski standardny cas"}
+            ls{"Pódwjacornoafriski cas"}
         }
         "meta:Alaska"{
             ld{"Alaskojski lěśojski cas"}
@@ -532,6 +530,9 @@ dsb{
         }
         "meta:Guyana"{
             ls{"Guyański cas"}
+        }
+        "meta:Hawaii"{
+            ls{"Hawaiisko-aleutski standardny cas"}
         }
         "meta:Hawaii_Aleutian"{
             ld{"Hawaiisko-aleutski lěśojski cas"}
