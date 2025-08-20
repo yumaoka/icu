@@ -696,11 +696,6 @@ void IntlTestDateTimePatternGeneratorAPI::testAPI(/*char *par*/)
             resultDate = sdf.format(testDate, resultDate);
             if ( resultDate != patternResults[localeIndex][resultIndex] ) {
                 const auto* calendar = sdf.getCalendar();
-				if (localeIndex == 6 && (dataIndex == 1 || dataIndex == 3) &&
-                	logKnownIssue("ICU-23182", "Japanese calendar formatting")) {
-                	resultIndex++;
-                  	continue;
-        		}                
                 errln(UnicodeString("\nERROR: Test various skeletons[") + (dataIndex-1) + UnicodeString("], localeIndex ") + localeIndex +
                       u". Got: \"" + resultDate +
                       u"\" with calendar " + calendar->getType() +

@@ -1251,11 +1251,6 @@ void DateIntervalFormatTest::expect(const char** data, int32_t data_length) {
         FieldPosition pos(FieldPosition::DONT_CARE);
         dtitvfmt->format(&dtitv, str.remove(), pos, ec);
         if (!assertSuccess("format in expect", ec)) return;
-        if (strcmp(locName, "ja-u-ca-japanese") == 0 &&
-            logKnownIssue("ICU-23182", "Japanese calendar formatting")) {
-            i++;
-            continue;
-        }
         
         if (strcmp(locName, "de") == 0 && 
             (oneSkeleton == UnicodeString(u"hv",-1) || oneSkeleton == UnicodeString(u"hz",-1)) &&
@@ -2335,10 +2330,6 @@ void DateIntervalFormatTest::testTicket21222ROCEraDiff() {
 void DateIntervalFormatTest::testTicket21222JapaneseEraDiff() {
     IcuTestErrorCode status(*this, "testTicket21222JapaneseEraDiff");
     
-    if (logKnownIssue("ICU-23182", "Japanese calendar formatting")) {
-        return;
-    }
-
     LocalPointer<Calendar> cal(Calendar::createInstance(*TimeZone::getGMT(), status));
     if (U_FAILURE(status)) {
         errln("Failure encountered: %s", u_errorName(status));
