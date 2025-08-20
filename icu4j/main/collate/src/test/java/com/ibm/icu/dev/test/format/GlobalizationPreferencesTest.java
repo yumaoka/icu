@@ -644,7 +644,7 @@ public class GlobalizationPreferencesTest extends TestFmwk {
 
         cal = gp.getCalendar();
         ULocale calLocale = cal.getLocale(ULocale.VALID_LOCALE);
-        if (!calLocale.equals(locales[2])) {
+        if (!calLocale.equals(locales[1])) {
             errln("FAIL: Calendar locale is " + calLocale.toString() + " - Expected: en_GB");
         }
 

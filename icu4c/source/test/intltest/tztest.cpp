@@ -2384,8 +2384,8 @@ static struct   {
       // No Summer Time, but had it before 1983.
       {"Pacific/Honolulu",   "en", false, TimeZone::SHORT, "HST"},
       {"Pacific/Honolulu",   "en", false, TimeZone::LONG,  "Hawaii-Aleutian Standard Time"},
-      {"Pacific/Honolulu",   "en", true,  TimeZone::SHORT, "HDT"},
-      {"Pacific/Honolulu",   "en", true,  TimeZone::LONG,  "Hawaii-Aleutian Daylight Time"},
+      {"Pacific/Honolulu",   "en", true,  TimeZone::SHORT, "GMT-10"},
+      {"Pacific/Honolulu",   "en", true,  TimeZone::LONG,  "GMT-10:00"},
        
       // Northern, has Summer, not commonly used.
       {"Europe/Helsinki",    "en", false, TimeZone::SHORT, "GMT+2"/*"EET"*/},

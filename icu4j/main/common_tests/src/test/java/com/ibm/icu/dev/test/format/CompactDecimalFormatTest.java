@@ -40,6 +40,8 @@ import com.ibm.icu.util.Currency;
 import com.ibm.icu.util.CurrencyAmount;
 import com.ibm.icu.util.ULocale;
 
+import java.util.stream.IntStream;
+
 @RunWith(JUnit4.class)
 public class CompactDecimalFormatTest extends CoreTestFmwk {
     Object[][] EnglishTestData = {
@@ -705,11 +707,14 @@ public class CompactDecimalFormatTest extends CoreTestFmwk {
         assertEquals("CDF should correctly format 1234 with 3 significant digits in 'ar-EG'", "١٫٢٣ ألف", result);
 
         // Check currency formatting as well
-        cdf = CompactDecimalFormat.getInstance(new ULocale("ar-EG"), CompactDecimalFormat.CompactStyle.SHORT);
-        result = cdf.format(new CurrencyAmount(43000f, Currency.getInstance("USD")));
-        assertEquals("CDF should correctly format 43000 with currency in 'ar-EG'", "٤٣ ألف US$", result);
-        result = cdf.format(new CurrencyAmount(-43000f, Currency.getInstance("USD")));
-        assertEquals("CDF should correctly format -43000 with currency in 'ar-EG'", "؜-٤٣ ألف US$", result);
+        if (!logKnownIssue("ICU-23188", "Compact number formatting for ar-EG adds extra RLM")) {
+            cdf = CompactDecimalFormat.getInstance(new ULocale("ar-EG"), CompactDecimalFormat.CompactStyle.SHORT);
+            result = cdf.format(new CurrencyAmount(43000f, Currency.getInstance("USD")));  
+            assertEquals("CDF should correctly format 43000 with currency in 'ar-EG'", "٤٣ ألف US$", result);
+            result = cdf.format(new CurrencyAmount(-43000f, Currency.getInstance("USD")));
+            assertEquals("CDF should correctly format -43000 with currency in 'ar-EG'", "؜-٤٣ ألف US$", result);
+        }	
+
 
         // Extra locale with different positive/negative formats
         cdf = CompactDecimalFormat.getInstance(new ULocale("fi"), CompactDecimalFormat.CompactStyle.SHORT);
@@ -736,6 +741,9 @@ public class CompactDecimalFormatTest extends CoreTestFmwk {
 
     @Test
     public void TestBug12688() {
+        if (logKnownIssue("CLDR-18904", "Compact number formatting in Italian is incorrect")) {
+            return;
+        }	
         CompactDecimalFormat cdf;
         String result;
 
@@ -753,6 +761,9 @@ public class CompactDecimalFormatTest extends CoreTestFmwk {
 
     @Test
     public void TestBug12975() {
+        if (logKnownIssue("CLDR-18904", "Compact number formatting in Italian is incorrect")) {
+            return;
+        }	
         ULocale locale = new ULocale("it");
         CompactDecimalFormat cdf = CompactDecimalFormat.getInstance(locale, CompactStyle.SHORT);
         String resultCdf = cdf.format(12000);

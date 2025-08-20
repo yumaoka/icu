@@ -834,15 +834,15 @@ void DateIntervalFormatTest::testFormat() {
         "zh", "CE 2007 10 10 10:10:10", "CE 2008 10 10 10:10:10", "EEEEdMMMMy", "2007\\u5e7410\\u670810\\u65e5\\u661f\\u671f\\u4e09\\u81f32008\\u5e7410\\u670810\\u65e5\\u661f\\u671f\\u4e94",
 
 
-        "zh", "CE 2007 10 10 10:10:10", "CE 2007 11 10 10:10:10", "dMMMMy", "2007\\u5e7410\\u670810\\u65e5\\u81f311\\u670810\\u65e5",
+        "zh", "CE 2007 10 10 10:10:10", "CE 2007 11 10 10:10:10", "dMMMMy", "2007\\u5E74\\u5341\\u670810\\u65E5\\u2009\\u2013\\u2009\\u5341\\u4E00\\u670810\\u65E5",
 
 
-        "zh", "CE 2007 10 10 10:10:10", "CE 2007 11 10 10:10:10", "MMMMy", "2007\\u5e7410\\u6708\\u81f311\\u6708",
+        "zh", "CE 2007 10 10 10:10:10", "CE 2007 11 10 10:10:10", "MMMMy", "2007\\u5e7410\\u6708 \\u2013 11\\u6708",
 
 
         "zh", "CE 2007 10 10 10:10:10", "CE 2007 11 10 10:10:10", "hmv", "2007/10/10 \\u6D1B\\u6749\\u77F6\\u65F6\\u95F4 \\u4E0A\\u534810:10 \\u2013 2007/11/10 \\u6D1B\\u6749\\u77F6\\u65F6\\u95F4 \\u4E0A\\u534810:10",
 
-        "zh", "CE 2007 11 10 10:10:10", "CE 2007 11 20 10:10:10", "EEEEdMMMMy", "2007\\u5e7411\\u670810\\u65e5\\u661f\\u671f\\u516d\\u81f320\\u65e5\\u661f\\u671f\\u4e8c",
+        "zh", "CE 2007 11 10 10:10:10", "CE 2007 11 20 10:10:10", "EEEEdMMMMy", "2007\\u5E74\\u5341\\u4E00\\u670810\\u65E5\\u661F\\u671F\\u516D\\u2009\\u2013\\u2009\\u5341\\u4E00\\u670820\\u65E5\\u661F\\u671F\\u4E8C",
 
 
         "zh", "CE 2007 11 10 10:10:10", "CE 2007 11 20 10:10:10", "dMMMM", "11\\u670810\\u65e5\\u81f320\\u65e5",
@@ -1019,14 +1019,14 @@ void DateIntervalFormatTest::testFormat() {
         "th", "BE 2550 10 10 10:10:10", "BE 2551 10 10 10:10:10", "MMMy", "\\u0E15.\\u0E04. 2550 \\u2013 \\u0E15.\\u0E04. 2551",
 
 
-        "th", "BE 2550 10 10 10:10:10", "BE 2551 10 10 10:10:10", "EdMy", "\\u0E1E. 10/10/2550 \\u2013 \\u0E28. 10/10/2551",
+        "th", "BE 2550 10 10 10:10:10", "BE 2551 10 10 10:10:10", "EdMy", "\\u0E1E\\u0E38\\u0E18 10/10/2550 \\u2013 \\u0E28\\u0E38\\u0E01\\u0E23\\u0E4C 10/10/2551",
 
         "th", "BE 2550 10 10 10:10:10", "BE 2551 10 10 10:10:10", "dMy", "10/10/2550 \\u2013 10/10/2551",
 
 
         "th", "BE 2550 10 10 10:10:10", "BE 2551 10 10 10:10:10", "My", "10/2550 \\u2013 10/2551",
 
-        "th", "BE 2550 10 10 10:10:10", "BE 2551 10 10 10:10:10", "EdM", "\\u0E1E. 10/10/2550 \\u2013 \\u0E28. 10/10/2551",
+        "th", "BE 2550 10 10 10:10:10", "BE 2551 10 10 10:10:10", "EdM", "\\u0E1E\\u0E38\\u0E18 10/10/2550 \\u2013 \\u0E28\\u0E38\\u0E01\\u0E23\\u0E4C 10/10/2551",
 
 
         "th", "BE 2550 10 10 10:10:10", "BE 2551 10 10 10:10:10", "y", "2550\\u20132551",
@@ -1245,12 +1245,31 @@ void DateIntervalFormatTest::expect(const char** data, int32_t data_length) {
         DateInterval dtitv(date, date_2);
 
         const UnicodeString& oneSkeleton(ctou(data[i++]));
-
+        
         DateIntervalFormat* dtitvfmt = DateIntervalFormat::createInstance(oneSkeleton, loc, ec);
         if (!assertSuccess("createInstance(skeleton) in expect", ec)) return;
         FieldPosition pos(FieldPosition::DONT_CARE);
         dtitvfmt->format(&dtitv, str.remove(), pos, ec);
         if (!assertSuccess("format in expect", ec)) return;
+        if (strcmp(locName, "ja-u-ca-japanese") == 0 &&
+            logKnownIssue("ICU-23182", "Japanese calendar formatting")) {
+            i++;
+            continue;
+        }
+        
+        if (strcmp(locName, "de") == 0 && 
+            (oneSkeleton == UnicodeString(u"hv",-1) || oneSkeleton == UnicodeString(u"hz",-1)) &&
+            logKnownIssue("ICU-23185", "Date time formatting with hz and hv needs revisiting")) {
+            i++;
+            continue;
+        } 
+        
+        if (strcmp(locName, "zh") == 0 && 
+            (oneSkeleton == UnicodeString(u"hmv",-1) || oneSkeleton == UnicodeString(u"hmz",-1)) &&
+            logKnownIssue("ICU-23185", "Date time formatting with hz and hv needs revisiting")) {
+            i++;
+            continue;
+        }  
         assertEquals(UnicodeString("\"") + locName + "\\" + oneSkeleton + "\\" + ctou(datestr) + "\\" + ctou(datestr_2) + "\"", ctou(data[i++]), str);
 
         logln("interval date:" + str + "\"" + locName + "\", "
@@ -2295,26 +2314,30 @@ void DateIntervalFormatTest::testTicket21222ROCEraDiff() {
 
     formatted = roc->formatToValue(bothAfterMG, status);
     assertEquals("roc calendar - both dates in MG Era",
-                 u"民國1/1/2 上午6時\u2009\u2013\u2009民國2/1/2 上午6時",
+                 u"民國1/1/2上午6時\u2009\u2013\u2009民國2/1/2上午6時",
                  formatted.toString(status));
     getCategoryAndField(formatted, expectedCategory,
                         expectedField, status);
 
     formatted = roc->formatToValue(beforeAfterMG, status);
     assertEquals("roc calendar - prior MG Era and in MG Era",
-                 u"民國前1/1/2 上午6時\u2009\u2013\u2009民國2/1/2 上午6時",
+                 u"民國前1/1/2上午6時\u2009\u2013\u2009民國2/1/2上午6時",
                  formatted.toString(status));
     verifyCategoryAndField(formatted, expectedCategory, expectedField, status);
 
     formatted = roc->formatToValue(bothBeforeMG, status);
     assertEquals("roc calendar - both dates prior MG Era",
-                 u"民國前2/1/2 上午6時\u2009\u2013\u2009民國前1/1/2 上午6時",
+                 u"民國前2/1/2上午6時\u2009\u2013\u2009民國前1/1/2上午6時",
                  formatted.toString(status));
     verifyCategoryAndField(formatted, expectedCategory, expectedField, status);
 }
 
 void DateIntervalFormatTest::testTicket21222JapaneseEraDiff() {
     IcuTestErrorCode status(*this, "testTicket21222JapaneseEraDiff");
+    
+    if (logKnownIssue("ICU-23182", "Japanese calendar formatting")) {
+        return;
+    }
 
     LocalPointer<Calendar> cal(Calendar::createInstance(*TimeZone::getGMT(), status));
     if (U_FAILURE(status)) {

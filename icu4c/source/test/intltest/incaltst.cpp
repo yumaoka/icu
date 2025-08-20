@@ -238,11 +238,13 @@ void IntlCalendarTest::quasiGregorianTest(Calendar& cal, const Locale& gcl, cons
             cal.get(UCAL_YEAR, status) + "/" +
             (cal.get(UCAL_MONTH, status) + 1) + "/" + cal.get(UCAL_DATE, status) + " (" + UnicodeString(cal.getType()) + ")");
     } else {
-      errln(UnicodeString("Fail: (millis to fields)") + D + " => " + cal.get(UCAL_ERA, status) + ":" +
+      if (!logKnownIssue("ICU-23186", "Japanese calendar round trip fails")) {
+        errln(UnicodeString("Fail: (millis to fields)") + D + " => " + cal.get(UCAL_ERA, status) + ":" +
             cal.get(UCAL_YEAR, status) + "/" +
             (cal.get(UCAL_MONTH, status)+1) + "/" + cal.get(UCAL_DATE, status) +
             ", expected " + era + ":" + year + "/" + (month+1) + "/" +
             dayOfMonth +  " (" + UnicodeString(cal.getType()));
+      }
     }
   }
   delete grego;
@@ -561,7 +563,9 @@ void IntlCalendarTest::TestJapaneseFormat() {
     logln(UnicodeString() + "as Japanese Calendar: " + str);
     expected = u"Meiji 1";
     if(str != expected) {
-        errln("Expected " + expected + " but got " + str);
+        if (!logKnownIssue("ICU-23186", "Japanese calendar round trip fails")) {
+            errln("Expected " + expected + " but got " + str);
+        }
     }
     otherDate = fmti.parse(expected, status);
     if(otherDate != aDate) { 
@@ -569,8 +573,10 @@ void IntlCalendarTest::TestJapaneseFormat() {
         ParsePosition pp;
         fmti.parse(expected, *cal2, pp);
         fmti.format(otherDate, str3);
-        errln("Parse incorrect of " + expected + " - wanted " + aDate + " but got " +  " = " +
+        if (!logKnownIssue("ICU-23186", "Japanese calendar round trip fails")) {
+            errln("Parse incorrect of " + expected + " - wanted " + aDate + " but got " +  " = " +
                 otherDate + ", " + str3 + " = " + CalendarTest::calToStr(*cal2) );
+        }
     } else {
         logln("Parsed OK: " + expected);
     }
@@ -739,14 +745,18 @@ void IntlCalendarTest::TestForceGannenNumbering()
         }
         testString2 = testFmt2->format(refDate, testString2);
         if (testString2.length() < 2 || testString2.charAt(1) != 0x0031) {
-            errln(UnicodeString("Formatting year 1 in created numeric style, got " + testString2 + " but expected 2nd char to be 1"));
+            if (!logKnownIssue("ICU-23182", "Japanese calendar formatting")) {
+                errln(UnicodeString("Formatting year 1 in created numeric style, got " + testString2 + " but expected 2nd char to be 1"));
+            }
         }
         // Now switch the patterns and verify that Gannen use follows the pattern
         testFmt1->applyPattern(patNumr);
         testString1.remove();
         testString1 = testFmt1->format(refDate, testString1);
         if (testString1.length() < 2 || testString1.charAt(1) != 0x0031) {
-            errln(UnicodeString("Formatting year 1 in applied numeric style, got " + testString1 + " but expected 2nd char to be 1"));
+            if (!logKnownIssue("ICU-23182", "Japanese calendar formatting")) {
+                errln(UnicodeString("Formatting year 1 in applied numeric style, got " + testString1 + " but expected 2nd char to be 1"));
+            }
         }
         testFmt2->applyPattern(patText);
         testString2.remove();

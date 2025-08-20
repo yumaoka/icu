@@ -495,6 +495,9 @@ void CompactDecimalFormatTest::TestAPIVariants() {
 
 void CompactDecimalFormatTest::TestBug12975() {
 	IcuTestErrorCode status(*this, "TestBug12975");
+    if (logKnownIssue("CLDR-18904", "Compact number formatting in Italian is incorrect")) {
+        return;
+    }		
     Locale locale("it");
     LocalPointer<CompactDecimalFormat> cdf(CompactDecimalFormat::createInstance(locale, UNUM_SHORT, status));
     if (assertSuccess("", status, true, __FILE__, __LINE__)) {

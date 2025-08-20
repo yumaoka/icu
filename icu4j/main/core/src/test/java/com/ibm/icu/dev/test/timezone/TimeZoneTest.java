@@ -1844,8 +1844,8 @@ public class TimeZoneTest extends CoreTestFmwk
             // No Summer Time, but had it before 1983.
             {"Pacific/Honolulu",    "en",   Boolean.FALSE,  TZSHORT,    "HST"},
             {"Pacific/Honolulu",    "en",   Boolean.FALSE,  TZLONG,     "Hawaii-Aleutian Standard Time"},
-            {"Pacific/Honolulu",    "en",   Boolean.TRUE,   TZSHORT,    "HDT"},
-            {"Pacific/Honolulu",    "en",   Boolean.TRUE,   TZLONG,     "Hawaii-Aleutian Daylight Time"},
+            {"Pacific/Honolulu",    "en",   Boolean.TRUE,   TZSHORT,    "GMT-10"},
+            {"Pacific/Honolulu",    "en",   Boolean.TRUE,   TZLONG,     "GMT-10:00"},
 
             // Northern, has Summer, not commonly used.
             {"Europe/Helsinki",     "en",   Boolean.FALSE,  TZSHORT,    "GMT+2"/*"EET"*/},

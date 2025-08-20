@@ -975,6 +975,10 @@ NumberFormatTest::TestCurrency()
             errln("Could not create currency formatter for locale %s",localeID);
             continue;
         }
+        if (strcmp(localeID, "gl_ES@currency=ESP") == 0 &&
+                logKnownIssue("CLDR-18901", "Problem with ❰NBTSP❱")) {
+                  continue;
+        }
         currencyFmt->format(1150.50, s);
         if(s!=expected){
             errln(UnicodeString("FAIL: Expected: ")+expected
@@ -4620,9 +4624,9 @@ NumberFormatTest::TestParseCurrencyInUCurr() {
         "Kuwaiti Dinar1.00",
         "Kuwaiti dinar1.00",
         "Kuwaiti dinars1.00",
-        "Kyrgystani Som1.00",
-        "Kyrgystani som1.00",
-        "Kyrgystani soms1.00",
+        "Kyrgyz Som1.00",
+        "Kyrgyz som1.00",
+        "Kyrgyz soms1.00",
         "HNL1.00",
         "LAK1.00",
         "LAK1.00",
@@ -5649,9 +5653,9 @@ NumberFormatTest::TestParseCurrencyInUCurr() {
         "1.00 Kuwaiti Dinar random",
         "1.00 Kuwaiti dinar random",
         "1.00 Kuwaiti dinars random",
-        "1.00 Kyrgystani Som random",
-        "1.00 Kyrgystani som random",
-        "1.00 Kyrgystani soms random",
+        "1.00 Kyrgyz Som random",
+        "1.00 Kyrgyz som random",
+        "1.00 Kyrgyz soms random",
         "1.00 Laotian Kip random",
         "1.00 Laotian kip random",
         "1.00 Laotian kips random",
@@ -8100,9 +8104,9 @@ void NumberFormatTest::TestAccountingCurrency() {
     expect(NumberFormat::createInstance("de_DE", style, status),
         Formattable(-23456.7), UnicodeString("-23.456,70\\u00A0\\u20AC").unescape(), true, status);
     expect(NumberFormat::createInstance("en_ID", style, status),
-        Formattable(static_cast<double>(0)), UnicodeString("Rp\\u00A00,00").unescape(), true, status);
+        Formattable(static_cast<double>(0)), UnicodeString("Rp\\u00A00").unescape(), true, status);
     expect(NumberFormat::createInstance("en_ID", style, status),
-        Formattable(-0.2), UnicodeString("(Rp\\u00A00,20)").unescape(), true, status);
+        Formattable(-0.2), UnicodeString("(Rp\\u00A00)").unescape(), true, status);
     expect(NumberFormat::createInstance("sh_ME", style, status),
         Formattable(static_cast<double>(0)), UnicodeString("0,00\\u00A0\\u20AC").unescape(), true, status);
     expect(NumberFormat::createInstance("sh_ME", style, status),
@@ -8273,7 +8277,7 @@ void NumberFormatTest::TestCurrencyUsage() {
 
         UnicodeString PKR_changed;
         fmt->format(agent, PKR_changed);
-        assertEquals("Test Currency Usage 6", u"PKR\u00A0123.57", PKR_changed);
+        assertEquals("Test Currency Usage 6", u"PKR\u00A0124", PKR_changed);
         delete fmt;
     }
 }

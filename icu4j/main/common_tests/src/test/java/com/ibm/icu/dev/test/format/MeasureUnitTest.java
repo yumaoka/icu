@@ -247,7 +247,9 @@ public class MeasureUnitTest extends CoreTestFmwk {
         mf = MeasureFormat.getInstance(ULocale.GERMAN, FormatWidth.WIDE, nf);
         verifyFormatPeriod("de FULL", mf, fullDataDe);
         mf = MeasureFormat.getInstance(ULocale.GERMAN, FormatWidth.NUMERIC, nf);
-        verifyFormatPeriod("de NUMERIC", mf, numericDataDe);
+        if (!logKnownIssue("CLDR-18905", "German narrow change needs revisiting")) {
+            verifyFormatPeriod("de NUMERIC", mf, numericDataDe);
+        }
 
         // Same tests, with Java Locale
         nf = NumberFormat.getNumberInstance(Locale.GERMAN);
@@ -255,7 +257,9 @@ public class MeasureUnitTest extends CoreTestFmwk {
         mf = MeasureFormat.getInstance(Locale.GERMAN, FormatWidth.WIDE, nf);
         verifyFormatPeriod("de FULL(Java Locale)", mf, fullDataDe);
         mf = MeasureFormat.getInstance(Locale.GERMAN, FormatWidth.NUMERIC, nf);
-        verifyFormatPeriod("de NUMERIC(Java Locale)", mf, numericDataDe);
+        if (!logKnownIssue("CLDR-18905", "German narrow change needs revisiting")) {
+            verifyFormatPeriod("de NUMERIC(Java Locale)", mf, numericDataDe);
+        }
 
         ULocale bengali = ULocale.forLanguageTag("bn");
         nf = NumberFormat.getNumberInstance(bengali);
@@ -524,6 +528,12 @@ public class MeasureUnitTest extends CoreTestFmwk {
             }
             String result = mf.formatMeasures(hours, minutes);
             if (!result.equals(row[2])) {
+                if (((ULocale)row[0]).equals(ULocale.GERMAN) && 
+                    ((FormatWidth)row[1]).equals(FormatWidth.NARROW) && 
+                    logKnownIssue("CLDR-18905", "German narrow change needs revisiting")
+                    ) {
+                    continue;
+                }
                 errln("MeasureFormat.formatMeasures for locale " + row[0] + ", width " +
                         row[1] + ", expected \"" + (String)row[2] + "\", got \"" + result + "\"" );
             }

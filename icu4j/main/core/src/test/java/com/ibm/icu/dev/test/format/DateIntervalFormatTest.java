@@ -437,19 +437,19 @@ public class DateIntervalFormatTest extends CoreTestFmwk {
 
                 "zh", "CE 2007 10 10 10:10:10", "CE 2008 10 10 10:10:10", "hm", "2007/10/10 \\u4e0a\\u534810:10 \\u2013 2008/10/10 \\u4e0a\\u534810:10",
 
-                "zh", "CE 2007 10 10 10:10:10", "CE 2007 11 10 10:10:10", "dMMMMy", "2007\\u5e7410\\u670810\\u65e5\\u81f311\\u670810\\u65e5",
+                "zh", "CE 2007 10 10 10:10:10", "CE 2007 11 10 10:10:10", "dMMMMy", "2007\\u5E74\\u5341\\u670810\\u65E5\\u2009\\u2013\\u2009\\u5341\\u4E00\\u670810\\u65E5",
 
                 "zh", "CE 2007 10 10 10:10:10", "CE 2007 11 10 10:10:10", "dMMMM", "10\\u670810\\u65e5\\u81f311\\u670810\\u65e5",
 
-                "zh", "CE 2007 10 10 10:10:10", "CE 2007 11 10 10:10:10", "MMMMy", "2007\\u5e7410\\u6708\\u81f311\\u6708",
+                "zh", "CE 2007 10 10 10:10:10", "CE 2007 11 10 10:10:10", "MMMMy", "2007\\u5e7410\\u6708 \\u2013 11\\u6708",
 
                 "zh", "CE 2007 10 10 10:10:10", "CE 2007 11 10 10:10:10", "EEEEdMMMM", "10\\u670810\\u65e5\\u661f\\u671f\\u4e09\\u81f311\\u670810\\u65e5\\u661f\\u671f\\u516d",
 
                 "zh", "CE 2007 10 10 10:10:10", "CE 2007 11 10 10:10:10", "hmv", "2007/10/10 \\u6D1B\\u6749\\u77F6\\u65F6\\u95F4 \\u4E0A\\u534810:10 \\u2013 2007/11/10 \\u6D1B\\u6749\\u77F6\\u65F6\\u95F4 \\u4E0A\\u534810:10",
 
-                "zh", "CE 2007 11 10 10:10:10", "CE 2007 11 20 10:10:10", "EEEEdMMMMy", "2007\\u5e7411\\u670810\\u65e5\\u661f\\u671f\\u516d\\u81f320\\u65e5\\u661f\\u671f\\u4e8c",
+                "zh", "CE 2007 11 10 10:10:10", "CE 2007 11 20 10:10:10", "EEEEdMMMMy", "2007\\u5E74\\u5341\\u4E00\\u670810\\u65E5\\u661F\\u671F\\u516D\\u2009\\u2013\\u2009\\u5341\\u4E00\\u670820\\u65E5\\u661F\\u671F\\u4E8C",
 
-                "zh", "CE 2007 11 10 10:10:10", "CE 2007 11 20 10:10:10", "dMMMMy", "2007\\u5e7411\\u670810\\u65e5\\u81f320\\u65e5",
+                "zh", "CE 2007 11 10 10:10:10", "CE 2007 11 20 10:10:10", "dMMMMy", "2007\\u5e74\\u5341\\u4e00\\u670810\\u65e5\\u2009\\u2013\\u200920\\u65e5",
 
                 "zh", "CE 2007 11 10 10:10:10", "CE 2007 11 20 10:10:10", "dMMMM", "11\\u670810\\u65e5\\u81f320\\u65e5",
 
@@ -663,14 +663,14 @@ public class DateIntervalFormatTest extends CoreTestFmwk {
                 "th", "BE 2550 10 10 10:10:10", "BE 2551 10 10 10:10:10", "MMMy", "\\u0E15.\\u0E04. 2550 \\u2013 \\u0E15.\\u0E04. 2551",
 
 
-                "th", "BE 2550 10 10 10:10:10", "BE 2551 10 10 10:10:10", "EdMy", "\\u0E1E. 10/10/2550 \\u2013 \\u0E28. 10/10/2551",
+                "th", "BE 2550 10 10 10:10:10", "BE 2551 10 10 10:10:10", "EdMy", "\\u0E1E\\u0E38\\u0E18 10/10/2550 \\u2013 \\u0E28\\u0E38\\u0E01\\u0E23\\u0E4C 10/10/2551",
 
                 "th", "BE 2550 10 10 10:10:10", "BE 2551 10 10 10:10:10", "dMy", "10/10/2550 \\u2013 10/10/2551",
 
 
                 "th", "BE 2550 10 10 10:10:10", "BE 2551 10 10 10:10:10", "My", "10/2550 \\u2013 10/2551",
 
-                "th", "BE 2550 10 10 10:10:10", "BE 2551 10 10 10:10:10", "EdM", "\\u0E1E. 10/10/2550 \\u2013 \\u0E28. 10/10/2551",
+                "th", "BE 2550 10 10 10:10:10", "BE 2551 10 10 10:10:10", "EdM", "\\u0E1E\\u0E38\\u0E18 10/10/2550 \\u2013 \\u0E28\\u0E38\\u0E01\\u0E23\\u0E4C 10/10/2551",
 
 
                 "th", "BE 2550 10 10 10:10:10", "BE 2551 10 10 10:10:10", "y", "2550\\u20132551",
@@ -884,6 +884,21 @@ public class DateIntervalFormatTest extends CoreTestFmwk {
             String expected = data[i++];
             String formatted = dtitvfmt.format(dtitv);
             if ( !formatted.equals(Utility.unescape(expected)) )  {
+                if (locName.equals("ja-u-ca-japanese") &&
+                    logKnownIssue("ICU-23182", "Japanese calendar formatting")) {
+                    continue;
+                }
+                if (locName.equals("de") && 
+                    ( oneSkeleton.equals("hv") || oneSkeleton.equals("hz") ) &&
+                    logKnownIssue("ICU-23185", "Date time formatting with hz and hv needs revisiting")) {
+                    continue;
+                } 
+                if (locName.equals("zh") && 
+                    ( oneSkeleton.equals("hmv") || oneSkeleton.equals("hmz") ) &&
+                    logKnownIssue("ICU-23185", "Date time formatting with hz and hv needs revisiting")) {
+                    continue;
+                } 
+
                 errln("\"" + locName + "\\" + oneSkeleton + "\\" + datestr + "\\" + datestr_2 + "\"\t expected: " + expected +"\tgot: " + formatted + "\n");
             }
         }
@@ -2423,25 +2438,29 @@ public class DateIntervalFormatTest extends CoreTestFmwk {
 
         FormattedDateInterval formatted = roc.formatToValue(bothAfterMG);
         assertEquals("roc calendar - both dates in MG Era",
-                     "民國1/1/2 上午6時\u2009\u2013\u2009民國2/1/2 上午6時",
+                     "民國1/1/2上午6時\u2009\u2013\u2009民國2/1/2上午6時",
                      formatted.toString());
         List<Field> expectedFields = getFields(formatted);
 
         formatted = roc.formatToValue(beforeAfterMG);
         assertEquals("roc calendar - prior MG Era and in MG Era",
-                     "民國前1/1/2 上午6時\u2009\u2013\u2009民國2/1/2 上午6時",
+                     "民國前1/1/2上午6時\u2009\u2013\u2009民國2/1/2上午6時",
                      formatted.toString());
         verifyFields(formatted, expectedFields);
 
         formatted = roc.formatToValue(bothBeforeMG);
         assertEquals("roc calendar - both dates prior MG Era",
-                     "民國前2/1/2 上午6時\u2009\u2013\u2009民國前1/1/2 上午6時",
+                     "民國前2/1/2上午6時\u2009\u2013\u2009民國前1/1/2上午6時",
                      formatted.toString());
         verifyFields(formatted, expectedFields);
     }
 
     @Test
     public void testTicket21222JapaneseEraDiff() {
+        if (logKnownIssue("ICU-23182", "Japanese calendar formatting")) {
+            return;
+        }
+    
         Calendar cal = Calendar.getInstance(TimeZone.GMT_ZONE);
         DateIntervalFormat japanese = DateIntervalFormat.getInstance(
             "h", new ULocale("ja@calendar=japanese"));

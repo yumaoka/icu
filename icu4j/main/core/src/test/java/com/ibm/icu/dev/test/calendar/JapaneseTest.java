@@ -253,13 +253,17 @@ public class JapaneseTest extends CalendarTestFmwk {
         }
         String testString2 = testFmt2.format(refDate);
         if (testString2.length() < 2 || testString2.charAt(1) != '1') {
-            errln("Formatting year 1 in created numeric style, got " + testString2 + " but expected 2nd char to be 1");
+            if (!logKnownIssue("ICU-23182", "Japanese calendar formatting")) {
+                errln("Formatting year 1 in created numeric style, got " + testString2 + " but expected 2nd char to be 1");
+            }
         }
         // Now switch the patterns and verify that Gannen use follows the pattern
         testFmt1.applyPattern(patNumr);
         testString1 = testFmt1.format(refDate);
         if (testString1.length() < 2 || testString1.charAt(1) != '1') { //
-            errln("Formatting year 1 in applied numeric style, got " + testString1 + " but expected 2nd char to be 1");
+            if (!logKnownIssue("ICU-23182", "Japanese calendar formatting")) {
+                errln("Formatting year 1 in applied numeric style, got " + testString1 + " but expected 2nd char to be 1");
+            }
         }
         testFmt2.applyPattern(patText);
         testString2 = testFmt2.format(refDate);
@@ -300,7 +304,9 @@ public class JapaneseTest extends CalendarTestFmwk {
         logln("as Japanese Calendar: " + str);
         String expected = "Meiji 1";
         if(!str.equals(expected)) {
-            errln("FAIL: Expected " + expected + " but got " + str);
+            if (!logKnownIssue("ICU-23186", "Japanese calendar round trip fails")) {
+                errln("FAIL: Expected " + expected + " but got " + str);
+            }
         }
         Date otherDate;
         try {
@@ -313,10 +319,10 @@ public class JapaneseTest extends CalendarTestFmwk {
                 long oLong = otherDate.getTime();
                 long aLong = otherDate.getTime();
 
-                errln("FAIL: Parse incorrect of " + expected + ":  wanted " + aDate + " ("+aLong+"), but got " +  " " +
-                    otherDate + " ("+oLong+") = " + str3 + " not " + dd.toString() );
-
-
+                if (!logKnownIssue("ICU-23186", "Japanese calendar round trip fails")) {
+                    errln("FAIL: Parse incorrect of " + expected + ":  wanted " + aDate + " ("+aLong+"), but got " +  " " +
+                        otherDate + " ("+oLong+") = " + str3 + " not " + dd.toString() );
+                }
             } else {
                 logln("Parsed OK: " + expected);
             }

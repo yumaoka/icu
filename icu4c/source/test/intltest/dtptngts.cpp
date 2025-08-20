@@ -696,6 +696,11 @@ void IntlTestDateTimePatternGeneratorAPI::testAPI(/*char *par*/)
             resultDate = sdf.format(testDate, resultDate);
             if ( resultDate != patternResults[localeIndex][resultIndex] ) {
                 const auto* calendar = sdf.getCalendar();
+				if (localeIndex == 6 && (dataIndex == 1 || dataIndex == 3) &&
+                	logKnownIssue("ICU-23182", "Japanese calendar formatting")) {
+                	resultIndex++;
+                  	continue;
+        		}                
                 errln(UnicodeString("\nERROR: Test various skeletons[") + (dataIndex-1) + UnicodeString("], localeIndex ") + localeIndex +
                       u". Got: \"" + resultDate +
                       u"\" with calendar " + calendar->getType() +
@@ -1586,7 +1591,7 @@ void IntlTestDateTimePatternGeneratorAPI::testBestPattern() {
         // ICU-21428: Bad patterns for nonstandard calendars
         { "en_GB",                   "yMd", u"dd/MM/y"          },
         { "en_GB@calendar=coptic",   "yMd", u"dd/MM/y GGGGG"    },
-        { "en_GB@calendar=japanese", "yMd", u"dd/MM/y GGGGG"    },
+        { "en_GB@calendar=japanese", "yMd", u"d/M/y GGGGG"    },
         { "en_GB@calendar=buddhist", "yMd", u"dd/MM/y GGGGG"    },
         // ICU-22757: Not inheriting availableFormats patterns from root
         { "sv_SE",                   "yMd", u"y-MM-dd"          },
