@@ -888,6 +888,7 @@ void
 StringTest::TestFixedString() {
     static_assert(std::is_default_constructible_v<FixedString>);
     static_assert(!std::is_copy_constructible_v<FixedString>);
+    static_assert(std::is_constructible_v<FixedString, std::string_view>);
     static_assert(std::is_copy_assignable_v<FixedString>);
     static_assert(std::is_assignable_v<FixedString, std::string_view>);
     static_assert(!std::is_move_constructible_v<FixedString>);
@@ -909,6 +910,11 @@ StringTest::TestFixedString() {
     assertEquals("cleared data is empty", "", s.data());
 
     static constexpr char text[] = "foo";
+
+    FixedString init(text);
+    assertFalse("initialized is empty", init.isEmpty());
+    assertFalse("initialized alias is nullptr", init.getAlias() == nullptr);
+    assertEquals("initialized data is text", text, init.data());
 
     s = text;
     assertFalse("assigned is empty", s.isEmpty());
