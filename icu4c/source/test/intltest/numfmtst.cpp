@@ -977,7 +977,8 @@ NumberFormatTest::TestCurrency()
         }
         if (strcmp(localeID, "gl_ES@currency=ESP") == 0 &&
                 logKnownIssue("CLDR-18901", "Problem with ❰NBTSP❱")) {
-                  continue;
+                    delete currencyFmt;
+                    continue;
         }
         currencyFmt->format(1150.50, s);
         if(s!=expected){

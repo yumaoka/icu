@@ -1246,7 +1246,7 @@ void DateIntervalFormatTest::expect(const char** data, int32_t data_length) {
 
         const UnicodeString& oneSkeleton(ctou(data[i++]));
         
-        DateIntervalFormat* dtitvfmt = DateIntervalFormat::createInstance(oneSkeleton, loc, ec);
+        LocalPointer<DateIntervalFormat> dtitvfmt(DateIntervalFormat::createInstance(oneSkeleton, loc, ec));
         if (!assertSuccess("createInstance(skeleton) in expect", ec)) return;
         FieldPosition pos(FieldPosition::DONT_CARE);
         dtitvfmt->format(&dtitv, str.remove(), pos, ec);
@@ -1270,7 +1270,6 @@ void DateIntervalFormatTest::expect(const char** data, int32_t data_length) {
         logln("interval date:" + str + "\"" + locName + "\", "
                  + "\"" + datestr + "\", "
               + "\"" + datestr_2 + "\", " + oneSkeleton);
-        delete dtitvfmt;
     }
 }
 
