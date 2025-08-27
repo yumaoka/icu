@@ -2044,6 +2044,9 @@ void UnicodeSetTest::TestLookupSymbolTable() {
     symbols.add(u'{', UnicodeSet(u"[{leftCurlyBracket}]", errorCode));
     symbols.add(u'}', UnicodeSet(u"[{rightCurlyBracket}]", errorCode));
     symbols.add(u'$', UnicodeSet(u"[{dollarSign}]", errorCode));
+    symbols.add(u':', UnicodeSet(u"[{colon}]", errorCode));
+    symbols.add(u'\\', UnicodeSet(u"[{reverseSolidus}]", errorCode));
+    symbols.add(u'p', UnicodeSet(u"[{latinSmallLetterP}]", errorCode));
     for (const auto &[expression, expectedErrorCode, expectedPattern, expectedRegeneratedPattern,
                       expectedLookups, variables] : std::vector<TestCase>{
             {u"-", U_ZERO_ERROR, u"[{hyphenMinus}]", u"[{hyphenMinus}]"},
@@ -2051,11 +2054,15 @@ void UnicodeSetTest::TestLookupSymbolTable() {
             // The hyphen no longer works as set difference.
             {u"[0-1]", U_ZERO_ERROR, u"[[a-z][{hyphenMinus}][bc]]", u"[a-z{hyphenMinus}]"},
             {u"[!-0]", U_ZERO_ERROR, u"[![{hyphenMinus}][a-z]]", u"[!a-z{hyphenMinus}]"},
+            // An initial HYPHEN-MINUS is still treated as a literal '-', but a final one is treated
+            // as a set.
+            {u"[-1]", U_ZERO_ERROR, uR"([\-[bc]])", uR"([\-bc])"},
+            {u"[1-]", U_ZERO_ERROR, u"[[bc][{hyphenMinus}]]", u"[bc{hyphenMinus}]"},
             // String literals no longer work.
             {uR"([!-/{0}])", U_ZERO_ERROR,
             u"[![{hyphenMinus}]/[{leftCurlyBracket}][a-z][{rightCurlyBracket}]]",
             u"[!/a-z{hyphenMinus}{leftCurlyBracket}{rightCurlyBracket}]"},
-            // The ampersand no longer works as set difference.
+            // The ampersand no longer works as set intersection.
             {uR"([ 2 & 1 ])", U_ZERO_ERROR, u"[[: Co :][{ampersand}][bc]]",
             u"[bc-󰀀-󿿽􀀀-􏿽{ampersand}]"},
             // Complementing still works.
@@ -2070,6 +2077,9 @@ void UnicodeSetTest::TestLookupSymbolTable() {
             {uR"([ \[ ])", U_ZERO_ERROR, uR"([[{leftSquareBracket}]])", uR"([{leftSquareBracket}])"},
             // Anchors are gone.
             {uR"([$])", U_ZERO_ERROR, uR"([[{dollarSign}]])", uR"([{dollarSign}])"},
+            // Property queries are unaffected.
+            {u"[:Co:]", U_ZERO_ERROR, u"[:Co:]", u"[\uE000-\uF8FF\U000F0000-\U000FFFFD\U00100000-\U0010FFFD]"},
+            {uR"(\p{Co})", U_ZERO_ERROR, uR"(\p{Co})", u"[\uE000-\uF8FF\U000F0000-\U000FFFFD\U00100000-\U0010FFFD]"},
         }) {
         UnicodeString actual;
         UErrorCode errorCode = U_ZERO_ERROR;
@@ -2094,6 +2104,7 @@ void UnicodeSetTest::TestLookupSymbolTable() {
     for (const auto &[expression, expectedErrorCode, expectedPattern, expectedRegeneratedPattern,
                       expectedLookups, variables] : std::vector<TestCase>{
             {u"]", U_ZERO_ERROR, u"[{rightSquareBracket}]", u"[{rightSquareBracket}]"},
+            {u"[:Co:]", U_ZERO_ERROR, u"[:Co:]", u"[\uE000-\uF8FF\U000F0000-\U000FFFFD\U00100000-\U0010FFFD]"},
             {u"[]", U_MALFORMED_SET, u"[{rightSquareBracket}]", u"[{rightSquareBracket}]"},
         }) {
         UnicodeString actual;
