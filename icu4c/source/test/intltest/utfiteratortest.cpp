@@ -740,7 +740,7 @@ public:
                                               std::ranges::views::reverse |
                                               std::ranges::views::transform(codePoint),
                                           std::u32string_view(U"𒉭")));
-#if U_CPLUSPLUS_VERSION >= 23 && __cpp_lib_ranges >= 2022'02
+#if U_CPLUSPLUS_VERSION >= 23 && __cpp_lib_ranges >= 2022'02 && __cpp_lib_bind_back >= 2022'02
             assertTrue("reversed common bidirectional filtered range: one big pipeline",
                        std::ranges::equal(
                            card
@@ -765,7 +765,7 @@ public:
                                               std::ranges::views::reverse |
                                               std::ranges::views::transform(codePoint),
                                           std::u32string_view(U"𒉭")));
-#if U_CPLUSPLUS_VERSION >= 23 && __cpp_lib_ranges >= 2022'02
+#if U_CPLUSPLUS_VERSION >= 23 && __cpp_lib_ranges >= 2022'02 && __cpp_lib_bind_back >= 2022'02
             assertTrue("reversed unsafe common bidirectional filtered range: one big pipeline",
                        std::ranges::equal(
                            card
