@@ -605,8 +605,9 @@ public:
                                         u"𒂍𒁾𒁀𒀀𒂠 𒉌𒁺𒉈𒂗\n"
                                         u"𒂍𒁾𒁀𒀀 𒀀𒈾𒀀𒀭 𒉌𒀝\n"
                                         u"𒁾𒈬 𒉌𒋃 𒃻𒅗𒁺𒈬 𒉌𒅥\n";
+        auto lines3sqq = text | std::ranges::views::lazy_split(u'\n') | std::views::drop(2);
         // Code units from the third line in `text`.
-        auto codeUnits = *(text | std::ranges::views::lazy_split(u'\n') | std::views::drop(2)).begin();
+        auto codeUnits = *lines3sqq.begin();
         using CodeUnitRange = decltype(codeUnits);
         // This range has a sentinel.
         static_assert(!std::ranges::common_range<CodeUnitRange>);
