@@ -86,21 +86,28 @@ jobs:
           make install;
           PATH=$PREFIX/bin:$PATH make -C test/hdrtst check
 
-  #gcc 11 with c++ 20
-  gcc11-cpp20:
-    runs-on: ubuntu-22.04  # Updated in BRS
+  #gcc 14 with c++ 20 and later
+  gcc14-cpp20-23:
+    # Ubuntu 24.04 Noble Numbat rather than 22.04 Jammy Jellyfish so we can get GCC 14.
+    runs-on: ubuntu-24.04  # Updated in BRS
+    strategy:
+      fail-fast: false
+      matrix:
+        flags:
+          - '-std=c++20'
+          - '-std=c++23'
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-      - name: Install GCC-11
+      - name: Install GCC-14
         run: |
           sudo add-apt-repository ppa:ubuntu-toolchain-r/test
           sudo apt update
-          sudo apt install gcc-11 g++-11
+          sudo apt install gcc-14 g++-14
       - name: Build and Test
         env:
-          CC: gcc-11
-          CXX: g++-11
-          CXXFLAGS: -std=c++20 -fext-numeric-literals
+          CC: gcc-14
+          CXX: g++-14
+          CXXFLAGS: ${{ matrix.flags }} -fext-numeric-literals
         run: |
           cd icu4c/source;
           ./runConfigureICU Linux
@@ -325,26 +332,42 @@ jobs:
         run: |
           cd icu4c/source && ./runConfigureICU --enable-debug --disable-release Linux/clang && make -j -l4.5 check
 
-  # Clang Linux 18 with CPP20 and treat warnings as errors
-  clang18-cpp20-warning-as-errors:
+  # Modern Clang (18 and later) with C++20 and 23 and treat warnings as errors
+  clang-18-19-cpp-20-23-warning-as-errors:
       runs-on: ubuntu-22.04  # Updated in BRS
       strategy:
         fail-fast: false
         matrix:
+          clang-version:
+            - '18'
+            # TODO(egg): Clang 20 and later have -Wnontrivial-memcall, which currently warns in ICU.
+            # Bump this to 21 once fixed.
+            - '19'
           flags:
             - '-std=c++20'
             - '-std=c++20 -stdlib=libc++'
+            - '-std=c++23 -stdlib=libc++'
+          exclude:
+            # Most of C++20 was available in Clang 18, see https://clang.llvm.org/cxx_status.html#cxx20,
+            # so testing C++20 with Clang 18 is unlikely to find errors that are found by the
+            # Clang 19 C++20 build.
+            - clang-version: '18'
+              flags: '-std=c++20'
+            - clang-version: '18'
+              flags: '-std=c++20 -stdlib=libc++'
       steps:
         - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-        - name: Install Clang-18
+        - name: Install Modern Clang
+          env:
+            CLANG_VERSION: ${{ matrix.clang-version }}
           run: |
             wget https://apt.llvm.org/llvm.sh
             chmod u+x llvm.sh
-            sudo ./llvm.sh 18 all
-        - name: Clang-18 build and Test
+            sudo ./llvm.sh $CLANG_VERSION all
+        - name: Modern Clang build and Test
           env:
-            CC: clang-18
-            CXX: clang++-18
+            CC: clang-${{ matrix.clang-version }}
+            CXX: clang++-${{ matrix.clang-version }}
             CPPFLAGS: '-Wall -Wextra -Wctad-maybe-unsupported -Werror'
             CXXFLAGS: ${{ matrix.flags }}
           run: |
