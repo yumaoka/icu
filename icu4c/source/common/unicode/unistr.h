@@ -1924,30 +1924,39 @@ public:
   inline UBool isBogus() const;
 
 #ifndef U_HIDE_DRAFT_API
+private:
+  // These type aliases are private; there is no guarantee that they will remain
+  // aliases to the same types in subsequent versions of ICU.
+  // Note that whether `std::u16string_view::const_iterator` is a pointer or a
+  // class that models contiguous_iterator is platform-dependent.
+  using unspecified_iterator = std::u16string_view::const_iterator;
+  using unspecified_reverse_iterator = std::u16string_view::const_reverse_iterator;
+
+public:
   /**
    * @return an iterator to the first code unit in this string.
    *     The iterator may be a pointer or a contiguous-iterator object.
    * @draft ICU 78
    */
-  auto begin() const { return std::u16string_view(*this).begin(); }
+  unspecified_iterator begin() const { return std::u16string_view(*this).begin(); }
   /**
    * @return an iterator to just past the last code unit in this string.
    *     The iterator may be a pointer or a contiguous-iterator object.
    * @draft ICU 78
    */
-  auto end() const { return std::u16string_view(*this).end(); }
+  unspecified_iterator end() const { return std::u16string_view(*this).end(); }
   /**
    * @return a reverse iterator to the last code unit in this string.
    *     The iterator may be a pointer or a contiguous-iterator object.
    * @draft ICU 78
    */
-  auto rbegin() const { return std::u16string_view(*this).rbegin(); }
+  unspecified_reverse_iterator rbegin() const { return std::u16string_view(*this).rbegin(); }
   /**
    * @return a reverse iterator to just before the first code unit in this string.
    *     The iterator may be a pointer or a contiguous-iterator object.
    * @draft ICU 78
    */
-  auto rend() const { return std::u16string_view(*this).rend(); }
+  unspecified_reverse_iterator rend() const { return std::u16string_view(*this).rend(); }
 #endif  // U_HIDE_DRAFT_API
 
   //========================================
