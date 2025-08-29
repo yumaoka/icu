@@ -16,6 +16,7 @@
 
 #include <algorithm>
 #include <array>
+#include <exception>  // For std::terminate.
 #include <cinttypes>
 #include <list>
 #include <optional>
