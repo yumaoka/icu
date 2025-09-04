@@ -333,16 +333,14 @@ jobs:
           cd icu4c/source && ./runConfigureICU --enable-debug --disable-release Linux/clang && make -j -l4.5 check
 
   # Modern Clang (18 and later) with C++20 and 23 and treat warnings as errors
-  clang-18-19-cpp-20-23-warning-as-errors:
+  clang-18-21-cpp-20-23-warning-as-errors:
       runs-on: ubuntu-22.04  # Updated in BRS
       strategy:
         fail-fast: false
         matrix:
           clang-version:
             - '18'
-            # TODO(egg): Clang 20 and later have -Wnontrivial-memcall, which currently warns in ICU.
-            # Bump this to 21 once fixed.
-            - '19'
+            - '21'
           flags:
             - '-std=c++20'
             - '-std=c++20 -stdlib=libc++'
@@ -350,7 +348,7 @@ jobs:
           exclude:
             # Most of C++20 was available in Clang 18, see https://clang.llvm.org/cxx_status.html#cxx20,
             # so testing C++20 with Clang 18 is unlikely to find errors that are found by the
-            # Clang 19 C++20 build.
+            # C++20 build with the newer Clang version.
             - clang-version: '18'
               flags: '-std=c++20'
             - clang-version: '18'
