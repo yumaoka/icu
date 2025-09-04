@@ -325,7 +325,9 @@ public:
                                           std::is_same_v<T, char16_t> || std::is_same_v<U, char16_t>>,
               typename = void>
     bool assertEquals(const Message& message, T expected, U actual) {
-        return assertCodePointEquals(extractToAssertBuf(message), expected, actual);
+        return assertCodePointEquals(extractToAssertBuf(message),
+                                     static_cast<char32_t>(expected),
+                                     static_cast<char32_t>(actual));
     }
 
     // Otherwise, for enumeration or integral types, log only the decimal value.
@@ -361,7 +363,9 @@ public:
                                           std::is_same_v<T, char16_t> || std::is_same_v<U, char16_t>>,
               typename = void>
     bool assertNotEquals(const Message &message, T expected, U actual) {
-        return assertCodePointNotEquals(extractToAssertBuf(message), expected, actual);
+        return assertCodePointNotEquals(extractToAssertBuf(message),
+                                        static_cast<char32_t>(expected),
+                                        static_cast<char32_t>(actual));
     }
 
     template <typename Message, typename T, typename U,
