@@ -165,6 +165,7 @@ public:
     void TestLongLocaleSetKeywordAssign();
     void TestLongLocaleSetKeywordMoveAssign();
     void TestSierraLeoneCurrency21997();
+    void TestPayload();
 
 private:
     void _checklocs(const char* label,
