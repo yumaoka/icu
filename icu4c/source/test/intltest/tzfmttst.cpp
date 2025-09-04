@@ -688,10 +688,6 @@ void TimeZoneFormatTest::RunTimeRoundTripTests(int32_t threadNumber) {
                     UBool bTimeMatch = minutesOffset ?
                         (timeDiff/60000)*60000 == 0 : timeDiff == 0;
                     if (!bTimeMatch) {
-                        if (!(*tzid == UnicodeString(u"Asia/Barnaul",-1) && 
-                                logKnownIssue("ICU-23183", "Time zone round trip is off for 1 hour for few Asia TZs"))) {
-                            continue;
-                        }
                         UnicodeString msg = UnicodeString("Time round trip failed for ") + "tzid=" + *tzid
                                 + ", locale=" + gLocaleData->locales[locidx].getName() + ", pattern=" + PATTERNS[patidx]
                                 + ", text=" + text + ", time=" + testTimes[testidx] + ", restime=" + parsedDate + ", diff=" + (parsedDate - testTimes[testidx]);
