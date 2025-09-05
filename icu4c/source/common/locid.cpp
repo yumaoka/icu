@@ -366,7 +366,7 @@ Locale::Heap& Locale::Heap::operator=(Heap&& other) noexcept {
 
 template <typename BogusFn, typename NestFn, typename HeapFn, typename... Args>
 auto Locale::Payload::visit(BogusFn bogusFn, NestFn nestFn, HeapFn heapFn, Args... args) const {
-    switch (stat.type) {
+    switch (type) {
         case eBOGUS:
             return bogusFn(args...);
         case eNEST:
@@ -394,11 +394,11 @@ void Locale::Payload::move(Payload&& other) noexcept {
 }
 
 Locale::Payload::~Payload() {
-    if (stat.type == eHEAP) { heap.~Heap(); }
+    if (type == eHEAP) { heap.~Heap(); }
 }
 
-Locale::Payload::Payload(const Payload& other) : stat{eBOGUS} { copy(other); }
-Locale::Payload::Payload(Payload&& other) noexcept : stat{eBOGUS} { move(std::move(other)); }
+Locale::Payload::Payload(const Payload& other) : type{eBOGUS} { copy(other); }
+Locale::Payload::Payload(Payload&& other) noexcept : type{eBOGUS} { move(std::move(other)); }
 
 Locale::Payload& Locale::Payload::operator=(const Payload& other) {
     if (this != &other) {
@@ -418,7 +418,7 @@ Locale::Payload& Locale::Payload::operator=(Payload&& other) noexcept {
 
 void Locale::Payload::setToBogus() {
     this->~Payload();
-    stat.type = eBOGUS;
+    type = eBOGUS;
 }
 
 template <typename T, typename... Args> T& Locale::Payload::emplace(Args&&... args) {
@@ -428,14 +428,14 @@ template <typename T, typename... Args> T& Locale::Payload::emplace(Args&&... ar
         return nest;
     }
     if constexpr (std::is_same_v<T, Heap>) {
-        U_ASSERT(stat.type != eHEAP);
+        U_ASSERT(type != eHEAP);
         ::new (&heap) Heap(std::forward<Args>(args)...);
         return heap;
     }
 }
 
-template <> Locale::Nest* Locale::Payload::get() { return stat.type == eNEST ? &nest : nullptr; }
-template <> Locale::Heap* Locale::Payload::get() { return stat.type == eHEAP ? &heap : nullptr; }
+template <> Locale::Nest* Locale::Payload::get() { return type == eNEST ? &nest : nullptr; }
+template <> Locale::Heap* Locale::Payload::get() { return type == eHEAP ? &heap : nullptr; }
 
 UOBJECT_DEFINE_RTTI_IMPLEMENTATION(Locale)
 

@@ -1271,7 +1271,7 @@ private:
       private:
         Nest nest;
         Heap heap;
-        struct { ELocaleType type; } stat;
+        ELocaleType type;
 
         void copy(const Payload& other);
         void move(Payload&& other) noexcept;
@@ -1281,7 +1281,7 @@ private:
         static void* U_EXPORT2 operator new(size_t) noexcept = delete;
         static void* U_EXPORT2 operator new[](size_t) noexcept = delete;
 
-        Payload() : stat{eBOGUS} {}
+        Payload() : type{eBOGUS} {}
         ~Payload();
 
         Payload(const Payload& other);
@@ -1291,7 +1291,7 @@ private:
         Payload& operator=(Payload&& other) noexcept;
 
         void setToBogus();
-        bool isBogus() const { return stat.type == eBOGUS; }
+        bool isBogus() const { return type == eBOGUS; }
 
         template <typename T, typename... Args> T& emplace(Args&&... args);
 
