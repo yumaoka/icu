@@ -497,6 +497,15 @@ public class DateFormatSymbols implements Serializable, Cloneable {
     String ampms[] = null;
 
     /**
+     * wide AM and PM strings. For example: "ante meridiem" and "post meridiem".  An array of
+     * 2 strings, indexed by <code>Calendar.AM</code> and
+     * <code>Calendar.PM</code>.
+     * These strings are uncommon but exist in a handful of locales.
+     * @serial
+     */
+    String ampmsWide[] = null;
+
+    /**
      * narrow AM and PM strings. For example: "a" and "p".  An array of
      * 2 strings, indexed by <code>Calendar.AM</code> and
      * <code>Calendar.PM</code>.
@@ -1320,7 +1329,7 @@ public class DateFormatSymbols implements Serializable, Cloneable {
      * @stable ICU 2.0
      */
     public String[] getAmPmStrings() {
-        return duplicate(ampms);
+        return getAmPmStrings(FORMAT, ABBREVIATED);
     }
 
     /**
@@ -1329,7 +1338,48 @@ public class DateFormatSymbols implements Serializable, Cloneable {
      * @stable ICU 2.0
      */
     public void setAmPmStrings(String[] newAmpms) {
-        ampms = duplicate(newAmpms);
+        setAmPmStrings(newAmpms, FORMAT, ABBREVIATED);
+    }
+
+    /**
+     * Returns am/pm strings with the specified width. For example: "AM" and "PM".
+     * @param context  The usage context. Currently ignored; FORMAT names always returned.
+     * @param width    The width or the AM/PM strings,
+     *                 either WIDE, ABBREVIATED, or NARROW.
+     * @return the weekday strings.
+     * @draft ICU 78
+     */
+    public String[] getAmPmStrings(int context, int width) {
+        switch (width) {
+        case WIDE:
+            return duplicate(ampmsWide);
+        case NARROW:
+            return duplicate(ampmsNarrow);
+        default:
+            return duplicate(ampms);
+        }
+    }
+
+    /**
+     * Sets am/pm strings with the specified width. For example: "AM" and "PM".
+     * @param newAmpms the new ampm strings.
+     * @param context  The usage context. Currently ignored; always sets FORMAT names.
+     * @param width    The width or the AM/PM strings,
+     *                 either WIDE, ABBREVIATED, or NARROW.
+     * @draft ICU 78
+     */
+    public void setAmPmStrings(String[] newAmpms, int context, int width) {
+        switch (width) {
+        case WIDE:
+            ampmsWide = duplicate(newAmpms);
+            break;
+        case NARROW:
+            ampmsNarrow = duplicate(newAmpms);
+            break;
+        default:
+            ampms = duplicate(newAmpms);
+            break;
+        }
     }
 
     /**
@@ -1504,6 +1554,7 @@ public class DateFormatSymbols implements Serializable, Cloneable {
                 && Utility.arrayEquals(standaloneShorterWeekdays, that.standaloneShorterWeekdays)
                 && Utility.arrayEquals(standaloneNarrowWeekdays, that.standaloneNarrowWeekdays)
                 && Utility.arrayEquals(ampms, that.ampms)
+                && Utility.arrayEquals(ampmsWide, that.ampmsWide)
                 && Utility.arrayEquals(ampmsNarrow, that.ampmsNarrow)
                 && Utility.arrayEquals(abbreviatedDayPeriods, that.abbreviatedDayPeriods)
                 && Utility.arrayEquals(wideDayPeriods, that.wideDayPeriods)
@@ -1590,6 +1641,7 @@ public class DateFormatSymbols implements Serializable, Cloneable {
         this.standaloneShorterWeekdays = dfs.standaloneShorterWeekdays;
         this.standaloneNarrowWeekdays = dfs.standaloneNarrowWeekdays;
         this.ampms = dfs.ampms;
+        this.ampmsWide = dfs.ampmsWide;
         this.ampmsNarrow = dfs.ampmsNarrow;
         this.timeSeparator = dfs.timeSeparator;
         this.shortQuarters = dfs.shortQuarters;
@@ -2048,7 +2100,8 @@ public class DateFormatSymbols implements Serializable, Cloneable {
         standaloneNarrowWeekdays[0] = "";  // 1-based
         System.arraycopy(snWeekdays, 0, standaloneNarrowWeekdays, 1, snWeekdays.length);
 
-        ampms = arrays.get("AmPmMarkers");
+        ampms = arrays.get("AmPmMarkersAbbr");
+        ampmsWide = arrays.get("AmPmMarkers");
         ampmsNarrow = arrays.get("AmPmMarkersNarrow");
 
         quarters = arrays.get("quarters/format/wide");
