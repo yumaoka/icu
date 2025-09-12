@@ -144,12 +144,14 @@ public class TimeZoneFormatTest extends CoreTestFmwk {
 
         // Run the roundtrip test
         for (int locidx = 0; locidx < LOCALES.length; locidx++) {
-            if (LOCALES[locidx].getBaseName().equals("ku") ||
-                LOCALES[locidx].getBaseName().startsWith("ku_") ||
-                LOCALES[locidx].getBaseName().startsWith("shn") ||
-                LOCALES[locidx].getBaseName().equals("sv") ||
-                LOCALES[locidx].getBaseName().startsWith("sv_")) {
-                logKnownIssue("CLDR-18924", "Timezone round trip issues in ku, shn, sv for various zones");
+            if (logKnownIssue("CLDR-18924", "Timezone round trip issues in ku, shn, sv for various zones") &&
+            	(
+            	    LOCALES[locidx].getBaseName().equals("ku") ||
+                    LOCALES[locidx].getBaseName().startsWith("ku_") ||
+                    LOCALES[locidx].getBaseName().startsWith("shn") ||
+                    LOCALES[locidx].getBaseName().equals("sv") ||
+                    LOCALES[locidx].getBaseName().startsWith("sv_")
+                )) {
                 continue;
             }
             logln("Locale: " + LOCALES[locidx].toString());
@@ -410,7 +412,15 @@ public class TimeZoneFormatTest extends CoreTestFmwk {
                 }
 
                 for (String id : ids) {
-                    if (PATTERNS[patidx].equals("V")) {
+                	if (logKnownIssue("CLDR-18924", "Time round trip issues for Pacific/Apia in various locales and Pacific/Honolulu in Swedish") &&
+                		(
+                		    id.equals("Pacific/Apia") ||
+                		    (id.equals("Pacific/Honolulu") && LOCALES[locidx].getLanguage().equals("sv"))
+                		)) {
+                		continue;
+                	}
+
+                	if (PATTERNS[patidx].equals("V")) {
                         // Some zones do not have short ID assigned, such as Asia/Riyadh87.
                         // The time roundtrip will fail for such zones with pattern "V" (short zone ID).
                         // This is expected behavior.
