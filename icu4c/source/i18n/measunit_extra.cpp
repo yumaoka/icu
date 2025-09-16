@@ -1418,21 +1418,21 @@ MeasureUnit MeasureUnit::withPrefix(UMeasurePrefix prefix,
 }
 
 uint64_t MeasureUnit::getConstantDenominator(UErrorCode &status) const {
-    auto complexity = this->getComplexity(status);
+    // TODO(ICU-23219)
+    auto measureUnitImpl = MeasureUnitImpl::forMeasureUnitMaybeCopy(*this, status);
     if (U_FAILURE(status)) {
         return 0;
     }
+
+    auto complexity = measureUnitImpl.complexity;
 
     if (complexity != UMEASURE_UNIT_SINGLE && complexity != UMEASURE_UNIT_COMPOUND) {
         status = U_ILLEGAL_ARGUMENT_ERROR;
         return 0;
     }
 
-    if (this->fImpl == nullptr) {
-        return 0;
-    }
 
-    return this->fImpl->constantDenominator;
+    return measureUnitImpl.constantDenominator;
 }
 
 MeasureUnit MeasureUnit::withConstantDenominator(uint64_t denominator, UErrorCode &status) const {
@@ -1501,8 +1501,8 @@ MeasureUnit MeasureUnit::product(const MeasureUnit& other, UErrorCode& status) c
         impl.appendSingleUnit(*otherImpl.singleUnits[i], status);
     }
 
-    uint64_t currentConstatDenominator = this->getConstantDenominator(status);
-    uint64_t otherConstantDenominator = other.getConstantDenominator(status);
+    uint64_t currentConstatDenominator = impl.constantDenominator;
+    uint64_t otherConstantDenominator = otherImpl.constantDenominator;
 
     // TODO: we can also multiply the constant denominators instead of returning an error.
     if (currentConstatDenominator != 0 && otherConstantDenominator != 0) {

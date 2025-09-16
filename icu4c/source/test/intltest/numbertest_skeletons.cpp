@@ -7,6 +7,7 @@
 
 #include "unicode/dcfmtsym.h"
 #include "unicode/ustring.h"
+#include "unicode/unistr.h"
 
 #include "cstr.h"
 #include "numbertest.h"
@@ -467,28 +468,35 @@ void NumberSkeletonTest::perUnitToSkeleton() {
         {u"area", u"acre"},
         {u"concentr", u"percent"},
         {u"concentr", u"permille"},
-        {u"concentr", u"part-per-1e6"},
         {u"concentr", u"permyriad"},
         {u"digital", u"bit"},
         {u"length", u"yard"},
+        {u"concentr", u"part-per-1e9"},
     };
 
-    for (const auto& cas1 : cases) {
-        for (const auto& cas2 : cases) {
+    for (const auto& numeratorCase : cases) {
+        for (const auto& denominatorCase : cases) {
             UnicodeString skeleton(u"measure-unit/");
-            skeleton += cas1.type;
+            skeleton += numeratorCase.type;
             skeleton += u"-";
-            skeleton += cas1.subtype;
+            skeleton += numeratorCase.subtype;
             skeleton += u" ";
             skeleton += u"per-measure-unit/";
-            skeleton += cas2.type;
+            skeleton += denominatorCase.type;
             skeleton += u"-";
-            skeleton += cas2.subtype;
+            skeleton += denominatorCase.subtype;
+
+            // Convert UTF-16 string to UTF-8 for forIdentifier
+            UnicodeString temp(denominatorCase.subtype);
+            CStr utf8String(temp);
+            MeasureUnit denominatorUnit = MeasureUnit::forIdentifier(utf8String(), status);
+            
+            // If the units has a constant denominator, we skip the test because we could not have a per unit with a constant denominator.
+            if (denominatorUnit.getConstantDenominator(status) != 0) {
+                continue;
+            }
 
             status.setScope(skeleton);
-            if (u_strcmp(cas1.subtype, u"part-per-1e6")==0 || u_strcmp(cas2.subtype, u"part-per-1e6")==0) {
-                logKnownIssue("ICU-23104", "Strange handling of part-per-1e9 & volumes in skeletons");
-            } else if (cas1.type != cas2.type && cas1.subtype != cas2.subtype) {
                 UnicodeString toSkeleton = NumberFormatter::forSkeleton(
                     skeleton, status).toSkeleton(status);
                 if (status.errIfFailureAndReset()) {
@@ -498,19 +506,18 @@ void NumberSkeletonTest::perUnitToSkeleton() {
                 UnicodeString msg;
                 msg.append(toSkeleton)
                     .append(" should contain '")
-                    .append(UnicodeString(cas1.subtype))
+                    .append(UnicodeString(numeratorCase.subtype))
                     .append("' when constructed from ")
                     .append(skeleton);
-                assertTrue(msg, toSkeleton.indexOf(cas1.subtype) >= 0);
+                assertTrue(msg, toSkeleton.indexOf(numeratorCase.subtype) >= 0);
 
                 msg.remove();
                 msg.append(toSkeleton)
                     .append(" should contain '")
-                    .append(UnicodeString(cas2.subtype))
+                    .append(UnicodeString(denominatorCase.subtype))
                     .append("' when constructed from ")
                     .append(skeleton);
-                assertTrue(msg, toSkeleton.indexOf(cas2.subtype) >= 0);
-            }
+                assertTrue(msg, toSkeleton.indexOf(denominatorCase.subtype) >= 0);
         }
     }
 }
