@@ -12140,6 +12140,9 @@ supplementalData:table(nofallback){
             primary{
                 scripts{"Cyrl"}
             }
+            secondary{
+                scripts{"Latn"}
+            }
         }
         abr{
             primary{
@@ -13482,6 +13485,14 @@ supplementalData:table(nofallback){
         grc{
             primary{
                 scripts{"Grek"}
+            }
+        }
+        grr{
+            primary{
+                scripts{"Arab"}
+            }
+            secondary{
+                scripts{"Tfng"}
             }
         }
         grt{
@@ -14851,6 +14862,14 @@ supplementalData:table(nofallback){
                 scripts{"Mand"}
             }
         }
+        mzb{
+            primary{
+                scripts{"Arab"}
+            }
+            secondary{
+                scripts{"Latn"}
+            }
+        }
         mzn{
             primary{
                 scripts{"Arab"}
@@ -15816,6 +15835,14 @@ supplementalData:table(nofallback){
         stq{
             primary{
                 scripts{"Latn"}
+            }
+        }
+        stu{
+            primary{
+                scripts{"Lana"}
+            }
+            secondary{
+                scripts{"Tale"}
             }
         }
         su{
@@ -27069,6 +27096,9 @@ supplementalData:table(nofallback){
             ru{
                 populationShareF:int{45100000}
             }
+            stu_Tale{
+                populationShareF:int{0}
+            }
             tdd{
                 populationShareF:int{46190000}
             }
@@ -27456,12 +27486,18 @@ supplementalData:table(nofallback){
                 officialStatus{"official"}
                 populationShareF:int{49330000}
             }
+            grr{
+                populationShareF:int{46260000}
+            }
             kab{
                 literacyShareF:int{49100000}
                 populationShareF:int{48780000}
             }
             mey{
                 populationShareF:int{49110000}
+            }
+            mzb{
+                populationShareF:int{47360000}
             }
             territoryF:intvector{
                 61699900,
@@ -29991,6 +30027,9 @@ supplementalData:table(nofallback){
             shn{
                 populationShareF:int{48640000}
             }
+            stu{
+                populationShareF:int{46170000}
+            }
             territoryF:intvector{
                 61290500,
                 49927000,
@@ -31223,6 +31262,9 @@ supplementalData:table(nofallback){
             }
         }
         RU{
+            abq{
+                populationShareF:int{46210000}
+            }
             ady{
                 officialStatus{"official_regional"}
                 populationShareF:int{46880000}
@@ -32143,6 +32185,9 @@ supplementalData:table(nofallback){
         TR{
             ab{
                 populationShareF:int{45480000}
+            }
+            abq_Latn{
+                populationShareF:int{46150000}
             }
             ady{
                 populationShareF:int{47390000}
