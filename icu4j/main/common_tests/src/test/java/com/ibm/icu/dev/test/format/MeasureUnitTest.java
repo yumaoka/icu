@@ -1342,7 +1342,7 @@ public class MeasureUnitTest extends CoreTestFmwk {
         List<ConstantDenominatorTestCase> testCases = Arrays.asList(
                 new ConstantDenominatorTestCase("meter-per-1000", 1000),
                 new ConstantDenominatorTestCase("liter-per-1000-kiloliter", 1000),
-                new ConstantDenominatorTestCase("meter-per-100-kilometer", 100), // Failing ICU-23045
+                new ConstantDenominatorTestCase("meter-per-100-kilometer", 100),
                 new ConstantDenominatorTestCase("liter-per-kilometer", 0),
                 new ConstantDenominatorTestCase("second-per-1000-minute", 1000),
                 new ConstantDenominatorTestCase("gram-per-1000-kilogram", 1000),
@@ -1363,10 +1363,10 @@ public class MeasureUnitTest extends CoreTestFmwk {
                 new ConstantDenominatorTestCase("part-per-1000", 1000),
                 new ConstantDenominatorTestCase("part-per-10000", 10000),
                 new ConstantDenominatorTestCase("part-per-100000", 100000),
-                new ConstantDenominatorTestCase("part-per-1000000", 1000000), // Failing ICU-23045
+                new ConstantDenominatorTestCase("part-per-1000000", 1000000),
                 new ConstantDenominatorTestCase("part-per-10000000", 10000000),
                 new ConstantDenominatorTestCase("part-per-100000000", 100000000),
-                new ConstantDenominatorTestCase("part-per-1000000000", 1000000000), // Failing ICU-23045
+                new ConstantDenominatorTestCase("part-per-1000000000", 1000000000),
                 new ConstantDenominatorTestCase("part-per-10000000000", 10000000000L),
                 new ConstantDenominatorTestCase("part-per-100000000000", 100000000000L),
                 new ConstantDenominatorTestCase("part-per-1000000000000", 1000000000000L),
@@ -1389,10 +1389,10 @@ public class MeasureUnitTest extends CoreTestFmwk {
                 new ConstantDenominatorTestCase("part-per-1E4", 10000),
                 new ConstantDenominatorTestCase("part-per-1e5", 100000),
                 new ConstantDenominatorTestCase("part-per-1E5", 100000),
-                new ConstantDenominatorTestCase("part-per-1e6", 1000000), // Failing ICU-23045
-                new ConstantDenominatorTestCase("part-per-1E6", 1000000), // Failing ICU-23045
-                new ConstantDenominatorTestCase("part-per-1e9", 1000000000), // Failing ICU-23045
-                new ConstantDenominatorTestCase("part-per-1E9", 1000000000), // Failing ICU-23045
+                new ConstantDenominatorTestCase("part-per-1e6", 1000000),
+                new ConstantDenominatorTestCase("part-per-1E6", 1000000),
+                new ConstantDenominatorTestCase("part-per-1e9", 1000000000),
+                new ConstantDenominatorTestCase("part-per-1E9", 1000000000),
                 new ConstantDenominatorTestCase("part-per-1e10", 10000000000L),
                 new ConstantDenominatorTestCase("part-per-1E10", 10000000000L),
                 new ConstantDenominatorTestCase("part-per-1e18", 1000000000000000000L),
@@ -1409,18 +1409,6 @@ public class MeasureUnitTest extends CoreTestFmwk {
                 new ConstantDenominatorTestCase("meter-per-square-second", 0));
 
         for (ConstantDenominatorTestCase testCase : testCases) {
-            switch (testCase.identifier) {
-                case "part-per-1000000":
-                case "part-per-1000000000":
-                case "part-per-1e6":
-                case "part-per-1E6":
-                case "part-per-1e9":
-                case "part-per-1E9":
-                case "meter-per-100-kilometer":
-                    logKnownIssue("ICU-23045", "Incorrect constant denominator for certain unit identifiers");
-                    continue;
-            }
-
             MeasureUnit unit = MeasureUnit.forIdentifier(testCase.identifier);
             assertEquals("Constant denominator for " + testCase.identifier, testCase.expectedConstantDenominator,
                     unit.getConstantDenominator());
@@ -1480,16 +1468,10 @@ public class MeasureUnitTest extends CoreTestFmwk {
                 "meter-per-1000-second-1000-kilometer",
                 "per-1000-and-per-1000",
                 "liter-per-kilometer-100",
-                "meter-per-100-100-kilometer", // Failing ICU-23045
+                "meter-per-100-100-kilometer",
             };
 
         for (String input : inputs) {
-            if (input.equals("meter-per-100-100-kilometer")) {
-                logKnownIssue("ICU-23045", "Incorrect constant denominator for certain unit identifiers " +
-                        "leads to incorrect unit identifiers.");
-                continue;
-            }
-
             try {
                 MeasureUnit.forIdentifier(input);
                 Assert.fail("An IllegalArgumentException must be thrown");

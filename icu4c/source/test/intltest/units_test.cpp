@@ -1192,7 +1192,7 @@ void UnitsTest::testUnitsConstantsDenomenator() {
     } testCases[]{
         {"meter-per-1000", 1000},
         {"liter-per-1000-kiloliter", 1000},
-        {"meter-per-100-kilometer", 100}, // Failing: ICU-23045
+        {"meter-per-100-kilometer", 100},
         {"liter-per-kilometer", 0},
         {"second-per-1000-minute", 1000},
         {"gram-per-1000-kilogram", 1000},
@@ -1213,10 +1213,10 @@ void UnitsTest::testUnitsConstantsDenomenator() {
         {"part-per-1000", 1000},
         {"part-per-10000", 10000},
         {"part-per-100000", 100000},
-        {"part-per-1000000", 1000000}, // Failing: ICU-23045
+        {"part-per-1000000", 1000000},
         {"part-per-10000000", 10000000},
         {"part-per-100000000", 100000000},
-        {"part-per-1000000000", 1000000000}, // Failing: ICU-23045
+        {"part-per-1000000000", 1000000000},
         {"part-per-10000000000", 10000000000},
         {"part-per-100000000000", 100000000000},
         {"part-per-1000000000000", 1000000000000},
@@ -1240,10 +1240,10 @@ void UnitsTest::testUnitsConstantsDenomenator() {
         {"part-per-1E4", 10000},
         {"part-per-1e5", 100000},
         {"part-per-1E5", 100000},
-        {"part-per-1e6", 1000000}, // Failing: ICU-23045
-        {"part-per-1E6", 1000000}, // Failing: ICU-23045
-        {"part-per-1e9", 1000000000}, // Failing: ICU-23045
-        {"part-per-1E9", 1000000000}, // Failing: ICU-23045
+        {"part-per-1e6", 1000000},
+        {"part-per-1E6", 1000000},
+        {"part-per-1e9", 1000000000},
+        {"part-per-1E9", 1000000000},
         {"part-per-1e10", 10000000000},
         {"part-per-1E10", 10000000000},
         {"part-per-1e18", 1000000000000000000},
@@ -1261,17 +1261,6 @@ void UnitsTest::testUnitsConstantsDenomenator() {
     };
 
     for (const auto &testCase : testCases) {
-        if (uprv_strcmp(testCase.source, "part-per-1000000") == 0 ||
-            uprv_strcmp(testCase.source, "part-per-1000000000") == 0 ||
-            uprv_strcmp(testCase.source, "part-per-1e6") == 0 ||
-            uprv_strcmp(testCase.source, "part-per-1E6") == 0 ||
-            uprv_strcmp(testCase.source, "part-per-1e9") == 0 ||
-            uprv_strcmp(testCase.source, "part-per-1E9") == 0 ||
-            uprv_strcmp(testCase.source, "meter-per-100-kilometer") == 0) {
-            logKnownIssue("ICU-23045", "Incorrect constant denominator for certain unit identifiers");
-            continue;
-        }
-
         MeasureUnit unit = MeasureUnit::forIdentifier(testCase.source, status);
         if (status.errIfFailureAndReset("forIdentifier(\"%s\")", testCase.source)) {
             continue;
