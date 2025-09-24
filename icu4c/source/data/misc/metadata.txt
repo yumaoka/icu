@@ -5188,6 +5188,10 @@ metadata:table(nofallback){
                 reason{"deprecated"}
                 replacement{"millimeter-ofhg"}
             }
+            million{
+                reason{"deprecated"}
+                replacement{"1e6"}
+            }
             part-per-million{
                 reason{"deprecated"}
                 replacement{"part-per-1e6"}
@@ -5195,6 +5199,10 @@ metadata:table(nofallback){
             permillion{
                 reason{"deprecated"}
                 replacement{"part-per-1e6"}
+            }
+            portion{
+                reason{"deprecated"}
+                replacement{"part"}
             }
             portion-per-1e9{
                 reason{"deprecated"}

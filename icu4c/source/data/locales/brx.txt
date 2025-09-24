@@ -569,7 +569,7 @@ brx{
                     d{"d–d MMM"}
                 }
                 Md{
-                    M{"d/M –/dM"}
+                    M{"d/M – d/M"}
                     d{"d/M – d/M"}
                 }
                 h{

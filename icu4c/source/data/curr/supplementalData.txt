@@ -544,10 +544,21 @@ supplementalData:table(nofallback){
         BG{
             {
                 from:intvector{
+                    411,
+                    1994041344,
+                }
+                id{"EUR"}
+            }
+            {
+                from:intvector{
                     216,
                     -875103232,
                 }
                 id{"BGN"}
+                to:intvector{
+                    412,
+                    377474047,
+                }
             }
             {
                 from:intvector{

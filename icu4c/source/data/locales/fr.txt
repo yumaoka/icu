@@ -353,16 +353,6 @@ fr{
             }
         }
         ethiopic{
-            eras{
-                abbreviated{
-                    0{"av. Inc."}
-                    1{"ap. Inc."}
-                }
-                wide{
-                    0{"avant l’Incarnation"}
-                    1{"après l’Incarnation"}
-                }
-            }
             monthNames{
                 format{
                     abbreviated{
