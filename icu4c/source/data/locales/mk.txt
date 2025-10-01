@@ -302,11 +302,6 @@ mk{
                 "{1} {0}",
                 "{1} {0}",
             }
-            eras{
-                abbreviated{
-                    1{"ЕРА1"}
-                }
-            }
             monthNames{
                 format{
                     wide{
@@ -328,12 +323,6 @@ mk{
             }
         }
         ethiopic{
-            eras{
-                abbreviated{
-                    0{"ЕРА0"}
-                    1{"ЕРА1"}
-                }
-            }
             monthNames{
                 format{
                     wide{

@@ -272,11 +272,6 @@ mr{
             }
         }
         coptic{
-            eras{
-                abbreviated{
-                    1{"युग1"}
-                }
-            }
             monthNames{
                 format{
                     wide{
@@ -315,12 +310,6 @@ mr{
             }
         }
         ethiopic{
-            eras{
-                abbreviated{
-                    0{"युग0"}
-                    1{"युग1"}
-                }
-            }
             monthNames{
                 format{
                     wide{

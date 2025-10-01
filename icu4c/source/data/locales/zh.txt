@@ -784,16 +784,6 @@ zh{
                 "GyMMMd",
                 "GyMd",
             }
-            eras{
-                abbreviated{
-                    0{"埃历前"}
-                    1{"埃历"}
-                }
-                wide{
-                    0{"埃塞俄比亚历前"}
-                    1{"埃塞俄比亚历"}
-                }
-            }
             monthNames{
                 format{
                     abbreviated{
@@ -826,13 +816,6 @@ zh{
                         "十二月",
                         "十三月",
                     }
-                }
-            }
-        }
-        ethiopic-amete-alem{
-            eras{
-                wide{
-                    0{"埃塞俄比亚阿米特阿莱姆历"}
                 }
             }
         }

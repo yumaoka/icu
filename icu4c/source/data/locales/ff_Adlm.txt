@@ -1449,13 +1449,6 @@ ff_Adlm{
                 }
             }
         }
-        ethiopic-amete-alem{
-            eras{
-                abbreviated{
-                    0{"𞤘𞤋𞤈𞥐"}
-                }
-            }
-        }
         generic{
             DateTimePatterns{
                 "HH:mm:ss zzzz",

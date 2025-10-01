@@ -1756,8 +1756,8 @@ root{
             dayNames:alias{"/LOCALE/calendar/gregorian/dayNames"}
             eras{
                 abbreviated{
-                    0{"ERA0"}
-                    1{"ERA1"}
+                    0{"AA"}
+                    1{"AM"}
                 }
                 narrow:alias{"/LOCALE/calendar/ethiopic/eras/abbreviated"}
                 wide:alias{"/LOCALE/calendar/ethiopic/eras/abbreviated"}
@@ -1816,7 +1816,7 @@ root{
             dayNames:alias{"/LOCALE/calendar/ethiopic/dayNames"}
             eras{
                 abbreviated{
-                    0{"ERA0"}
+                    0{"AA"}
                 }
                 narrow:alias{"/LOCALE/calendar/ethiopic-amete-alem/eras/abbreviated"}
                 wide:alias{"/LOCALE/calendar/ethiopic-amete-alem/eras/abbreviated"}
@@ -2526,7 +2526,7 @@ root{
             dayNames:alias{"/LOCALE/calendar/gregorian/dayNames"}
             eras{
                 abbreviated{
-                    0{"Saka"}
+                    0{"Śaka"}
                 }
                 narrow:alias{"/LOCALE/calendar/indian/eras/abbreviated"}
                 wide:alias{"/LOCALE/calendar/indian/eras/abbreviated"}
@@ -3504,8 +3504,8 @@ root{
             dayNames:alias{"/LOCALE/calendar/gregorian/dayNames"}
             eras{
                 abbreviated{
-                    0{"Before R.O.C."}
-                    1{"R.O.C."}
+                    0{"BROC"}
+                    1{"ROC"}
                 }
                 narrow:alias{"/LOCALE/calendar/roc/eras/abbreviated"}
                 wide:alias{"/LOCALE/calendar/roc/eras/abbreviated"}

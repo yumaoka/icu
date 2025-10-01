@@ -325,11 +325,6 @@ pa{
             }
         }
         coptic{
-            eras{
-                abbreviated{
-                    1{"ਕਾਲ1"}
-                }
-            }
             monthNames{
                 format{
                     wide{
@@ -351,12 +346,6 @@ pa{
             }
         }
         ethiopic{
-            eras{
-                abbreviated{
-                    0{"ਕਾਲ0"}
-                    1{"ਕਾਲ1"}
-                }
-            }
             monthNames{
                 format{
                     wide{

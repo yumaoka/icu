@@ -270,11 +270,6 @@ ur{
     }
     calendar{
         coptic{
-            eras{
-                abbreviated{
-                    1{"دور1"}
-                }
-            }
             monthNames{
                 format{
                     wide{
@@ -296,12 +291,6 @@ ur{
             }
         }
         ethiopic{
-            eras{
-                abbreviated{
-                    0{"دور0"}
-                    1{"دور1"}
-                }
-            }
             monthNames{
                 format{
                     wide{

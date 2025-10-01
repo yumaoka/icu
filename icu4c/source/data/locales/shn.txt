@@ -304,17 +304,6 @@ shn{
                 yyyyMMMEd{"G y MMM d - E"}
                 yyyyMd{"GGGGG y-MM-dd"}
             }
-            eras{
-                abbreviated{
-                    1{"ပၢၼ်1"}
-                }
-                narrow{
-                    1{"ပၢၼ်1"}
-                }
-                wide{
-                    1{"ပၢၼ်1"}
-                }
-            }
             intervalFormats{
                 GyM{
                     G{"GGGGG y-MM – GGGGG y-MM"}
@@ -580,20 +569,6 @@ shn{
                 yyyyMEd{"GGGGG y-MM-dd - E"}
                 yyyyMMMEd{"G y MMM d - E"}
             }
-            eras{
-                abbreviated{
-                    0{"ပၢၼ်0"}
-                    1{"ပၢၼ်1"}
-                }
-                narrow{
-                    0{"ပၢၼ်0"}
-                    1{"ပၢၼ်1"}
-                }
-                wide{
-                    0{"ပၢၼ်0"}
-                    1{"ပၢၼ်1"}
-                }
-            }
             intervalFormats{
                 GyMEd{
                     G{"GGGGG y-MM-dd - E – GGGGG y-MM-dd - E"}
@@ -690,19 +665,6 @@ shn{
                         "ၼႁၢတ်ႉသ်",
                         "ပႃႇၵူႇမႅၼ်ႇ",
                     }
-                }
-            }
-        }
-        ethiopic-amete-alem{
-            eras{
-                abbreviated{
-                    0{"ပၢၼ်0"}
-                }
-                narrow{
-                    0{"ပၢၼ်0"}
-                }
-                wide{
-                    0{"ပၢၼ်0"}
                 }
             }
         }

@@ -412,20 +412,6 @@ ast{
             }
         }
         ethiopic{
-            eras{
-                abbreviated{
-                    0{"a. E."}
-                    1{"d. E."}
-                }
-                narrow{
-                    0{"aE"}
-                    1{"dE"}
-                }
-                wide{
-                    0{"antes de la Encarnación"}
-                    1{"después de la Encarnación"}
-                }
-            }
             intervalFormats{
                 yMMMd{
                     d{"d – d MMM 'de' y"}

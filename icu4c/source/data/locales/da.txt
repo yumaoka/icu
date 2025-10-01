@@ -198,17 +198,6 @@ da{
     }
     calendar{
         coptic{
-            eras{
-                abbreviated{
-                    1{"1. tidsr."}
-                }
-                narrow{
-                    1{"1. t."}
-                }
-                wide{
-                    1{"1. tidsregning"}
-                }
-            }
             monthNames{
                 format{
                     wide{
@@ -230,20 +219,6 @@ da{
             }
         }
         ethiopic{
-            eras{
-                abbreviated{
-                    0{"0. tidsr."}
-                    1{"1. tidsr."}
-                }
-                narrow{
-                    0{"0. t."}
-                    1{"1. t."}
-                }
-                wide{
-                    0{"0. tidsregning"}
-                    1{"1. tidsregning"}
-                }
-            }
             monthNames{
                 format{
                     wide{

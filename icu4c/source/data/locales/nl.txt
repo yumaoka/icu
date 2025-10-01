@@ -760,16 +760,6 @@ nl{
                 "{1} {0}",
                 "{1} {0}",
             }
-            eras{
-                abbreviated{
-                    0{"era 0"}
-                    1{"era 1"}
-                }
-                wide{
-                    0{"tijdperk 0"}
-                    1{"tijdperk 1"}
-                }
-            }
             monthNames{
                 format{
                     wide{
@@ -787,16 +777,6 @@ nl{
                         "Nähase",
                         "Pagumän",
                     }
-                }
-            }
-        }
-        ethiopic-amete-alem{
-            eras{
-                abbreviated{
-                    0{"era 0"}
-                }
-                wide{
-                    0{"tijdperk 0"}
                 }
             }
         }

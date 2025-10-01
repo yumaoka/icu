@@ -221,11 +221,6 @@ ml{
     }
     calendar{
         coptic{
-            eras{
-                abbreviated{
-                    1{"കാലഘട്ടം1"}
-                }
-            }
             monthNames{
                 format{
                     wide{
@@ -264,12 +259,6 @@ ml{
             }
         }
         ethiopic{
-            eras{
-                abbreviated{
-                    0{"കാലഘട്ടം0"}
-                    1{"കാലഘട്ടം1"}
-                }
-            }
             monthNames{
                 format{
                     wide{

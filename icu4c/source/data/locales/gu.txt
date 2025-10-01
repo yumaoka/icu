@@ -275,11 +275,6 @@ gu{
     }
     calendar{
         coptic{
-            eras{
-                abbreviated{
-                    1{"એરા1"}
-                }
-            }
             monthNames{
                 format{
                     wide{
@@ -301,12 +296,6 @@ gu{
             }
         }
         ethiopic{
-            eras{
-                abbreviated{
-                    0{"એરા0"}
-                    1{"એરા1"}
-                }
-            }
             monthNames{
                 format{
                     wide{

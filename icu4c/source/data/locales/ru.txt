@@ -390,16 +390,6 @@ ru{
             }
         }
         ethiopic{
-            eras{
-                abbreviated{
-                    0{"до Христа"}
-                    1{"от Христа"}
-                }
-                wide{
-                    0{"до воплощения Христа"}
-                    1{"от воплощения Христа"}
-                }
-            }
             monthNames{
                 format{
                     wide{

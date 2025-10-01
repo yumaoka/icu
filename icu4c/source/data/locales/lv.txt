@@ -270,16 +270,6 @@ lv{
             }
         }
         ethiopic{
-            eras{
-                abbreviated{
-                    0{"pirms Kristus"}
-                    1{"pēc Kristus"}
-                }
-                wide{
-                    0{"pirms Kristus iemiesošanās"}
-                    1{"pēc Kristus iemiesošanās"}
-                }
-            }
             monthNames{
                 format{
                     wide{

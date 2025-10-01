@@ -313,16 +313,6 @@ ro{
             }
         }
         ethiopic{
-            eras{
-                abbreviated{
-                    0{"î.Într."}
-                    1{"d.Într."}
-                }
-                wide{
-                    0{"înainte de Întrupare"}
-                    1{"după Întrupare"}
-                }
-            }
             monthNames{
                 format{
                     wide{

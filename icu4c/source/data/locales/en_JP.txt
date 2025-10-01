@@ -234,7 +234,7 @@ en_JP{
                     G{"G y MMM d, E – G y MMM d, E"}
                     M{"G y MMM d, E – MMM d, E"}
                     d{"G y MMM d, E – MMM d, E"}
-                    y{"G y MMM d, E – E, MMM E"}
+                    y{"G y MMM d, E – y MMM d, E"}
                 }
                 GyMMMd{
                     G{"G y MMM d – G y MMM d"}
@@ -329,7 +329,7 @@ en_JP{
                 }
                 yMMMM{
                     M{"y MMMM – MMMM"}
-                    y{"y MMMM – MMMM"}
+                    y{"y MMMM – y MMMM"}
                 }
                 yMMMd{
                     M{"y MMM d – MMM d"}

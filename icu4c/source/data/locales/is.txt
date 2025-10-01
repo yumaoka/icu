@@ -229,12 +229,6 @@ is{
             }
         }
         ethiopic{
-            eras{
-                abbreviated{
-                    0{"Tímabil0"}
-                    1{"Tímabil1"}
-                }
-            }
             monthNames{
                 format{
                     wide{

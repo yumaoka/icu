@@ -253,17 +253,6 @@ fa{
             }
         }
         coptic{
-            eras{
-                abbreviated{
-                    1{"پس از مسیح"}
-                }
-                narrow{
-                    1{"ب.م."}
-                }
-                wide{
-                    1{"بعد از حلول مسیح"}
-                }
-            }
             monthNames{
                 format{
                     wide{

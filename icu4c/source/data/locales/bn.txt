@@ -268,11 +268,6 @@ bn{
     }
     calendar{
         coptic{
-            eras{
-                abbreviated{
-                    1{"যুগ ১"}
-                }
-            }
             monthNames{
                 format{
                     wide{
@@ -311,12 +306,6 @@ bn{
             }
         }
         ethiopic{
-            eras{
-                abbreviated{
-                    0{"যুগ ০"}
-                    1{"যুগ ১"}
-                }
-            }
             monthNames{
                 format{
                     wide{
