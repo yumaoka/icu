@@ -199,7 +199,7 @@ public class JavaTimeFormatTest extends CoreTestFmwk {
                 "buddhist", "September 27, 2556 BE",
                 "chinese",  "Eighth Month 23, 2013(gui-si)",
                 "hebrew",   "23 Tishri 5774 AM",
-                "indian",   "Asvina 5, 1935 Saka",
+                "indian",   "Asvina 5, 1935 Śaka",
                 "islamic",  "Dhuʻl-Qiʻdah 22, 1434 Anno Hegirae",
                 "japanese", "September 27, 25 Heisei",
                 "persian",  "Mehr 5, 1392 AP",

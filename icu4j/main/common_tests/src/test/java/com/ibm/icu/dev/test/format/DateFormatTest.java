@@ -5583,7 +5583,7 @@ public class DateFormatTest extends CoreTestFmwk {
         DateFormat fmt2 = DateFormat.getInstanceForSkeleton("uMd", locale);
         String result = fmt.format(new Date(98, 5-1, 25));
         String result2 = fmt2.format(new Date(98, 5-1, 25));
-        assertEquals("Format", "9/17/7490 ERA0", result);
+        assertEquals("Format", "9/17/7490 AA", result);
         assertEquals("Format", result, result2);
     }
 

@@ -4908,7 +4908,7 @@ void DateFormatTest::TestCreateInstanceForSkeleton() {
         return;
     }
     fmt->format(date(98, 5-1, 25), result2, pos);
-    assertEquals("format yMd", "9/17/7490 ERA0", result2);
+    assertEquals("format yMd", "9/17/7490 AA", result2);
 
     fmt.adoptInstead(DateFormat::createInstanceForSkeleton(
             "uMd", "en-u-ca-ethiopic-amete-alem", status));
