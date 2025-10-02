@@ -48,7 +48,7 @@ jobs:
     timeout-minutes: 180
     steps:
       - uses: actions/checkout@ff7abcd0c3c05ccf6adc123a8cd1fd4fb30fb493 # v4.1.1
-      - name: Build and Exhaustive Tests
+      - name: Build and Run Exhaustive Tests
         run: |
           echo "Building ICU4J" && cd icu4j && mvn install -DICU.exhaustive=10
         env:
