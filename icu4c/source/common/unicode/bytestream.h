@@ -289,7 +289,7 @@ using value_type_or_char_t = typename value_type_or_char<StringClass>::type;
  */
 template<typename StringClass>
 class StringByteSink : public ByteSink {
-  using Unit = prv::value_type_or_char_t<StringClass>;
+  using Unit = typename prv::value_type_or_char_t<StringClass>;
  public:
   /**
    * Constructs a ByteSink that will append bytes to the dest string.
