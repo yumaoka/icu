@@ -234,6 +234,16 @@ constexpr bool range = range_type<Range>::value;
 #endif
 
 /** @internal */
+template <typename T> struct is_basic_string_view : std::false_type {};
+
+/** @internal */
+template <typename... Args>
+struct is_basic_string_view<std::basic_string_view<Args...>> : std::true_type {};
+
+/** @internal */
+template <typename T> constexpr bool is_basic_string_view_v = is_basic_string_view<T>::value;
+
+/** @internal */
 template<typename CP32, bool skipSurrogates>
 class CodePointsIterator {
     static_assert(sizeof(CP32) == 4, "CP32 must be a 32-bit type to hold a code point");
@@ -1871,7 +1881,14 @@ struct UTFStringCodePointsAdaptor
         return UTFStringCodePoints<CP32, behavior, std::ranges::views::all_t<Range>>(
             std::forward<Range>(unitRange));
 #else
-        return UTFStringCodePoints<CP32, behavior, Range>(std::forward<Range>(unitRange));
+        if constexpr (prv::is_basic_string_view_v<std::decay_t<Range>>) {
+            // Take basic_string_view by copy, not by reference.  In C++20 this is handled by
+            // all_t<Range>, which is Range if Range is a view.
+            return UTFStringCodePoints<CP32, behavior, std::decay_t<Range>>(
+                std::forward<Range>(unitRange));
+        } else {
+            return UTFStringCodePoints<CP32, behavior, Range>(std::forward<Range>(unitRange));
+        }
 #endif
     }
 };
@@ -2582,7 +2599,13 @@ struct UnsafeUTFStringCodePointsAdaptor
 #if defined(__cpp_lib_ranges) && __cpp_lib_ranges >= 2021'10  // We need https://wg21.link/P2415R2.
         return UnsafeUTFStringCodePoints<CP32, std::ranges::views::all_t<Range>>(std::forward<Range>(unitRange));
 #else
-        return UnsafeUTFStringCodePoints<CP32, Range>(std::forward<Range>(unitRange));
+        if constexpr (prv::is_basic_string_view_v<std::decay_t<Range>>) {
+            // Take basic_string_view by copy, not by reference.  In C++20 this is handled by
+            // all_t<Range>, which is Range if Range is a view.
+            return UnsafeUTFStringCodePoints<CP32, std::decay_t<Range>>(std::forward<Range>(unitRange));
+        } else {
+            return UnsafeUTFStringCodePoints<CP32, Range>(std::forward<Range>(unitRange));
+        }
 #endif
     }
 };

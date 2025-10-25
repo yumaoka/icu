@@ -1199,6 +1199,7 @@ extern IntlTest *createUTFIteratorTest() {
 template<TestMode mode, typename CP32, UTFIllFormedBehavior behavior, typename StringView>
 void UTFIteratorTest::testBidiIter(StringView piped) {
     using Unit = typename StringView::value_type;
+    static_assert(icu::header::prv::is_basic_string_view_v<StringView>);
     auto parts = split(piped);
     auto joined = join<Unit>(parts);
     StringView sv(joined);
@@ -1207,9 +1208,12 @@ void UTFIteratorTest::testBidiIter(StringView piped) {
     // "a?ç?🚴" where the ? sequences are ill-formed
     if constexpr (mode == UNSAFE) {
         auto range = unsafeUTFStringCodePoints<CP32>(sv);
+        // Check that we take the StringView by copy, not by reference, even in C++17.
+        static_assert(std::is_same_v<decltype(range), UnsafeUTFStringCodePoints<UChar32, StringView>>);
         testBidiIter<mode, CP32, behavior>(sv, parts, range);
     } else {
         auto range = utfStringCodePoints<CP32, behavior>(sv);
+        static_assert(std::is_same_v<decltype(range), UTFStringCodePoints<CP32, behavior, StringView>>);
         testBidiIter<mode, CP32, behavior>(sv, parts, range);
     }
 }
