@@ -1751,6 +1751,21 @@ auto utfIterator(UnitIter p) {
  *
  * Call utfStringCodePoints() to have the compiler deduce the Range type.
  *
+ * UTFStringCodePoints is conditionally borrowed; that is, if Range is a borrowed range
+ * so is UTFStringCodePoints<CP32, behavior, Range>.
+ * Note that when given a range r that is an lvalue and is not a view,  utfStringCodePoints(r) uses a
+ * ref_view of r as the Range type, which is a borrowed range.
+ * In practice, this means that given a container variable r, the iterators of utfStringCodePoints(r) can
+ * be used as long as iterators on r are valid, without having to keep utfStringCodePoints(r) around.
+ * For instance:
+ * \code
+ *     std::u8string s = "𒇧𒇧";
+ *     // it outlives utfStringCodePoints<char32_t>(s).
+ *     auto it = utfStringCodePoints<char32_t>(s).begin();
+ *     ++it;
+ *     char32_t second_code_point = it->codePoint();  // OK.
+ * \endcode
+ * 
  * @tparam CP32 Code point type: UChar32 (=int32_t) or char32_t or uint32_t;
  *              should be signed if UTF_BEHAVIOR_NEGATIVE
  * @tparam behavior How to handle ill-formed Unicode strings
@@ -2478,6 +2493,22 @@ auto unsafeUTFIterator(UnitIter iter) {
  *
  * Call unsafeUTFStringCodePoints() to have the compiler deduce the Range type.
  *
+ * UnsafeUTFStringCodePoints is conditionally borrowed; that is, if Range is a borrowed range
+ * so is UnsafeUTFStringCodePoints<CP32, behavior, Range>.
+ * Note that when given a range r that is an lvalue and is not a view,  unsafeUTFStringCodePoints(r) uses
+ * a ref_view of r as the Range type, which is a borrowed range.
+ * In practice, this means that given a container variable r, the iterators of
+ * unsafeUTFStringCodePoints(r) can be used as long as iterators on r are valid, without having to keep
+ * unsafeUTFStringCodePoints(r) around.
+ * For instance:
+ * \code
+ *     std::u8string s = "𒇧𒇧";
+ *     // it outlives unsafeUTFStringCodePoints<char32_t>(s).
+ *     auto it = unsafeUTFStringCodePoints<char32_t>(s).begin();
+ *     ++it;
+ *     char32_t second_code_point = it->codePoint();  // OK.
+ * \endcode
+ *
  * @tparam CP32 Code point type: UChar32 (=int32_t) or char32_t or uint32_t
  * @tparam Range A C++ "range" of Unicode UTF-8/16/32 code units
  * @draft ICU 78
@@ -2627,6 +2658,19 @@ template<typename CP32>
 constexpr UnsafeUTFStringCodePointsAdaptor<CP32> unsafeUTFStringCodePoints;
 
 }  // namespace U_HEADER_ONLY_NAMESPACE
+
+
+#if defined(__cpp_lib_ranges)
+template <typename CP32, UTFIllFormedBehavior behavior, typename Range>
+constexpr bool std::ranges::enable_borrowed_range<
+    U_HEADER_ONLY_NAMESPACE::UTFStringCodePoints<CP32, behavior, Range>> =
+    std::ranges::enable_borrowed_range<Range>;
+
+template <typename CP32, typename Range>
+constexpr bool std::ranges::enable_borrowed_range<
+    U_HEADER_ONLY_NAMESPACE::UnsafeUTFStringCodePoints<CP32, Range>> =
+    std::ranges::enable_borrowed_range<Range>;
+#endif
 
 #endif  // U_HIDE_DRAFT_API
 #endif  // U_SHOW_CPLUSPLUS_API || U_SHOW_CPLUSPLUS_HEADER_API
