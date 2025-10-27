@@ -1692,7 +1692,7 @@ void
 RuleBasedNumberFormat::initCapitalizationContextInfo(const Locale& thelocale)
 {
 #if !UCONFIG_NO_BREAK_ITERATION
-    const char * localeID = (thelocale != nullptr)? thelocale.getBaseName(): nullptr;
+    const char * localeID = thelocale.getBaseName();
     UErrorCode status = U_ZERO_ERROR;
     UResourceBundle *rb = ures_open(nullptr, localeID, &status);
     rb = ures_getByKeyWithFallback(rb, "contextTransforms", rb, &status);
