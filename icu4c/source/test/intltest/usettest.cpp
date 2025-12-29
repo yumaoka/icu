@@ -1886,8 +1886,8 @@ void UnicodeSetTest::TestSymbolTable() {
              U_ZERO_ERROR,
              u"[{}]"},
             // Check that we don’t recursively expand variables.
-            // In ICU79 and earlier, this would have been U_ZERO_ERROR with [[\$y][\$x]]; but \$y is
-            // a sequence of elements, so it is not a valid variable value.
+            // In ICU 78 and earlier, this would have been U_ZERO_ERROR with [[\$y][\$x]]; but \$y
+            // is a sequence of elements, so it is not a valid variable value.
             {{{u"x", u"$y"}, {u"y", u"$x"}},
              u"[[$x][$y]]",
              U_MALFORMED_VARIABLE_DEFINITION,
@@ -4706,7 +4706,7 @@ void UnicodeSetTest::TestToPatternOutput() {
             // TODO(egg): PDUTS #61 disallows the space before ^.
             {uR"([: ^general category = punctuation :])", uR"([: ^general category = punctuation :])"},
             {uR"(\P{ gc = punctuation })", uR"(\P{ gc = punctuation })"},
-            {uR"(\N{ latin small letter a })", uR"(\N{ latin small letter a })"},
+            {uR"([\N{ latin small letter a }])", uR"([a])"},
             // If there is any Restriction among the terms, its syntax is mostly as-is (spaces are
             // still eliminated), with the exception that an initial UnescapedHyphenMinus gets escaped.
             // This is applied recursively, so innermost ranges-only UnicodeSets get normalized.
@@ -4722,9 +4722,15 @@ void UnicodeSetTest::TestToPatternOutput() {
             // Escapes are removed even when the syntax is preserved.
             {uR"([ { \x5A e i c h e n k e t t e } [] \x5Aeichenmenge ])",
             u"[{Zeichenkette}[]Zeichenmenge]"},
-            // A named-element is currently a nested set, so it is preserved and causes the syntax to be
-            // preserved.
-            {uR"([ \N{LATIN CAPITAL LETTER Z}eichenmenge ])", uR"([\N{LATIN CAPITAL LETTER Z}eichenmenge])"},
+            // In ICU 78 and earlier, a named-element was a nested set, so it was preserved and
+            // caused the syntax to be preserved.  Now it is treated like an escape.
+            {uR"([ \N{LATIN CAPITAL LETTER Z}eichenmenge ])", uR"([Zceg-imn])"},
+            // This was ill-formed in ICU 78 and earlier (in a convoluted way:
+            // {\N{LATIN CAPITAL LETTER Z} was a well-formed string literal, but then the second }
+            // was unpaired).
+            {uR"([ {\N{LATIN CAPITAL LETTER Z}eichenkette} ])", uR"([{Zeichenkette}])"},
+            // This used to be equal to [A] in ICU 78 and earlier.
+            {uR"([ \N{LATIN CAPITAL LETTER A} - \N{LATIN CAPITAL LETTER Z} ])", uR"([A-Z])"},
             // An anchor also causes the syntax to be preserved.
             {u"[ d-z a-c $ ]", u"[d-za-c$]"},
             {u"[ - a-c d-z $ ]", uR"([\-a-cd-z$])"},
@@ -4788,6 +4794,15 @@ void UnicodeSetTest::TestParseErrors() {
             u"[[a]&z]",
             // "Missing ']'".
             u"[a-z",
+            // This was a well-formed string in ICU 78 and earlier, with the value
+            // "N{LATINCAPITALLETTERZ".
+            uR"([{\N{LATIN CAPITAL LETTER Z}])",
+            // This was a well-formed set in ICU 78 and earlier; now it must be enclosed in square
+            // brackets.
+            uR"(\N{ latin small letter a })",
+            // TODO(egg): Well-formed in Java, ill-formed in ICU4C in ICU 78 and earlier.
+            u"[a-{z}]",
+            u"[{a}-z]",
         }) {
         UErrorCode errorCode = U_ZERO_ERROR;
         const UnicodeSet set(expression, errorCode);
