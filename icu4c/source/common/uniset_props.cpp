@@ -475,11 +475,23 @@ class UnicodeSet::Lexer {
         }
         if (first == u'$' && symbols_ != nullptr) {
             auto nameEnd = parsePosition_;
+            // The SymbolTable defines the lexing of variable names past the $.
             if (UnicodeString name = symbols_->parseReference(pattern_, nameEnd, pattern_.length());
                 !name.isEmpty()) {
                 chars_.jumpahead(nameEnd.getIndex() - (start + 1));
                 const std::u16string_view source =
                     std::u16string_view(pattern_).substr(start, parsePosition_.getIndex() - start);
+                const UnicodeSet *precomputedSet = symbols_->lookupSet(name);
+                if (precomputedSet != nullptr) {
+                    return LexicalElement(LexicalElement::VARIABLE, {}, getPos(), U_ZERO_ERROR,
+                                          precomputedSet, /*set=*/{}, source);
+                }
+                // The variable was not a precomputed set.  Use the old-fashioned `lookup`, which
+                // should give us its source text; if that parses as a single set or element, use
+                // it.  Note that variables are not allowed in that expansion.
+                // Implementers of higher-level syntaxes that pre-parse UnicodeSet-valued variables
+                // can use variables in their variable definitions, but those that simply use the
+                // source text substitution API cannot.
                 const UnicodeString *const expression = symbols_->lookup(name);
                 if (expression == nullptr) {
                     return LexicalElement(
@@ -636,22 +648,6 @@ class UnicodeSet::Lexer {
             }
             switch (variableToken.category_) {
             case LexicalElement::LITERAL_ELEMENT:
-                // Until ICU-23297 is fixed, a variable may expand to a single (normally private-use)
-                // code point that stands for a precomputed set.  As a change from ICU 78 and earlier,
-                // this mechanism is not used outside of variable expansion, and is effectively an
-                // implementation detail to make a variable represent a set without reparsing that set
-                // every time the variable is substituted.
-                if (U_SUCCESS(variableToken.errorCode())) {
-                    UnicodeSet const *standIn = dynamic_cast<const UnicodeSet *>(
-                        symbols_->lookupMatcher(*variableToken.codePoint()));
-                    if (standIn != nullptr) {
-                        return LexicalElement(LexicalElement::VARIABLE, {}, getPos(), U_ZERO_ERROR,
-                                              /*precomputedSet=*/standIn, {}, source);
-                    }
-                }
-                // The character was not a stand-in, this variable actually expands to a literal-element;
-                // fall through to the case where we bubble up the lexical element.
-                [[fallthrough]];
             case LexicalElement::ESCAPED_ELEMENT:
             case LexicalElement::NAMED_ELEMENT:
             case LexicalElement::BRACKETED_ELEMENT:
