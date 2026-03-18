@@ -36,7 +36,7 @@ jobs:
   # This job is created according to the cache strategy of reuse from a single job:
   # https://github.com/actions/cache/blob/main/caching-strategies.md#make-cache-read-only--reuse-cache-from-centralized-job
   icu4j-mvn-init-cache:
-    runs-on: ubuntu-22.04  # Updated in BRS
+    runs-on: ubuntu-24.04  # Updated in BRS
     steps:
       - name: Checkout and setup
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -58,7 +58,7 @@ jobs:
   # Test ICU4J with little-endian ICU4C data only
   icu4j-little-endian-data-test:
     needs: icu4j-mvn-init-cache
-    runs-on: ubuntu-22.04  # Updated in BRS
+    runs-on: ubuntu-24.04  # Updated in BRS
     steps:
       - name: Checkout and setup
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -89,7 +89,7 @@ jobs:
   icu4c-store-perf-libs:
     # Run performance tests only on the main branch of the ICU repository.
     if: github.repository == 'unicode-org/icu' && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-22.04  # Updated in BRS
+    runs-on: ubuntu-24.04  # Updated in BRS
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
@@ -130,7 +130,7 @@ jobs:
       contents: write
       deployments: write
 
-    runs-on: ubuntu-22.04  # Updated in BRS
+    runs-on: ubuntu-24.04  # Updated in BRS
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - name: Create directory for lib files
@@ -204,7 +204,7 @@ jobs:
       contents: write
       deployments: write
 
-    runs-on: ubuntu-22.04  # Updated in BRS
+    runs-on: ubuntu-24.04  # Updated in BRS
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - name: Create directory for lib files
@@ -269,7 +269,7 @@ jobs:
       contents: write
       deployments: write
 
-    runs-on: ubuntu-22.04  # Updated in BRS
+    runs-on: ubuntu-24.04  # Updated in BRS
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - name: Create directory for lib files
@@ -318,7 +318,7 @@ jobs:
       contents: write
       deployments: write
 
-    runs-on: ubuntu-22.04  # Updated in BRS
+    runs-on: ubuntu-24.04  # Updated in BRS
     steps:
       - name: Checkout and setup
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -370,7 +370,7 @@ jobs:
       contents: write
       deployments: write
 
-    runs-on: ubuntu-22.04  # Updated in BRS
+    runs-on: ubuntu-24.04  # Updated in BRS
     steps:
       - name: Checkout and setup
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -425,7 +425,7 @@ jobs:
       contents: write
       deployments: write
 
-    runs-on: ubuntu-22.04  # Updated in BRS
+    runs-on: ubuntu-24.04  # Updated in BRS
     steps:
       - name: Checkout and setup
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -485,7 +485,7 @@ jobs:
       contents: write
       deployments: write
 
-    runs-on: ubuntu-22.04  # Updated in BRS
+    runs-on: ubuntu-24.04  # Updated in BRS
     steps:
       - name: Checkout and setup
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -615,7 +615,7 @@ jobs:
       contents: write
       deployments: write
 
-    runs-on: ubuntu-22.04  # Updated in BRS
+    runs-on: ubuntu-24.04  # Updated in BRS
     steps:
       - name: Checkout and setup
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -689,7 +689,7 @@ jobs:
       contents: write
       deployments: write
 
-    runs-on: ubuntu-22.04  # Updated in BRS
+    runs-on: ubuntu-24.04  # Updated in BRS
     steps:
       - name: Checkout and setup
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -744,7 +744,7 @@ jobs:
     if: github.repository == 'unicode-org/icu' && github.ref == 'refs/heads/main'
     name: Copy perf data to remote repo for visualization
     needs: [icu4c-performance-tests, icu4c-performance-tests-with-files, icu4c-strsrchperf, icu4j-unicodesetperf, icu4j-ucharacterperf, icu4j-decimalformatperf, icu4j-normperf, icu4j-converterperf, icu4j-dateformatperf]
-    runs-on: ubuntu-22.04  # Updated in BRS
+    runs-on: ubuntu-24.04  # Updated in BRS
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
@@ -764,7 +764,7 @@ jobs:
 
   # Build ICU and tests sample on some windows configurations
   icu4c-windows-msvc-postmerge:
-    runs-on: windows-2022  # Updated in BRS
+    runs-on: windows-2025  # Updated in BRS
     timeout-minutes: 30
     strategy:
       matrix:
@@ -789,7 +789,7 @@ jobs:
         run: icu4c/source/samples/all/samplecheck.bat ${{ matrix.arch }} ${{ matrix.config }}
 
   icu4c-windows-cygwin-gcc:
-    runs-on: windows-2022  # Updated in BRS
+    runs-on: windows-2025  # Updated in BRS
     timeout-minutes: 50
     env:
       ICU_CI_CACHE: c:\icu-ci-cache
