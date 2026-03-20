@@ -1960,4 +1960,20 @@ public class CollationTest extends TestFmwk {
             errln("unexpected type of exception: " + e);
         }
     }
+
+    @Test
+    public void TestColItrInfiniteLoop22511() {
+        // ICU-22511 Locale vi and wo triggers infinite loop for getting
+        // collation key for these strings.
+        final String str1 = "\u0100\u032a\u01e0\ud804\udd00\u031c";
+        final String str2 = "\u0041\u0304\u032a\u01e0\ud804\udd00\u031c";
+
+        ULocale[] locales = ULocale.getAvailableLocales();
+        for (ULocale loc : locales) {
+            Collator coll = Collator.getInstance(loc);
+            coll.setStrength(Collator.IDENTICAL);
+            int cmp = coll.compare(str1, str2);
+            assertEquals("Locale " + loc.toString(), 0, cmp);
+        }
+    }
 }

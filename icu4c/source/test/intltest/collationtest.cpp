@@ -90,6 +90,7 @@ public:
     void TestCollatorPredicateTypes();
     void TestUCollatorPredicateTypes();
     void TestCollatorMap();
+    void TestColItrInfiniteLoop22511();
 
 private:
     void checkFCD(const char *name, CollationIterator &ci, CodePointIterator &cpi);
@@ -168,6 +169,7 @@ void CollationTest::runIndexedTest(int32_t index, UBool exec, const char *&name,
     TESTCASE_AUTO(TestCollatorPredicateTypes);
     TESTCASE_AUTO(TestUCollatorPredicateTypes);
     TESTCASE_AUTO(TestCollatorMap);
+    TESTCASE_AUTO(TestColItrInfiniteLoop22511);
     TESTCASE_AUTO_END;
 }
 
@@ -1912,6 +1914,7 @@ void CollationTest::TestHang22414() {
         errorCode.reset();
     }
 }
+
 void CollationTest::TestBuilderContextsOverflow() {
     IcuTestErrorCode errorCode(*this, "TestBuilderContextsOverflow");
     // ICU-20715: Bad memory access in what looks like a bogus CharsTrie after
@@ -2122,5 +2125,31 @@ void CollationTest::TestCollatorMap() {
     assertEquals("u16m.size()", 2, um.size());
     assertEquals(R"(u16m["a"])", 2, um[u"a"]);
 }
+
+void CollationTest::TestColItrInfiniteLoop22511() {
+    IcuTestErrorCode errorCode(*this, "TestColItrInfiniteLoop22511");
+    char16_t str1[] = {
+        0x0100, 0x032a, 0x01e0, 0xd804, 0xdd00, 0x031c
+    };
+    char16_t str2[] = {
+        0x0041, 0x0304, 0x032a, 0x01e0, 0xd804, 0xdd00, 0x031c
+    };
+    int32_t num_locales = 0;
+    const icu::Locale* locales = icu::Locale::getAvailableLocales(num_locales);
+    for (int32_t i = 0; i < num_locales; i++) {
+        errorCode.reset();
+        icu::Locale l = locales[i];
+        LocalPointer<Collator> coll(Collator::createInstance(l, errorCode));
+        errorCode.assertSuccess();
+        coll->setStrength(icu::Collator::IDENTICAL);
+        UCollationResult result = coll->compare(
+            str1, sizeof(str1)/sizeof(char16_t),
+            str2, sizeof(str2)/sizeof(char16_t),
+            errorCode);
+        errorCode.assertSuccess();
+        assertEquals(UnicodeString("Locale ") + l.getName(), UCOL_EQUAL, result);
+    }
+}
+
 
 #endif  // !UCONFIG_NO_COLLATION
