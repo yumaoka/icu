@@ -1968,15 +1968,20 @@ public class CollationTest extends TestFmwk {
         String[][] testCases = {
             {
                 "\u0100\u032a\u01e0\ud804\udd00\u031c",
-                "\u0041\u0304\u032a\u01e0\ud804\udd00\u031c"    // Equivalent to above, but U+0100 is decomposed to U+0041 U+0304
+                // Equivalent to above, but U+0100 is decomposed to U+0041 U+0304
+                "\u0041\u0304\u032a\u01e0\ud804\udd00\u031c"
             },
             {
-                "\u0100\u032a\u01e0\udd00\u031c",       // High surrogate 0xd804 is dropped
-                "\u0041\u0304\u032a\u01e0\udd00\u031c"  // Equivalent to above, but U+0100 is decomposed
+                // High surrogate 0xd804 is dropped
+                "\u0100\u032a\u01e0\udd00\u031c",
+                // Equivalent to above, but U+0100 is decomposed
+                "\u0041\u0304\u032a\u01e0\udd00\u031c"
             },
             {
-                "\u0100\u032a\u01e0\ud804\u031c",       // Low surrogate 0xdd00 is dropped
-                "\u0041\u0304\u032a\u01e0\ud804\u031c"  // Equivalent to above, but U+0100 is decomposed
+                // Low surrogate 0xdd00 is dropped
+                "\u0100\u032a\u01e0\ud804\u031c",
+                // Equivalent to above, but U+0100 is decomposed
+                "\u0041\u0304\u032a\u01e0\ud804\u031c"
             }
         };
 
