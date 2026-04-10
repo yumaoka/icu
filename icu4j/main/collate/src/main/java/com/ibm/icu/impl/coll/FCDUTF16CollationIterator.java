@@ -144,7 +144,7 @@ public final class FCDUTF16CollationIterator extends UTF16CollationIterator {
                             // To test possible trailing ccc, we need to check high surrogate
                             // (or previous character for broken surrogate pair).
                             if (pos - 1 != start) {
-                                normalizePrevSegment = CollationFCD.hasTccc(seq.charAt(pos - 2));
+                                normalizePrevSegment = Character.isHighSurrogate(seq.charAt(pos - 2)) && CollationFCD.hasTccc(seq.charAt(pos - 2));
                             }
                         } else {
                             normalizePrevSegment = CollationFCD.hasTccc(seq.charAt(pos - 1));

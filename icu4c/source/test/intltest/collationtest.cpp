@@ -2128,12 +2128,25 @@ void CollationTest::TestCollatorMap() {
 
 void CollationTest::TestColItrInfiniteLoop22511() {
     IcuTestErrorCode errorCode(*this, "TestColItrInfiniteLoop22511");
-    char16_t str1[] = {
-        0x0100, 0x032a, 0x01e0, 0xd804, 0xdd00, 0x031c
+    const char16_t* testCases[][2] = {
+        {
+            u"\u0100\u032a\u01e0\U00011100\u031c",
+            u"A\u0304\u032a\u01e0\U00011100\u031c"  // Equivalent to above, but U+0100 is decomposed to U+0041 U+0304.
+        },
+        {
+            u"\u0100\u032a\u01e0\xdd00\u031c",      // High surrogate 0xd804 is dropped
+            u"A\u0304\u032a\u01e0\xdd00\u031c"      // Equivalent to above, but U+0100 is decomposed
+        },
+        {
+            u"\u0100\u032a\u01e0\xd804\u031c",      // Low surrogate 0xdd00 is dropped
+            u"A\u0304\u032a\u01e0\xd804\u031c"      // Equivalent to above, but U+0100 is decomposed
+        },
+        {nullptr, nullptr}
     };
-    char16_t str2[] = {
-        0x0041, 0x0304, 0x032a, 0x01e0, 0xd804, 0xdd00, 0x031c
-    };
+
+    StringPiece sp1 = u8"\u0100\u032a\u01e0\U00011100\u031c";   // UTF-8 equivalent to str1a
+    StringPiece sp2 = u8"A\u0304\u032a\u01e0\U00011100\u031c";  // UTF-8 equivalent to str1b
+
     int32_t num_locales = 0;
     const icu::Locale* locales = icu::Locale::getAvailableLocales(num_locales);
     for (int32_t i = 0; i < num_locales; i++) {
@@ -2142,12 +2155,16 @@ void CollationTest::TestColItrInfiniteLoop22511() {
         LocalPointer<Collator> coll(Collator::createInstance(l, errorCode));
         errorCode.assertSuccess();
         coll->setStrength(icu::Collator::IDENTICAL);
-        UCollationResult result = coll->compare(
-            str1, sizeof(str1)/sizeof(char16_t),
-            str2, sizeof(str2)/sizeof(char16_t),
-            errorCode);
+        for (int j = 0; testCases[j][0] != nullptr; j++) {
+            UCollationResult result = coll->compare(testCases[j][0], -1, testCases[j][1], -1, errorCode);
+            errorCode.assertSuccess();
+            assertEquals(UnicodeString("Locale ") + l.getName() + "UTF16 case:" + j, UCOL_EQUAL, result);
+        }
+
+        // Also test the UTF-8 versions
+        UCollationResult result = coll->compareUTF8(sp1, sp2, errorCode);
         errorCode.assertSuccess();
-        assertEquals(UnicodeString("Locale ") + l.getName(), UCOL_EQUAL, result);
+        assertEquals(UnicodeString("Locale ") + l.getName() + " UTF-8", UCOL_EQUAL, result);
     }
 }
 

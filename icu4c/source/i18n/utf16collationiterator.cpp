@@ -303,7 +303,7 @@ FCDUTF16CollationIterator::previousCodePoint(UErrorCode &errorCode) {
                         // To test possible trailing ccc, we need to check high surrogate
                         // (or previous character for broken surrogate pair).
                         if (pos - 1 != start) {
-                            normalizePrevSegment = CollationFCD::hasTccc(*(pos - 2));
+                            normalizePrevSegment = U16_IS_LEAD(*(pos - 2)) && CollationFCD::hasTccc(*(pos - 2));
                         }
                     } else {
                         normalizePrevSegment = CollationFCD::hasTccc(*(pos - 1));

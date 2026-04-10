@@ -1965,15 +1965,30 @@ public class CollationTest extends TestFmwk {
     public void TestColItrInfiniteLoop22511() {
         // ICU-22511 Locale vi and wo triggers infinite loop for getting
         // collation key for these strings.
-        final String str1 = "\u0100\u032a\u01e0\ud804\udd00\u031c";
-        final String str2 = "\u0041\u0304\u032a\u01e0\ud804\udd00\u031c";
+        String[][] testCases = {
+            {
+                "\u0100\u032a\u01e0\ud804\udd00\u031c",
+                "\u0041\u0304\u032a\u01e0\ud804\udd00\u031c"    // Equivalent to above, but U+0100 is decomposed to U+0041 U+0304
+            },
+            {
+                "\u0100\u032a\u01e0\udd00\u031c",       // High surrogate 0xd804 is dropped
+                "\u0041\u0304\u032a\u01e0\udd00\u031c"  // Equivalent to above, but U+0100 is decomposed
+            },
+            {
+                "\u0100\u032a\u01e0\ud804\u031c",       // Low surrogate 0xdd00 is dropped
+                "\u0041\u0304\u032a\u01e0\ud804\u031c"  // Equivalent to above, but U+0100 is decomposed
+            }
+        };
 
         ULocale[] locales = ULocale.getAvailableLocales();
         for (ULocale loc : locales) {
             Collator coll = Collator.getInstance(loc);
             coll.setStrength(Collator.IDENTICAL);
-            int cmp = coll.compare(str1, str2);
-            assertEquals("Locale " + loc.toString(), 0, cmp);
+            for (int i = 0; i < testCases.length; i++) {
+                String[] testCase = testCases[i];
+                int cmp = coll.compare(testCase[0], testCase[1]);
+                assertEquals("Locale " + loc.toString() + " case:" + i, 0, cmp);
+            }
         }
     }
 }
