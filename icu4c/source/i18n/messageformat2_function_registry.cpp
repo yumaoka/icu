@@ -107,10 +107,9 @@ MFFunctionRegistry::Builder::~Builder() {
 }
 
 // Returns non-owned pointer. Returns pointer rather than reference because it can fail.
-// Returns non-const because Function is mutable.
-Function* MFFunctionRegistry::getFunction(const FunctionName& functionName) const {
+const Function* MFFunctionRegistry::getFunction(const FunctionName& functionName) const {
     U_ASSERT(functions != nullptr);
-    return static_cast<Function*>(functions->get(functionName));
+    return static_cast<const Function*>(functions->get(functionName));
 }
 
 UBool MFFunctionRegistry::getDefaultFormatterNameByType(const UnicodeString& type, FunctionName& name) const {
@@ -550,7 +549,7 @@ StandardFunctions::Number::create(StandardFunctions::NumberType numberType, UErr
 LocalPointer<FunctionValue> StandardFunctions::Number::call(const FunctionContext& context,
                                                             const FunctionValue& operand,
                                                             const FunctionOptions& options,
-                                                            UErrorCode& errorCode) {
+                                                            UErrorCode& errorCode) const {
     if (U_FAILURE(errorCode)) {
         return LocalPointer<FunctionValue>();
     }
@@ -1304,7 +1303,7 @@ LocalPointer<FunctionValue>
 StandardFunctions::DateTime::call(const FunctionContext& context,
                                   const FunctionValue& val,
                                   const FunctionOptions& opts,
-                                  UErrorCode& errorCode) {
+                                  UErrorCode& errorCode) const {
     if (U_FAILURE(errorCode)) {
         return LocalPointer<FunctionValue>();
     }
@@ -1807,7 +1806,7 @@ LocalPointer<FunctionValue>
 StandardFunctions::String::call(const FunctionContext& context,
                                 const FunctionValue& val,
                                 const FunctionOptions& opts,
-                                UErrorCode& errorCode) {
+                                UErrorCode& errorCode) const {
     if (U_FAILURE(errorCode)) {
         return LocalPointer<FunctionValue>();
     }
@@ -1892,7 +1891,7 @@ StandardFunctions::TestFunctionValue::~TestFunctionValue() {}
 LocalPointer<FunctionValue> StandardFunctions::TestFunction::call(const FunctionContext& context,
                                                                   const FunctionValue& operand,
                                                                   const FunctionOptions& options,
-                                                                  UErrorCode& errorCode) {
+                                                                  UErrorCode& errorCode) const {
     if (U_FAILURE(errorCode)) {
         return LocalPointer<FunctionValue>();
     }

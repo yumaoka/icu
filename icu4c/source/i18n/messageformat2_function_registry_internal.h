@@ -159,7 +159,7 @@ static constexpr std::u16string_view YEAR = u"year";
             LocalPointer<FunctionValue> call(const FunctionContext& context,
                                              const FunctionValue& operand,
                                              const FunctionOptions& options,
-                                             UErrorCode& errorCode) override;
+                                             UErrorCode& errorCode) const override;
             virtual ~DateTime();
 
         private:
@@ -194,7 +194,7 @@ static constexpr std::u16string_view YEAR = u"year";
             LocalPointer<FunctionValue> call(const FunctionContext& context,
                                 const FunctionValue& operand,
                                 const FunctionOptions& options,
-                                UErrorCode& errorCode) override;
+                                UErrorCode& errorCode) const override;
             virtual ~Number();
 
         private:
@@ -279,7 +279,7 @@ static constexpr std::u16string_view YEAR = u"year";
             LocalPointer<FunctionValue> call(const FunctionContext& context,
                                 const FunctionValue& val,
                                 const FunctionOptions& opts,
-                                UErrorCode& errorCode) override;
+                                UErrorCode& errorCode) const override;
             static String* string(UErrorCode& status);
             virtual ~String();
 
@@ -301,7 +301,7 @@ static constexpr std::u16string_view YEAR = u"year";
             LocalPointer<FunctionValue> call(const FunctionContext& context,
                                              const FunctionValue& operand,
                                              const FunctionOptions& options,
-                                             UErrorCode& errorCode) override;
+                                             UErrorCode& errorCode) const override;
             virtual ~TestFunction();
         private:
             friend class TestFunctionValue;

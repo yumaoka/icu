@@ -124,7 +124,7 @@ class PersonNameFunction : public Function {
     LocalPointer<FunctionValue> call(const FunctionContext&,
                                      const FunctionValue&,
                                      const FunctionOptions&,
-                                     UErrorCode&) override;
+                                     UErrorCode&) const override;
     virtual ~PersonNameFunction();
     PersonNameFunction() {}
 };
@@ -155,7 +155,7 @@ private:
 
 class GrammarCasesFunction : public Function {
     public:
-    LocalPointer<FunctionValue> call(const FunctionContext&, const FunctionValue&, const FunctionOptions&, UErrorCode&) override;
+    LocalPointer<FunctionValue> call(const FunctionContext&, const FunctionValue&, const FunctionOptions&, UErrorCode&) const override;
     static MFFunctionRegistry customRegistry(UErrorCode&);
 };
 
@@ -174,7 +174,7 @@ class GrammarCasesValue : public FunctionValue {
 
 class ListFunction : public Function {
     public:
-    LocalPointer<FunctionValue> call(const FunctionContext&, const FunctionValue&, const FunctionOptions&, UErrorCode&) override;
+    LocalPointer<FunctionValue> call(const FunctionContext&, const FunctionValue&, const FunctionOptions&, UErrorCode&) const override;
     static MFFunctionRegistry customRegistry(UErrorCode&);
     ListFunction() {}
     virtual ~ListFunction();
@@ -225,7 +225,7 @@ class AdjectiveValue : public FunctionValue {
 
 class ResourceManager : public Function {
     public:
-    LocalPointer<FunctionValue> call(const FunctionContext&, const FunctionValue&, const FunctionOptions&, UErrorCode&) override;
+    LocalPointer<FunctionValue> call(const FunctionContext&, const FunctionValue&, const FunctionOptions&, UErrorCode&) const override;
     static MFFunctionRegistry customRegistry(UErrorCode&);
     static Hashtable* properties(UErrorCode&);
     static UnicodeString propertiesAsString(const Hashtable&);
@@ -250,25 +250,34 @@ class ResourceManagerValue : public FunctionValue {
 
 class NounFunction : public Function {
     public:
-    LocalPointer<FunctionValue> call(const FunctionContext&, const FunctionValue&, const FunctionOptions&, UErrorCode&) override;
+    LocalPointer<FunctionValue> call(const FunctionContext&, const FunctionValue&, const FunctionOptions&, UErrorCode&) const override;
     NounFunction() { }
     virtual ~NounFunction();
 };
 
 class AdjectiveFunction : public Function {
     public:
-    LocalPointer<FunctionValue> call(const FunctionContext&, const FunctionValue&, const FunctionOptions&, UErrorCode&) override;
+    LocalPointer<FunctionValue> call(const FunctionContext&, const FunctionValue&, const FunctionOptions&, UErrorCode&) const override;
     AdjectiveFunction() { }
     virtual ~AdjectiveFunction();
 };
 
+class Counter {
+    public:
+    void increment() { value++; }
+    int32_t get() const { return value; }
+    Counter() {}
+    private:
+    int32_t value = 0;
+};
+  
 class CounterFunction : public Function {
     public:
-    LocalPointer<FunctionValue> call(const FunctionContext&, const FunctionValue&, const FunctionOptions&, UErrorCode&) override;
-    CounterFunction() { }
+    LocalPointer<FunctionValue> call(const FunctionContext&, const FunctionValue&, const FunctionOptions&, UErrorCode&) const override;
+    CounterFunction(UErrorCode& errorCode);
     virtual ~CounterFunction();
     private:
-    int32_t count = 0; // Number of times the function was called
+    LocalPointer<Counter> count;  // Number of times the function was called
 };
 
 class CounterFunctionValue : public FunctionValue {
@@ -278,9 +287,9 @@ class CounterFunctionValue : public FunctionValue {
     virtual ~CounterFunctionValue();
     private:
     friend class CounterFunction;
-    int32_t& count;
+    Counter* count;
 
-    CounterFunctionValue(int32_t&,
+    CounterFunctionValue(Counter*,
                          const FunctionValue&,
                          const FunctionOptions&,
                          UErrorCode&);
