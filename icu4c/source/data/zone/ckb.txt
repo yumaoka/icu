@@ -4,7 +4,6 @@
 ckb{
     zoneStrings{
         gmtFormat{"گرینیچ {0}"}
-        gmtZeroFormat{"گرینیچ"}
         regionFormat{"بەکاتی {0}"}
         regionFormatDaylight{"کاتی {0} هاوینە"}
         regionFormatStandard{"کاتی {0} فەرمی"}

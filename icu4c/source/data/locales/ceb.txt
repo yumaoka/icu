@@ -236,7 +236,9 @@ ceb{
                 Gy{"y G"}
                 GyMMM{"MMM y G"}
                 GyMMMEd{"E, MMM d, y G"}
+                GyMMMEddd{"E, MMM ddd, y G"}
                 GyMMMd{"MMM d, y G"}
+                GyMMMddd{"MMM ddd, y G"}
                 GyMd{"M/d/y GGGGG"}
                 MEd{"E, M/d"}
                 MMMEd{"E, MMM d"}
@@ -249,9 +251,17 @@ ceb{
                 yyyyMMMEd{"E, MMM d, y G"}
                 yyyyMMMM{"MMMM y G"}
                 yyyyMMMd{"MMM d, y G"}
+                yyyyMMMddd{"MMM ddd, y G"}
                 yyyyMd{"M/d/y GGGGG"}
                 yyyyQQQ{"QQQ y G"}
                 yyyyQQQQ{"QQQQ y G"}
+            }
+            dayOfMonthNames{
+                format{
+                    abbreviated{
+                        other{"ika-{0}"}
+                    }
+                }
             }
             intervalFormats{
                 Gy{
@@ -259,15 +269,15 @@ ceb{
                     y{"y – y G"}
                 }
                 GyM{
-                    G{"M/y GGGGG – M/y GGGGG"}
-                    M{"M/y – M/y GGGGG"}
-                    y{"M/y – M/y GGGGG"}
+                    G{"M/y G – M/y G"}
+                    M{"M/y – M/y G"}
+                    y{"M/y – M/y G"}
                 }
                 GyMEd{
-                    G{"E, M/d/y GGGGG – E, M/d/y GGGGG"}
-                    M{"E, M/d/y – E, M/d/y GGGGG"}
-                    d{"E, M/d/y – E, M/d/y GGGGG"}
-                    y{"E, M/d/y – E, M/d/y GGGGG"}
+                    G{"E, M/d/y G – E, M/d/y G"}
+                    M{"E, M/d/y – E, M/d/y G"}
+                    d{"E, M/d/y – E, M/d/y G"}
+                    y{"E, M/d/y – E, M/d/y G"}
                 }
                 GyMMM{
                     G{"MMM y G – MMM y G"}
@@ -288,8 +298,8 @@ ceb{
                 }
                 GyMd{
                     G{"M/d/y GGGGG – M/d/y GGGGG"}
-                    M{"M/d/y – M/d/y GGGGG"}
-                    d{"M/d/y – M/d/y GGGGG"}
+                    M{"M/d/y – M/d/y G"}
+                    d{"M/d/y – M/d/y G"}
                     y{"M/d/y – M/d/y GGGGG"}
                 }
                 M{
@@ -306,6 +316,9 @@ ceb{
                     M{"E, MMM d – E, MMM d"}
                     d{"E, MMM d – E, MMM d"}
                 }
+                MMMMd{
+                    d{"MMMM d – d"}
+                }
                 MMMd{
                     d{"MMM d – d"}
                 }
@@ -320,12 +333,12 @@ ceb{
                     y{"y – y G"}
                 }
                 yM{
-                    M{"M/y – M/y GGGGG"}
+                    M{"M/y – M/y G"}
                     y{"M/y – M/y GGGGG"}
                 }
                 yMEd{
-                    M{"E, M/d/y – E, M/d/y GGGGG"}
-                    d{"E, M/d/y – E, M/d/y GGGGG"}
+                    M{"E, M/d/y – E, M/d/y G"}
+                    d{"E, M/d/y – E, M/d/y G"}
                     y{"E, M/d/y – E, M/d/y GGGGG"}
                 }
                 yMMM{
@@ -347,8 +360,8 @@ ceb{
                     y{"MMM d, y – MMM d, y G"}
                 }
                 yMd{
-                    M{"M/d/y – M/d/y GGGGG"}
-                    d{"M/d/y – M/d/y GGGGG"}
+                    M{"M/d/y – M/d/y G"}
+                    d{"M/d/y – M/d/y G"}
                     y{"M/d/y – M/d/y GGGGG"}
                 }
             }
@@ -389,17 +402,33 @@ ceb{
                 "yMMMd",
                 "yyMd",
             }
+            appendItems{
+                Day-Of-Week{"{1}, {0}"}
+                Era{"{0} {1}"}
+                Time-Day-Of-Week{"{1}, {0}"}
+            }
             availableFormats{
                 Ed{"d E"}
                 Ehm{"E h:mm a"}
                 Ehms{"E h:mm:ss a"}
                 Gy{"y G"}
+                GyM{"M/y G"}
                 GyMMM{"MMM y G"}
                 GyMMMEd{"E, MMM d, y G"}
+                GyMMMEddd{"E, MMM ddd, y G"}
+                GyMMMM{"MMMM y G"}
+                GyMMMMEd{"E, MMMM d, y G"}
+                GyMMMMEddd{"E, MMMM ddd, y G"}
+                GyMMMMd{"MMMM d, y G"}
+                GyMMMMddd{"MMMM ddd, y G"}
                 GyMMMd{"MMM d, y G"}
+                GyMMMddd{"MMM ddd, y G"}
                 GyMd{"M/d/y G"}
                 MEd{"E, M/d"}
                 MMMEd{"E, MMM d"}
+                MMMEddd{"E, MMM ddd"}
+                MMMMEd{"E, MMMM d"}
+                MMMMEddd{"E, MMMM ddd"}
                 MMMMW{
                     one{"'semana' W 'sa' MMMM"}
                     other{"'semana' W 'sa' MMMM"}
@@ -413,8 +442,12 @@ ceb{
                 yMEd{"E, M/d/y"}
                 yMMM{"MMM y"}
                 yMMMEd{"E, MMM d, y"}
+                yMMMEddd{"E, MMM ddd, y"}
                 yMMMM{"MMMM y"}
+                yMMMMEd{"E, MMMM d, y"}
+                yMMMMd{"MMMM d, y"}
                 yMMMd{"MMM d, y"}
+                yMMMddd{"MMM ddd, y"}
                 yMd{"M/d/y"}
                 yQQQ{"QQQ y"}
                 yQQQQ{"QQQQ y"}
@@ -453,6 +486,13 @@ ceb{
                         "H",
                         "B",
                         "S",
+                    }
+                }
+            }
+            dayOfMonthNames{
+                format{
+                    abbreviated{
+                        other{"ika-{0}"}
                     }
                 }
             }
@@ -540,6 +580,9 @@ ceb{
                 MMMEd{
                     M{"E, MMM d – E, MMM d"}
                     d{"E, MMM d – E, MMM d"}
+                }
+                MMMMd{
+                    d{"MMMM d – d"}
                 }
                 MMMd{
                     d{"MMM d – d"}
@@ -647,20 +690,6 @@ ceb{
                         "N",
                         "D",
                     }
-                    wide{
-                        "Enero",
-                        "Pebrero",
-                        "Marso",
-                        "Abril",
-                        "Mayo",
-                        "Hunyo",
-                        "Hulyo",
-                        "Agosto",
-                        "Septiyembre",
-                        "Oktubre",
-                        "Nobyembre",
-                        "Disyembre",
-                    }
                 }
             }
             quarters{
@@ -671,14 +700,6 @@ ceb{
                         "Q3",
                         "Q4",
                     }
-                    wide{
-                        "ika-1 nga quarter",
-                        "ika-2 nga quarter",
-                        "ika-3 nga quarter",
-                        "ika-4 nga quarter",
-                    }
-                }
-                stand-alone{
                     wide{
                         "ika-1 nga quarter",
                         "ika-2 nga quarter",
@@ -750,9 +771,6 @@ ceb{
         }
         week-narrow{
             relativePeriod{"sa seman sa {0}"}
-        }
-        week-short{
-            relativePeriod{"sa semana sa {0}"}
         }
         weekday{
             dn{"adlaw sa semana"}

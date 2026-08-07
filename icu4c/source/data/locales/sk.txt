@@ -341,8 +341,10 @@ sk{
                 Gy{"y G"}
                 GyMMM{"LLL y G"}
                 GyMMMEd{"E d. M. y G"}
+                GyMMMEddd{"E, d. M. y G"}
                 GyMMMMd{"d. M. y G"}
                 GyMMMd{"d. M. y G"}
+                GyMMMddd{"d. M. y G"}
                 H{"H"}
                 Hm{"H:mm"}
                 Hms{"H:mm:ss"}
@@ -350,9 +352,12 @@ sk{
                 M{"M."}
                 MEd{"E d. M."}
                 MMMEd{"E d. M."}
+                MMMEddd{"E dd. MM."}
                 MMMMEd{"E d. MMMM"}
                 MMMMd{"d. MMMM"}
+                MMMMddd{"dd. MM."}
                 MMMd{"d. M."}
+                MMMddd{"dd. MM."}
                 Md{"d. M."}
                 d{"d."}
                 hm{"h:mm a"}
@@ -365,12 +370,21 @@ sk{
                 yyyyMEd{"E d. M. y GGGGG"}
                 yyyyMMM{"LLL y G"}
                 yyyyMMMEd{"E d. M. y G"}
+                yyyyMMMEddd{"E dd. MM. y G"}
                 yyyyMMMM{"LLLL y G"}
                 yyyyMMMMd{"d. MMMM y G"}
                 yyyyMMMd{"d. M. y G"}
+                yyyyMMMddd{"dd. MM. y G"}
                 yyyyMd{"d. M. y GGGGG"}
                 yyyyQQQ{"QQQ y G"}
                 yyyyQQQQ{"QQQQ y G"}
+            }
+            dayOfMonthNames{
+                format{
+                    abbreviated{
+                        other{"{0}."}
+                    }
+                }
             }
             intervalFormats{
                 Bh{
@@ -448,6 +462,10 @@ sk{
                 }
                 MMMM{
                     M{"LLLL – LLLL"}
+                }
+                MMMMd{
+                    M{"d. MM. – d. MM."}
+                    d{"d. – d. MM."}
                 }
                 MMMd{
                     M{"d. M. – d. M."}
@@ -547,6 +565,11 @@ sk{
                 "yMd",
                 "yMd",
             }
+            appendItems{
+                Day-Of-Week{"{1}, {0}"}
+                Era{"{0} {1}"}
+                Time-Day-Of-Week{"{1}, {0}"}
+            }
             availableFormats{
                 Ed{"E d."}
                 Ehm{"E h:mm a"}
@@ -554,8 +577,14 @@ sk{
                 Gy{"y G"}
                 GyMMM{"LLLL y G"}
                 GyMMMEd{"E d. M. y G"}
+                GyMMMEddd{"E, ddd MMM y G"}
+                GyMMMM{"MMM y G"}
+                GyMMMMEd{"E, d. MMMM y G"}
+                GyMMMMEddd{"E, ddd MMMM y G"}
                 GyMMMMd{"d. M. y G"}
+                GyMMMMddd{"ddd MMMM y G"}
                 GyMMMd{"d. M. y G"}
+                GyMMMddd{"ddd MMM y G"}
                 GyMd{"d. M. y GGGGG"}
                 H{"H"}
                 Hm{"H:mm"}
@@ -566,7 +595,9 @@ sk{
                 M{"L."}
                 MEd{"E d. M."}
                 MMMEd{"E d. M."}
+                MMMEddd{"E, ddd MMM"}
                 MMMMEd{"E d. MMMM"}
+                MMMMEddd{"E, ddd MMMM"}
                 MMMMW{
                     few{"W. 'týždeň' MMMM"}
                     many{"W. 'týždeň' MMMM"}
@@ -574,7 +605,9 @@ sk{
                     other{"W. 'týždeň' MMMM"}
                 }
                 MMMMd{"d. MMMM"}
+                MMMMddd{"ddd MMMM"}
                 MMMd{"d. M."}
+                MMMddd{"ddd MMM"}
                 Md{"d. M."}
                 d{"d."}
                 hm{"h:mm a"}
@@ -586,9 +619,14 @@ sk{
                 yMEd{"E d. M. y"}
                 yMMM{"M/y"}
                 yMMMEd{"E d. M. y"}
+                yMMMEddd{"E, ddd MMM y"}
                 yMMMM{"LLLL y"}
+                yMMMMEd{"E, ddd MMMM y"}
+                yMMMMEddd{"ddd MMMM y, E"}
                 yMMMMd{"d. MMMM y"}
+                yMMMMddd{"ddd MMMM y"}
                 yMMMd{"d. M. y"}
+                yMMMddd{"ddd MMM y"}
                 yMd{"d. M. y"}
                 yQQQ{"QQQ y"}
                 yQQQQ{"QQQQ y"}
@@ -629,6 +667,13 @@ sk{
                         "š",
                         "p",
                         "s",
+                    }
+                }
+            }
+            dayOfMonthNames{
+                format{
+                    abbreviated{
+                        other{"{0}."}
                     }
                 }
             }
@@ -784,6 +829,10 @@ sk{
                 }
                 MMMM{
                     M{"LLLL – LLLL"}
+                }
+                MMMMd{
+                    M{"d. MMMM – d. MMMM"}
+                    d{"d. – d. MMMM"}
                 }
                 MMMd{
                     M{"d. M. – d. M."}
@@ -1032,7 +1081,6 @@ sk{
             eras{
                 abbreviated{
                     0{"pred ROC"}
-                    1{"ROC"}
                 }
             }
         }

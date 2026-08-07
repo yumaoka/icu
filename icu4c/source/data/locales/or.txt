@@ -235,7 +235,11 @@ or{
         }
         minimalPairs{
             ordinal{
+                few{"{0}ୟ ଡାହାଣପଟ ରାସ୍ତାରେ ଯାଆନ୍ତୁ।"}
+                many{"{0}ତମ ଡାହାଣପଟ ରାସ୍ତାରେ ଯାଆନ୍ତୁ।"}
+                one{"{0}ମ ଡାହାଣପଟ ରାସ୍ତାରେ ଯାଆନ୍ତୁ।"}
                 other{"ଡାହାଣରେ ଥିବା {0} ନିଅନ୍ତୁ"}
+                two{"{0} ଡାହାଣପଟ ରାସ୍ତାରେ ଯାଆନ୍ତୁ।"}
             }
             plural{
                 one{"{0} ଦିନ"}
@@ -283,9 +287,14 @@ or{
                 GyMEd{"G dd-MM-y, E"}
                 GyMMM{"MMM y G"}
                 GyMMMEd{"E, MMM d, y G"}
+                GyMMMEddd{"E, MMM d, y G"}
                 GyMMMd{"MMM d, y G"}
+                GyMMMddd{"MMM d, y G"}
                 MEd{"E, M/d"}
                 MMMEd{"E, MMM d"}
+                MMMEddd{"MMM d, E"}
+                MMMMddd{"MMMM d"}
+                MMMddd{"MMM d"}
                 MMdd{"dd-MM"}
                 Md{"M/d"}
                 y{"y G"}
@@ -297,11 +306,24 @@ or{
                 yyyyMEd{"E, M/d/y GGGGG"}
                 yyyyMMM{"MMM y G"}
                 yyyyMMMEd{"E, MMM d, y G"}
+                yyyyMMMEddd{"E, MMM d, y G"}
                 yyyyMMMM{"MMMM y G"}
                 yyyyMMMd{"MMM d, y G"}
+                yyyyMMMddd{"MMM d, y G"}
                 yyyyMd{"M/d/y GGGGG"}
                 yyyyQQQ{"QQQ y G"}
                 yyyyQQQQ{"QQQQ y G"}
+            }
+            dayOfMonthNames{
+                format{
+                    abbreviated{
+                        few{"{0}ତମ"}
+                        many{"{0}ତମ"}
+                        one{"{0}ମ"}
+                        other{"{0}ତମ"}
+                        two{"{0}ୟ"}
+                    }
+                }
             }
             intervalFormats{
                 GyM{
@@ -428,6 +450,10 @@ or{
                 "yMMMd",
                 "yyMd",
             }
+            appendItems{
+                Day-Of-Week{"{0} {1}"}
+                Era{"{0} {1}"}
+            }
             availableFormats{
                 Ed{"d E"}
                 Gy{"y G"}
@@ -449,8 +475,14 @@ or{
                 yMM{"MM-y"}
                 yMMM{"MMM y"}
                 yMMMEd{"E, MMM d, y"}
+                yMMMEddd{"d MMM y, E"}
                 yMMMM{"MMMM y"}
+                yMMMMEd{"E, d MMMM y"}
+                yMMMMEddd{"d MMMM y, E"}
+                yMMMMd{"d MMMM y"}
+                yMMMMddd{"d MMMM y"}
                 yMMMd{"MMM d, y"}
+                yMMMddd{"MMM ddd, y"}
                 yMd{"M/d/y"}
                 yQQQ{"QQQ y"}
                 yQQQQ{"QQQQ y"}
@@ -492,15 +524,14 @@ or{
                     }
                 }
             }
-            dayPeriod{
-                stand-alone{
-                    narrow{
-                        am{"AM"}
-                        pm{"PM"}
-                    }
-                    wide{
-                        am{"AM"}
-                        pm{"PM"}
+            dayOfMonthNames{
+                format{
+                    abbreviated{
+                        few{"{0}ତମ"}
+                        many{"{0}ତମ"}
+                        one{"{0}ମ"}
+                        other{"{0}ତମ"}
+                        two{"{0}ୟ"}
                     }
                 }
             }
@@ -657,14 +688,6 @@ or{
                         "2ୟ ତ୍ରୟମାସ",
                         "3ୟ ତ୍ରୟମାସ",
                         "4ର୍ଥ ତ୍ରୟମାସ",
-                    }
-                }
-                stand-alone{
-                    abbreviated{
-                        "Q1",
-                        "Q2",
-                        "Q3",
-                        "Q4",
                     }
                 }
             }

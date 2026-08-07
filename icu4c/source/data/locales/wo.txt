@@ -102,6 +102,9 @@ wo{
             ordinal{
                 other{"Jël {0} ci ndeyjoor."}
             }
+            plural{
+                other{"{0} fan"}
+            }
         }
     }
     calendar{
@@ -159,6 +162,13 @@ wo{
                 yyyyMd{"d/M/y GGGGG"}
                 yyyyQQQ{"QQQ y G"}
                 yyyyQQQQ{"QQQQ y G"}
+            }
+            dayOfMonthNames{
+                format{
+                    abbreviated{
+                        other{"{0}th"}
+                    }
+                }
             }
         }
         gregorian{
@@ -255,6 +265,13 @@ wo{
                         "Alx",
                         "Àjj",
                         "Ase",
+                    }
+                }
+            }
+            dayOfMonthNames{
+                format{
+                    abbreviated{
+                        other{"{0}th"}
                     }
                 }
             }

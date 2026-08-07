@@ -61,9 +61,6 @@ bho{
                     }
                 }
             }
-            intervalFormats{
-                fallback{"{0} – {1}"}
-            }
             monthNames{
                 format{
                     wide{

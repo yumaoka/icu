@@ -211,7 +211,19 @@ sd{
     calendar{
         generic{
             availableFormats{
+                GyMMMEddd{"E، ddd MMM، y G"}
+                GyMMMddd{"ddd MMM، y G"}
                 GyMd{"M/d/y GGGGG"}
+                MMMEddd{"ddd MMM، E"}
+                MMMMddd{"ddd MMMM"}
+                MMMddd{"ddd MMM"}
+            }
+            dayOfMonthNames{
+                format{
+                    abbreviated{
+                        other{"{0}ين"}
+                    }
+                }
             }
             intervalFormats{
                 Bh{
@@ -230,10 +242,6 @@ sd{
                 "منجهند، شام",
             }
             AmPmMarkersAbbr{
-                "صبح",
-                "شام",
-            }
-            AmPmMarkersNarrow{
                 "صبح",
                 "شام",
             }
@@ -262,15 +270,36 @@ sd{
                 "yMMMd",
                 "yMMdd",
             }
+            appendItems{
+                Day-Of-Week{"{1}، {0}"}
+                Time-Day-Of-Week{"{1}، {0}"}
+            }
             availableFormats{
                 EBh{"E B h"}
                 GyM{"MM-y G"}
                 GyMEd{"E, dd-MM-y G"}
+                GyMMMEddd{"E، ddd MMM، yG"}
+                GyMMMM{"MMMM yG"}
+                GyMMMMEd{"E، d MMMM yG"}
+                GyMMMMEddd{"E، ddd MMMM yG"}
+                GyMMMMd{"d MMMM yG"}
+                GyMMMMddd{"ddd MMMM yG"}
+                GyMMMddd{"ddd MMM، yG"}
                 GyMd{"M/d/y G"}
+                MMMEddd{"E، ddd MMM"}
+                MMMMEd{"E، d MMMM"}
+                MMMMEddd{"E، ddd MMMM"}
                 MMMMW{
                     one{"ھفتو W جو MMMM"}
                     other{"ھفتو W جو MMMM"}
                 }
+                MMMMddd{"ddd MMM"}
+                MMMddd{"ddd MMM"}
+                yMMMEddd{"E، ddd MMM y"}
+                yMMMMEd{"E، d MMMM y"}
+                yMMMMEddd{"y MMMM ddd، E"}
+                yMMMMd{"d MMMM y"}
+                yMMMddd{"ddd MMM y"}
                 yw{
                     one{"ھفتو w جو Y"}
                     other{"ھفتو w جو Y"}
@@ -278,15 +307,6 @@ sd{
             }
             dayNames{
                 format{
-                    narrow{
-                        "آچر",
-                        "سو",
-                        "اڱ",
-                        "اربع",
-                        "خم",
-                        "جم",
-                        "ڇن",
-                    }
                     wide{
                         "آچر",
                         "سومر",
@@ -309,16 +329,15 @@ sd{
                     }
                 }
             }
+            dayOfMonthNames{
+                format{
+                    abbreviated{
+                        other{"{0} ين"}
+                    }
+                }
+            }
             dayPeriod{
                 stand-alone{
-                    abbreviated{
-                        am{"صبح"}
-                        pm{"شام"}
-                    }
-                    narrow{
-                        am{"صبح"}
-                        pm{"شام"}
-                    }
                     wide{
                         am{"صبح، منجهند"}
                         pm{"منجهند، شام"}
@@ -436,14 +455,6 @@ sd{
                         "چوٿين ٽي ماهي",
                     }
                 }
-                stand-alone{
-                    abbreviated{
-                        "پهرين ٽماهي",
-                        "ٻين ٽماهي",
-                        "ٽين ٽماهي",
-                        "چوٿين ٽماهي",
-                    }
-                }
             }
         }
         indian{
@@ -472,6 +483,15 @@ sd{
             }
         }
         islamic{
+            availableFormats{
+                GyMMMEddd{"G y MMM ddd، E"}
+                MEd{"E، MM-dd"}
+                MMMEddd{"MMM ddd، E"}
+                MMMMddd{"ddd MMMM"}
+                MMMd{"d MMM"}
+                MMMddd{"ddd MMM"}
+                yyyyMMMddd{"ddd MMM، y G"}
+            }
             monthNames{
                 format{
                     abbreviated{
@@ -707,14 +727,6 @@ sd{
                 }
             }
         }
-        mon-narrow{
-            relativeTime{
-                future{
-                    one{"{0} سومر ۾"}
-                    other{"{0} سومرن ۾"}
-                }
-            }
-        }
         month{
             dn{"مهينو"}
             relative{
@@ -751,14 +763,6 @@ sd{
                 }
             }
         }
-        quarter-narrow{
-            relativeTime{
-                future{
-                    one{"{0} ٽماهي ۾"}
-                    other{"{0} ٽماهين ۾"}
-                }
-            }
-        }
         sat{
             relative{
                 "-1"{"پوئين ڇنڇر"}
@@ -792,22 +796,6 @@ sd{
                 }
             }
         }
-        second-narrow{
-            relativeTime{
-                future{
-                    one{"{0} سيڪنڊ ۾"}
-                    other{"{0} سيڪنڊن ۾"}
-                }
-            }
-        }
-        second-short{
-            relativeTime{
-                future{
-                    one{"{0} سيڪنڊ ۾"}
-                    other{"{0} سيڪنڊن ۾"}
-                }
-            }
-        }
         sun{
             relative{
                 "-1"{"پوئين آچر"}
@@ -822,14 +810,6 @@ sd{
                 past{
                     one{"{0} آچر پهرين"}
                     other{"{0} آچر پهرين"}
-                }
-            }
-        }
-        sun-narrow{
-            relativeTime{
-                future{
-                    one{"{0} آچر ۾"}
-                    other{"{0} آچرن ۾"}
                 }
             }
         }
@@ -908,26 +888,6 @@ sd{
                 }
             }
         }
-        wed-narrow{
-            relativeTime{
-                future{
-                    one{"{0} اربع ۾"}
-                    other{"{0} اربعائن ۾"}
-                }
-            }
-        }
-        wed-short{
-            relativeTime{
-                future{
-                    one{"{0} اربع ۾"}
-                    other{"{0} اربعائن ۾"}
-                }
-                past{
-                    one{"{0} اربع پهرين"}
-                    other{"{0} اربعائون پهرين"}
-                }
-            }
-        }
         week{
             dn{"هفتو"}
             relative{
@@ -952,14 +912,6 @@ sd{
                 future{
                     one{"{0}هفتي ۾"}
                     other{"{0}هفتن ۾"}
-                }
-            }
-        }
-        week-short{
-            relativeTime{
-                future{
-                    one{"{0} هفتي ۾"}
-                    other{"{0} هفتن ۾"}
                 }
             }
         }
@@ -1013,12 +965,6 @@ sd{
                 "0"{"هن سال"}
                 "1"{"اڳين سال"}
             }
-            relativeTime{
-                future{
-                    one{"{0} سال ۾"}
-                    other{"{0} سالن ۾"}
-                }
-            }
         }
         zone{
             dn{"ٽائيم زون"}
@@ -1067,6 +1013,9 @@ sd{
                 "yue",
                 "zh",
             }
+        }
+        parameterDefault{
+            formality{"informal"}
         }
     }
 }

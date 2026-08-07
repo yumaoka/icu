@@ -302,11 +302,11 @@ cy{
         }
         minimalPairs{
             ordinal{
-                few{"{0}ydd ci"}
+                few{"Cymerwch y {0}ydd troad ar y dde."}
                 many{"{0}ed ci"}
-                one{"ci {0}af"}
-                other{"ci rhif {0}"}
-                two{"{0}il gi"}
+                one{"Cymerwch y troad {0}af ar y dde."}
+                other{"Cymerwch droad rhif {0} ar y dde."}
+                two{"Cymerwch yr {0}il droad ar y dde"}
                 zero{"{0}fed ci"}
             }
             plural{
@@ -354,27 +354,85 @@ cy{
                 Ehms{"E h:mm:ss a"}
                 Gy{"y G"}
                 GyM{"M/y G"}
-                GyMEd{"E, M/d/y G"}
+                GyMEd{"E, d/M/y G"}
                 GyMMM{"MMM y G"}
                 GyMMMEd{"E, d MMM y G"}
+                GyMMMEddd{"E, ddd MMM y G"}
                 GyMMMd{"d MMM y G"}
-                GyMd{"M/d/y GGGGG"}
+                GyMMMddd{"ddd MMM y G"}
+                GyMd{"d/M/y GGGGG"}
                 MEd{"E, d/M"}
                 MMMEd{"E, d MMM"}
+                MMMEddd{"ddd MMM E"}
                 MMMMd{"d MMMM"}
+                MMMMddd{"ddd MMMM"}
                 MMMd{"d MMM"}
+                MMMddd{"ddd MMM"}
                 Md{"d/M"}
                 hm{"h:mm a"}
                 hms{"h:mm:ss a"}
                 y{"y G"}
                 yyyy{"y G"}
+                yyyyM{"M/y G"}
+                yyyyMEd{"E, d/M/y G"}
                 yyyyMMM{"MMM y G"}
                 yyyyMMMEd{"E, d MMM y G"}
+                yyyyMMMEddd{"E, ddd MMM y G"}
+                yyyyMMMM{"MMMM y G"}
                 yyyyMMMd{"d MMM y G"}
+                yyyyMMMddd{"ddd MMM y G"}
+                yyyyMd{"d/M/y G"}
                 yyyyQQQ{"QQQ y G"}
                 yyyyQQQQ{"QQQQ y G"}
             }
+            dayOfMonthNames{
+                format{
+                    abbreviated{
+                        few{"{0}ydd"}
+                        many{"{0}ed"}
+                        one{"{0}af"}
+                        other{"{0}"}
+                        two{"{0}il"}
+                        zero{"{0}fed"}
+                    }
+                }
+            }
             intervalFormats{
+                Gy{
+                    G{"y G – y G"}
+                    y{"y – y G"}
+                }
+                GyM{
+                    G{"M/y G – M/y G"}
+                    M{"M/y – M/y G"}
+                    y{"M/y – M/y G"}
+                }
+                GyMEd{
+                    G{"E, d/M/y G – E, d/M/y G"}
+                    M{"E, d/M/y – E, d/M/y G"}
+                    d{"E, d/M/y – E, d/M/y G"}
+                    y{"E, d/M/y – E, d/M/y G"}
+                }
+                GyMMM{
+                    G{"MMM y G – MMM y G"}
+                    M{"MMM – MMM y G"}
+                    y{"MMM y – MMM y G"}
+                }
+                GyMMMEd{
+                    d{"E, d MMM – E, d MMM y G"}
+                }
+                GyMMMd{
+                    G{"d MMM y G – d MMM y G"}
+                    M{"d MMM – d MMM y G"}
+                    d{"MMM d – d, y G"}
+                    y{"d MMM y – d MMM y G"}
+                }
+                GyMd{
+                    G{"d/M/y G – d/M/y G"}
+                    M{"d/M/y – d/M/y G"}
+                    d{"d/M/y – d/M/y G"}
+                    y{"d/M/y – d/M/y G"}
+                }
                 H{
                     H{"HH – HH"}
                 }
@@ -405,6 +463,10 @@ cy{
                 }
                 MMMM{
                     M{"LLLL–LLLL"}
+                }
+                MMMMd{
+                    M{"d MMMM – d MMMM"}
+                    d{"d – d MMMM"}
                 }
                 MMMd{
                     M{"d MMM – d MMM"}
@@ -439,13 +501,13 @@ cy{
                     y{"y–y G"}
                 }
                 yM{
-                    M{"M/y – M/y GGGGG"}
-                    y{"M/y – M/y GGGGG"}
+                    M{"M/y – M/y G"}
+                    y{"M/y – M/y G"}
                 }
                 yMEd{
-                    M{"E, d/M/y – E, d/M/y GGGGG"}
-                    d{"E, d/M/y – E, d/M/y GGGGG"}
-                    y{"E, d/M/y – E, d/M/y GGGGG"}
+                    M{"E, d/M/y – E, d/M/y G"}
+                    d{"E, d/M/y – E, d/M/y G"}
+                    y{"E, d/M/y – E, d/M/y G"}
                 }
                 yMMM{
                     M{"MMM – MMM y G"}
@@ -466,9 +528,9 @@ cy{
                     y{"d MMM y – d MMM y G"}
                 }
                 yMd{
-                    M{"d/M/y – d/M/y GGGGG"}
-                    d{"d/M/y – d/M/y GGGGG"}
-                    y{"d/M/y – d/M/y GGGGG"}
+                    M{"d/M/y – d/M/y G"}
+                    d{"d/M/y – d/M/y G"}
+                    y{"d/M/y – d/M/y G"}
                 }
             }
         }
@@ -518,6 +580,11 @@ cy{
                 "yMMMd",
                 "yyMMdd",
             }
+            appendItems{
+                Day-Of-Week{"{1}, {0}"}
+                Era{"{0} {1}"}
+                Time-Day-Of-Week{"{1}, {0}"}
+            }
             availableFormats{
                 EHm{"E, HH:mm"}
                 EHms{"E, HH:mm:ss"}
@@ -525,13 +592,23 @@ cy{
                 Ehms{"E, h:mm:ss a"}
                 Gy{"y G"}
                 GyM{"M/y G"}
-                GyMEd{"E, M/d/y G"}
+                GyMEd{"E, d/M/y G"}
                 GyMMM{"MMM y G"}
                 GyMMMEd{"E, d MMM y G"}
+                GyMMMEddd{"E, ddd MMM y G"}
+                GyMMMM{"MMMM y G"}
+                GyMMMMEd{"E, d MMMM, y G"}
+                GyMMMMEddd{"E, ddd MMMM, y G"}
+                GyMMMMd{"d, MMMM, y G"}
+                GyMMMMddd{"ddd MMMM, y G"}
                 GyMMMd{"d MMM y G"}
-                GyMd{"M/d/y GGGGG"}
+                GyMMMddd{"ddd MMM y G"}
+                GyMd{"d/M/y GGGGG"}
                 MEd{"E, d/M"}
                 MMMEd{"E, d MMM"}
+                MMMEddd{"E, ddd MMM"}
+                MMMMEd{"E, d MMMM"}
+                MMMMEddd{"E, ddd MMMM"}
                 MMMMW{
                     few{"'wythnos' W 'o' MMMM"}
                     many{"'wythnos' W 'o' MMMM"}
@@ -540,7 +617,10 @@ cy{
                     two{"'wythnos' W 'o' MMMM"}
                     zero{"'wythnos' W 'o' MMMM"}
                 }
+                MMMMd{"d MMMM"}
+                MMMMddd{"ddd MMMM"}
                 MMMd{"d MMM"}
+                MMMddd{"ddd MMM"}
                 Md{"d/M"}
                 hm{"h:mm a"}
                 hms{"h:mm:ss a"}
@@ -550,8 +630,14 @@ cy{
                 yMEd{"E, d/M/y"}
                 yMMM{"MMM y"}
                 yMMMEd{"E, d MMM y"}
+                yMMMEddd{"E, ddd MMM y"}
                 yMMMM{"MMMM y"}
+                yMMMMEd{"E, d MMMM y"}
+                yMMMMEddd{"E, ddd MMMM y"}
+                yMMMMd{"d MMMM y"}
+                yMMMMddd{"ddd MMMM y"}
                 yMMMd{"d MMM y"}
+                yMMMddd{"ddd MMM y"}
                 yMd{"d/M/y"}
                 yQ{"Q y"}
                 yQQQ{"QQQ y"}
@@ -575,6 +661,15 @@ cy{
                         "Iau",
                         "Gwen",
                         "Sad",
+                    }
+                    narrow{
+                        "Su",
+                        "Ll",
+                        "Ma",
+                        "Me",
+                        "I",
+                        "G",
+                        "Sa",
                     }
                     short{
                         "Su",
@@ -606,13 +701,25 @@ cy{
                         "Sad",
                     }
                     narrow{
-                        "S",
+                        "Su",
                         "Ll",
-                        "M",
-                        "M",
+                        "Ma",
+                        "Me",
                         "I",
                         "G",
-                        "S",
+                        "Sa",
+                    }
+                }
+            }
+            dayOfMonthNames{
+                format{
+                    abbreviated{
+                        few{"{0}ydd"}
+                        many{"{0}ed"}
+                        one{"{0}af"}
+                        other{"{0}"}
+                        two{"{0}il"}
+                        zero{"{0}fed"}
                     }
                 }
             }
@@ -674,6 +781,44 @@ cy{
                 }
             }
             intervalFormats{
+                Gy{
+                    G{"y G – y G"}
+                    y{"y – y G"}
+                }
+                GyM{
+                    G{"M/y G – M/y G"}
+                    M{"M/y – M/y G"}
+                    y{"M/y – M/y G"}
+                }
+                GyMEd{
+                    G{"E, d/M/y G – E, d/M/y G"}
+                    M{"E, d/M/y – E, d/M/y G"}
+                    d{"E, d/M/y – E, d/M/y G"}
+                    y{"E, d/M/y – E, d/M/y G"}
+                }
+                GyMMM{
+                    G{"MMM y G – MMM y G"}
+                    M{"MMM – MMM y G"}
+                    y{"MMM y – MMM y G"}
+                }
+                GyMMMEd{
+                    G{"E, d MMM y G – E, d MMM y G"}
+                    M{"E, d MMM – E, d MMM y G"}
+                    d{"E, d MMM – E, d MMM y G"}
+                    y{"E, d MMM y – E, d MMM y G"}
+                }
+                GyMMMd{
+                    G{"d MMM y G – d MMM y G"}
+                    M{"d MMM – d MMM y G"}
+                    d{"d – d MMM y G"}
+                    y{"d MMM y –d MMM y G"}
+                }
+                GyMd{
+                    G{"d/M/y G – d/M/y G"}
+                    M{"d/M/y – d/M/y G"}
+                    d{"d/M/y – d/M/y G"}
+                    y{"d/M/y – d/M/y G"}
+                }
                 H{
                     H{"HH – HH"}
                 }
@@ -705,6 +850,10 @@ cy{
                 MMMM{
                     M{"LLLL–LLLL"}
                 }
+                MMMMd{
+                    M{"d MMMM – d MMMM"}
+                    d{"d – d MMMM"}
+                }
                 MMMd{
                     M{"d MMM – d MMM"}
                     d{"d – d MMM"}
@@ -728,6 +877,9 @@ cy{
                 }
                 hv{
                     h{"h – h a v"}
+                }
+                y{
+                    y{"y – y"}
                 }
                 yM{
                     M{"M/y – M/y"}

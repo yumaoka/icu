@@ -362,6 +362,12 @@ hi{
                 "{1}, {0}",
                 "{1}, {0}",
             }
+            DateTimePatterns%relative{
+                "{1} {0} बजे",
+                "{1} {0} बजे",
+                "{1}, {0}",
+                "{1}, {0}",
+            }
             DateTimeSkeletons{
                 "ahmmsszzzz",
                 "ahmmssz",
@@ -382,24 +388,42 @@ hi{
                 GyM{"M/y G"}
                 GyMEd{"E, M/d/y G"}
                 GyMMMEd{"G E, d MMM y"}
+                GyMMMEddd{"E, ddd MMM, y G"}
                 GyMMMd{"G d MMM y"}
+                GyMMMddd{"ddd MMM, y G"}
                 GyMd{"GGGGG d/M/y"}
                 M{"M"}
                 MEd{"E, d/M"}
                 MMM{"MMM"}
                 MMMEd{"E, d MMM"}
+                MMMEddd{"ddd MMM, E"}
+                MMMMddd{"ddd MMMM"}
                 MMMd{"d MMM"}
+                MMMddd{"ddd MMM"}
                 MMdd{"dd-MM"}
                 Md{"d/M"}
                 yyyyM{"GGGGG M/y"}
                 yyyyMEd{"G E, d/M/y"}
                 yyyyMMM{"G MMM y"}
                 yyyyMMMEd{"G E, d MMM y"}
+                yyyyMMMEddd{"G y ddd MMM, E"}
                 yyyyMMMd{"G d MMM y"}
+                yyyyMMMddd{"ddd MMM, y G"}
                 yyyyMMdd{"dd-MM-y G"}
                 yyyyMd{"G d/M/y"}
                 yyyyQQQ{"QQQ G y"}
                 yyyyQQQQ{"QQQQ G y"}
+            }
+            dayOfMonthNames{
+                format{
+                    abbreviated{
+                        few{"{0}"}
+                        many{"{0}"}
+                        one{"{0}"}
+                        other{"{0}"}
+                        two{"{0}"}
+                    }
+                }
             }
             intervalFormats{
                 Bh{
@@ -424,6 +448,10 @@ hi{
                 MMMEd{
                     M{"E, d MMM – E, d MMM"}
                     d{"E, d MMM – E, d MMM"}
+                }
+                MMMMd{
+                    M{"d MMMM – d MMMM"}
+                    d{"d – d MMMM"}
                 }
                 MMMd{
                     M{"d MMM – d MMM"}
@@ -497,6 +525,12 @@ hi{
                 "{1}, {0}",
                 "{1}, {0}",
             }
+            DateTimePatterns%relative{
+                "{1}, {0} बजे",
+                "{1}, {0} बजे",
+                "{1}, {0}",
+                "{1}, {0}",
+            }
             DateTimeSkeletons{
                 "ahmmsszzzz",
                 "ahmmssz",
@@ -506,6 +540,11 @@ hi{
                 "yMMMMd",
                 "yMMMd",
                 "yyMd",
+            }
+            appendItems{
+                Day-Of-Week{"{1}, {0}"}
+                Era{"{0} {1}"}
+                Time-Day-Of-Week{"{1}, {0}"}
             }
             availableFormats{
                 Bh{"B h"}
@@ -517,17 +556,28 @@ hi{
                 Gy{"y G"}
                 GyMMM{"MMM G y"}
                 GyMMMEd{"E, d MMM y G"}
+                GyMMMEddd{"E, ddd MMM, y G"}
+                GyMMMM{"MMMM y G"}
+                GyMMMMEd{"E, d MMMM, y G"}
+                GyMMMMEddd{"E, ddd MMMM, y G"}
+                GyMMMMd{"d MMMM, y G"}
+                GyMMMMddd{"ddd MMMM, y G"}
                 GyMMMd{"d MMM y G"}
+                GyMMMddd{"ddd MMM, y G"}
                 GyMd{"GGGGG d/M/y"}
                 MEd{"E, d/M"}
                 MMMEd{"E, d MMM"}
+                MMMEddd{"E, ddd MMM"}
                 MMMMEd{"E, d MMMM"}
+                MMMMEddd{"E, ddd MMMM"}
                 MMMMW{
                     one{"MMMM का सप्ताह W"}
                     other{"MMMM का सप्ताह W"}
                 }
                 MMMMd{"d MMMM"}
+                MMMMddd{"ddd MMMM"}
                 MMMd{"d MMM"}
+                MMMddd{"ddd MMM"}
                 MMdd{"dd/MM"}
                 Md{"d/M"}
                 yM{"M/y"}
@@ -535,8 +585,14 @@ hi{
                 yMM{"MM/y"}
                 yMMM{"MMM y"}
                 yMMMEd{"E, d MMM y"}
+                yMMMEddd{"E, ddd MMM, y"}
                 yMMMM{"MMMM y"}
+                yMMMMEd{"E, d MMMM, y"}
+                yMMMMEddd{"y ddd MMMM, E"}
+                yMMMMd{"d MMMM, y"}
+                yMMMMddd{"y ddd MMMM"}
                 yMMMd{"d MMM y"}
+                yMMMddd{"ddd MMM, y"}
                 yMMdd{"dd/MM/y"}
                 yMd{"d/M/y"}
                 yQQQ{"QQQ y"}
@@ -585,6 +641,17 @@ hi{
                         "गु",
                         "शु",
                         "श",
+                    }
+                }
+            }
+            dayOfMonthNames{
+                format{
+                    abbreviated{
+                        few{"{0}"}
+                        many{"{}"}
+                        one{"{0}"}
+                        other{"{0}"}
+                        two{"{0}"}
                     }
                 }
             }
@@ -640,6 +707,10 @@ hi{
                 MMMEd{
                     M{"E, d MMM – E, d MMM"}
                     d{"E, d MMM – E, d MMM"}
+                }
+                MMMMd{
+                    M{"d MMMM – d MMMM"}
+                    d{"d – d MMMM"}
                 }
                 MMMd{
                     M{"d MMM – d MMM"}
@@ -1449,14 +1520,14 @@ hi{
         }
         standard{
             2{"{0} और {1}"}
-            end{"{0}, और {1}"}
+            end{"{0} और {1}"}
         }
         standard-short{
             end{"{0} और {1}"}
         }
         unit{
             2{"{0} और {1}"}
-            end{"{0}, और {1}"}
+            end{"{0} और {1}"}
         }
         unit-narrow{
             2{"{0} {1}"}

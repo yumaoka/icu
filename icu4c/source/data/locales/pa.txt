@@ -9,7 +9,7 @@ pa{
     }
     ExemplarCharactersIndex{"[ੳ ਅ ੲ ਸ{ਸ਼} ਹ ਕ ਖ ਗ ਘ ਙ ਚ ਛ ਜ ਝ ਞ ਟ ਠ ਡ ਢ ਣ ਤ ਥ ਦ ਧ ਨ ਪ ਫ ਬ ਭ ਮ ਯ ਰ ਲ ਵ ੜ]"}
     ExemplarCharactersNumbers{"[\\- ‑ , . % ‰ + 0੦ 1੧ 2੨ 3੩ 4੪ 5੫ 6੬ 7੭ 8੮ 9੯]"}
-    ExemplarCharactersPunctuation{"[\\- ‐‑ – — , ; \\: ! ? . '‘’ \u0022“” ( ) \\[ \\] / \\& ′ ″]"}
+    ExemplarCharactersPunctuation{"[\\- ‐‑ – {—@} , ; \\: ! ? . '‘’ \u0022“” ( ) \\[ \\] / # ′ ″]"}
     NumberElements{
         arab{
             patterns{
@@ -34,7 +34,6 @@ pa{
         arabext{
             patterns{
                 accountingFormat%alphaNextToNumber{"¤ #,##0.00"}
-                currencyFormat%alphaNextToNumber{"¤ #,##,##0.00"}
             }
             rationalFormats{
                 rationalUsage{"never"}
@@ -48,7 +47,6 @@ pa{
         guru{
             patterns{
                 accountingFormat%alphaNextToNumber{"¤ #,##0.00"}
-                currencyFormat%alphaNextToNumber{"¤ #,##,##0.00"}
             }
         }
         latn{
@@ -407,12 +405,17 @@ pa{
                 Ed{"E, d"}
                 GyMMM{"MMM y G"}
                 GyMMMEd{"E, d MMM y G"}
+                GyMMMEddd{"E, ddd MMM y G"}
                 GyMMMd{"d MMM,y G"}
+                GyMMMddd{"ddd MMM, y G"}
                 GyMd{"d/M/GGGGG y"}
                 MEd{"E, d/M"}
                 MMMEd{"E, d MMM"}
+                MMMEddd{"E, ddd MMM"}
                 MMMMd{"d MMMM"}
+                MMMMddd{"ddd MMMM"}
                 MMMd{"d MMM"}
+                MMMddd{"ddd MMM"}
                 Md{"d/M"}
                 y{"y G"}
                 yMMM{"MMM y G"}
@@ -422,13 +425,25 @@ pa{
                 yyyyMEd{"E, d/M/y GGGGG"}
                 yyyyMMM{"MMM y G"}
                 yyyyMMMEd{"E, d MMM y G"}
+                yyyyMMMEddd{"E, ddd MMM y G"}
                 yyyyMMMM{"MMMM y G"}
                 yyyyMMMd{"d MMM y G"}
+                yyyyMMMddd{"ddd MMM y G"}
                 yyyyMd{"d/M/y GGGGG"}
                 yyyyQQQ{"QQQ y G"}
                 yyyyQQQQ{"QQQQ y G"}
             }
+            dayOfMonthNames{
+                format{
+                    abbreviated{
+                        other{"{0}"}
+                    }
+                }
+            }
             intervalFormats{
+                M{
+                    M{"M – M"}
+                }
                 MEd{
                     M{"E, d/M – E, d/M"}
                     d{"E, d/M – E, d/M"}
@@ -439,6 +454,10 @@ pa{
                 MMMEd{
                     M{"E, d MMM – E, d MMM"}
                     d{"E, d MMM – E, d MMM"}
+                }
+                MMMMd{
+                    M{"d MMMM –d MMMM"}
+                    d{"d – d MMMM"}
                 }
                 MMMd{
                     M{"d MMM – d MMM"}
@@ -490,14 +509,6 @@ pa{
             }
         }
         gregorian{
-            AmPmMarkers{
-                "AM",
-                "PM",
-            }
-            AmPmMarkersNarrow{
-                "AM",
-                "PM",
-            }
             DateTimePatterns{
                 "h:mm:ss a zzzz",
                 "h:mm:ss a z",
@@ -529,6 +540,9 @@ pa{
                 "yMMMd",
                 "yyMd",
             }
+            appendItems{
+                Era{"{0} {1}"}
+            }
             availableFormats{
                 Bh{"B h"}
                 Bhm{"B h:mm"}
@@ -540,23 +554,41 @@ pa{
                 GyMEd{"E, d/M/y G"}
                 GyMMM{"MMM, G y"}
                 GyMMMEd{"E d MMM, G y"}
+                GyMMMEddd{"E, ddd MMM, G y"}
+                GyMMMM{"MMMM G y"}
+                GyMMMMEd{"E, d MMMM, G y"}
+                GyMMMMEddd{"E, ddd MMMM, G y"}
+                GyMMMMd{"d MMMM, G y"}
+                GyMMMMddd{"ddd MMMM, G y"}
                 GyMMMd{"d MMM, G y"}
+                GyMMMddd{"ddd MMM, G y"}
                 GyMd{"d/M/GGGGG y"}
                 MEd{"E, dd-MM."}
                 MMMEd{"E, d MMM"}
+                MMMEddd{"E, ddd MMM"}
+                MMMMEd{"E, d MMMM"}
+                MMMMEddd{"E, ddd MMMM"}
                 MMMMW{
                     one{"MMMM ਦਾ W ਹਫ਼ਤਾ"}
                     other{"MMMM ਦਾ W ਹਫ਼ਤਾ"}
                 }
+                MMMMddd{"ddd MMMM"}
                 MMMd{"d MMM"}
+                MMMddd{"ddd MMM"}
                 Md{"d/M"}
                 mmss{"mm:ss"}
                 yM{"M/y"}
                 yMEd{"E, d/M/y"}
                 yMMM{"MMM y"}
                 yMMMEd{"E, d MMM y"}
+                yMMMEddd{"E, ddd MMM y"}
                 yMMMM{"MMMM y"}
+                yMMMMEd{"E, d MMMM y"}
+                yMMMMEddd{"E, ddd MMMM y"}
+                yMMMMd{"d MMMM y"}
+                yMMMMddd{"ddd MMMM y"}
                 yMMMd{"d MMM y"}
+                yMMMddd{"ddd MMM, y"}
                 yMd{"d/M/y"}
                 yQQQ{"QQQ y"}
                 yQQQQ{"QQQQ y"}
@@ -596,15 +628,6 @@ pa{
                     }
                 }
                 stand-alone{
-                    abbreviated{
-                        "ਐਤ",
-                        "ਸੋਮ",
-                        "ਮੰਗਲ",
-                        "ਬੁੱਧ",
-                        "ਵੀਰ",
-                        "ਸ਼ੁੱਕਰ",
-                        "ਸ਼ਨੀ",
-                    }
                     narrow{
                         "ਐ",
                         "ਸੋ",
@@ -614,23 +637,12 @@ pa{
                         "ਸ਼ੁੱ",
                         "ਸ਼",
                     }
-                    short{
-                        "ਐਤ",
-                        "ਸੋਮ",
-                        "ਮੰਗ",
-                        "ਬੁੱਧ",
-                        "ਵੀਰ",
-                        "ਸ਼ੁੱਕ",
-                        "ਸ਼ਨੀ",
-                    }
-                    wide{
-                        "ਐਤਵਾਰ",
-                        "ਸੋਮਵਾਰ",
-                        "ਮੰਗਲਵਾਰ",
-                        "ਬੁੱਧਵਾਰ",
-                        "ਵੀਰਵਾਰ",
-                        "ਸ਼ੁੱਕਰਵਾਰ",
-                        "ਸ਼ਨੀਵਾਰ",
+                }
+            }
+            dayOfMonthNames{
+                format{
+                    abbreviated{
+                        other{"{0}ਵਾਂ"}
                     }
                 }
             }
@@ -645,21 +657,11 @@ pa{
                     }
                 }
                 stand-alone{
-                    abbreviated{
-                        am{"AM"}
-                        pm{"PM"}
-                    }
-                    narrow{
-                        am{"AM"}
-                        pm{"PM"}
-                    }
                     wide{
                         afternoon1{"ਦੁਪਹਿਰੇ"}
-                        am{"AM"}
                         evening1{"ਸ਼ਾਮ"}
                         morning1{"ਸਵੇਰੇ"}
                         night1{"ਰਾਤ"}
-                        pm{"PM"}
                     }
                 }
             }
@@ -687,6 +689,17 @@ pa{
                 }
             }
             intervalFormats{
+                GyMMM{
+                    G{"MMM y G – MMM y G"}
+                    M{"MMM – MMM y G"}
+                    y{"MMM y – MMM y G"}
+                }
+                GyMMMd{
+                    G{"d MMM, y G –d MMM, y G"}
+                    M{"d MMM – d MMM, y G"}
+                    d{"d – d MMM, y G"}
+                    y{"d MMM, y – d MMM, y G"}
+                }
                 M{
                     M{"M–M"}
                 }
@@ -700,6 +713,10 @@ pa{
                 MMMEd{
                     M{"E, d MMM – E, d MMM"}
                     d{"E, d MMM – E, d MMM"}
+                }
+                MMMMd{
+                    M{"d MMMM – d MMMM"}
+                    d{"d – d MMMM"}
                 }
                 MMMd{
                     M{"d MMM – d MMM"}
@@ -875,7 +892,14 @@ pa{
             availableFormats{
                 GyM{"M/y G"}
                 GyMEd{"E, d/M/y G"}
+                GyMMMEddd{"E, ddd MMM y G"}
                 GyMMMd{"d MMM, y G"}
+                GyMMMddd{"ddd MMM, y G"}
+                MMMEddd{"E, ddd MMM"}
+                MMMMddd{"ddd MMMM"}
+                MMMddd{"ddd MMM"}
+                yyyyMMMEddd{"E, ddd MMM y G"}
+                yyyyMMMddd{"ddd MMM y G"}
             }
             monthNames{
                 format{
@@ -1071,12 +1095,6 @@ pa{
         dayperiod{
             dn{"AM/PM"}
         }
-        dayperiod-narrow{
-            dn{"AM/PM"}
-        }
-        dayperiod-short{
-            dn{"AM/PM"}
-        }
         era{
             dn{"ਸੰਮਤ"}
         }
@@ -1237,11 +1255,6 @@ pa{
             }
         }
         sat-narrow{
-            relative{
-                "-1"{"ਪਿਛਲੇ ਸ਼ਨੀ"}
-                "0"{"ਇਹ ਸ਼ਨੀ"}
-                "1"{"ਅਗਲੇ ਸ਼ਨੀ"}
-            }
             relativeTime{
                 future{
                     one{"{0} ਸ਼ਨੀ ਬਾਅਦ"}
@@ -1258,16 +1271,6 @@ pa{
                 "-1"{"ਪਿਛਲੇ ਸ਼ਨੀ"}
                 "0"{"ਇਹ ਸ਼ਨੀ"}
                 "1"{"ਅਗਲੇ ਸ਼ਨੀ"}
-            }
-            relativeTime{
-                future{
-                    one{"{0} ਸ਼ਨੀਵਾਰ ਬਾਅਦ"}
-                    other{"{0} ਸ਼ਨੀਵਾਰਾਂ ਬਾਅਦ"}
-                }
-                past{
-                    one{"{0} ਸ਼ਨੀਵਾਰ ਪਹਿਲਾਂ"}
-                    other{"{0} ਸ਼ਨੀਵਾਰ ਪਹਿਲਾਂ"}
-                }
             }
         }
         second{

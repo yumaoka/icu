@@ -96,8 +96,8 @@ ak{
                         other{"¤0G"}
                     }
                     10000000000{
-                        one{"¤00G"}
-                        other{"¤00G"}
+                        one{"¤ 00B"}
+                        other{"¤00B"}
                     }
                     100000000000{
                         one{"¤000G"}
@@ -143,10 +143,10 @@ ak{
                     }
                     1000000000{
                         one{"¤ 0G"}
-                        other{"¤ 0G"}
+                        other{"¤ 0B"}
                     }
                     10000000000{
-                        one{"¤ 00G"}
+                        one{"¤ 00B"}
                         other{"¤ 00G"}
                     }
                     100000000000{
@@ -206,6 +206,7 @@ ak{
                 "GGGGGyyMMdd",
             }
             availableFormats{
+                GyMMMddd{"MMM ddd, y G"}
                 MEd{"E, M/d"}
                 MMMEd{"E, MMM d"}
                 MMMMEd{"E, MMMM d"}
@@ -221,6 +222,13 @@ ak{
                 yQQQ{"QQQ y"}
                 yQQQQ{"QQQQ y"}
             }
+            dayOfMonthNames{
+                format{
+                    abbreviated{
+                        other{"εtᴐ so {0}"}
+                    }
+                }
+            }
             intervalFormats{
                 yMMM{
                     M{"MMM – MMM Y G"}
@@ -232,10 +240,6 @@ ak{
             }
         }
         gregorian{
-            AmPmMarkers{
-                "AN",
-                "ANW",
-            }
             AmPmMarkersAbbr{
                 "AN",
                 "ANW",
@@ -302,15 +306,6 @@ ak{
                         "Fia",
                         "Mem",
                     }
-                    short{
-                        "Kwa",
-                        "Dwo",
-                        "Ben",
-                        "Wuk",
-                        "Yaw",
-                        "Fia",
-                        "Mem",
-                    }
                     wide{
                         "Sun",
                         "Dwoada",
@@ -322,15 +317,6 @@ ak{
                     }
                 }
                 stand-alone{
-                    abbreviated{
-                        "Kwa",
-                        "Dwo",
-                        "Ben",
-                        "Wuk",
-                        "Yaw",
-                        "Fia",
-                        "Mem",
-                    }
                     narrow{
                         "K",
                         "D",
@@ -340,39 +326,12 @@ ak{
                         "F",
                         "M",
                     }
-                    short{
-                        "Kwa",
-                        "Dwo",
-                        "Ben",
-                        "Wuk",
-                        "Yaw",
-                        "Fia",
-                        "Mem",
-                    }
-                    wide{
-                        "Sun",
-                        "Dwoada",
-                        "Benada",
-                        "Wukuada",
-                        "Yawoada",
-                        "Fiada",
-                        "Memeneda",
-                    }
                 }
             }
-            dayPeriod{
-                stand-alone{
+            dayOfMonthNames{
+                format{
                     abbreviated{
-                        am{"AN"}
-                        pm{"ANW"}
-                    }
-                    narrow{
-                        am{"AN"}
-                        pm{"ANW"}
-                    }
-                    wide{
-                        am{"AN"}
-                        pm{"ANW"}
+                        other{"Deε εtᴐ {0}"}
                     }
                 }
             }
@@ -801,7 +760,14 @@ ak{
             relative{
                 "-1"{"Memeneda a atwam"}
                 "0"{"Memeneda yi"}
-                "1"{"next Saturday"}
+                "1"{"Memeneda a εreba"}
+            }
+        }
+        sat-short{
+            relative{
+                "-1"{"Memeneda a atwam"}
+                "0"{"Memeneda yi"}
+                "1"{"Memeneda a εreba"}
             }
         }
         second{
@@ -809,30 +775,6 @@ ak{
             relative{
                 "0"{"seesei"}
             }
-            relativeTime{
-                future{
-                    one{"simasin {0} mu"}
-                    other{"simasin {0} mu"}
-                }
-                past{
-                    one{"simasin {0} a atwam"}
-                    other{"simasin {0} a atwam"}
-                }
-            }
-        }
-        second-narrow{
-            relativeTime{
-                future{
-                    one{"simasin {0} mu"}
-                    other{"simasin {0} mu"}
-                }
-                past{
-                    one{"simasin {0} a atwam"}
-                    other{"simasin {0} a atwam"}
-                }
-            }
-        }
-        second-short{
             relativeTime{
                 future{
                     one{"simasin {0} mu"}

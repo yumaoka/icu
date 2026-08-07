@@ -189,11 +189,12 @@ fil{
         }
         minimalPairs{
             ordinal{
-                other{"Kunin ang ika-{0} (na) kanan."}
+                one{"Lumiko sa ika-{0} kanan."}
+                other{"Lumiko sa ika-{0} (na) kanan."}
             }
             plural{
-                one{"{0} mansanas"}
-                other{"{0} na mansanas"}
+                one{"{0} araw"}
+                other{"{0} na araw"}
             }
         }
     }
@@ -245,7 +246,9 @@ fil{
                 GyMEd{"E, M/d/y G"}
                 GyMMM{"MMM y G"}
                 GyMMMEd{"E, MMM d, y G"}
+                GyMMMEddd{"E, MMM ddd, y G"}
                 GyMMMd{"MMM d, y G"}
+                GyMMMddd{"MMM ddd, y G"}
                 GyMd{"M/d/y GGGGG"}
                 MEd{"E, M/d"}
                 MMMEd{"E, MMM d"}
@@ -262,9 +265,18 @@ fil{
                 yyyyMMMEd{"E, MMM d, y G"}
                 yyyyMMMM{"MMMM y G"}
                 yyyyMMMd{"MMM d, y G"}
+                yyyyMMMddd{"MMM ddd, y G"}
                 yyyyMd{"M/d/y GGGGG"}
                 yyyyQQQ{"QQQ y G"}
                 yyyyQQQQ{"QQQQ y G"}
+            }
+            dayOfMonthNames{
+                format{
+                    abbreviated{
+                        one{"ika-{0}"}
+                        other{"ika-{0}"}
+                    }
+                }
             }
             intervalFormats{
                 Bh{
@@ -325,6 +337,9 @@ fil{
                 MMMEd{
                     M{"E, MMM d – E, MMM d"}
                     d{"E, MMM d – E, MMM d"}
+                }
+                MMMMd{
+                    d{"MMMM d – d"}
                 }
                 Md{
                     M{"M/d – M/d"}
@@ -413,6 +428,11 @@ fil{
                 "yMMMd",
                 "yyMd",
             }
+            appendItems{
+                Day-Of-Week{"{1}, {0}"}
+                Era{"{0} {1}"}
+                Time-Day-Of-Week{"{1}, {0}"}
+            }
             availableFormats{
                 Ed{"d E"}
                 Ehm{"E h:mm a"}
@@ -422,11 +442,20 @@ fil{
                 GyMEd{"E, M/d/y G"}
                 GyMMM{"MMM y G"}
                 GyMMMEd{"E, MMM d, y G"}
+                GyMMMEddd{"E, MMM ddd, y G"}
+                GyMMMM{"MMMM y G"}
+                GyMMMMEd{"E, MMMM d, y G"}
+                GyMMMMEddd{"E, MMMM ddd, y G"}
+                GyMMMMd{"MMMM d, y G"}
+                GyMMMMddd{"MMMM ddd, y G"}
                 GyMMMd{"MMM d, y G"}
+                GyMMMddd{"MMM ddd, y G"}
                 GyMd{"M/d/y G"}
                 MEd{"E, M/d"}
                 MMMEd{"E, MMM d"}
+                MMMEddd{"E, MMM ddd"}
                 MMMMEd{"E, MMMM d"}
+                MMMMEddd{"E, MMMM ddd"}
                 MMMMW{
                     one{"'linggo' W 'ng' MMMM"}
                     other{"'linggo' W 'ng' MMMM"}
@@ -441,8 +470,12 @@ fil{
                 yMM{"MM/y"}
                 yMMM{"MMM y"}
                 yMMMEd{"E, MMM d, y"}
+                yMMMEddd{"E, MMM ddd, y"}
                 yMMMM{"MMMM y"}
+                yMMMMEd{"E, MMMM d, y"}
+                yMMMMd{"MMMM d, y"}
                 yMMMd{"MMM d, y"}
+                yMMMddd{"MMM ddd, y"}
                 yMd{"M/d/y"}
                 yQQQ{"QQQ y"}
                 yQQQQ{"QQQQ y"}
@@ -481,6 +514,14 @@ fil{
                         "Huw",
                         "Biy",
                         "Sab",
+                    }
+                }
+            }
+            dayOfMonthNames{
+                format{
+                    abbreviated{
+                        one{"ika-{0}"}
+                        other{"ika-{0}"}
                     }
                 }
             }
@@ -583,6 +624,9 @@ fil{
                 MMMEd{
                     M{"E, MMM d – E, MMM d"}
                     d{"E, MMM d – E, MMM d"}
+                }
+                MMMMd{
+                    d{"MMMM d – d"}
                 }
                 Md{
                     M{"M/d – M/d"}

@@ -367,7 +367,9 @@ ga{
                 GyMEd{"E, M/d/y G"}
                 GyMMM{"MMM y G"}
                 GyMMMEd{"E d MMM y G"}
+                GyMMMEddd{"E, MMM ddd, y G"}
                 GyMMMd{"d MMM y G"}
+                GyMMMddd{"MMM ddd, y G"}
                 GyMd{"M/d/y G"}
                 M{"LL"}
                 MEd{"E dd/MM"}
@@ -385,9 +387,18 @@ ga{
                 yyyyMMMEd{"E d MMM y G"}
                 yyyyMMMM{"MMMM y G"}
                 yyyyMMMd{"d MMM y G"}
+                yyyyMMMddd{"MMM ddd, y G"}
                 yyyyMd{"dd/MM/y GGGGG"}
                 yyyyQQQ{"QQQ y G"}
                 yyyyQQQQ{"QQQQ y G"}
+            }
+            dayOfMonthNames{
+                format{
+                    abbreviated{
+                        one{"{0}ú"}
+                        other{"{0}ú"}
+                    }
+                }
             }
             intervalFormats{
                 Bh{
@@ -462,6 +473,9 @@ ga{
                 MMMEd{
                     M{"E d MMM – E d MMM"}
                     d{"E d MMM – E d MMM"}
+                }
+                MMMMd{
+                    d{"MMMM d – d"}
                 }
                 MMMd{
                     M{"d MMM – d MMM"}
@@ -555,6 +569,9 @@ ga{
                 "{1}, {0}",
                 "{1}, {0}",
             }
+            appendItems{
+                Era{"{0} {1}"}
+            }
             availableFormats{
                 Ed{"E d"}
                 Ehm{"E h:mm a"}
@@ -564,11 +581,21 @@ ga{
                 GyMEd{"E, d/M/y G"}
                 GyMMM{"MMM y G"}
                 GyMMMEd{"E d MMM y G"}
+                GyMMMEddd{"E, MMM ddd, y G"}
+                GyMMMM{"MMMM y G"}
+                GyMMMMEd{"E, MMMM d, y G"}
+                GyMMMMEddd{"E, MMMM ddd, y G"}
+                GyMMMMd{"MMMM d, y G"}
+                GyMMMMddd{"MMMM ddd, y G"}
                 GyMMMd{"d MMM y G"}
+                GyMMMddd{"MMM ddd, y G"}
                 GyMd{"dd/MM/y GGGGG"}
                 M{"LL"}
                 MEd{"E dd/MM"}
                 MMMEd{"E d MMM"}
+                MMMEddd{"E, MMM ddd"}
+                MMMMEd{"E, MMMM d"}
+                MMMMEddd{"E, MMMM ddd"}
                 MMMMW{
                     few{"MMMM: 'seachtain' W"}
                     many{"MMMM: 'seachtain' W"}
@@ -587,8 +614,12 @@ ga{
                 yMEd{"E dd/MM/y"}
                 yMMM{"MMM y"}
                 yMMMEd{"E d MMM y"}
+                yMMMEddd{"E, MMM ddd, y"}
                 yMMMM{"MMMM y"}
+                yMMMMEd{"E, MMMM d, y"}
+                yMMMMd{"MMMM d, y"}
                 yMMMd{"d MMM y"}
+                yMMMddd{"MMM ddd, y"}
                 yMd{"dd/MM/y"}
                 yQQQ{"QQQ y"}
                 yQQQQ{"QQQQ y"}
@@ -639,6 +670,14 @@ ga{
                         "D",
                         "A",
                         "S",
+                    }
+                }
+            }
+            dayOfMonthNames{
+                format{
+                    abbreviated{
+                        one{"{0}ú"}
+                        other{"{0}ú"}
                     }
                 }
             }
@@ -733,6 +772,9 @@ ga{
                 MMMEd{
                     M{"E d MMM – E d MMM"}
                     d{"E d MMM – E d MMM"}
+                }
+                MMMMd{
+                    d{"MMMM d – d"}
                 }
                 MMMd{
                     M{"d MMM – d MMM"}

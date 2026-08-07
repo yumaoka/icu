@@ -204,6 +204,16 @@ sq{
         minimumGroupingDigits{"2"}
     }
     calendar{
+        chinese{
+            availableFormats{
+                yyyyMd{"d.M.r"}
+            }
+        }
+        dangi{
+            availableFormats{
+                yyyyMd{"d.M.r"}
+            }
+        }
         generic{
             DateTimePatterns{
                 "h:mm:ss a, zzzz",
@@ -217,12 +227,6 @@ sq{
                 "{1}, {0}",
                 "{1}, {0}",
                 "{1}, {0}",
-                "{1}, {0}",
-                "{1}, {0}",
-            }
-            DateTimePatterns%atTime{
-                "{1} 'në' {0}",
-                "{1} 'në' {0}",
                 "{1}, {0}",
                 "{1}, {0}",
             }
@@ -257,14 +261,19 @@ sq{
                 GyMEd{"E, d.M.y G"}
                 GyMMM{"MMM y G"}
                 GyMMMEd{"E, d MMM y G"}
+                GyMMMEddd{"E, ddd MMM y G"}
                 GyMMMd{"d MMM y G"}
+                GyMMMddd{"ddd MMM y G"}
                 GyMd{"d.M.y GGGGG"}
                 Hv{"HH, v"}
                 MEd{"E, d.M"}
                 MMMEd{"E, d MMM"}
+                MMMEddd{"E, ddd MMM"}
                 MMMMEd{"E, d MMM"}
                 MMMMd{"d MMMM"}
+                MMMMddd{"ddd MMMM"}
                 MMMd{"d MMM"}
+                MMMddd{"ddd MMM"}
                 MMdd{"dd.MM"}
                 Md{"d.M"}
                 hm{"h:mm a"}
@@ -276,11 +285,22 @@ sq{
                 yyyyMEd{"E, d.M.y GGGGG"}
                 yyyyMMM{"MMM y G"}
                 yyyyMMMEd{"E, d MMM y G"}
+                yyyyMMMEddd{"E, ddd MMM y G"}
                 yyyyMMMM{"MMMM y G"}
                 yyyyMMMd{"d MMM y G"}
+                yyyyMMMddd{"ddd MMM y G"}
                 yyyyMd{"d.M.y GGGGG"}
                 yyyyQQQ{"QQQ, y G"}
                 yyyyQQQQ{"QQQQ, y G"}
+            }
+            dayOfMonthNames{
+                format{
+                    abbreviated{
+                        many{"i {0}-ti"}
+                        one{"i {0}-ri"}
+                        other{"i {0}-ti"}
+                    }
+                }
             }
             intervalFormats{
                 Bh{
@@ -341,6 +361,10 @@ sq{
                 MMMEd{
                     M{"E, d MMM – E, d MMM"}
                     d{"E, d MMM – E, d MMM"}
+                }
+                MMMMd{
+                    M{"d MMMM – d MMMM"}
+                    d{"d – d MMMM"}
                 }
                 MMMd{
                     M{"d MMM – d MMM"}
@@ -430,12 +454,6 @@ sq{
                 "{1}, {0}",
                 "{1}, {0}",
             }
-            DateTimePatterns%atTime{
-                "{1} 'në' {0}",
-                "{1} 'në' {0}",
-                "{1}, {0}",
-                "{1}, {0}",
-            }
             DateTimeSkeletons{
                 "ahmmsszzzz",
                 "ahmmssz",
@@ -447,10 +465,16 @@ sq{
                 "yyMd",
             }
             appendItems{
+                Date-Timezone{"{0}, {1}"}
+                Day-Of-Week{"{1}, {0}"}
+                Era{"{0} {1}"}
+                Time-Day-Of-Week{"{1}, {0}"}
                 Timezone{"{0}, {1}"}
             }
             availableFormats{
                 EBh{"E, h B"}
+                EBhm{"E, h:mm B"}
+                EBhms{"E, h:mm:ss B"}
                 EHm{"E, HH:mm"}
                 EHms{"E, HH:mm:ss"}
                 Ed{"E, d"}
@@ -462,20 +486,31 @@ sq{
                 GyMEd{"E, d.M.y G"}
                 GyMMM{"MMM y G"}
                 GyMMMEd{"E, d MMM y G"}
+                GyMMMEddd{"E, ddd MMM y G"}
+                GyMMMM{"MMMM y G"}
+                GyMMMMEd{"E, d MMMM y G"}
+                GyMMMMEddd{"E, ddd MMMM y G"}
+                GyMMMMd{"d MMMM y G"}
+                GyMMMMddd{"ddd MMMM y G"}
                 GyMMMd{"d MMM y G"}
+                GyMMMddd{"ddd MMM y G"}
                 GyMd{"d.M.y GGGG"}
                 Hmsv{"HH:mm:ss, v"}
                 Hmv{"HH:mm, v"}
                 Hv{"HH, v"}
                 MEd{"E, d.M"}
                 MMMEd{"E, d MMM"}
+                MMMEddd{"E, ddd MMM"}
                 MMMMEd{"E, d MMMM"}
+                MMMMEddd{"E, ddd MMMM"}
                 MMMMW{
                     one{"'java' W 'e' 'muajit' MMMM"}
                     other{"'java' W 'e' MMMM"}
                 }
                 MMMMd{"d MMMM"}
+                MMMMddd{"ddd MMMM"}
                 MMMd{"d MMM"}
+                MMMddd{"ddd MMM"}
                 MMdd{"d.M"}
                 Md{"d.M"}
                 hm{"h:mm a"}
@@ -487,8 +522,14 @@ sq{
                 yMEd{"E, d.M.y"}
                 yMMM{"MMM y"}
                 yMMMEd{"E, d MMM y"}
+                yMMMEddd{"E, ddd MMM y"}
                 yMMMM{"MMMM y"}
+                yMMMMEd{"E, d MMMM y"}
+                yMMMMEddd{"E, ddd MMMM y"}
+                yMMMMd{"d MMMM y"}
+                yMMMMddd{"ddd MMMM y"}
                 yMMMd{"d MMM y"}
+                yMMMddd{"ddd MMM y"}
                 yMd{"d.M.y"}
                 yQQQ{"QQQ, y"}
                 yQQQQ{"QQQQ, y"}
@@ -527,6 +568,15 @@ sq{
                         "e",
                         "p",
                         "sh",
+                    }
+                }
+            }
+            dayOfMonthNames{
+                format{
+                    abbreviated{
+                        many{"{0}"}
+                        one{"{0}"}
+                        other{"{0}"}
                     }
                 }
             }
@@ -649,6 +699,10 @@ sq{
                 MMMEd{
                     M{"E, d MMM – E, d MMM"}
                     d{"E, d MMM – E, d MMM"}
+                }
+                MMMMd{
+                    M{"d MMMM – d MMMM"}
+                    d{"d – d MMMM"}
                 }
                 MMMd{
                     M{"d MMM – d MMM"}
@@ -810,12 +864,17 @@ sq{
                 "{1}, {0}",
             }
             availableFormats{
-                GyM{"M.y G"}
-                GyMEd{"E, d.M.y G"}
                 GyMMM{"M.y G"}
                 GyMMMEd{"E, d.M.y G"}
+                GyMMMEddd{"E, ddd MMM y G"}
                 GyMMMd{"d.M.y G"}
+                GyMMMddd{"ddd MMM y G"}
+                MMMEddd{"E, ddd MMM"}
                 MMMMEd{"E, d MMMM"}
+                MMMMddd{"ddd MMMM"}
+                MMMddd{"ddd MMM"}
+                yyyyMMMEddd{"E, ddd MMM y G"}
+                yyyyMMMddd{"ddd MMM y G"}
             }
             eras{
                 abbreviated{

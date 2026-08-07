@@ -684,6 +684,16 @@ gd{
                 yyyyQQQ{"QQQ y G"}
                 yyyyQQQQ{"QQQQ y G"}
             }
+            dayOfMonthNames{
+                format{
+                    abbreviated{
+                        few{"{0}rd"}
+                        one{"{0}st"}
+                        other{"{0}th"}
+                        two{"{0}nd"}
+                    }
+                }
+            }
             intervalFormats{
                 Bh{
                     h{"h – h B"}
@@ -951,6 +961,16 @@ gd{
                         "A",
                         "H",
                         "S",
+                    }
+                }
+            }
+            dayOfMonthNames{
+                format{
+                    abbreviated{
+                        few{"{0}rd"}
+                        one{"{0}st"}
+                        other{"{0}th"}
+                        two{"{0}nd"}
                     }
                 }
             }

@@ -259,14 +259,6 @@ am{
                 yyyyMEd{"GGGGG y-MM-dd, E"}
                 yyyyMd{"GGGGG y-MM-dd"}
             }
-            intervalFormats{
-                H{
-                    H{"HH–HH"}
-                }
-                Hv{
-                    H{"HH–HH v"}
-                }
-            }
         }
         ethiopic{
             availableFormats{
@@ -275,14 +267,6 @@ am{
                 yyyyM{"GGGGG y-MM"}
                 yyyyMEd{"GGGGG y-MM-dd, E"}
                 yyyyMd{"GGGGG y-MM-dd"}
-            }
-            intervalFormats{
-                H{
-                    H{"HH–HH"}
-                }
-                Hv{
-                    H{"HH–HH v"}
-                }
             }
             monthNames{
                 format{
@@ -329,11 +313,11 @@ am{
             availableFormats{
                 Ed{"E d"}
                 Gy{"y G"}
+                GyMEd{"G y/MM/dd, E"}
                 GyMMMEd{"E MMM d፣ y G"}
                 GyMMMd{"MMM d፣ y G"}
                 GyMd{"M/d/y GGGGG"}
                 H{"H"}
-                Hv{"H v"}
                 MEd{"E፣ M/d"}
                 MMMEd{"E፣ MMM d"}
                 MMMMEd{"E፣ MMMM d"}
@@ -348,9 +332,36 @@ am{
                 yMd{"d/M/y"}
                 yQQQ{"QQQ y"}
                 yQQQQ{"QQQQ y"}
+                yyyyM{"G y/MM"}
+                yyyyMEd{"G y/MM/dd, E"}
                 yyyyMMMM{"MMMM y G"}
+                yyyyMd{"G y/MM/dd"}
+            }
+            dayOfMonthNames{
+                format{
+                    abbreviated{
+                        other{"{0}ኛ"}
+                    }
+                }
             }
             intervalFormats{
+                GyM{
+                    G{"G y/MM – G y/MM"}
+                    M{"G y/MM – y/MM"}
+                    y{"G y/MM – y/MM"}
+                }
+                GyMEd{
+                    G{"G y/MM/dd, E – G y/MM/dd, E"}
+                    M{"G y/MM/dd, E – y/MM/dd, E"}
+                    d{"G y/MM/dd, E – y/MM/dd, E"}
+                    y{"G y/MM/dd, E – y/MM/dd, E"}
+                }
+                GyMd{
+                    G{"G y/MM/dd – G y/MM/dd"}
+                    M{"G y/MM/dd – y/MM/dd"}
+                    d{"G y/MM/dd – y/MM/dd"}
+                    y{"G y/MM/dd – y/MM/dd"}
+                }
                 M{
                     M{"M–M"}
                 }
@@ -474,7 +485,6 @@ am{
                 GyMMMd{"MMM d y G"}
                 GyMd{"d/M/y GGGGG"}
                 H{"H"}
-                Hv{"H v"}
                 MEd{"E፣ d/M"}
                 MMMEd{"E፣ MMM d"}
                 MMMMEd{"E፣ MMMM d"}
@@ -538,6 +548,13 @@ am{
                         "ሐ",
                         "ዓ",
                         "ቅ",
+                    }
+                }
+            }
+            dayOfMonthNames{
+                format{
+                    abbreviated{
+                        other{"{0}ኛ"}
                     }
                 }
             }
@@ -1040,22 +1057,6 @@ am{
                 past{
                     one{"{0} ሩብ በፊት"}
                     other{"{0} ሩብ በፊት"}
-                }
-            }
-        }
-        quarter-narrow{
-            relativeTime{
-                future{
-                    one{"በ{0} ሩብ"}
-                    other{"በ{0} ሩብ"}
-                }
-            }
-        }
-        quarter-short{
-            relativeTime{
-                future{
-                    one{"በ{0} ሩብ"}
-                    other{"በ{0} ሩብ"}
                 }
             }
         }

@@ -208,6 +208,11 @@ units:table(nofallback){
             systems{"metric_adjacent"}
             target{"square-meter"}
         }
+        dyne{
+            factor{"1/1000*100"}
+            systems{"metric_adjacent"}
+            target{"kilogram-meter-per-square-second"}
+        }
         earth-mass{
             factor{"5.9722E+24"}
             systems{"astronomical"}
@@ -447,6 +452,11 @@ units:table(nofallback){
             systems{"si metric prefixable"}
             target{"meter"}
         }
+        mil{
+            factor{"ft_to_m/12*1000"}
+            systems{"ussystem uksystem"}
+            target{"meter"}
+        }
         mile{
             factor{"ft_to_m*5280"}
             systems{"ussystem uksystem"}
@@ -592,6 +602,11 @@ units:table(nofallback){
         }
         pound-force{
             factor{"lb_to_kg * gravity"}
+            systems{"ussystem uksystem"}
+            target{"kilogram-meter-per-square-second"}
+        }
+        poundal{
+            factor{"lb_to_kg*ft_to_m"}
             systems{"ussystem uksystem"}
             target{"kilogram-meter-per-square-second"}
         }
@@ -1458,6 +1473,15 @@ units:table(nofallback){
                 US{
                     {
                         unit{"foodcalorie"}
+                    }
+                }
+            }
+        }
+        "force"{
+            "default"{
+                001{
+                    {
+                        unit{"newton"}
                     }
                 }
             }

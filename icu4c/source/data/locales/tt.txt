@@ -211,6 +211,13 @@ tt{
                 yyyyQQQ{"G y 'ел', QQQ"}
                 yyyyQQQQ{"G y 'ел', QQQQ"}
             }
+            dayOfMonthNames{
+                format{
+                    abbreviated{
+                        other{"{0}th"}
+                    }
+                }
+            }
             intervalFormats{
                 Gy{
                     G{"G y 'ел' – G y 'ел'"}
@@ -408,6 +415,13 @@ tt{
                         "П",
                         "Җ",
                         "Ш",
+                    }
+                }
+            }
+            dayOfMonthNames{
+                format{
+                    abbreviated{
+                        other{"{0}th"}
                     }
                 }
             }

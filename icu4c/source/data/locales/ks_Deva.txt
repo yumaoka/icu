@@ -10,9 +10,20 @@ ks_Deva{
     }
     ExemplarCharactersPunctuation{"[\\- ‐‑ – — , ; \\: ! ? . … '‘’ \u0022“” ( ) \\[ \\] § @ * / \\& # † ‡ ′ ″]"}
     NumberElements{
+        arab{
+            symbols{
+                minusSign{"-"}
+                percentSign{"%"}
+                plusSign{"+"}
+            }
+        }
         arabext{
             patterns{
                 currencyFormat{"¤#,##0.00"}
+            }
+            symbols{
+                minusSign{"-"}
+                plusSign{"+"}
             }
         }
     }
@@ -141,9 +152,6 @@ ks_Deva{
                     0{"ईसा ब्रोंठ"}
                     1{"ईस्वी"}
                 }
-            }
-            intervalFormats{
-                fallback{"{0} – {1}"}
             }
             monthNames{
                 format{

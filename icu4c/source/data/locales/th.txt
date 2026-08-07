@@ -171,7 +171,7 @@ th{
                 "H นาฬิกา mm นาที ss วินาที zzzz",
                 "H นาฬิกา mm นาที ss วินาที z",
                 "HH:mm:ss",
-                "HH:mm",
+                "HH:mm น.",
                 "EEEEที่ d MMMM G y",
                 "d MMMM y",
                 "d MMM y",
@@ -194,17 +194,24 @@ th{
             }
             availableFormats{
                 GyM{"M/G y"}
-                GyMEd{"E ที่ d/M/G y"}
+                GyMEd{"E d/M/G y"}
+                GyMMMEddd{"E ddd MMM G y"}
+                GyMMMddd{"ddd MMM G y"}
                 GyMd{"d/M/GGGGG y"}
+                MMMEddd{"E ddd MMM"}
                 MMMMEEEEd{"EEEEที่ d MMMM"}
                 MMMMEd{"E d MMMM"}
+                MMMMddd{"ddd MMMM"}
+                MMMddd{"ddd MMM"}
                 yyyyM{"M/y"}
                 yyyyMEd{"E d/M/y"}
                 yyyyMMM{"MMM y"}
                 yyyyMMMEEEEd{"EEEEที่ d MMM y"}
                 yyyyMMMEd{"E d MMM y"}
+                yyyyMMMEddd{"E ddd MMM G y"}
                 yyyyMMMM{"MMMM y"}
                 yyyyMMMd{"d MMM y"}
+                yyyyMMMddd{"ddd MMM G y"}
                 yyyyMd{"d/M/y"}
                 yyyyQQQ{"QQQ y"}
                 yyyyQQQQ{"QQQQ y"}
@@ -276,7 +283,7 @@ th{
                 "H นาฬิกา mm นาที ss วินาที zzzz",
                 "H นาฬิกา mm นาที ss วินาที z",
                 "HH:mm:ss",
-                "HH:mm",
+                "HH:mm น.",
                 "EEEE, U MMMM d",
                 "U MMMM d",
                 "U MMM d",
@@ -568,7 +575,7 @@ th{
                 "H นาฬิกา mm นาที ss วินาที zzzz",
                 "H นาฬิกา mm นาที ss วินาที z",
                 "HH:mm:ss",
-                "HH:mm",
+                "HH:mm น.",
                 "EEEEที่ d MMMM G y",
                 "d MMMM G y",
                 "d MMM G y",
@@ -608,24 +615,38 @@ th{
                 GyMMM{"MMM G y"}
                 GyMMMEEEEd{"EEEEที่ d MMM G y"}
                 GyMMMEd{"E d MMM G y"}
+                GyMMMEddd{"E ddd MMM G y"}
                 GyMMMd{"d MMM G y"}
+                GyMMMddd{"ddd MMM G y"}
                 GyMd{"d/M/y GGGGG"}
                 MEd{"E d/M"}
                 MMMEEEEd{"EEEEที่ d MMM"}
                 MMMEd{"E d MMM"}
+                MMMEddd{"E ddd MMM"}
                 MMMMd{"d MMMM"}
+                MMMMddd{"ddd MMMM"}
                 MMMd{"d MMM"}
+                MMMddd{"ddd MMM"}
                 Md{"d/M"}
                 yyyyM{"M/y G"}
                 yyyyMEd{"E d/M/y GGGGG"}
                 yyyyMMM{"MMM G y"}
                 yyyyMMMEEEEd{"EEEEที่ d MMM G y"}
                 yyyyMMMEd{"E d MMM G y"}
+                yyyyMMMEddd{"E ddd MMM G y"}
                 yyyyMMMM{"MMMM G y"}
                 yyyyMMMd{"d MMM G y"}
+                yyyyMMMddd{"ddd MMM G y"}
                 yyyyMd{"d/M/y GGGGG"}
                 yyyyQQQ{"QQQ G y"}
                 yyyyQQQQ{"QQQQ G y"}
+            }
+            dayOfMonthNames{
+                format{
+                    abbreviated{
+                        other{"{0}"}
+                    }
+                }
             }
             intervalFormats{
                 Bh{
@@ -694,6 +715,10 @@ th{
                     M{"E d MMM – E d MMM"}
                     d{"E d MMM – E d MMM"}
                 }
+                MMMMd{
+                    M{"d MMMM – d MMMM"}
+                    d{"d – d MMMM"}
+                }
                 MMMd{
                     M{"d MMM – d MMM"}
                     d{"d – d MMM"}
@@ -755,7 +780,7 @@ th{
                 "H นาฬิกา mm นาที ss วินาที zzzz",
                 "H นาฬิกา mm นาที ss วินาที z",
                 "HH:mm:ss",
-                "HH:mm",
+                "HH:mm น.",
                 "EEEEที่ d MMMM G y",
                 "d MMMM G y",
                 "d MMM y",
@@ -788,6 +813,10 @@ th{
                 "yMMMd",
                 "yyMd",
             }
+            appendItems{
+                Day-Of-Week{"{1}ที่ {0}"}
+                Era{"{0} {1}"}
+            }
             availableFormats{
                 EHm{"E HH:mm น."}
                 Ed{"E d"}
@@ -795,32 +824,46 @@ th{
                 GyMMM{"MMM G y"}
                 GyMMMEEEEd{"EEEEที่ d MMM G y"}
                 GyMMMEd{"E d MMM G y"}
+                GyMMMEddd{"E ddd MMM G y"}
+                GyMMMM{"MMMM G y"}
+                GyMMMMEd{"E d MMMM G y"}
+                GyMMMMEddd{"E ddd MMMM G y"}
+                GyMMMMd{"d MMMM G y"}
+                GyMMMMddd{"ddd MMMM G y"}
                 GyMMMd{"d MMM G y"}
+                GyMMMddd{"ddd MMM G y"}
                 GyMd{"d/M/GGGGG y"}
                 Hm{"HH:mm น."}
                 MEd{"E d/M"}
                 MMMEEEEd{"EEEEที่ d MMM"}
                 MMMEd{"E d MMM"}
+                MMMEddd{"E ddd MMM"}
                 MMMMEEEEd{"EEEEที่ d MMMM"}
                 MMMMEd{"E d MMMM"}
+                MMMMEddd{"E ddd MMMM"}
                 MMMMW{
                     other{"สัปดาห์ที่ W ของเดือนMMMM"}
                 }
                 MMMMd{"d MMMM"}
+                MMMMddd{"ddd MMMM"}
                 MMMd{"d MMM"}
+                MMMddd{"ddd MMM"}
                 Md{"d/M"}
-                hmv{"h:mm น. a v"}
                 mmss{"mm:ss"}
                 yM{"M/y"}
                 yMEd{"E d/M/y"}
                 yMMM{"MMM y"}
                 yMMMEEEEd{"EEEEที่ d MMM y"}
                 yMMMEd{"E d MMM y"}
+                yMMMEddd{"E ddd MMM y"}
                 yMMMM{"MMMM y"}
                 yMMMMEEEEd{"EEEEที่ d MMMM y"}
                 yMMMMEd{"E d MMMM y"}
+                yMMMMEddd{"E ddd MMMM y"}
                 yMMMMd{"d MMMM y"}
+                yMMMMddd{"ddd MMMM y"}
                 yMMMd{"d MMM y"}
+                yMMMddd{"ddd MMM y"}
                 yMd{"d/M/y"}
                 yQQQ{"QQQ y"}
                 yQQQQ{"QQQQ G y"}
@@ -859,15 +902,6 @@ th{
                     }
                 }
                 stand-alone{
-                    abbreviated{
-                        "อาทิตย์",
-                        "จันทร์",
-                        "อังคาร",
-                        "พุธ",
-                        "พฤหัส",
-                        "ศุกร์",
-                        "เสาร์",
-                    }
                     narrow{
                         "อา",
                         "จ",
@@ -877,14 +911,12 @@ th{
                         "ศ",
                         "ส",
                     }
-                    short{
-                        "อา.",
-                        "จ.",
-                        "อ.",
-                        "พ.",
-                        "พฤ.",
-                        "ศ.",
-                        "ส.",
+                }
+            }
+            dayOfMonthNames{
+                format{
+                    abbreviated{
+                        other{"{0}"}
                     }
                 }
             }
@@ -1028,6 +1060,10 @@ th{
                 MMMEd{
                     M{"E d MMM – E d MMM"}
                     d{"E d – E d MMM"}
+                }
+                MMMMd{
+                    M{"d MMMM – d MMMM"}
+                    d{"d – d MMMM"}
                 }
                 MMMd{
                     M{"d MMM – d MMM"}
@@ -1252,7 +1288,7 @@ th{
                 "H นาฬิกา mm นาที ss วินาที zzzz",
                 "H นาฬิกา mm นาที ss วินาที z",
                 "HH:mm:ss",
-                "HH:mm",
+                "HH:mm น.",
                 "EEEEที่ d MMMM ปีGที่ y",
                 "d MMMM ปีG y",
                 "d MMM G y",
@@ -1319,7 +1355,7 @@ th{
                 "H นาฬิกา mm นาที ss วินาที zzzz",
                 "H นาฬิกา mm นาที ss วินาที z",
                 "HH:mm:ss",
-                "HH:mm",
+                "HH:mm น.",
                 "EEEEที่ d MMMM ปีGที่ y",
                 "d MMMM ปีG y",
                 "d MMM G y",
