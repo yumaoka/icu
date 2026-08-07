@@ -212,7 +212,16 @@ public final class LSR {
             String lang = langsCache.computeIfAbsent(encodedLang, CachedDecoder::toLanguage);
 
             int encodedScript = (encoded >> 24) & 0x000000ff;
-            String script = scriptsCache.computeIfAbsent(encodedScript, UScript::getShortName);
+            String script = scriptsCache.get(encodedScript);
+            if (script == null) {
+                try {
+                    script = UScript.getShortName(encodedScript);
+                } catch (IllegalArgumentException e) {
+                    // Unknown script code in data — return empty string (same as C-side behavior)
+                    script = "";
+                }
+                scriptsCache.put(encodedScript, script);
+            }
 
             int encodedRegion = encoded & 0x00ffffff;
             encodedRegion /= 27 * 27 * 27;

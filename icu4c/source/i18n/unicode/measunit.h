@@ -1817,21 +1817,23 @@ class U_I18N_API MeasureUnit: public UObject {
      */
     static MeasureUnit getNanosecond();
 
+#ifndef U_HIDE_DRAFT_API
     /**
      * Returns by pointer, unit of duration: night.
      * Caller owns returned value and must free it.
      * Also see {@link #getNight()}.
      * @param status ICU error code.
-     * @stable ICU 76
+     * @draft ICU 76
      */
     static MeasureUnit *createNight(UErrorCode &status);
 
     /**
      * Returns by value, unit of duration: night.
      * Also see {@link #createNight()}.
-     * @stable ICU 76
+     * @draft ICU 76
      */
     static MeasureUnit getNight();
+#endif /* U_HIDE_DRAFT_API */
 
     /**
      * Returns by pointer, unit of duration: quarter.
@@ -2301,6 +2303,24 @@ class U_I18N_API MeasureUnit: public UObject {
 
 #ifndef U_HIDE_DRAFT_API
     /**
+     * Returns by pointer, unit of force: dyne.
+     * Caller owns returned value and must free it.
+     * Also see {@link #getDyne()}.
+     * @param status ICU error code.
+     * @draft ICU 79
+     */
+    static MeasureUnit *createDyne(UErrorCode &status);
+
+    /**
+     * Returns by value, unit of force: dyne.
+     * Also see {@link #createDyne()}.
+     * @draft ICU 79
+     */
+    static MeasureUnit getDyne();
+#endif /* U_HIDE_DRAFT_API */
+
+#ifndef U_HIDE_DRAFT_API
+    /**
      * Returns by pointer, unit of force: kilogram-force.
      * Caller owns returned value and must free it.
      * Also see {@link #getKilogramForce()}.
@@ -2364,6 +2384,24 @@ class U_I18N_API MeasureUnit: public UObject {
      * @stable ICU 64
      */
     static MeasureUnit getPoundForce();
+
+#ifndef U_HIDE_DRAFT_API
+    /**
+     * Returns by pointer, unit of force: poundal.
+     * Caller owns returned value and must free it.
+     * Also see {@link #getPoundal()}.
+     * @param status ICU error code.
+     * @draft ICU 79
+     */
+    static MeasureUnit *createPoundal(UErrorCode &status);
+
+    /**
+     * Returns by value, unit of force: poundal.
+     * Also see {@link #createPoundal()}.
+     * @draft ICU 79
+     */
+    static MeasureUnit getPoundal();
+#endif /* U_HIDE_DRAFT_API */
 
     /**
      * Returns by pointer, unit of frequency: gigahertz.
@@ -2802,6 +2840,24 @@ class U_I18N_API MeasureUnit: public UObject {
      * @stable ICU 64
      */
     static MeasureUnit getMicrometer();
+
+#ifndef U_HIDE_DRAFT_API
+    /**
+     * Returns by pointer, unit of length: mil.
+     * Caller owns returned value and must free it.
+     * Also see {@link #getMil()}.
+     * @param status ICU error code.
+     * @draft ICU 79
+     */
+    static MeasureUnit *createMil(UErrorCode &status);
+
+    /**
+     * Returns by value, unit of length: mil.
+     * Also see {@link #createMil()}.
+     * @draft ICU 79
+     */
+    static MeasureUnit getMil();
+#endif /* U_HIDE_DRAFT_API */
 
     /**
      * Returns by pointer, unit of length: mile.
@@ -3805,21 +3861,23 @@ class U_I18N_API MeasureUnit: public UObject {
      */
     static MeasureUnit getKnot();
 
+#ifndef U_HIDE_DRAFT_API
     /**
      * Returns by pointer, unit of speed: light-speed.
      * Caller owns returned value and must free it.
      * Also see {@link #getLightSpeed()}.
      * @param status ICU error code.
-     * @stable ICU 76
+     * @draft ICU 76
      */
     static MeasureUnit *createLightSpeed(UErrorCode &status);
 
     /**
      * Returns by value, unit of speed: light-speed.
      * Also see {@link #createLightSpeed()}.
-     * @stable ICU 76
+     * @draft ICU 76
      */
     static MeasureUnit getLightSpeed();
+#endif /* U_HIDE_DRAFT_API */
 
     /**
      * Returns by pointer, unit of speed: meter-per-second.

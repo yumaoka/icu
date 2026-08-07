@@ -1238,14 +1238,7 @@ public class TimeZoneFormatTest extends CoreTestFmwk {
                 TimeType.UNKNOWN
             },
             // Regression test for ICU-23278
-            {
-                "en",
-                "Europe/Dublin",
-                dateJan,
-                Style.SPECIFIC_LONG,
-                "Greenwich Mean Time",
-                TimeType.STANDARD
-            }
+            {"en", "Europe/Dublin", dateJan, Style.SPECIFIC_LONG, "GMT+00:00", TimeType.STANDARD}
         };
 
         for (Object[] testCase : TESTDATA) {

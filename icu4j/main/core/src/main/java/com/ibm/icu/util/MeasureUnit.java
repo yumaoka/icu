@@ -1593,7 +1593,7 @@ public class MeasureUnit implements Serializable {
     /**
      * Constant for unit of duration: night
      *
-     * @stable ICU 76
+     * @draft ICU 76
      */
     public static final MeasureUnit NIGHT = MeasureUnit.internalGetInstance("duration", "night");
 
@@ -1813,6 +1813,13 @@ public class MeasureUnit implements Serializable {
             MeasureUnit.internalGetInstance("energy", "therm-us");
 
     /**
+     * Constant for unit of force: dyne
+     *
+     * @draft ICU 79
+     */
+    public static final MeasureUnit DYNE = MeasureUnit.internalGetInstance("force", "dyne");
+
+    /**
      * Constant for unit of force: kilogram-force
      *
      * @draft ICU 78
@@ -1842,6 +1849,13 @@ public class MeasureUnit implements Serializable {
      */
     public static final MeasureUnit POUND_FORCE =
             MeasureUnit.internalGetInstance("force", "pound-force");
+
+    /**
+     * Constant for unit of force: poundal
+     *
+     * @draft ICU 79
+     */
+    public static final MeasureUnit POUNDAL = MeasureUnit.internalGetInstance("force", "poundal");
 
     /**
      * Constant for unit of frequency: gigahertz
@@ -2046,6 +2060,13 @@ public class MeasureUnit implements Serializable {
      */
     public static final MeasureUnit MICROMETER =
             MeasureUnit.internalGetInstance("length", "micrometer");
+
+    /**
+     * Constant for unit of length: mil
+     *
+     * @draft ICU 79
+     */
+    public static final MeasureUnit MIL = MeasureUnit.internalGetInstance("length", "mil");
 
     /**
      * Constant for unit of length: mile
@@ -2504,7 +2525,7 @@ public class MeasureUnit implements Serializable {
     /**
      * Constant for unit of speed: light-speed
      *
-     * @stable ICU 76
+     * @draft ICU 76
      */
     public static final MeasureUnit LIGHT_SPEED =
             MeasureUnit.internalGetInstance("speed", "light-speed");

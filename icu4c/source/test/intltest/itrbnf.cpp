@@ -1518,7 +1518,7 @@ static const char* const belgianFrenchTestData[][2] = {
     { "71", "septante-et-un" },
     { "73", "septante-trois" },
     { "80", "quatre-vingts" },
-    { "88", "quatre-vingt huit" },
+    { "88", "quatre-vingt-huit" },
     { "90", "nonante" },
     { "91", "nonante-et-un" },
     { "95", "nonante-cinq" },
