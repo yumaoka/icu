@@ -68,7 +68,7 @@ public class MeasureUnitGeneratorTest extends CoreTestFmwk {
         }
     }
 
-    private static final Set<String> DRAFT_VERSION_SET = Set.of("76", "77", "78", "79");
+    private static final Set<String> DRAFT_VERSION_SET = Set.of("77", "78", "79");
 
     private static final Set<String> TIME_CODES =
             Set.of("year", "month", "week", "day", "hour", "minute", "second");
