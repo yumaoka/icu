@@ -5205,9 +5205,7 @@ public class SimpleDateFormat extends DateFormat implements Cloneable {
                     dCount++;
                     if (dCount >= 3 && ordinalPluralRules == null) {
                         ordinalPluralRules =
-                                PluralRules.forLocale(
-                                        getLocale(ULocale.VALID_LOCALE),
-                                        PluralRules.PluralType.ORDINAL);
+                                PluralRules.forLocale(locale, PluralRules.PluralType.ORDINAL);
                     }
                 } else {
                     dCount = 0;
