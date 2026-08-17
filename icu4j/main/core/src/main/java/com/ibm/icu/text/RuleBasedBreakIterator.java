@@ -963,8 +963,10 @@ public class RuleBasedBreakIterator extends BreakIterator implements Cloneable {
      *
      * @param fromPosition the position in the input text to begin the iteration.
      * @internal
+     * @deprecated This API is ICU internal only.
      */
-    private int handleSafePrevious(int fromPosition) {
+    @Deprecated
+    public int handleSafePrevious(int fromPosition) {
         char state;
         short category = 0;
         int result = 0;
