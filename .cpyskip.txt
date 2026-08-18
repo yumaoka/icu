@@ -79,6 +79,7 @@ icu4c/source/test/testdata/idna_conf.txt
 icu4c/source/test/testdata/ra.xlf
 icu4c/source/test/testdata/re_tests.txt
 icu4c/source/test/testdata/cldr/localeIdentifiers/README.md
+icu4c/source/test/testdata/cldr/messageFormat/README.md
 icu4c/source/test/testdata/cldr/personNameTest/README.md
 icu4c/source/test/testdata/cldr/units/README.md
 icu4c/source/test/thaitest/space.txt
