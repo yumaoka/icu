@@ -1380,12 +1380,6 @@ void IntlTestDateTimePatternGeneratorAPI::testJjMapping() {
             logKnownIssue("CLDR-19048", "ku_Latn_IQ needs either 'h' in Grego std time patterns or timeData update");
             continue;
         }
-        if (uprv_strcmp(localeID, "en_ZM")==0 || uprv_strcmp(localeID, "es_AR")==0 ||
-            uprv_strcmp(localeID, "es_CL")==0 || uprv_strcmp(localeID, "es_PY")==0 ||
-            uprv_strcmp(localeID, "es_UY")==0) {
-            logKnownIssue("CLDR-19679", "timeData changed to H but locale patterns still use h");
-            continue;
-        }
         const char16_t* charPtr = timeCycleChars;
         for (; *charPtr != static_cast<char16_t>(0); charPtr++) {
              if (jPatSkeleton.indexOf(*charPtr) >= 0) {

@@ -523,9 +523,9 @@ static const char * const gSubTypes[] = {
     "light-year",
     "meter",
     "micrometer",
-    "mil",
     "mile",
     "mile-scandinavian",
+    "milliinch",
     "millimeter",
     "nanometer",
     "nautical-mile",
@@ -1645,27 +1645,27 @@ MeasureUnit MeasureUnit::getMicrometer() {
     return MeasureUnit(13, 14);
 }
 
-MeasureUnit *MeasureUnit::createMil(UErrorCode &status) {
+MeasureUnit *MeasureUnit::createMile(UErrorCode &status) {
     return MeasureUnit::create(13, 15, status);
 }
 
-MeasureUnit MeasureUnit::getMil() {
+MeasureUnit MeasureUnit::getMile() {
     return MeasureUnit(13, 15);
 }
 
-MeasureUnit *MeasureUnit::createMile(UErrorCode &status) {
+MeasureUnit *MeasureUnit::createMileScandinavian(UErrorCode &status) {
     return MeasureUnit::create(13, 16, status);
 }
 
-MeasureUnit MeasureUnit::getMile() {
+MeasureUnit MeasureUnit::getMileScandinavian() {
     return MeasureUnit(13, 16);
 }
 
-MeasureUnit *MeasureUnit::createMileScandinavian(UErrorCode &status) {
+MeasureUnit *MeasureUnit::createMilliinch(UErrorCode &status) {
     return MeasureUnit::create(13, 17, status);
 }
 
-MeasureUnit MeasureUnit::getMileScandinavian() {
+MeasureUnit MeasureUnit::getMilliinch() {
     return MeasureUnit(13, 17);
 }
 

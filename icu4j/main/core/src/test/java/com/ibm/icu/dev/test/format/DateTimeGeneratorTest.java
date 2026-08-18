@@ -2103,15 +2103,6 @@ public class DateTimeGeneratorTest extends CoreTestFmwk {
         ULocale[] locales = DateFormat.getAvailableULocales();
         for (ULocale locale : locales) {
             String localeID = locale.getName();
-            if (localeID.equals("en_ZM")
-                    || localeID.equals("es_AR")
-                    || localeID.equals("es_CL")
-                    || localeID.equals("es_PY")
-                    || localeID.equals("es_UY")) {
-                logKnownIssue(
-                        "CLDR-19679", "timeData changed to H but locale patterns still use h");
-                continue;
-            }
             DateTimePatternGenerator dtpg = DateTimePatternGenerator.getInstance(locale);
             DateFormat dfmt = DateFormat.getTimeInstance(DateFormat.SHORT, locale);
             String shortPattern = ((SimpleDateFormat) dfmt).toPattern();

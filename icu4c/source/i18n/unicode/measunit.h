@@ -2839,24 +2839,6 @@ class U_I18N_API MeasureUnit: public UObject {
      */
     static MeasureUnit getMicrometer();
 
-#ifndef U_HIDE_DRAFT_API
-    /**
-     * Returns by pointer, unit of length: mil.
-     * Caller owns returned value and must free it.
-     * Also see {@link #getMil()}.
-     * @param status ICU error code.
-     * @draft ICU 79
-     */
-    static MeasureUnit *createMil(UErrorCode &status);
-
-    /**
-     * Returns by value, unit of length: mil.
-     * Also see {@link #createMil()}.
-     * @draft ICU 79
-     */
-    static MeasureUnit getMil();
-#endif /* U_HIDE_DRAFT_API */
-
     /**
      * Returns by pointer, unit of length: mile.
      * Caller owns returned value and must free it.
@@ -2888,6 +2870,24 @@ class U_I18N_API MeasureUnit: public UObject {
      * @stable ICU 64
      */
     static MeasureUnit getMileScandinavian();
+
+#ifndef U_HIDE_DRAFT_API
+    /**
+     * Returns by pointer, unit of length: milliinch.
+     * Caller owns returned value and must free it.
+     * Also see {@link #getMilliinch()}.
+     * @param status ICU error code.
+     * @draft ICU 79
+     */
+    static MeasureUnit *createMilliinch(UErrorCode &status);
+
+    /**
+     * Returns by value, unit of length: milliinch.
+     * Also see {@link #createMilliinch()}.
+     * @draft ICU 79
+     */
+    static MeasureUnit getMilliinch();
+#endif /* U_HIDE_DRAFT_API */
 
     /**
      * Returns by pointer, unit of length: millimeter.

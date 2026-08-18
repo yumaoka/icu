@@ -2062,13 +2062,6 @@ public class MeasureUnit implements Serializable {
             MeasureUnit.internalGetInstance("length", "micrometer");
 
     /**
-     * Constant for unit of length: mil
-     *
-     * @draft ICU 79
-     */
-    public static final MeasureUnit MIL = MeasureUnit.internalGetInstance("length", "mil");
-
-    /**
      * Constant for unit of length: mile
      *
      * @stable ICU 53
@@ -2082,6 +2075,14 @@ public class MeasureUnit implements Serializable {
      */
     public static final MeasureUnit MILE_SCANDINAVIAN =
             MeasureUnit.internalGetInstance("length", "mile-scandinavian");
+
+    /**
+     * Constant for unit of length: milliinch
+     *
+     * @draft ICU 79
+     */
+    public static final MeasureUnit MILLIINCH =
+            MeasureUnit.internalGetInstance("length", "milliinch");
 
     /**
      * Constant for unit of length: millimeter

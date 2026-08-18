@@ -7586,12 +7586,12 @@ void MeasureFormatTest::TestCompatible79() {
     measureUnitValue = MeasureUnit::getMeter();
     measureUnit.adoptInstead(MeasureUnit::createMicrometer(status));
     measureUnitValue = MeasureUnit::getMicrometer();
-    measureUnit.adoptInstead(MeasureUnit::createMil(status));
-    measureUnitValue = MeasureUnit::getMil();
     measureUnit.adoptInstead(MeasureUnit::createMile(status));
     measureUnitValue = MeasureUnit::getMile();
     measureUnit.adoptInstead(MeasureUnit::createMileScandinavian(status));
     measureUnitValue = MeasureUnit::getMileScandinavian();
+    measureUnit.adoptInstead(MeasureUnit::createMilliinch(status));
+    measureUnitValue = MeasureUnit::getMilliinch();
     measureUnit.adoptInstead(MeasureUnit::createMillimeter(status));
     measureUnitValue = MeasureUnit::getMillimeter();
     measureUnit.adoptInstead(MeasureUnit::createNanometer(status));

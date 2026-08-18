@@ -314,7 +314,7 @@ public class MeasureUnitGeneratorTest extends CoreTestFmwk {
         {"TO_JP", "78"},
         {"DYNE", "79"},
         {"POUNDAL", "79"},
-        {"MIL", "79"},
+        {"MILLIINCH", "79"},
     };
 
     private static final HashMap<String, String> JAVA_VERSION_MAP = new HashMap<>();
