@@ -535,13 +535,11 @@ mr{
                 MEd{"E, d/M"}
                 MMMEd{"E, d MMM"}
                 MMMMEd{"d MMMM E"}
-                MMMMEddd{"ddd MMMM E"}
                 MMMMW{
                     one{"MMMM चा W रा आठवडा"}
                     other{"MMMM चा W रा आठवडा"}
                 }
                 MMMMd{"d MMMM"}
-                MMMMddd{"ddd MMMM"}
                 MMMd{"d MMM"}
                 MMdd{"dd-MM"}
                 Md{"d/M"}
@@ -551,6 +549,8 @@ mr{
                 yMMM{"MMM y"}
                 yMMMEd{"E, d, MMM y"}
                 yMMMM{"MMMM y"}
+                yMMMMEd{"EEE, d, MMMM y"}
+                yMMMMd{"d MMMM, y"}
                 yMMMd{"d MMM, y"}
                 yMd{"d/M/y"}
                 yQQQ{"QQQ y"}
@@ -599,16 +599,6 @@ mr{
                         "गु",
                         "शु",
                         "श",
-                    }
-                }
-            }
-            dayOfMonthNames{
-                format{
-                    abbreviated{
-                        few{"{0} रोजी"}
-                        one{"{0} रोजी"}
-                        other{"{0} रोजी"}
-                        two{"{0} रोजी"}
                     }
                 }
             }

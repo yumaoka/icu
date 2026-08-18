@@ -871,9 +871,7 @@ zh_Hant{
                 GyMEd{"G y-MM-dd E"}
                 GyMMM{"G y年M月"}
                 GyMMMEd{"G y年M月d日 E"}
-                GyMMMEddd{"G y年M月d日 E"}
                 GyMMMd{"G y年M月d日"}
-                GyMMMddd{"G y年M月d日"}
                 GyMd{"G y/M/d"}
                 H{"H時"}
                 Hm{"H:mm"}
@@ -882,11 +880,8 @@ zh_Hant{
                 M{"M月"}
                 MEd{"M/d（E）"}
                 MMMEd{"M月d日 E"}
-                MMMEddd{"M月d日 E"}
                 MMMMd{"M月d日"}
-                MMMMddd{"M月d日"}
                 MMMd{"M月d日"}
-                MMMddd{"M月d日"}
                 Md{"M/d"}
                 d{"d日"}
                 h{"Bh時"}
@@ -899,20 +894,11 @@ zh_Hant{
                 yyyyMEd{"G y/M/d（E）"}
                 yyyyMMM{"G y年M月"}
                 yyyyMMMEd{"G y年M月d日 E"}
-                yyyyMMMEddd{"G y年M月d日 E"}
                 yyyyMMMM{"G y年M月"}
                 yyyyMMMd{"G y年M月d日"}
-                yyyyMMMddd{"G y年M月d日"}
                 yyyyMd{"G y/M/d"}
                 yyyyQQQ{"G y年QQQ"}
                 yyyyQQQQ{"G y年QQQQ"}
-            }
-            dayOfMonthNames{
-                format{
-                    abbreviated{
-                        other{"{0}日"}
-                    }
-                }
             }
             intervalFormats{
                 Hmv{
@@ -1067,14 +1053,10 @@ zh_Hant{
                 GyMEd{"Gy/M/d（E）"}
                 GyMMM{"Gy年M月"}
                 GyMMMEd{"Gy年M月d日 E"}
-                GyMMMEddd{"Gy年M月d日（E）"}
                 GyMMMM{"Gy年M月"}
                 GyMMMMEd{"Gy年M月d日 E"}
-                GyMMMMEddd{"Gy年M月d日 E"}
                 GyMMMMd{"Gy年M月d日"}
-                GyMMMMddd{"Gy年M月d日"}
                 GyMMMd{"Gy年M月d日"}
-                GyMMMddd{"Gy年M月d日"}
                 GyMd{"G y/M/d"}
                 H{"H時"}
                 Hmsv{"HH:mm:ss [v]"}
@@ -1083,16 +1065,12 @@ zh_Hant{
                 M{"M月"}
                 MEd{"M/d（E）"}
                 MMMEd{"M月d日E"}
-                MMMEddd{"M月d日E"}
-                MMMMEd{"MMMMddd E"}
-                MMMMEddd{"MMMMddd E"}
+                MMMMEd{"M月d日E"}
                 MMMMW{
                     other{"MMMM的第W週"}
                 }
                 MMMMd{"M月d日"}
-                MMMMddd{"MMMMddd"}
                 MMMd{"M月d日"}
-                MMMddd{"M月d日"}
                 MMdd{"MM/dd"}
                 Md{"M/d"}
                 d{"d日"}
@@ -1109,14 +1087,10 @@ zh_Hant{
                 yMM{"y/MM"}
                 yMMM{"y年M月"}
                 yMMMEd{"y年M月d日E"}
-                yMMMEddd{"y年M月d日E"}
                 yMMMM{"y年M月"}
                 yMMMMEd{"y年M月d日 E"}
-                yMMMMEddd{"y年M月d日E"}
                 yMMMMd{"y年M月d日"}
-                yMMMMddd{"y年M月d日"}
                 yMMMd{"y年M月d日"}
-                yMMMddd{"y年M月d日"}
                 yMd{"y/M/d"}
                 yQQQ{"y年QQQ"}
                 yQQQQ{"y年QQQQ"}
@@ -1163,13 +1137,6 @@ zh_Hant{
                         "四",
                         "五",
                         "六",
-                    }
-                }
-            }
-            dayOfMonthNames{
-                format{
-                    abbreviated{
-                        other{"{0}日"}
                     }
                 }
             }
@@ -1467,24 +1434,17 @@ zh_Hant{
                 GyMEd{"Gy-MM-dd E"}
                 GyMMM{"Gy年M月"}
                 GyMMMEd{"Gy年M月d日E"}
-                GyMMMEddd{"Gy年M月d日 E"}
                 GyMMMd{"Gy年M月d日"}
-                GyMMMddd{"Gy年M月d日"}
                 GyMd{"GGGGG y/M/d"}
                 MMMEd{"M月d日E"}
-                MMMEddd{"M月d日 E"}
-                MMMMddd{"M月d日"}
-                MMMddd{"M月d日"}
                 y{"Gy年"}
                 yyyy{"Gy年"}
                 yyyyM{"Gy/M"}
                 yyyyMEd{"Gy/M/d（E）"}
                 yyyyMMM{"Gy年M月"}
                 yyyyMMMEd{"Gy年M月d日E"}
-                yyyyMMMEddd{"Gy年M月d日 E"}
                 yyyyMMMM{"Gy年M月"}
                 yyyyMMMd{"Gy年M月d日"}
-                yyyyMMMddd{"Gy年M月d日"}
                 yyyyMd{"Gy/M/d"}
                 yyyyQQQ{"Gy年QQQ"}
                 yyyyQQQQ{"Gy年QQQQ"}
@@ -1628,24 +1588,17 @@ zh_Hant{
                 GyMEd{"Gy年M月d日（E）"}
                 GyMMM{"Gy年M月"}
                 GyMMMEd{"Gy年M月d日E"}
-                GyMMMEddd{"Gy年M月d日 E"}
                 GyMMMd{"Gy年M月d日"}
-                GyMMMddd{"Gy年M月d日"}
                 GyMd{"Gy/M/d"}
                 MMMEd{"M月d日E"}
-                MMMEddd{"M月d日 E"}
-                MMMMddd{"M月d日"}
-                MMMddd{"M月d日"}
                 y{"Gy年"}
                 yyyy{"Gy年"}
                 yyyyM{"Gy/M"}
                 yyyyMEd{"Gy/M/d（E）"}
                 yyyyMMM{"Gy年M月"}
                 yyyyMMMEd{"Gy年M月d日E"}
-                yyyyMMMEddd{"Gy年M月d日 E"}
                 yyyyMMMM{"Gy年M月"}
                 yyyyMMMd{"Gy年M月d日"}
-                yyyyMMMddd{"Gy年M月d日"}
                 yyyyMd{"Gy/M/d"}
                 yyyyQQQ{"Gy年QQQ"}
                 yyyyQQQQ{"Gy年QQQQ"}

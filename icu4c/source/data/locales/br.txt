@@ -528,17 +528,12 @@ br{
                 GyMEd{"E, dd/MM/y G"}
                 GyMMM{"MMM y G"}
                 GyMMMEd{"E d MMM y G"}
-                GyMMMEddd{"E d MMM y G"}
                 GyMMMd{"d MMM y G"}
-                GyMMMddd{"d MMM y G"}
                 GyMd{"dd/MM/y G"}
                 MEd{"E dd/MM"}
                 MMMEd{"E d MMM"}
-                MMMEddd{"E d MMM"}
                 MMMMd{"d MMMM"}
-                MMMMddd{"d MMMM"}
                 MMMd{"d MMM"}
-                MMMddd{"d MMM"}
                 Md{"dd/MM"}
                 h{"h a"}
                 hm{"h:mm a"}
@@ -549,10 +544,8 @@ br{
                 yyyyMEd{"E dd/MM/y GGGGG"}
                 yyyyMMM{"MMM y G"}
                 yyyyMMMEd{"E d MMM y G"}
-                yyyyMMMEddd{"E d MMM y G"}
                 yyyyMMMM{"MMMM y G"}
                 yyyyMMMd{"d MMM y G"}
-                yyyyMMMddd{"d MMM y G"}
                 yyyyMd{"dd/MM/y GGGGG"}
                 yyyyQQQ{"QQQ y G"}
                 yyyyQQQQ{"QQQQ y G"}
@@ -719,22 +712,16 @@ br{
                 GyMEd{"E, dd/MM/y G"}
                 GyMMM{"MMM y G"}
                 GyMMMEd{"E d MMM y G"}
-                GyMMMEddd{"E d MMM y G"}
                 GyMMMM{"MMMM y G"}
                 GyMMMMEd{"E d MMMM y G"}
-                GyMMMMEddd{"E d MMMM y G"}
                 GyMMMMd{"d MMMM y G"}
-                GyMMMMddd{"d MMMM y G"}
                 GyMMMd{"d MMM y G"}
-                GyMMMddd{"d MMM y G"}
                 GyMd{"dd/MM/y G"}
                 Hv{"HH'e' v"}
                 M{"MM"}
                 MEd{"E dd/MM"}
                 MMMEd{"E d MMM"}
-                MMMEddd{"E d MMM"}
                 MMMMEd{"E d MMMM"}
-                MMMMEddd{"E d MMMM"}
                 MMMMW{
                     few{"'sizhun' W 'miz' MMMM"}
                     many{"'sizhun' W 'miz' MMMM"}
@@ -743,9 +730,7 @@ br{
                     two{"'sizhun' W 'miz' MMMM"}
                 }
                 MMMMd{"d MMMM"}
-                MMMMddd{"d MMMM"}
                 MMMd{"d MMM"}
-                MMMddd{"d MMM"}
                 Md{"dd/MM"}
                 h{"h a"}
                 hm{"h:mm a"}
@@ -756,14 +741,10 @@ br{
                 yMEd{"E dd/MM/y"}
                 yMMM{"MMM y"}
                 yMMMEd{"E d MMM y"}
-                yMMMEddd{"E d MMM y"}
                 yMMMM{"MMMM y"}
                 yMMMMEd{"E d MMMM y"}
-                yMMMMEddd{"E d MMMM y"}
                 yMMMMd{"d MMMM y"}
-                yMMMMddd{"d MMMM y"}
                 yMMMd{"d MMM y"}
-                yMMMddd{"d MMM y"}
                 yMd{"dd/MM/y"}
                 yQQQ{"QQQ y"}
                 yQQQQ{"QQQQ y"}

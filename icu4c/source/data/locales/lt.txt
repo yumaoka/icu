@@ -465,13 +465,6 @@ lt{
                 yyyyQQQ{"y G QQQ"}
                 yyyyQQQQ{"y G QQQQ"}
             }
-            dayOfMonthNames{
-                format{
-                    abbreviated{
-                        other{"{0}-oji"}
-                    }
-                }
-            }
             intervalFormats{
                 M{
                     M{"M–M"}
@@ -592,14 +585,10 @@ lt{
                 GyMEd{"y-MM-dd G, E"}
                 GyMMM{"y-MM G"}
                 GyMMMEd{"y-MM-dd G, E"}
-                GyMMMEddd{"MMM ddd, E, y 'm'. G"}
                 GyMMMM{"y 'm'. G, LLLL"}
                 GyMMMMEd{"y 'm'. G MMMM d 'd'., E"}
-                GyMMMMEddd{"MMMM ddd, E, y 'm'. G"}
                 GyMMMMd{"y 'm'. G MMMM d 'd'."}
-                GyMMMMddd{"MMMM ddd, y 'm'. G"}
                 GyMMMd{"y-MM-dd G"}
-                GyMMMddd{"MMM ddd, y 'm'. G"}
                 GyMd{"y-MM-dd G"}
                 Hmsv{"HH:mm:ss; v"}
                 Hmv{"HH:mm; v"}
@@ -627,14 +616,10 @@ lt{
                 hmv{"hh:mm a; v"}
                 yMMM{"y-MM"}
                 yMMMEd{"y-MM-dd, E"}
-                yMMMEddd{"y 'm'. MMM ddd, E"}
                 yMMMM{"y 'm'. LLLL"}
                 yMMMMEd{"y 'm'. MMMM d 'd'., E"}
-                yMMMMEddd{"y 'm'. MMMM ddd, E"}
                 yMMMMd{"y 'm'. MMMM d 'd'."}
-                yMMMMddd{"y 'm'. MMMM ddd"}
                 yMMMd{"y-MM-dd"}
-                yMMMddd{"y 'm'. MMM ddd"}
                 yw{
                     few{"Y w 'sav'."}
                     many{"Y w 'sav'."}
@@ -681,13 +666,6 @@ lt{
                         "K",
                         "P",
                         "Š",
-                    }
-                }
-            }
-            dayOfMonthNames{
-                format{
-                    abbreviated{
-                        other{"{0}-oji"}
                     }
                 }
             }

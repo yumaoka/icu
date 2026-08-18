@@ -453,6 +453,7 @@ ckb{
         Hant{"هانی دێرین"}
     }
     codePatterns{
+        language{"زمان: {0}"}
         script{"نووسە:{0}"}
         territory{"ناوچە: {0}"}
     }

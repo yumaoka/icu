@@ -709,11 +709,6 @@ en{
                 one{"{0} micrometer"}
                 other{"{0} micrometers"}
             }
-            mil{
-                dnam{"mils"}
-                one{"{0} mil"}
-                other{"{0} mils"}
-            }
             mile{
                 dnam{"miles"}
                 one{"{0} mile"}
@@ -723,6 +718,11 @@ en{
                 dnam{"miles-scandinavian"}
                 one{"{0} mile-scandinavian"}
                 other{"{0} miles-scandinavian"}
+            }
+            milliinch{
+                dnam{"mils"}
+                one{"{0} mil"}
+                other{"{0} mils"}
             }
             millimeter{
                 dnam{"millimeters"}
@@ -2020,11 +2020,6 @@ en{
                 one{"{0}μm"}
                 other{"{0}μm"}
             }
-            mil{
-                dnam{"mil"}
-                one{"{0}mil"}
-                other{"{0}mil"}
-            }
             mile{
                 dnam{"mi"}
                 one{"{0}mi"}
@@ -2034,6 +2029,11 @@ en{
                 dnam{"smi"}
                 one{"{0}smi"}
                 other{"{0}smi"}
+            }
+            milliinch{
+                dnam{"mil"}
+                one{"{0}mil"}
+                other{"{0}mil"}
             }
             millimeter{
                 dnam{"mm"}
@@ -3331,11 +3331,6 @@ en{
                 one{"{0} μm"}
                 other{"{0} μm"}
             }
-            mil{
-                dnam{"mil"}
-                one{"{0} mil"}
-                other{"{0} mil"}
-            }
             mile{
                 dnam{"miles"}
                 one{"{0} mi"}
@@ -3345,6 +3340,11 @@ en{
                 dnam{"smi"}
                 one{"{0} smi"}
                 other{"{0} smi"}
+            }
+            milliinch{
+                dnam{"mil"}
+                one{"{0} mil"}
+                other{"{0} mil"}
             }
             millimeter{
                 dnam{"mm"}

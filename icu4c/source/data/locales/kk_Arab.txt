@@ -328,14 +328,6 @@ kk_Arab{
                 yyyyQQQ{"QQQ y G"}
                 yyyyQQQQ{"QQQQ y G"}
             }
-            dayOfMonthNames{
-                format{
-                    abbreviated{
-                        many{"{0}"}
-                        other{"{0}"}
-                    }
-                }
-            }
             intervalFormats{
                 Gy{
                     G{"y G – y G"}
@@ -528,14 +520,6 @@ kk_Arab{
                         "ب",
                         "ج",
                         "س",
-                    }
-                }
-            }
-            dayOfMonthNames{
-                format{
-                    abbreviated{
-                        many{"{0}"}
-                        other{"{0}"}
                     }
                 }
             }

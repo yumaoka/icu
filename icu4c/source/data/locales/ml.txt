@@ -365,13 +365,6 @@ ml{
                 yyyyMM{"MM-y G"}
                 yyyyMd{"G y/M/d"}
             }
-            dayOfMonthNames{
-                format{
-                    abbreviated{
-                        other{"{0}"}
-                    }
-                }
-            }
             intervalFormats{
                 GyM{
                     G{"G y/M – G y/M"}
@@ -496,6 +489,8 @@ ml{
                 yM{"M/y"}
                 yMEd{"d/M/y, E"}
                 yMM{"MM/y"}
+                yMMMMEd{"y MMMM d, EEE"}
+                yMMMMd{"y MMMM d"}
                 yMd{"d/M/y"}
                 yw{
                     one{"Y-ലെ w-ാമത്തെ ആഴ്ച"}
@@ -559,13 +554,6 @@ ml{
                         "വ്യാഴാഴ്‌ച",
                         "വെള്ളിയാഴ്‌ച",
                         "ശനിയാഴ്‌ച",
-                    }
-                }
-            }
-            dayOfMonthNames{
-                format{
-                    abbreviated{
-                        other{"{0}"}
                     }
                 }
             }

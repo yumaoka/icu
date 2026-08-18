@@ -473,12 +473,10 @@ ar{
                 GyMEd{"E، M/d/y G"}
                 GyMMM{"MMM y G"}
                 GyMMMEd{"E، d MMM y G"}
-                GyMMMEddd{"E،‏ ddd‏ MMM ‏y ‏G"}
                 GyMMMd{"d MMM y G"}
                 GyMd{"d‏/M‏/y G"}
                 MEd{"E، d‏/M"}
                 MMMEd{"E، d MMM"}
-                MMMEddd{"E، ‏ddd ‏MMM"}
                 MMMMd{"d MMMM"}
                 MMMd{"d MMM"}
                 Md{"d‏/M"}
@@ -488,19 +486,11 @@ ar{
                 yyyyMEd{"E، d‏/M‏/y G"}
                 yyyyMMM{"MMM y G"}
                 yyyyMMMEd{"E، d MMM y G"}
-                yyyyMMMEddd{"E،‏ ddd‏ MMM‏ y ‏G"}
                 yyyyMMMM{"MMMM y G"}
                 yyyyMMMd{"d MMM y G"}
                 yyyyMd{"d‏/M‏/y G"}
                 yyyyQQQ{"QQQ y G"}
                 yyyyQQQQ{"QQQQ y G"}
-            }
-            dayOfMonthNames{
-                format{
-                    abbreviated{
-                        other{"{0}"}
-                    }
-                }
             }
             intervalFormats{
                 Gy{
@@ -683,6 +673,8 @@ ar{
                 yMMM{"MMM y"}
                 yMMMEd{"E، d MMM y"}
                 yMMMM{"MMMM y"}
+                yMMMMEd{"EEE، d MMMM y"}
+                yMMMMd{"d MMMM y"}
                 yMMMd{"d MMM y"}
                 yMd{"d‏/M‏/y"}
                 yQQQ{"QQQ y"}
@@ -726,13 +718,6 @@ ar{
                         "خ",
                         "ج",
                         "س",
-                    }
-                }
-            }
-            dayOfMonthNames{
-                format{
-                    abbreviated{
-                        other{"{0}"}
                     }
                 }
             }
@@ -1027,13 +1012,6 @@ ar{
             availableFormats{
                 GyM{"y-MM G"}
                 GyMEd{"E، y/M/d G"}
-                GyMMMEddd{"E،‏ ddd‏ MMM ‏y ‏G"}
-                GyMMMddd{"ddd MMM y G"}
-                MMMEddd{"E، ‏ddd ‏MMM"}
-                MMMMddd{"ddd ‏MMMM"}
-                MMMddd{"ddd ‏MMM"}
-                yyyyMMMEddd{"E،‏ ddd‏ MMM‏ y ‏G"}
-                yyyyMMMddd{"ddd‏ MMM‏ y ‏G"}
             }
             eras{
                 abbreviated{

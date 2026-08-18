@@ -163,13 +163,6 @@ wo{
                 yyyyQQQ{"QQQ y G"}
                 yyyyQQQQ{"QQQQ y G"}
             }
-            dayOfMonthNames{
-                format{
-                    abbreviated{
-                        other{"{0}th"}
-                    }
-                }
-            }
         }
         gregorian{
             AmPmMarkersAbbr{
@@ -230,6 +223,8 @@ wo{
                 yMMM{"MMM y"}
                 yMMMEd{"E, d MMM y"}
                 yMMMM{"MMMM y"}
+                yMMMMEd{"EEE, d MMMM y"}
+                yMMMMd{"d MMMM y"}
                 yMMMd{"d MMM y"}
                 yMd{"dd-MM-y"}
                 yQQQ{"QQQ y"}
@@ -265,13 +260,6 @@ wo{
                         "Alx",
                         "Àjj",
                         "Ase",
-                    }
-                }
-            }
-            dayOfMonthNames{
-                format{
-                    abbreviated{
-                        other{"{0}th"}
                     }
                 }
             }

@@ -300,13 +300,6 @@ zu{
                 yyyyQQQ{"QQQ y G"}
                 yyyyQQQQ{"QQQQ y G"}
             }
-            dayOfMonthNames{
-                format{
-                    abbreviated{
-                        other{"{0}th"}
-                    }
-                }
-            }
             intervalFormats{
                 MMMEd{
                     M{"E, MMM d – E, MMM d"}
@@ -395,6 +388,8 @@ zu{
                 yMMM{"MMM y"}
                 yMMMEd{"E, MMM d, y"}
                 yMMMM{"MMMM y"}
+                yMMMMEd{"EEE, MMMM d, y"}
+                yMMMMd{"MMMM d, y"}
                 yMMMd{"MMM d, y"}
                 yQQQ{"QQQ y"}
                 yQQQQ{"QQQQ y"}
@@ -429,13 +424,6 @@ zu{
                         "S",
                         "H",
                         "M",
-                    }
-                }
-            }
-            dayOfMonthNames{
-                format{
-                    abbreviated{
-                        other{"{0}th"}
                     }
                 }
             }

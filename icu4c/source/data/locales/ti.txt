@@ -337,13 +337,6 @@ ti{
                 yyyyQQQ{"QQQ y G"}
                 yyyyQQQQ{"QQQQ y G"}
             }
-            dayOfMonthNames{
-                format{
-                    abbreviated{
-                        other{"{0}th"}
-                    }
-                }
-            }
             intervalFormats{
                 Gy{
                     G{"y G – y G"}
@@ -513,6 +506,8 @@ ti{
                 yMMM{"MMM y"}
                 yMMMEd{"E, MMM d, y"}
                 yMMMM{"MMMM y"}
+                yMMMMEd{"EEE, MMMM d, y"}
+                yMMMMd{"d MMMM y"}
                 yMMMd{"d MMM y"}
                 yMd{"M/d/y"}
                 yQQQ{"QQQ y"}
@@ -552,13 +547,6 @@ ti{
                         "ሓ",
                         "ዓ",
                         "ቀ",
-                    }
-                }
-            }
-            dayOfMonthNames{
-                format{
-                    abbreviated{
-                        other{"{0}th"}
                     }
                 }
             }

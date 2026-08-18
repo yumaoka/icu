@@ -258,26 +258,12 @@ pt_PT{
             availableFormats{
                 GyM{"MM/y G"}
                 GyMEd{"E, d/M/y G"}
-                GyMMMEddd{"E, d 'de' MMM 'de' y G"}
-                GyMMMddd{"d 'de' MMM 'de' y G"}
-                MMMEddd{"E, d 'de' MMM"}
-                MMMMddd{"d 'de' MMMM"}
-                MMMddd{"d 'de' MMM"}
                 yyyyMMM{"MM/y G"}
                 yyyyMMMEEEEd{"EEEE, d/MM/y"}
                 yyyyMMMEd{"E, d/MM/y G"}
-                yyyyMMMEddd{"E, d 'de' MMM 'de' y G"}
                 yyyyMMMd{"d/MM/y G"}
-                yyyyMMMddd{"d 'de' MMM 'de' y G"}
                 yyyyQQQ{"QQQQ 'de' y G"}
                 yyyyQQQQ{"QQQQ 'de' y G"}
-            }
-            dayOfMonthNames{
-                format{
-                    abbreviated{
-                        other{"{0}.º"}
-                    }
-                }
             }
             intervalFormats{
                 Gy{
@@ -391,30 +377,18 @@ pt_PT{
             }
             availableFormats{
                 GyMEd{"E, dd/MM/y G"}
-                GyMMMEddd{"E, d 'de' MMM 'de' y G"}
                 GyMMMM{"MMMM 'de' y G"}
                 GyMMMMEd{"ccc, d 'de' MMMM 'de' y G"}
-                GyMMMMEddd{"ccc, ddd 'de' MMMM 'de' y G"}
-                GyMMMMddd{"d 'de' MMMM 'de' y G"}
-                GyMMMddd{"d 'de' MMM 'de' y G"}
                 GyMd{"dd/MM/y G"}
                 M{"MM"}
                 MMMEd{"E, d/MM"}
-                MMMEddd{"E, d 'de' MMM"}
-                MMMMEddd{"E, d 'de' MMMM"}
                 MMMMW{
                     one{"W.'ª' 'semana' 'de' MMMM"}
                     other{"W.'ª' 'semana' 'de' MMMM"}
                 }
-                MMMMddd{"d 'de' MMMM"}
-                MMMddd{"d 'de' MMM"}
                 yMMMEEEEd{"EEEE, d/MM/y"}
                 yMMMEd{"E, d/MM/y"}
-                yMMMEddd{"E, d 'de' MMM 'de' y"}
-                yMMMMEddd{"E, d 'de' MMMM 'de' y"}
-                yMMMMddd{"d 'de' MMMM 'de' y"}
                 yMMMd{"d/MM/y"}
-                yMMMddd{"d 'de' MMM 'de' y"}
                 yQQQ{"QQQQ 'de' y"}
                 yw{
                     one{"w.'ª' 'semana' 'de' Y"}
@@ -440,13 +414,6 @@ pt_PT{
                         "qui.",
                         "sex.",
                         "sáb.",
-                    }
-                }
-            }
-            dayOfMonthNames{
-                format{
-                    abbreviated{
-                        other{"{0}.º"}
                     }
                 }
             }

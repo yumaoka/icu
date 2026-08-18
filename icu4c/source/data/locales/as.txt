@@ -244,33 +244,15 @@ as{
                 EBhms{"E, B h:mm:ss"}
                 Ehm{"E, a h:mm"}
                 Ehms{"E, a h:mm:ss"}
-                GyMMMEddd{"G ddd MMM, y, E"}
-                GyMMMddd{"G ddd MMM, y"}
-                MMMEddd{"ddd MMM, E"}
-                MMMMddd{"ddd MMMM"}
-                MMMddd{"ddd MMM"}
                 y{"y G"}
                 yyyy{"y G"}
                 yyyyM{"MM-y GGGGG"}
                 yyyyMEd{"E, dd-MM-y GGGGG"}
                 yyyyMMM{"MMM y G"}
                 yyyyMMMEd{"E, MMM d, y G"}
-                yyyyMMMEddd{"G ddd MMM, y, E"}
                 yyyyMMMM{"MMMM y G"}
                 yyyyMMMd{"d MMM y G"}
-                yyyyMMMddd{"G ddd MMM, y"}
                 yyyyMd{"dd-MM-y GGGGG"}
-            }
-            dayOfMonthNames{
-                format{
-                    abbreviated{
-                        few{"{0}য়"}
-                        many{"অধিক"}
-                        one{"{0}ম"}
-                        other{"{0}ৰ্থ"}
-                        two{"{0}য়"}
-                    }
-                }
             }
         }
         gregorian{
@@ -319,13 +301,11 @@ as{
                 Ehm{"E a h:mm"}
                 Ehms{"E a h:mm:ss"}
                 MMMMEd{"d MMMM, E"}
-                MMMMEddd{"ddd MMMM, E"}
                 MMMMW{
                     one{"MMMMৰ সপ্তাহ W"}
                     other{"MMMMৰ সপ্তাহ W"}
                 }
                 MMMMd{"d MMMM"}
-                MMMMddd{"ddd MMMM"}
                 Md{"dd-MM"}
                 h{"a h"}
                 hm{"a h:mm"}
@@ -335,14 +315,10 @@ as{
                 yM{"MM-y"}
                 yMEd{"E, dd-MM-y"}
                 yMMM{"MMM y"}
-                yMMMEddd{"ddd MMM, y, E"}
                 yMMMM{"MMMM y"}
                 yMMMMEd{"d MMMM, y, E"}
-                yMMMMEddd{"ddd MMMM, y, E"}
                 yMMMMd{"d MMMM, y"}
-                yMMMMddd{"ddd MMMM, y"}
                 yMMMd{"d MMM y"}
-                yMMMddd{"ddd MMM, y"}
                 yMd{"dd-MM-y"}
                 yQQQ{"QQQ y"}
                 yQQQQ{"QQQQ y"}
@@ -390,17 +366,6 @@ as{
                         "বৃ",
                         "শু",
                         "শ",
-                    }
-                }
-            }
-            dayOfMonthNames{
-                format{
-                    abbreviated{
-                        few{"{0}য়"}
-                        many{"অধিক"}
-                        one{"{0}ম"}
-                        other{"{0}ৰ্থ"}
-                        two{"{0}য়"}
                     }
                 }
             }

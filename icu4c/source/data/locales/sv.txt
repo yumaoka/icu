@@ -536,18 +536,13 @@ sv{
                 GyMEd{"E y-MM-dd G"}
                 GyMMM{"MMM y G"}
                 GyMMMEd{"E d MMM y G"}
-                GyMMMEddd{"E ddd MMM y G"}
                 GyMMMd{"d MMM y G"}
-                GyMMMddd{"ddd MMM y G"}
                 GyMd{"y-MM-dd GGGGG"}
                 MEd{"E d/M"}
                 MMMEd{"E d MMM"}
-                MMMEddd{"E ddd MMM"}
                 MMMMEd{"E d MMMM"}
                 MMMMd{"d MMMM"}
-                MMMMddd{"ddd MMMM"}
                 MMMd{"d MMM"}
-                MMMddd{"ddd MMM"}
                 MMd{"d/M"}
                 MMdd{"dd/MM"}
                 Md{"d/M"}
@@ -560,21 +555,11 @@ sv{
                 yyyyMM{"G y-MM"}
                 yyyyMMM{"MMM y G"}
                 yyyyMMMEd{"E d MMM y G"}
-                yyyyMMMEddd{"E ddd MMM y G"}
                 yyyyMMMM{"MMMM y G"}
                 yyyyMMMd{"d MMM y G"}
-                yyyyMMMddd{"ddd MMM y G"}
                 yyyyMd{"y-MM-dd G"}
                 yyyyQQQ{"QQQ y G"}
                 yyyyQQQQ{"QQQQ y G"}
-            }
-            dayOfMonthNames{
-                format{
-                    abbreviated{
-                        one{"{0}:a"}
-                        other{"{0}:e"}
-                    }
-                }
             }
             intervalFormats{
                 Bh{
@@ -747,28 +732,20 @@ sv{
                 GyMEd{"E, y-MM-dd GGGGG"}
                 GyMMM{"MMM y G"}
                 GyMMMEd{"E d MMM y G"}
-                GyMMMEddd{"E ddd MMM y G"}
                 GyMMMM{"MMMM y G"}
                 GyMMMMEd{"E d MMMM y G"}
-                GyMMMMEddd{"E ddd MMMM y G"}
                 GyMMMMd{"d MMMM y G"}
-                GyMMMMddd{"ddd MMMM y G"}
                 GyMMMd{"d MMM y G"}
-                GyMMMddd{"ddd MMM y G"}
                 GyMd{"y-MM-dd GGGGG"}
                 MEd{"E d/M"}
                 MMMEd{"E d MMM"}
-                MMMEddd{"E ddd MMM"}
                 MMMMEd{"E d MMMM"}
-                MMMMEddd{"E ddd MMMM"}
                 MMMMW{
                     one{"'vecka' W 'i' MMMM"}
                     other{"'vecka' W 'i' MMMM"}
                 }
                 MMMMd{"d MMMM"}
-                MMMMddd{"ddd MMMM"}
                 MMMd{"d MMM"}
-                MMMddd{"ddd MMM"}
                 MMd{"d/M"}
                 MMdd{"dd/MM"}
                 Md{"d/M"}
@@ -780,14 +757,10 @@ sv{
                 yMM{"y-MM"}
                 yMMM{"MMM y"}
                 yMMMEd{"E d MMM y"}
-                yMMMEddd{"E ddd MMM y"}
                 yMMMM{"MMMM y"}
                 yMMMMEd{"E d MMMM y"}
-                yMMMMEddd{"E ddd MMMM y"}
                 yMMMMd{"d MMMM y"}
-                yMMMMddd{"ddd MMMM y"}
                 yMMMd{"d MMM y"}
-                yMMMddd{"ddd MMM y"}
                 yQQQ{"QQQ y"}
                 yQQQQ{"QQQQ y"}
                 yw{
@@ -834,14 +807,6 @@ sv{
                         "T",
                         "F",
                         "L",
-                    }
-                }
-            }
-            dayOfMonthNames{
-                format{
-                    abbreviated{
-                        one{"{0}:a"}
-                        other{"{0}:e"}
                     }
                 }
             }

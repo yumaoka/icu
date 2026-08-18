@@ -248,6 +248,8 @@ ks{
                 yMMM{"MMM y"}
                 yMMMEd{"E, MMM d, y"}
                 yMMMM{"MMMM y"}
+                yMMMMEd{"EEE, MMMM d, y"}
+                yMMMMd{"y MMMM d"}
                 yQQQ{"QQQ y"}
                 yQQQQ{"QQQQ y"}
                 yw{

@@ -365,7 +365,6 @@ om{
                 GyMMM{"MMM y G"}
                 GyMMMEd{"E, MMM d, y G"}
                 GyMMMMEd{"E, MMMM d, y G"}
-                GyMMMMEddd{"E, MMMM ddd, y G"}
                 GyMMMd{"MMM d, y G"}
                 MEd{"E, M/d"}
                 MMMEd{"E, MMM d"}

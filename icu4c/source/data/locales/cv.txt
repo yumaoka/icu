@@ -251,15 +251,6 @@ cv{
                 "{1}, {0}",
                 "{1}, {0}",
             }
-            availableFormats{
-                GyMMMEddd{"G y, MMM 'уйӑхӗн' ddd, E"}
-                GyMMMddd{"G y, MMM 'уйӑхӗн' ddd"}
-                MMMEddd{"MMM 'уйӑхӗн' ddd, E"}
-                MMMMddd{"MMMM 'уйӑхӗн' ddd"}
-                MMMddd{"MMM 'уйӑхӗн' ddd"}
-                yyyyMMMEddd{"G y, MMM 'уйӑхӗн' ddd, E"}
-                yyyyMMMddd{"G y, MMM 'уйӑхӗн' ddd"}
-            }
             eras{
                 abbreviated{
                     0{"б. с."}
@@ -596,15 +587,6 @@ cv{
             }
         }
         coptic{
-            availableFormats{
-                GyMMMEddd{"G y, MMM 'уйӑхӗн' ddd, E"}
-                GyMMMddd{"G y, MMM 'уйӑхӗн' ddd"}
-                MMMEddd{"MMM 'уйӑхӗн' ddd, E"}
-                MMMMddd{"MMMM 'уйӑхӗн' ddd"}
-                MMMddd{"MMM 'уйӑхӗн' ddd"}
-                yyyyMMMEddd{"G y, MMM 'уйӑхӗн' ddd, E"}
-                yyyyMMMddd{"G y, MMM 'уйӑхӗн' ddd"}
-            }
             eras{
                 abbreviated{
                     1{"Диокл-т."}
@@ -1385,15 +1367,6 @@ cv{
             }
         }
         ethiopic{
-            availableFormats{
-                GyMMMEddd{"G y, MMM 'уйӑхӗн' ddd, E"}
-                GyMMMddd{"G y, MMM 'уйӑхӗн' ddd"}
-                MMMEddd{"MMM 'уйӑхӗн' ddd, E"}
-                MMMMddd{"MMMM 'уйӑхӗн' ddd"}
-                MMMddd{"MMM 'уйӑхӗн' ddd"}
-                yyyyMMMEddd{"G y, MMM 'уйӑхӗн' ddd, E"}
-                yyyyMMMddd{"G y, MMM 'уйӑхӗн' ddd"}
-            }
             eras{
                 abbreviated{
                     0{"Х. ҫ-ч."}
@@ -1460,18 +1433,13 @@ cv{
                 GyMEd{"G y.MM.dd (E)"}
                 GyMMM{"G y, MMM"}
                 GyMMMEd{"G y, MMM, d, E"}
-                GyMMMEddd{"G y, MMM 'уйӑхӗн' ddd, E"}
                 GyMMMd{"G y, MMM, d"}
-                GyMMMddd{"G y, MMM 'уйӑхӗн' ddd"}
                 GyMd{"G y.MM.dd"}
                 Hv{"HH (v)"}
                 MEd{"MM.dd (E)"}
                 MMMEd{"MMM, d, E"}
-                MMMEddd{"MMM 'уйӑхӗн' ddd, E"}
                 MMMMd{"MMMM, d"}
-                MMMMddd{"MMMM 'уйӑхӗн' ddd"}
                 MMMd{"MMM, d"}
-                MMMddd{"MMM 'уйӑхӗн' ddd"}
                 Md{"MM.dd"}
                 h{"a h"}
                 hm{"a h:mm"}
@@ -1481,20 +1449,11 @@ cv{
                 yyyyMEd{"G y.MM.dd (E)"}
                 yyyyMMM{"G y, MMM"}
                 yyyyMMMEd{"G y, MMM, d, E"}
-                yyyyMMMEddd{"G y, MMM 'уйӑхӗн' ddd, E"}
                 yyyyMMMM{"G y, MMMM"}
                 yyyyMMMd{"G y, MMM, d"}
-                yyyyMMMddd{"G y, MMM 'уйӑхӗн' ddd"}
                 yyyyMd{"G y.MM.dd"}
                 yyyyQQQ{"G y, QQQ"}
                 yyyyQQQQ{"G y, QQQQ"}
-            }
-            dayOfMonthNames{
-                format{
-                    abbreviated{
-                        other{"{0}-мӗшӗ"}
-                    }
-                }
             }
             intervalFormats{
                 Bh{
@@ -1664,14 +1623,10 @@ cv{
                 GyMEd{"G y.MM.dd (E)"}
                 GyMMM{"G y, MMM"}
                 GyMMMEd{"G y, MMM, d, E"}
-                GyMMMEddd{"G y, MMM 'уйӑхӗн' ddd, E"}
                 GyMMMM{"G y, MMMM"}
                 GyMMMMEd{"G y, MMMM, d, E"}
-                GyMMMMEddd{"G y, MMMM 'уйӑхӗн' ddd, E"}
                 GyMMMMd{"G y, MMMM, d"}
-                GyMMMMddd{"G y, MMMM 'уйӑхӗн' ddd"}
                 GyMMMd{"G y, MMM, d"}
-                GyMMMddd{"G y, MMM 'уйӑхӗн' ddd"}
                 GyMd{"G y.MM.dd"}
                 H{"HH 'сех'"}
                 Hmsv{"HH:mm:ss (v)"}
@@ -1679,18 +1634,14 @@ cv{
                 Hv{"HH 'сех' (v)"}
                 MEd{"MM.dd (E)"}
                 MMMEd{"MMM, d, E"}
-                MMMEddd{"MMM 'уйӑхӗн' ddd, E"}
                 MMMMEd{"MMMM, d, E"}
-                MMMMEddd{"MMMM 'уйӑхӗн' ddd, E"}
                 MMMMW{
                     one{"MMMM, W-'мӗш' 'эрне'"}
                     other{"MMMM, W-'мӗш' 'эрне'"}
                     zero{"MMMM, W-'мӗш' 'эрне'"}
                 }
                 MMMMd{"MMMM, d"}
-                MMMMddd{"MMMM 'уйӑхӗн' ddd"}
                 MMMd{"MMM, d"}
-                MMMddd{"MMM 'уйӑхӗн' ddd"}
                 Md{"MM.dd"}
                 h{"a h"}
                 hm{"a h:mm"}
@@ -1702,14 +1653,10 @@ cv{
                 yMEd{"y.MM.dd (ccc)"}
                 yMMM{"y, MMM"}
                 yMMMEd{"y, MMM, d, E"}
-                yMMMEddd{"y, MMM 'уйӑхӗн' ddd, E"}
                 yMMMM{"y, MMMM"}
                 yMMMMEd{"y, MMMM, d, E"}
-                yMMMMEddd{"y, MMMM 'уйӑхӗн' ddd, E"}
                 yMMMMd{"y, MMMM, d"}
-                yMMMMddd{"y, MMMM 'уйӑхӗн' ddd"}
                 yMMMd{"y, MMM, d"}
-                yMMMddd{"y, MMM 'уйӑхӗн' ddd"}
                 yMd{"y.MM.dd"}
                 yQQQ{"y, QQQ"}
                 yQQQQ{"y, QQQQ"}
@@ -1749,13 +1696,6 @@ cv{
                         "К",
                         "Э",
                         "Ш",
-                    }
-                }
-            }
-            dayOfMonthNames{
-                format{
-                    abbreviated{
-                        other{"{0}-мӗшӗ"}
                     }
                 }
             }
@@ -1966,15 +1906,6 @@ cv{
             }
         }
         hebrew{
-            availableFormats{
-                GyMMMEddd{"G y, MMM 'уйӑхӗн' ddd, E"}
-                GyMMMddd{"G y, MMM 'уйӑхӗн' ddd"}
-                MMMEddd{"MMM 'уйӑхӗн' ddd, E"}
-                MMMMddd{"MMMM 'уйӑхӗн' ddd"}
-                MMMddd{"MMM 'уйӑхӗн' ddd"}
-                yyyyMMMEddd{"G y, MMM 'уйӑхӗн' ddd, E"}
-                yyyyMMMddd{"G y, MMM 'уйӑхӗн' ddd"}
-            }
             eras{
                 abbreviated{
                     0{"т. п-р."}
@@ -2039,15 +1970,6 @@ cv{
             }
         }
         indian{
-            availableFormats{
-                GyMMMEddd{"G y, MMM 'уйӑхӗн' ddd, E"}
-                GyMMMddd{"G y, MMM 'уйӑхӗн' ddd"}
-                MMMEddd{"MMM 'уйӑхӗн' ddd, E"}
-                MMMMddd{"MMMM 'уйӑхӗн' ddd"}
-                MMMddd{"MMM 'уйӑхӗн' ddd"}
-                yyyyMMMEddd{"G y, MMM 'уйӑхӗн' ddd, E"}
-                yyyyMMMddd{"G y, MMM 'уйӑхӗн' ddd"}
-            }
             eras{
                 abbreviated{
                     0{"Сака с."}
@@ -2076,15 +1998,6 @@ cv{
             }
         }
         islamic{
-            availableFormats{
-                GyMMMEddd{"G y, MMM 'уйӑхӗн' ddd, E"}
-                GyMMMddd{"G y, MMM 'уйӑхӗн' ddd"}
-                MMMEddd{"MMM 'уйӑхӗн' ddd, E"}
-                MMMMddd{"MMMM 'уйӑхӗн' ddd"}
-                MMMddd{"MMM 'уйӑхӗн' ddd"}
-                yyyyMMMEddd{"G y, MMM 'уйӑхӗн' ddd, E"}
-                yyyyMMMddd{"G y, MMM 'уйӑхӗн' ddd"}
-            }
             eras{
                 abbreviated{
                     0{"х. х."}
@@ -2325,23 +2238,16 @@ cv{
                 GyMEd{"G, y.MM.dd (E)"}
                 GyMMM{"G, y, MMM"}
                 GyMMMEd{"G, y, MMM, d, E"}
-                GyMMMEddd{"G y, MMM 'уйӑхӗн' ddd, E"}
                 GyMMMd{"G, y, MMM, d"}
-                GyMMMddd{"G y, MMM 'уйӑхӗн' ddd"}
                 GyMd{"G, y.MM.dd"}
-                MMMEddd{"MMM 'уйӑхӗн' ddd, E"}
-                MMMMddd{"MMMM 'уйӑхӗн' ddd"}
-                MMMddd{"MMM 'уйӑхӗн' ddd"}
                 y{"G, y"}
                 yyyy{"G, y"}
                 yyyyM{"G, y.MM"}
                 yyyyMEd{"G, y.MM.dd (E)"}
                 yyyyMMM{"G, y, MMM"}
                 yyyyMMMEd{"G, y, MMM, d, E"}
-                yyyyMMMEddd{"G y, MMM 'уйӑхӗн' ddd, E"}
                 yyyyMMMM{"G, y, MMMM"}
                 yyyyMMMd{"G, y, MMM, d"}
-                yyyyMMMddd{"G y, MMM 'уйӑхӗн' ddd"}
                 yyyyMd{"G, y.MM.dd"}
                 yyyyQQQ{"G, y, QQQ"}
                 yyyyQQQQ{"G, y, QQQQ"}
@@ -2439,15 +2345,6 @@ cv{
             }
         }
         persian{
-            availableFormats{
-                GyMMMEddd{"G y, MMM 'уйӑхӗн' ddd, E"}
-                GyMMMddd{"G y, MMM 'уйӑхӗн' ddd"}
-                MMMEddd{"MMM 'уйӑхӗн' ddd, E"}
-                MMMMddd{"MMMM 'уйӑхӗн' ddd"}
-                MMMddd{"MMM 'уйӑхӗн' ddd"}
-                yyyyMMMEddd{"G y, MMM 'уйӑхӗн' ddd, E"}
-                yyyyMMMddd{"G y, MMM 'уйӑхӗн' ddd"}
-            }
             eras{
                 abbreviated{
                     0{"х. х."}
@@ -2476,15 +2373,6 @@ cv{
             }
         }
         roc{
-            availableFormats{
-                GyMMMEddd{"G y, MMM 'уйӑхӗн' ddd, E"}
-                GyMMMddd{"G y, MMM 'уйӑхӗн' ddd"}
-                MMMEddd{"MMM 'уйӑхӗн' ddd, E"}
-                MMMMddd{"MMMM 'уйӑхӗн' ddd"}
-                MMMddd{"MMM 'уйӑхӗн' ddd"}
-                yyyyMMMEddd{"G y, MMM 'уйӑхӗн' ddd, E"}
-                yyyyMMMddd{"G y, MMM 'уйӑхӗн' ddd"}
-            }
             eras{
                 abbreviated{
                     0{"респ. й-ч."}

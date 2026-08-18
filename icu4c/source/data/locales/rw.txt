@@ -54,6 +54,8 @@ rw{
                 yMMM{"MMM y"}
                 yMMMEd{"E, d MMM y"}
                 yMMMM{"MMMM y"}
+                yMMMMEd{"EEE, d MMMM y"}
+                yMMMMd{"y MMMM d"}
                 yQQQ{"QQQ y"}
                 yQQQQ{"QQQQ y"}
             }

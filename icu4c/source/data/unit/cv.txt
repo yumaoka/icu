@@ -661,12 +661,6 @@ cv{
                 other{"{0} микрометр"}
                 zero{"{0} мкм"}
             }
-            mil{
-                dnam{"мил"}
-                one{"{0} мил"}
-                other{"{0} мил"}
-                zero{"{0} мил"}
-            }
             mile{
                 dnam{"миля"}
                 one{"{0} ми"}
@@ -678,6 +672,12 @@ cv{
                 one{"{0} ск. ми"}
                 other{"{0} скандинави мили"}
                 zero{"{0} ск. ми"}
+            }
+            milliinch{
+                dnam{"мил"}
+                one{"{0} мил"}
+                other{"{0} мил"}
+                zero{"{0} мил"}
             }
             millimeter{
                 dnam{"миллиметр"}
@@ -1319,7 +1319,7 @@ cv{
             }
         }
         length{
-            mil{
+            milliinch{
                 dnam{"мил"}
                 one{"{0} мил"}
                 other{"{0} мил"}
@@ -2097,12 +2097,6 @@ cv{
                 other{"{0} мкм"}
                 zero{"{0} мкм"}
             }
-            mil{
-                dnam{"мил"}
-                one{"{0} мил"}
-                other{"{0} мил"}
-                zero{"{0} мил"}
-            }
             mile{
                 dnam{"ми"}
                 one{"{0} ми"}
@@ -2114,6 +2108,12 @@ cv{
                 one{"{0} ск. ми"}
                 other{"{0} ск. ми"}
                 zero{"{0} ск. ми"}
+            }
+            milliinch{
+                dnam{"мил"}
+                one{"{0} мил"}
+                other{"{0} мил"}
+                zero{"{0} мил"}
             }
             millimeter{
                 dnam{"мм"}

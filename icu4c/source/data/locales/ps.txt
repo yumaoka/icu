@@ -194,28 +194,15 @@ ps{
             availableFormats{
                 GyM{"G y/MM"}
                 GyMEd{"G y/MM/dd, E"}
-                GyMMMEddd{"G E, ddd, MMM y"}
-                GyMMMddd{"ddd MMM y G"}
                 GyMd{"G y/MM/dd"}
                 MEd{"MM/dd, E"}
-                MMMEddd{"E, ddd MMM"}
                 MMMMd{"d MMMM"}
-                MMMMddd{"ddd MMMM"}
-                MMMddd{"ddd MMM"}
                 Md{"M/d"}
                 yM{"G y/M"}
                 yMMMM{"د G y د MMMM"}
                 yyyyM{"G y/MM"}
                 yyyyMEd{"G y/MM/dd, E"}
-                yyyyMMMEddd{"y MMM ddd, E G"}
                 yyyyMd{"G y/MM/dd"}
-            }
-            dayOfMonthNames{
-                format{
-                    abbreviated{
-                        other{"{0} ام"}
-                    }
-                }
             }
             intervalFormats{
                 Gy{
@@ -342,7 +329,6 @@ ps{
                 MEd{"MM/dd, E"}
                 MMMEd{"E, MMM d"}
                 MMMMEd{"E, d MMMM"}
-                MMMMEddd{"E, ddd MMMM"}
                 MMMMW{
                     one{"اونۍ W د MMMM"}
                     other{"اونۍ W د MMMM"}
@@ -350,12 +336,8 @@ ps{
                 Md{"MM/dd"}
                 yM{"y/MM"}
                 yMEd{"y/MM/dd, E"}
-                yMMMEddd{"E, ddd MMM y"}
                 yMMMMEd{"E, d MMMM y"}
-                yMMMMEddd{"E, ddd, MMMM, y"}
                 yMMMMd{"d MMMM y"}
-                yMMMMddd{"ddd MMMM y"}
-                yMMMddd{"ddd MMM y"}
                 yMd{"y/MM/dd"}
                 yQQQ{"QQQ y"}
                 yQQQQ{"QQQQ y"}
@@ -439,13 +421,6 @@ ps{
                         "پنج شنبه",
                         "جمعه",
                         "شنبه",
-                    }
-                }
-            }
-            dayOfMonthNames{
-                format{
-                    abbreviated{
-                        other{"{0}"}
                     }
                 }
             }
@@ -634,16 +609,9 @@ ps{
             availableFormats{
                 GyM{"M/y G"}
                 GyMEd{"E, M/d/y G"}
-                GyMMMEddd{"E ddd MMM y G"}
-                GyMMMddd{"‏ddd MMM y G"}
                 GyMd{"M/d/y GGGGG"}
-                MMMEddd{"E, ddd MMM"}
-                MMMMddd{"ddd MMMM"}
-                MMMddd{"ddd MMM"}
                 yyyyM{"GGGGG y-MM"}
                 yyyyMEd{"GGGGG y-MM-dd, E"}
-                yyyyMMMEddd{"E ddd, MMM y G"}
-                yyyyMMMddd{"‏ddd MMM y G"}
                 yyyyMd{"GGGGG y-MM-dd"}
             }
             eras{

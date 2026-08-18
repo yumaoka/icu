@@ -191,6 +191,7 @@ gl{
                 other{"Colle a {0}.ª curva á dereita."}
             }
             plural{
+                many{"{0} de días"}
                 one{"{0} día"}
                 other{"{0} días"}
             }
@@ -237,18 +238,13 @@ gl{
                 GyMEd{"E, d/M/y G"}
                 GyMMM{"MMM 'de' y G"}
                 GyMMMEd{"E, d 'de' MMM 'de' y G"}
-                GyMMMEddd{"E, ddd 'de' MMM 'de' y G"}
                 GyMMMd{"d 'de' MMM 'de' y G"}
-                GyMMMddd{"ddd 'de' MMM 'de' y G"}
                 GyMd{"dd/MM/y GGGGG"}
                 MEd{"E, dd/MM"}
                 MMMEd{"E, d 'de' MMM"}
-                MMMEddd{"ddd 'de' MMM, E"}
                 MMMMEd{"E, d 'de' MMMM"}
                 MMMMd{"d 'de' MMMM"}
-                MMMMddd{"ddd 'de' MMMM"}
                 MMMd{"d 'de' MMM"}
-                MMMddd{"ddd 'de' MMM"}
                 MMdd{"dd/MM"}
                 Md{"dd/MM"}
                 hm{"h:mm a"}
@@ -269,20 +265,11 @@ gl{
                 yyyyMEd{"E, d/M/y GGGGG"}
                 yyyyMMM{"MMM 'de' y G"}
                 yyyyMMMEd{"E, d 'de' MMM 'de' y G"}
-                yyyyMMMEddd{"E, ddd 'de' MMM 'de' y G"}
                 yyyyMMMM{"MMMM 'de' y G"}
                 yyyyMMMd{"d 'de' MMM 'de' y G"}
-                yyyyMMMddd{"ddd 'de' MMM 'de' y G"}
                 yyyyMd{"d/M/y GGGGG"}
                 yyyyQQQ{"QQQ y G"}
                 yyyyQQQQ{"QQQQ 'de' y G"}
-            }
-            dayOfMonthNames{
-                format{
-                    abbreviated{
-                        other{"{0}"}
-                    }
-                }
             }
             intervalFormats{
                 Gy{
@@ -452,31 +439,23 @@ gl{
                 GyMEd{"E, d/M/y G"}
                 GyMMM{"MMM 'de' y G"}
                 GyMMMEd{"E, d 'de' MMM 'de' y G"}
-                GyMMMEddd{"E, d 'de' MMM 'de' y G"}
                 GyMMMM{"MMMM 'de' y G"}
                 GyMMMMEd{"E, d 'de' MMMM 'de' y G"}
-                GyMMMMEddd{"E, ddd 'de' MMMM 'de' y G"}
                 GyMMMMd{"d 'de' MMMM 'de' y G"}
-                GyMMMMddd{"ddd 'de' MMMM 'de' y G"}
                 GyMMMd{"d 'de' MMM 'de' y G"}
-                GyMMMddd{"ddd 'de' MMM 'de' y G"}
                 GyMd{"d/M/y GGGGG"}
                 Hmsv{"HH:mm:ss, v"}
                 Hmv{"HH:mm, v"}
                 Hv{"HH, v"}
                 MEd{"E, d/M"}
                 MMMEd{"E, d 'de' MMM"}
-                MMMEddd{"E, ddd 'de' MMM"}
                 MMMMEd{"E, d 'de' MMMM"}
-                MMMMEddd{"E, ddd 'de' MMMM"}
                 MMMMW{
                     one{"W.'ª' 'semana' 'de' MMMM"}
                     other{"W.'ª' 'semana' 'de' MMMM"}
                 }
                 MMMMd{"d 'de' MMMM"}
-                MMMMddd{"ddd 'de' MMMM"}
                 MMMd{"d 'de' MMM"}
-                MMMddd{"ddd 'de' MMM"}
                 MMdd{"dd/MM"}
                 Md{"d/M"}
                 hm{"h:mm a"}
@@ -488,14 +467,10 @@ gl{
                 yMM{"MM/y"}
                 yMMM{"MMM 'de' y"}
                 yMMMEd{"E, d 'de' MMM 'de' y"}
-                yMMMEddd{"E, ddd 'de' MMM 'de' y"}
                 yMMMM{"MMMM 'de' y"}
                 yMMMMEd{"E, d 'de' MMMM 'de' y"}
-                yMMMMEddd{"ddd 'de' MMMM 'de' y, E"}
                 yMMMMd{"d 'de' MMMM 'de' y"}
-                yMMMMddd{"ddd 'de' MMMM 'de' y"}
                 yMMMd{"d 'de' MMM 'de' y"}
-                yMMMddd{"ddd 'de' MMM 'de' y"}
                 yMd{"d/M/y"}
                 yQQQ{"QQQ y"}
                 yQQQQ{"QQQQ 'de' y"}
@@ -552,13 +527,6 @@ gl{
                         "X",
                         "V",
                         "S",
-                    }
-                }
-            }
-            dayOfMonthNames{
-                format{
-                    abbreviated{
-                        other{"{0}"}
                     }
                 }
             }

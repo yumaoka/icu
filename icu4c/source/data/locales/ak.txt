@@ -206,7 +206,6 @@ ak{
                 "GGGGGyyMMdd",
             }
             availableFormats{
-                GyMMMddd{"MMM ddd, y G"}
                 MEd{"E, M/d"}
                 MMMEd{"E, MMM d"}
                 MMMMEd{"E, MMMM d"}
@@ -221,13 +220,6 @@ ak{
                 yMd{"y/M/d"}
                 yQQQ{"QQQ y"}
                 yQQQQ{"QQQQ y"}
-            }
-            dayOfMonthNames{
-                format{
-                    abbreviated{
-                        other{"εtᴐ so {0}"}
-                    }
-                }
             }
             intervalFormats{
                 yMMM{
@@ -290,6 +282,8 @@ ak{
                 yMMM{"MMM y"}
                 yMMMEd{"E, MMM d, y"}
                 yMMMM{"MMMM y"}
+                yMMMMEd{"EEE, MMMM d, y"}
+                yMMMMd{"MMMM d, y"}
                 yMMMd{"MMM d, y"}
                 yMd{"y/M/d"}
                 yQQQ{"QQQ y"}
@@ -325,13 +319,6 @@ ak{
                         "Y",
                         "F",
                         "M",
-                    }
-                }
-            }
-            dayOfMonthNames{
-                format{
-                    abbreviated{
-                        other{"Deε εtᴐ {0}"}
                     }
                 }
             }

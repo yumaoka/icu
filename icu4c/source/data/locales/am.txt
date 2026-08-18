@@ -337,13 +337,6 @@ am{
                 yyyyMMMM{"MMMM y G"}
                 yyyyMd{"G y/MM/dd"}
             }
-            dayOfMonthNames{
-                format{
-                    abbreviated{
-                        other{"{0}ኛ"}
-                    }
-                }
-            }
             intervalFormats{
                 GyM{
                     G{"G y/MM – G y/MM"}
@@ -502,6 +495,8 @@ am{
                 yMMM{"MMM y"}
                 yMMMEd{"E፣ MMM d y"}
                 yMMMM{"MMMM y"}
+                yMMMMEd{"EEE፣ MMMM d y"}
+                yMMMMd{"MMMM d y"}
                 yMMMd{"MMM d y"}
                 yMd{"d/M/y"}
                 yw{
@@ -548,13 +543,6 @@ am{
                         "ሐ",
                         "ዓ",
                         "ቅ",
-                    }
-                }
-            }
-            dayOfMonthNames{
-                format{
-                    abbreviated{
-                        other{"{0}ኛ"}
                     }
                 }
             }

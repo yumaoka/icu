@@ -157,9 +157,7 @@ xh{
                 Gy{"y G"}
                 GyMMM{"MMM y G"}
                 GyMMMEd{"E, MMM d, y G"}
-                GyMMMEddd{"E, MMM ddd, y G"}
                 GyMMMd{"MMM d, y G"}
-                GyMMMddd{"MMM ddd, y G"}
                 GyMd{"M/d/y GGGGG"}
                 MEd{"E, M/d"}
                 MMMEd{"E, MMM d"}
@@ -174,17 +172,9 @@ xh{
                 yyyyMMMEd{"E, MMM d, y G"}
                 yyyyMMMM{"MMMM y G"}
                 yyyyMMMd{"MMM d, y G"}
-                yyyyMMMddd{"MMM ddd, y G"}
                 yyyyMd{"M/d/y GGGGG"}
                 yyyyQQQ{"QQQ y G"}
                 yyyyQQQQ{"QQQQ y G"}
-            }
-            dayOfMonthNames{
-                format{
-                    abbreviated{
-                        other{"{0}th"}
-                    }
-                }
             }
             intervalFormats{
                 Gy{
@@ -333,6 +323,8 @@ xh{
                 yMMM{"MMM y"}
                 yMMMEd{"E, MMM d, y"}
                 yMMMM{"MMMM y"}
+                yMMMMEd{"EEE, MMMM d, y"}
+                yMMMMd{"MMMM d, y"}
                 yMMMd{"MMM d, y"}
                 yMd{"M/d/y"}
                 yQQQ{"QQQ y"}
@@ -390,13 +382,6 @@ xh{
                         "Sin",
                         "Hl",
                         "Mg",
-                    }
-                }
-            }
-            dayOfMonthNames{
-                format{
-                    abbreviated{
-                        other{"{0}th"}
                     }
                 }
             }

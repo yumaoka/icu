@@ -580,10 +580,6 @@ root{
                 dnam{"μm"}
                 other{"{0} μm"}
             }
-            mil{
-                dnam{"mil [US]"}
-                other{"{0} mil [US]"}
-            }
             mile{
                 dnam{"mi"}
                 other{"{0} mi"}
@@ -591,6 +587,10 @@ root{
             mile-scandinavian{
                 dnam{"smi"}
                 other{"{0} smi"}
+            }
+            milliinch{
+                dnam{"milli-inch"}
+                other{"{0} milli-inch"}
             }
             millimeter{
                 dnam{"mm"}

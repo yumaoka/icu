@@ -29,7 +29,7 @@ pluralRanges:table(nofallback){
         fil{"set05"}
         fr{"set13"}
         ga{"set19"}
-        gl{"set03"}
+        gl{"set14"}
         gsw{"set03"}
         gu{"set01"}
         he{"set10"}

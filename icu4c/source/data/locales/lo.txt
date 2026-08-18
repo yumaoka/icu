@@ -635,37 +635,22 @@ lo{
                 GyMEd{"E, G d/M/y"}
                 GyMMM{"MMM y G"}
                 GyMMMEd{"E, MMM d, y G"}
-                GyMMMEddd{"E, ddd MMM, G y"}
                 GyMMMd{"G d MMM y"}
-                GyMMMddd{"ddd MMM, G y"}
                 GyMd{"d/M/GGGGG y"}
                 MEd{"E, d/M"}
                 MMMEd{"E d MMM"}
-                MMMEddd{"E, ddd MMM"}
                 MMMMd{"d MMMM"}
-                MMMMddd{"ddd MMMM"}
                 MMMd{"d MMM"}
-                MMMddd{"ddd MMM"}
                 Md{"d/M"}
                 h{"h ໂມງa"}
                 yyyyM{"G M/y"}
                 yyyyMEd{"E, G d/M/y"}
                 yyyyMMM{"G MMM y"}
                 yyyyMMMEd{"E, G d MMM y"}
-                yyyyMMMEddd{"E, ddd MMM G y"}
                 yyyyMMMM{"G MMMM y"}
                 yyyyMMMd{"G d MMM y"}
-                yyyyMMMddd{"ddd MMM G y"}
                 yyyyMd{"G d/M/y"}
                 yyyyQQQ{"G QQQ y"}
-            }
-            dayOfMonthNames{
-                format{
-                    abbreviated{
-                        one{"{0}"}
-                        other{"{0}"}
-                    }
-                }
             }
             intervalFormats{
                 GyM{
@@ -797,27 +782,19 @@ lo{
                 GyMEd{"E, G d/M/y"}
                 GyMMM{"MMM, G y"}
                 GyMMMEd{"E d MMMM, G y"}
-                GyMMMEddd{"E, ddd MMM, G y"}
                 GyMMMM{"MMMM G y"}
                 GyMMMMEd{"E, d MMMM, G y"}
-                GyMMMMEddd{"E, ddd MMMM, G y"}
                 GyMMMMd{"d MMMM, G y"}
-                GyMMMMddd{"ddd MMMM, G y"}
                 GyMMMd{"d MMMM, G y"}
-                GyMMMddd{"ddd MMM, G y"}
                 GyMd{"d/M/GGGGG y"}
                 MEd{"E, d/M"}
                 MMMEd{"E d MMM"}
-                MMMEddd{"E, ddd MMM"}
                 MMMMEd{"E, d MMMM"}
-                MMMMEddd{"E, ddd MMMM"}
                 MMMMW{
                     other{"ອາທິດທີ່ W ຂອງເດືອນ M"}
                 }
                 MMMMd{"d MMMM"}
-                MMMMddd{"ddd MMMM"}
                 MMMd{"d MMM"}
-                MMMddd{"ddd MMM"}
                 Md{"d/M"}
                 h{"h ໂມງa"}
                 hv{"h ໂມງa v"}
@@ -825,14 +802,10 @@ lo{
                 yMEd{"E, d/M/y"}
                 yMMM{"MMM y"}
                 yMMMEd{"E, d MMM y"}
-                yMMMEddd{"E, ddd MMM y"}
                 yMMMM{"MMMM y"}
                 yMMMMEd{"E, d MMMM, y"}
-                yMMMMEddd{"E, ddd MMMM y"}
                 yMMMMd{"d MMMM y"}
-                yMMMMddd{"ddd MMMM y"}
                 yMMMd{"d MMM y"}
-                yMMMddd{"ddd MMM y"}
                 yMd{"d/M/y"}
                 yQQQ{"QQQ y"}
                 yQQQQ{"QQQQ y"}
@@ -879,14 +852,6 @@ lo{
                         "ພຫ",
                         "ສຸ",
                         "ສ",
-                    }
-                }
-            }
-            dayOfMonthNames{
-                format{
-                    abbreviated{
-                        one{"{0}"}
-                        other{"{0}"}
                     }
                 }
             }

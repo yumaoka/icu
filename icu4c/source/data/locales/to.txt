@@ -182,13 +182,6 @@ to{
                 yyyyQQQ{"y QQQ G"}
                 yyyyQQQQ{"y QQQQ G"}
             }
-            dayOfMonthNames{
-                format{
-                    abbreviated{
-                        other{"{0}"}
-                    }
-                }
-            }
             intervalFormats{
                 Gy{
                     G{"y G – y G"}

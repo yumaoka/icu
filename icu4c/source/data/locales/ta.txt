@@ -466,13 +466,6 @@ ta{
                 yyyyQQQ{"QQQ y G"}
                 yyyyQQQQ{"QQQQ y G"}
             }
-            dayOfMonthNames{
-                format{
-                    abbreviated{
-                        other{"{0}ஆம்"}
-                    }
-                }
-            }
             intervalFormats{
                 M{
                     M{"M – M"}
@@ -616,14 +609,10 @@ ta{
                 yMM{"MM-y"}
                 yMMM{"MMM y"}
                 yMMMEd{"E, d MMM, y"}
-                yMMMEddd{"E, MMM ddd, y"}
                 yMMMM{"MMMM y"}
                 yMMMMEd{"E, d MMMM y"}
-                yMMMMEddd{"E, MMMM ddd, y"}
                 yMMMMd{"d MMMM y"}
-                yMMMMddd{"MMMM ddd, y"}
                 yMMMd{"d MMM, y"}
-                yMMMddd{"MMM ddd, y"}
                 yMd{"d/M/y"}
                 yQQQ{"QQQ y"}
                 yQQQQ{"QQQQ y"}
@@ -671,13 +660,6 @@ ta{
                         "வி",
                         "வெ",
                         "ச",
-                    }
-                }
-            }
-            dayOfMonthNames{
-                format{
-                    abbreviated{
-                        other{"{0}ஆம் தேதி"}
                     }
                 }
             }

@@ -132,19 +132,14 @@ hi_Latn{
                 Eh{"E, h a"}
                 GyMMMEEEEd{"EEEE, d MMM, y G"}
                 GyMMMMEd{"E, d MMMM, y G"}
-                GyMMMMEddd{"E, ddd MMMM, y G"}
                 GyMMMMd{"d MMMM, y G"}
-                GyMMMMddd{"ddd MMMM, y G"}
-                GyMMMddd{"ddd MMM, y G"}
                 MMMMW{
                     one{"MMMM 'kaa' 'week' W"}
                     other{"MMMM 'kaa' 'week' W"}
                 }
                 hv{"h a, v"}
-                yMMMMEddd{"E, ddd MMMM, y"}
                 yMMMMd{"d MMMM, y"}
                 yMMMd{"d MMM, y"}
-                yMMMddd{"ddd MMM, y"}
                 yw{
                     one{"Y 'kaa' 'week' w"}
                     other{"Y 'kaa' 'week' w"}

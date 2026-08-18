@@ -359,9 +359,7 @@ hu{
                 GyMEd{"G y. M. d., E"}
                 GyMMM{"G y. MMM"}
                 GyMMMEd{"G y. MMM d., E"}
-                GyMMMEddd{"G y. MMM ddd, E"}
                 GyMMMd{"G y. MMM d."}
-                GyMMMddd{"G y. MMM ddd"}
                 GyMd{"G y. M. d."}
                 H{"H"}
                 Hm{"H:mm"}
@@ -382,21 +380,11 @@ hu{
                 yyyyMEd{"G y. MM. dd., E"}
                 yyyyMMM{"G y. MMM"}
                 yyyyMMMEd{"G y. MMM d., E"}
-                yyyyMMMEddd{"G y. MMM ddd, E"}
                 yyyyMMMM{"G y. MMMM"}
                 yyyyMMMd{"G y. MMM d."}
-                yyyyMMMddd{"G y. MMM ddd"}
                 yyyyMd{"G y. MM. dd."}
                 yyyyQQQ{"G y. QQQ"}
                 yyyyQQQQ{"G y. QQQQ"}
-            }
-            dayOfMonthNames{
-                format{
-                    abbreviated{
-                        one{"{0}."}
-                        other{"{0}."}
-                    }
-                }
             }
             intervalFormats{
                 Bhm{
@@ -550,14 +538,10 @@ hu{
                 GyMEd{"G y. MM. dd., E"}
                 GyMMM{"G y. MMM"}
                 GyMMMEd{"G y. MMM d., E"}
-                GyMMMEddd{"G y. MMM ddd, E"}
                 GyMMMM{"G y. MMMM"}
                 GyMMMMEd{"G y. MMMM d., E"}
-                GyMMMMEddd{"G y. MMMM ddd, E"}
                 GyMMMMd{"G y. MMMM d."}
-                GyMMMMddd{"G y. MMMM ddd"}
                 GyMMMd{"G y. MMM d."}
-                GyMMMddd{"G y. MMM ddd"}
                 GyMd{"GGGGG y. MM. dd."}
                 H{"H"}
                 Hm{"H:mm"}
@@ -585,14 +569,10 @@ hu{
                 yMEd{"y. MM. dd., E"}
                 yMMM{"y. MMM"}
                 yMMMEd{"y. MMM d., E"}
-                yMMMEddd{"y. MMM ddd, E"}
                 yMMMM{"y. MMMM"}
                 yMMMMEd{"y. MMMM d., E"}
-                yMMMMEddd{"y. MMMM ddd, E"}
                 yMMMMd{"y. MMMM d."}
-                yMMMMddd{"y. MMMM ddd"}
                 yMMMd{"y. MMM d."}
-                yMMMddd{"y. MMM ddd"}
                 yMd{"y. MM. dd."}
                 yQQQ{"y. QQQ"}
                 yQQQQ{"y. QQQQ"}
@@ -631,14 +611,6 @@ hu{
                         "Cs",
                         "P",
                         "Sz",
-                    }
-                }
-            }
-            dayOfMonthNames{
-                format{
-                    abbreviated{
-                        one{"{0}."}
-                        other{"{0}."}
                     }
                 }
             }

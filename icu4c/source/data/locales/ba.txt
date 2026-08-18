@@ -1163,10 +1163,8 @@ ba{
                 GyM{"G MM.y"}
                 GyMMM{"MMM, G y 'й'."}
                 GyMMMEd{"d MMM, E, G y 'й'."}
-                GyMMMEddd{"ddd MMM, E, G y 'й'."}
                 GyMMMM{"MMMM, G y"}
                 GyMMMd{"d MMM, G y 'й'."}
-                GyMMMddd{"ddd MMM, G y 'й'."}
                 GyMd{"G dd.MM.y"}
                 H{"HH 'сәғ'."}
                 Hv{"HH 'сәғ'. v"}
@@ -1233,13 +1231,6 @@ ba{
                         "К",
                         "Й",
                         "Ш",
-                    }
-                }
-            }
-            dayOfMonthNames{
-                format{
-                    abbreviated{
-                        other{"{0}-се"}
                     }
                 }
             }

@@ -857,13 +857,6 @@ yue_Hans{
                 yyyyQQQ{"G y年QQQ"}
                 yyyyQQQQ{"G y年QQQQ"}
             }
-            dayOfMonthNames{
-                format{
-                    abbreviated{
-                        other{"{0}日"}
-                    }
-                }
-            }
             intervalFormats{
                 Bh{
                     B{"Bh时至Bh时"}
@@ -1153,13 +1146,6 @@ yue_Hans{
                         "四",
                         "五",
                         "六",
-                    }
-                }
-            }
-            dayOfMonthNames{
-                format{
-                    abbreviated{
-                        other{"{0}日"}
                     }
                 }
             }

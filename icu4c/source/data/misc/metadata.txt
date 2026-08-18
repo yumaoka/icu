@@ -460,10 +460,6 @@ metadata:table(nofallback){
                 reason{"overlong"}
                 replacement{"fa"}
             }
-            fat{
-                reason{"macrolanguage"}
-                replacement{"ak"}
-            }
             fij{
                 reason{"overlong"}
                 replacement{"fj"}
@@ -1915,6 +1911,10 @@ metadata:table(nofallback){
             ymt{
                 reason{"deprecated"}
                 replacement{"mtm"}
+            }
+            yol{
+                reason{"deprecated"}
+                replacement{"enm"}
             }
             yor{
                 reason{"overlong"}

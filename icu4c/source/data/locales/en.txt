@@ -656,7 +656,9 @@ en{
                 MEd{"E, M/d"}
                 MMM{"LLL"}
                 MMMEd{"E, MMM d"}
+                MMMEddd{"E, MMM ddd"}
                 MMMMd{"MMMM d"}
+                MMMMddd{"MMMM ddd"}
                 MMMd{"MMM d"}
                 MMMddd{"MMM ddd"}
                 Md{"M/d"}

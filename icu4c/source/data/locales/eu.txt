@@ -529,18 +529,13 @@ eu{
                 GyMEd{"G 'aroko' y/MM/dd, E"}
                 GyMMM{"G. 'aroko' y('e')'ko' MMMM"}
                 GyMMMEd{"G. 'aroko' y('e')'ko' MMMM d, EEEE"}
-                GyMMMEddd{"G. 'aroko' y('e')'ko' MMM ddd, E"}
                 GyMMMd{"G. 'aroko' y('e')'ko' MMMM d"}
-                GyMMMddd{"G. 'aroko' y('e')'ko' MMM ddd"}
                 GyMd{"y/MM/dd (GGGGG)"}
                 Hv{"HH (v)"}
                 MEd{"MM/dd, EEEE"}
                 MMMEd{"MMM'k' d, EEEE"}
-                MMMEddd{"MMM'k' ddd, E"}
                 MMMMd{"MMMM'k' d"}
-                MMMMddd{"MMMM'k' ddd"}
                 MMMd{"MMM'k' d"}
-                MMMddd{"MMM'k' ddd"}
                 Md{"MM/dd"}
                 hm{"h:mm a"}
                 hms{"h:mm:ss a"}
@@ -557,20 +552,11 @@ eu{
                 yyyyMEd{"G('e')'ko' y/MM/dd, EEEE"}
                 yyyyMMM{"G, y('e')'ko' MMM"}
                 yyyyMMMEd{"G y MMM d, EEEE"}
-                yyyyMMMEddd{"G. 'aroko' y('e')'ko' MMM ddd, E"}
                 yyyyMMMM{"G y('e')'ko' MMMM"}
                 yyyyMMMMEd{"G y('e')'ko' MMMM d, EEEE"}
                 yyyyMMMMd{"G y('e')'ko' MMMM d"}
-                yyyyMMMddd{"G. 'aroko' y('e')'ko' MMM ddd"}
                 yyyyMd{"G('e')'ko' y/MM/dd"}
                 yyyyQQQQ{"G y('e')'ko' QQQQ"}
-            }
-            dayOfMonthNames{
-                format{
-                    abbreviated{
-                        other{"{0}"}
-                    }
-                }
             }
             intervalFormats{
                 Bh{
@@ -743,25 +729,19 @@ eu{
                 GyMMMEd{"G y. 'urteko' MMM d('a'), E"}
                 GyMMMM{"G y('e')'ko' MMMM"}
                 GyMMMMEd{"G y('e')'ko' MMMM'ren' d('a'), E"}
-                GyMMMMEddd{"G y('e')'ko' MMMM'ren' ddd('a'), E"}
                 GyMMMMd{"G y('e')'ko' MMMM'ren' d('a')"}
-                GyMMMMddd{"G y('e')'ko' MMMM'ren' ddd('a')"}
                 GyMMMd{"G y. 'urteko' MMM d('a')"}
                 GyMd{"G y/MM/dd"}
                 Hv{"HH (v)"}
                 MEd{"M/d, E"}
                 MMMEd{"MMM d('a'), E"}
-                MMMEddd{"MMM ddd('a'), E"}
                 MMMMEd{"MMMM'ren' d('a'), E"}
-                MMMMEddd{"MMMM'ren' ddd('a'), E"}
                 MMMMW{
                     one{"MMMM'ren' W. 'astea'"}
                     other{"MMMM'ren' W. 'astea'"}
                 }
                 MMMMd{"MMMM'ren' d('a')"}
-                MMMMddd{"MMMM'ren' ddd('a')"}
                 MMMd{"MMM d('a')"}
-                MMMddd{"MMM ddd('a')"}
                 Md{"M/d"}
                 hm{"h:mm a"}
                 hms{"h:mm:ss a"}
@@ -770,14 +750,10 @@ eu{
                 yM{"y/M"}
                 yMEd{"y/M/d, E"}
                 yMMMEd{"y MMM d('a'), E"}
-                yMMMEddd{"y('e')'ko' MMM ddd('a'), E"}
                 yMMMM{"y('e')'ko' MMMM"}
                 yMMMMEd{"y('e')'ko' MMMM'ren' d('a'), E"}
-                yMMMMEddd{"y('e')'ko' MMMM'ren' ddd('a'), E"}
                 yMMMMd{"y('e')'ko' MMMM'ren' d('a')"}
-                yMMMMddd{"y('e')'ko' MMMM'ren' ddd('a')"}
                 yMMMd{"y MMM d('a')"}
-                yMMMddd{"y('e')'ko' MMM ddd('a')"}
                 yMd{"y/M/d"}
                 yQQQ{"y('e')'ko' QQQ"}
                 yQQQQ{"y('e')'ko' QQQQ"}
@@ -816,13 +792,6 @@ eu{
                         "O",
                         "O",
                         "L",
-                    }
-                }
-            }
-            dayOfMonthNames{
-                format{
-                    abbreviated{
-                        other{"{0}"}
                     }
                 }
             }

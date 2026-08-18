@@ -452,11 +452,6 @@ units:table(nofallback){
             systems{"si metric prefixable"}
             target{"meter"}
         }
-        mil{
-            factor{"ft_to_m/12*1000"}
-            systems{"ussystem uksystem"}
-            target{"meter"}
-        }
         mile{
             factor{"ft_to_m*5280"}
             systems{"ussystem uksystem"}

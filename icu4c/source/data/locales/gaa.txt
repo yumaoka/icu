@@ -53,7 +53,6 @@ gaa{
                 "yMMdd",
             }
             availableFormats{
-                GyMMMMEddd{"E, MMMM ddd, y G"}
                 yMMMMEd{"E, MMMM d, y"}
                 yMMMMd{"MMMM d, y"}
                 yMMMd{"MMM d, y"}

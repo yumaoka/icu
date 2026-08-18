@@ -1078,16 +1078,6 @@ kok{
                 yyyyQQQ{"QQQ y G"}
                 yyyyQQQQ{"QQQQ y G"}
             }
-            dayOfMonthNames{
-                format{
-                    abbreviated{
-                        few{"{0}rd"}
-                        one{"{0}st"}
-                        other{"{0}th"}
-                        two{"{0}nd"}
-                    }
-                }
-            }
             intervalFormats{
                 Bh{
                     h{"h – h B"}
@@ -1288,6 +1278,8 @@ kok{
                 yMEd{"d-M-y, E"}
                 yMMM{"MMM y"}
                 yMMMM{"MMMM, y"}
+                yMMMMEd{"y MMMM d, EEE"}
+                yMMMMd{"d MMMM, y"}
                 yMMMd{"d MMM, y"}
                 yMd{"d-M-y"}
                 yw{
@@ -1343,16 +1335,6 @@ kok{
                         "बिरे",
                         "शुक्रार",
                         "शेनवार",
-                    }
-                }
-            }
-            dayOfMonthNames{
-                format{
-                    abbreviated{
-                        few{"{0}rd"}
-                        one{"{0}st"}
-                        other{"{0}th"}
-                        two{"{0}nd"}
                     }
                 }
             }

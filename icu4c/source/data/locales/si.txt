@@ -288,13 +288,6 @@ si{
                 yyyyMEd{"G y/M/d, E"}
                 yyyyMd{"G y/M/d"}
             }
-            dayOfMonthNames{
-                format{
-                    abbreviated{
-                        other{"{0}වැනි"}
-                    }
-                }
-            }
             intervalFormats{
                 Bh{
                     B{"B h – B h"}
@@ -454,6 +447,8 @@ si{
                 hv{"v a h"}
                 yM{"y-M"}
                 yMEd{"y-M-d, E"}
+                yMMMMEd{"y MMMM d, EEE"}
+                yMMMMd{"y MMMM d"}
                 yMd{"y-M-d"}
                 yw{
                     one{"Y සතිය w"}
@@ -499,13 +494,6 @@ si{
                         "බ්‍ර",
                         "සි",
                         "සෙ",
-                    }
-                }
-            }
-            dayOfMonthNames{
-                format{
-                    abbreviated{
-                        other{"{0}"}
                     }
                 }
             }

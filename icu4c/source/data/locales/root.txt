@@ -1854,9 +1854,7 @@ root{
                 GyMEd{"G y-MM-dd, E"}
                 GyMMM{"G y MMM"}
                 GyMMMEd{"G y MMM d, E"}
-                GyMMMEddd{"G y MMM ddd, E"}
                 GyMMMd{"G y MMM d"}
-                GyMMMddd{"G y MMM ddd"}
                 GyMd{"G y-MM-dd"}
                 H{"HH"}
                 Hm{"HH:mm"}
@@ -1866,11 +1864,8 @@ root{
                 MEd{"MM-dd, E"}
                 MMM{"LLL"}
                 MMMEd{"MMM d, E"}
-                MMMEddd{"MMM ddd, E"}
                 MMMMd{"MMMM d"}
-                MMMMddd{"MMMM ddd"}
                 MMMd{"MMM d"}
-                MMMddd{"MMM ddd"}
                 Md{"MM-dd"}
                 d{"d"}
                 h{"h a"}
@@ -1884,10 +1879,8 @@ root{
                 yyyyMEd{"G y-MM-dd, E"}
                 yyyyMMM{"G y MMM"}
                 yyyyMMMEd{"G y MMM d, E"}
-                yyyyMMMEddd{"G y MMM ddd, E"}
                 yyyyMMMM{"G y MMMM"}
                 yyyyMMMd{"G y MMM d"}
-                yyyyMMMddd{"G y MMM ddd"}
                 yyyyMd{"G y-MM-dd"}
                 yyyyQQQ{"G y QQQ"}
                 yyyyQQQQ{"G y QQQQ"}
@@ -2154,14 +2147,10 @@ root{
                 GyMEd{"G y-MM-dd, E"}
                 GyMMM{"G y MMM"}
                 GyMMMEd{"G y MMM d, E"}
-                GyMMMEddd{"G y MMM ddd, E"}
                 GyMMMM{"G y MMMM"}
                 GyMMMMEd{"G y MMMM d, E"}
-                GyMMMMEddd{"G y MMMM ddd, E"}
                 GyMMMMd{"G y MMMM d"}
-                GyMMMMddd{"G y MMMM ddd"}
                 GyMMMd{"G y MMM d"}
-                GyMMMddd{"G y MMM ddd"}
                 GyMd{"G y-MM-dd"}
                 H{"HH"}
                 Hm{"HH:mm"}
@@ -2173,16 +2162,12 @@ root{
                 MEd{"MM-dd, E"}
                 MMM{"LLL"}
                 MMMEd{"MMM d, E"}
-                MMMEddd{"MMM ddd, E"}
                 MMMMEd{"MMMM d, E"}
-                MMMMEddd{"MMMM ddd, E"}
                 MMMMW{
                     other{"'week' W 'of' MMMM"}
                 }
                 MMMMd{"MMMM d"}
-                MMMMddd{"MMMM ddd"}
                 MMMd{"MMM d"}
-                MMMddd{"MMM ddd"}
                 Md{"MM-dd"}
                 d{"d"}
                 h{"h a"}
@@ -2197,12 +2182,8 @@ root{
                 yMEd{"y-MM-dd, E"}
                 yMMM{"y MMM"}
                 yMMMEd{"y MMM d, E"}
-                yMMMEddd{"y MMM ddd, E"}
                 yMMMM{"y MMMM"}
-                yMMMMEddd{"y MMMM ddd, E"}
-                yMMMMddd{"y MMMM ddd"}
                 yMMMd{"y MMM d"}
-                yMMMddd{"y MMM ddd"}
                 yMd{"y-MM-dd"}
                 yQQQ{"y QQQ"}
                 yQQQQ{"y QQQQ"}

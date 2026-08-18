@@ -231,13 +231,6 @@ pcm{
                 yyyy{"y G"}
                 yyyyMd{"G y/MM/dd"}
             }
-            dayOfMonthNames{
-                format{
-                    abbreviated{
-                        other{"{0}th"}
-                    }
-                }
-            }
         }
         gregorian{
             AmPmMarkers{
@@ -307,6 +300,8 @@ pcm{
                 yMMM{"MMM y"}
                 yMMMEd{"E, d MMM y"}
                 yMMMM{"MMMM y"}
+                yMMMMEd{"EEE, d MMMM y"}
+                yMMMMd{"d MMMM y"}
                 yMMMd{"d MMM y"}
                 yMd{"d/M/y"}
                 yQQQ{"QQQ y"}
@@ -335,13 +330,6 @@ pcm{
                         "Tọ́zdè",
                         "Fraídè",
                         "Sátọdè",
-                    }
-                }
-            }
-            dayOfMonthNames{
-                format{
-                    abbreviated{
-                        other{"{0}th"}
                     }
                 }
             }

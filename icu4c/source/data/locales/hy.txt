@@ -243,18 +243,13 @@ hy{
                 GyMEd{"G dd.MM.y, E"}
                 GyMMM{"G y թ․ MMM"}
                 GyMMMEd{"G y թ․ MMM d, E"}
-                GyMMMEddd{"G y թ․ MMM d, E"}
                 GyMMMd{"G y թ․ MMM d"}
-                GyMMMddd{"G y թ․ MMM d"}
                 GyMd{"GGGGG dd.MM.y"}
                 H{"H"}
                 Hm{"H:mm"}
                 Hms{"H:mm:ss"}
                 Hv{"H v"}
                 MEd{"dd.MM, E"}
-                MMMEddd{"MMM d, E"}
-                MMMMddd{"MMMM d"}
-                MMMddd{"MMM d"}
                 Md{"dd.MM"}
                 y{"G y թ․"}
                 yyyy{"G y թ․"}
@@ -262,21 +257,11 @@ hy{
                 yyyyMEd{"d.MM.y թ., G, E"}
                 yyyyMMM{"G y թ. LLL"}
                 yyyyMMMEd{"d MMM, y թ. G, E"}
-                yyyyMMMEddd{"G y թ․ MMM d, E"}
                 yyyyMMMM{"G y թ․ LLLL"}
                 yyyyMMMd{"d MMM, y թ., G"}
-                yyyyMMMddd{"G y թ․ MMM d"}
                 yyyyMd{"d.M.y թ., G"}
                 yyyyQQQ{"G y թ, QQQ"}
                 yyyyQQQQ{"G y թ, QQQQ"}
-            }
-            dayOfMonthNames{
-                format{
-                    abbreviated{
-                        one{"{0}-ին"}
-                        other{"{0}-րդ"}
-                    }
-                }
             }
             intervalFormats{
                 Bh{
@@ -408,43 +393,31 @@ hy{
                 GyMEd{"G dd.MM.y, E"}
                 GyMMM{"G y թ. MMM"}
                 GyMMMEd{"G y թ. MMM d, E"}
-                GyMMMEddd{"G y թ․ MMM d, E"}
                 GyMMMM{"G y թ․ LLLL"}
                 GyMMMMEd{"G y թ․ MMMM d, E"}
-                GyMMMMEddd{"G y թ․ MMMM d, E"}
                 GyMMMMd{"G y թ․ MMMM d"}
-                GyMMMMddd{"G y թ․ MMMM d"}
                 GyMMMd{"G y թ․ MMM d"}
-                GyMMMddd{"G y թ․ MMM d"}
                 GyMd{"GGGGG dd.MM.y"}
                 H{"H"}
                 Hm{"H:mm"}
                 Hms{"H:mm:ss"}
                 Hv{"H v"}
                 MEd{"dd.MM, E"}
-                MMMEddd{"MMM d, E"}
-                MMMMEddd{"MMMM d, E"}
                 MMMMW{
                     one{"MMMM W-ին շաբաթ"}
                     other{"MMMM W-րդ շաբաթ"}
                 }
-                MMMMddd{"MMMM d"}
                 MMMd{"d MMM"}
-                MMMddd{"MMM d"}
                 Md{"dd.MM"}
                 y{"y թ․"}
                 yM{"MM.y"}
                 yMEd{"d.MM.y, E"}
                 yMMM{"y թ. LLL"}
                 yMMMEd{"y թ. MMM d, E"}
-                yMMMEddd{"y թ․ MMM d, E"}
                 yMMMM{"y թ․ LLLL"}
                 yMMMMEd{"y թ․ MMMM d, E"}
-                yMMMMEddd{"y թ․ MMMM d, E"}
                 yMMMMd{"y թ․ MMMM d"}
-                yMMMMddd{"y թ․ MMMM d"}
                 yMMMd{"y թ. MMM d"}
-                yMMMddd{"y թ․ MMM d"}
                 yMd{"dd.MM.y"}
                 yQQQ{"y թ. QQQ"}
                 yQQQQ{"y թ. QQQQ"}
@@ -492,14 +465,6 @@ hy{
                         "Հ",
                         "Ո",
                         "Շ",
-                    }
-                }
-            }
-            dayOfMonthNames{
-                format{
-                    abbreviated{
-                        one{"{0}-ին"}
-                        other{"{0}-րդ"}
                     }
                 }
             }

@@ -396,6 +396,8 @@ tg{
                 yMMM{"MMM y"}
                 yMMMEd{"E, d MMM, y"}
                 yMMMM{"MMMM y"}
+                yMMMMEd{"EEE, d MMMM, y"}
+                yMMMMd{"d MMMM y"}
                 yMMMd{"d MMM y"}
                 yMd{"d.M.y"}
                 yQQQ{"QQQ y"}

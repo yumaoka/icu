@@ -195,23 +195,16 @@ th{
             availableFormats{
                 GyM{"M/G y"}
                 GyMEd{"E d/M/G y"}
-                GyMMMEddd{"E ddd MMM G y"}
-                GyMMMddd{"ddd MMM G y"}
                 GyMd{"d/M/GGGGG y"}
-                MMMEddd{"E ddd MMM"}
                 MMMMEEEEd{"EEEEที่ d MMMM"}
                 MMMMEd{"E d MMMM"}
-                MMMMddd{"ddd MMMM"}
-                MMMddd{"ddd MMM"}
                 yyyyM{"M/y"}
                 yyyyMEd{"E d/M/y"}
                 yyyyMMM{"MMM y"}
                 yyyyMMMEEEEd{"EEEEที่ d MMM y"}
                 yyyyMMMEd{"E d MMM y"}
-                yyyyMMMEddd{"E ddd MMM G y"}
                 yyyyMMMM{"MMMM y"}
                 yyyyMMMd{"d MMM y"}
-                yyyyMMMddd{"ddd MMM G y"}
                 yyyyMd{"d/M/y"}
                 yyyyQQQ{"QQQ y"}
                 yyyyQQQQ{"QQQQ y"}
@@ -615,38 +608,24 @@ th{
                 GyMMM{"MMM G y"}
                 GyMMMEEEEd{"EEEEที่ d MMM G y"}
                 GyMMMEd{"E d MMM G y"}
-                GyMMMEddd{"E ddd MMM G y"}
                 GyMMMd{"d MMM G y"}
-                GyMMMddd{"ddd MMM G y"}
                 GyMd{"d/M/y GGGGG"}
                 MEd{"E d/M"}
                 MMMEEEEd{"EEEEที่ d MMM"}
                 MMMEd{"E d MMM"}
-                MMMEddd{"E ddd MMM"}
                 MMMMd{"d MMMM"}
-                MMMMddd{"ddd MMMM"}
                 MMMd{"d MMM"}
-                MMMddd{"ddd MMM"}
                 Md{"d/M"}
                 yyyyM{"M/y G"}
                 yyyyMEd{"E d/M/y GGGGG"}
                 yyyyMMM{"MMM G y"}
                 yyyyMMMEEEEd{"EEEEที่ d MMM G y"}
                 yyyyMMMEd{"E d MMM G y"}
-                yyyyMMMEddd{"E ddd MMM G y"}
                 yyyyMMMM{"MMMM G y"}
                 yyyyMMMd{"d MMM G y"}
-                yyyyMMMddd{"ddd MMM G y"}
                 yyyyMd{"d/M/y GGGGG"}
                 yyyyQQQ{"QQQ G y"}
                 yyyyQQQQ{"QQQQ G y"}
-            }
-            dayOfMonthNames{
-                format{
-                    abbreviated{
-                        other{"{0}"}
-                    }
-                }
             }
             intervalFormats{
                 Bh{
@@ -824,30 +803,22 @@ th{
                 GyMMM{"MMM G y"}
                 GyMMMEEEEd{"EEEEที่ d MMM G y"}
                 GyMMMEd{"E d MMM G y"}
-                GyMMMEddd{"E ddd MMM G y"}
                 GyMMMM{"MMMM G y"}
                 GyMMMMEd{"E d MMMM G y"}
-                GyMMMMEddd{"E ddd MMMM G y"}
                 GyMMMMd{"d MMMM G y"}
-                GyMMMMddd{"ddd MMMM G y"}
                 GyMMMd{"d MMM G y"}
-                GyMMMddd{"ddd MMM G y"}
                 GyMd{"d/M/GGGGG y"}
                 Hm{"HH:mm น."}
                 MEd{"E d/M"}
                 MMMEEEEd{"EEEEที่ d MMM"}
                 MMMEd{"E d MMM"}
-                MMMEddd{"E ddd MMM"}
                 MMMMEEEEd{"EEEEที่ d MMMM"}
                 MMMMEd{"E d MMMM"}
-                MMMMEddd{"E ddd MMMM"}
                 MMMMW{
                     other{"สัปดาห์ที่ W ของเดือนMMMM"}
                 }
                 MMMMd{"d MMMM"}
-                MMMMddd{"ddd MMMM"}
                 MMMd{"d MMM"}
-                MMMddd{"ddd MMM"}
                 Md{"d/M"}
                 mmss{"mm:ss"}
                 yM{"M/y"}
@@ -855,15 +826,11 @@ th{
                 yMMM{"MMM y"}
                 yMMMEEEEd{"EEEEที่ d MMM y"}
                 yMMMEd{"E d MMM y"}
-                yMMMEddd{"E ddd MMM y"}
                 yMMMM{"MMMM y"}
                 yMMMMEEEEd{"EEEEที่ d MMMM y"}
                 yMMMMEd{"E d MMMM y"}
-                yMMMMEddd{"E ddd MMMM y"}
                 yMMMMd{"d MMMM y"}
-                yMMMMddd{"ddd MMMM y"}
                 yMMMd{"d MMM y"}
-                yMMMddd{"ddd MMM y"}
                 yMd{"d/M/y"}
                 yQQQ{"QQQ y"}
                 yQQQQ{"QQQQ G y"}
@@ -910,13 +877,6 @@ th{
                         "พฤ",
                         "ศ",
                         "ส",
-                    }
-                }
-            }
-            dayOfMonthNames{
-                format{
-                    abbreviated{
-                        other{"{0}"}
                     }
                 }
             }

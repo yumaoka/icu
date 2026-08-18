@@ -233,17 +233,12 @@ az{
                 GyMEd{"G E, dd/MM/y"}
                 GyMMM{"G MMM y"}
                 GyMMMEd{"G E, d MMM y"}
-                GyMMMEddd{"G E, ddd MMM y"}
                 GyMMMd{"G d MMM y"}
-                GyMMMddd{"G ddd MMM y"}
                 GyMd{"GGGGG d M y"}
                 MEd{"E, dd.MM"}
                 MMMEd{"E, d MMM"}
-                MMMEddd{"E, ddd MMM"}
                 MMMMd{"d MMMM"}
-                MMMMddd{"ddd MMMM"}
                 MMMd{"d MMM"}
-                MMMddd{"ddd MMM"}
                 Md{"dd.MM"}
                 hm{"h:mm a"}
                 hms{"h:mm:ss a"}
@@ -251,21 +246,9 @@ az{
                 yyyyMEd{"GGGGG E, dd.MM.y"}
                 yyyyMMM{"G MMM y"}
                 yyyyMMMEd{"G d MMM y, E"}
-                yyyyMMMEddd{"G E, ddd MMM y"}
                 yyyyMMMM{"G MMMM y"}
                 yyyyMMMd{"G d MMM y"}
-                yyyyMMMddd{"G ddd MMM y"}
                 yyyyMd{"GGGGG dd.MM.y"}
-            }
-            dayOfMonthNames{
-                format{
-                    abbreviated{
-                        few{"{0}"}
-                        many{"{0} məlumat yoxdur"}
-                        one{"{0}"}
-                        other{"{0}"}
-                    }
-                }
             }
             intervalFormats{
                 Bh{
@@ -437,28 +420,20 @@ az{
                 GyMEd{"G d M y, E"}
                 GyMMM{"G MMM y"}
                 GyMMMEd{"G E, d MMM y"}
-                GyMMMEddd{"G E, ddd MMM y"}
                 GyMMMM{"G MMMM y"}
                 GyMMMMEd{"G E, d MMMM y"}
-                GyMMMMEddd{"G E, ddd MMMM y"}
                 GyMMMMd{"G d MMMM y"}
-                GyMMMMddd{"G ddd MMMM y"}
                 GyMMMd{"G d MMM y"}
-                GyMMMddd{"G ddd MMM y"}
                 GyMd{"G d M y"}
                 MEd{"E, dd.MM"}
                 MMMEd{"E, d MMM"}
-                MMMEddd{"E, ddd MMM"}
                 MMMMEd{"E, d MMMM"}
-                MMMMEddd{"E, ddd MMMM"}
                 MMMMW{
                     one{"MMMM, 'həftə' W"}
                     other{"MMMM, 'həftə' W"}
                 }
                 MMMMd{"d MMMM"}
-                MMMMddd{"ddd MMMM"}
                 MMMd{"d MMM"}
-                MMMddd{"ddd MMM"}
                 Md{"dd.MM"}
                 hm{"h:mm a"}
                 hms{"h:mm:ss a"}
@@ -468,14 +443,10 @@ az{
                 yMEd{"dd.MM.y, E"}
                 yMMM{"MMM y"}
                 yMMMEd{"E, d MMM y"}
-                yMMMEddd{"E, ddd MMM y"}
                 yMMMM{"MMMM y"}
                 yMMMMEd{"E, d MMMM y"}
-                yMMMMEddd{"E, ddd MMMM y"}
                 yMMMMd{"d MMMM y"}
-                yMMMMddd{"ddd MMMM y"}
                 yMMMd{"d MMM y"}
-                yMMMddd{"ddd MMM y"}
                 yMd{"dd.MM.y"}
                 yw{
                     one{"Y, 'həftə' w"}
@@ -530,16 +501,6 @@ az{
                         "4",
                         "5",
                         "6",
-                    }
-                }
-            }
-            dayOfMonthNames{
-                format{
-                    abbreviated{
-                        few{"{0}-cü"}
-                        many{"{0} məlumat yoxdur"}
-                        one{"{0}-ci"}
-                        other{"{0} saylı"}
                     }
                 }
             }
@@ -811,21 +772,14 @@ az{
                 GyM{"G M/y"}
                 GyMEd{"G E, d/M/y"}
                 GyMMMEd{"G E, d MMM y"}
-                GyMMMEddd{"G E, ddd MMM y"}
-                GyMMMddd{"G ddd MMM y"}
                 GyMd{"G d/M/y"}
                 MEd{"E, d/M"}
                 MMMEd{"E, d MMM"}
-                MMMEddd{"E, ddd MMM"}
                 MMMMd{"d MMMM"}
-                MMMMddd{"ddd MMMM"}
-                MMMddd{"ddd MMM"}
                 Md{"d/M"}
                 yyyyM{"G y/M"}
                 yyyyMEd{"G E, d/M/y"}
                 yyyyMMMEd{"G E, d MMM y"}
-                yyyyMMMEddd{"G E, ddd MMM y"}
-                yyyyMMMddd{"G ddd MMM y"}
                 yyyyMd{"G d/M/y"}
             }
             monthNames{
