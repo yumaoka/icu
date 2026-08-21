@@ -52,6 +52,13 @@ and see the change logs below.
     ERROR: Skipping '//icu4c/source/tools/gennorm2': error loading package 'icu4c/source/tools/gennorm2': Unable to find package for @@[unknown repo 'rules_cc' requested from @@]//cc:defs.bzl: The repository '@@[unknown repo 'rules_cc' requested from @@]' could not be resolved: No repository visible as '@rules_cc' from main repository. Was the repository introduced in WORKSPACE? The WORKSPACE file is disabled by default in Bazel 8 (late 2024) and will be removed in Bazel 9 (late 2025), please migrate to Bzlmod. See https://bazel.build/external/migration.
   Need to revisit!
 
+* TODO: regenerate PropNumbersTest.java
+  After adding any new API for new properties, and after genprops has regenerated prop_numbers.txt,
+  run
+  $ICU_ROOT$
+      tools/unicode/py/generate_prop_numbers_test_java.py
+      mvn spotless:apply
+
 ---------------------------------------------------------------------------- ***
 
 Unicode 18.0 update for ICU 79
