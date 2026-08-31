@@ -1297,30 +1297,214 @@ class RBBITableBuilder {
         int numCharClasses = fRB.fSetBuilder.getNumCharCategories();
         int numStates = fDStates.size();
 
-        for (int c1 = 0; c1 < numCharClasses; ++c1) {
-            for (int c2 = 0; c2 < numCharClasses; ++c2) {
+        // The elements at indices 0 and ACCEPTING_UNCONDITIONAL (1) are never used.
+        final var lookaheadPositions = new int[fLASlotsInUse + 1];
+        final var wantedLookaheadsInPair = new int[fLASlotsInUse + 1];
+        // Same as in RuleBasedBreakIterator.
+        // TODO(egg): Maybe this should move to RBBIDataWrapper like ACCEPTING_UNCONDITIONAL?
+        final int START_STATE = 1;
+        // Index -2 is used to signify a text position before the pair (c1, c2).
+        final int BEFORE_PAIR = -2;
+        // In lookaheadPositions, index -1 is used to signify that the lookahead has not been set.
+        final int LOOKAHEAD_NOT_SET = -1;
+        for (int c1 = 1; c1 < numCharClasses; ++c1) {
+            if (fRB.fSetBuilder.getFirstChar(c1) < 0) {
+                continue;
+            }
+            trySymbolPairs:
+            for (int c2 = 1; c2 < numCharClasses; ++c2) {
+                if (fRB.fSetBuilder.getFirstChar(c2) < 0) {
+                    continue;
+                }
                 int wantedEndState = -1;
-                int endState = 0;
-                for (int startState = 1; startState < numStates; ++startState) {
-                    RBBIStateDescriptor startStateD = fDStates.get(startState);
-                    int s2 = startStateD.fDtran[c1];
-                    RBBIStateDescriptor s2StateD = fDStates.get(s2);
-                    endState = s2StateD.fDtran[c2];
-                    if (wantedEndState < 0) {
-                        wantedEndState = endState;
-                    } else {
-                        if (wantedEndState != endState) {
-                            break;
+                int wantedLastAcceptingPosition = -1;
+                boolean mustCheckConsistentWithStartC2 = false;
+                final int[] text = {c1, c2};
+                for (int injectedState = START_STATE; injectedState < numStates; ++injectedState) {
+                    for (int injectedLookahead = RBBIDataWrapper.ACCEPTING_UNCONDITIONAL;
+                            injectedLookahead <= fLASlotsInUse;
+                            ++injectedLookahead) {
+                        // We never use this initial value of lastBreak, but the Java compiler does
+                        // not realize that.
+                        int lastBreak = BEFORE_PAIR;
+                        int lastAcceptingPosition = BEFORE_PAIR;
+                        Arrays.setAll(lookaheadPositions, l -> LOOKAHEAD_NOT_SET);
+                        if (injectedLookahead != RBBIDataWrapper.ACCEPTING_UNCONDITIONAL) {
+                            lookaheadPositions[injectedLookahead] = BEFORE_PAIR;
+                        }
+                        {
+                            final RBBIStateDescriptor injectedStateDescriptor =
+                                    fDStates.get(injectedState);
+                            if (injectedStateDescriptor.fAccepting
+                                    == RBBIDataWrapper.ACCEPTING_UNCONDITIONAL) {
+                                lastAcceptingPosition = 0;
+                            } else if (injectedStateDescriptor.fAccepting == injectedLookahead) {
+                                continue;
+                            }
+                            if (injectedStateDescriptor.fLookAhead != 0) {
+                                lookaheadPositions[injectedStateDescriptor.fLookAhead] = 0;
+                            }
+                        }
+                        int s = injectedState;
+                        int i = 0;
+                        // We are simulating starting from some injected initial state into an inner
+                        // loop, and we have no goto in Java, so this flag the part of the inner
+                        // loop that we want to jump over.
+                        boolean injecting = true;
+                        // Loop Run_DFA in L2/26-135, without the termination condition (we do not
+                        // need to simulate the end of text).
+                        runDFA:
+                        for (; ; ) {
+                            if (!injecting) {
+                                s = START_STATE;
+
+                                Arrays.setAll(lookaheadPositions, l -> LOOKAHEAD_NOT_SET);
+                                i = lastBreak;
+                            }
+                            // Loop Find_Next_Break in L2/26-135.
+                            findNextBreak:
+                            for (; ; ) {
+                                if (injecting) {
+                                    injecting = false;
+                                }
+                                if (i == BEFORE_PAIR || i == 2) {
+                                    break runDFA;
+                                }
+                                final int symbolAhead = text[i];
+                                ++i;
+                                RBBIStateDescriptor sDescriptor = fDStates.get(s);
+                                if (sDescriptor.fDtran[symbolAhead] != 0) {
+                                    s = sDescriptor.fDtran[symbolAhead];
+                                    sDescriptor = fDStates.get(s);
+                                } else {
+                                    if (lastBreak != BEFORE_PAIR
+                                            && lastAcceptingPosition == lastBreak) {
+                                        // The pair (c1, c2) puts us in an infinite loop from the
+                                        // current configuration, presumably because some one-
+                                        // character strings are not in the language recognized by
+                                        // the rules).
+                                        // This should never happen for a segmentation algorithm.
+                                        // The RBBI implementation forcefully advances the iterator
+                                        // in that case; let’s just say the pair is unsafe and move
+                                        // on.
+                                        continue trySymbolPairs;
+                                    }
+                                    lastBreak = lastAcceptingPosition;
+                                    break findNextBreak;
+                                }
+
+                                if (sDescriptor.fAccepting
+                                        == RBBIDataWrapper.ACCEPTING_UNCONDITIONAL) {
+                                    lastAcceptingPosition = i;
+                                } else if (sDescriptor.fAccepting
+                                                > RBBIDataWrapper.ACCEPTING_UNCONDITIONAL
+                                        && lookaheadPositions[sDescriptor.fAccepting]
+                                                != LOOKAHEAD_NOT_SET) {
+                                    lastBreak = lookaheadPositions[sDescriptor.fAccepting];
+                                    break findNextBreak;
+                                }
+                                if (sDescriptor.fLookAhead != 0) {
+                                    lookaheadPositions[sDescriptor.fLookAhead] = i;
+                                }
+                            }
+                        }
+                        if (i == BEFORE_PAIR) {
+                            // Starting on `injectedState` with `injectedLookahead` set, with the
+                            // pair (c1, c2) ahead, the state machine finds a break before the pair;
+                            // it will thus come back to the pair in a different configuration,
+                            // which is covered by some other iteration of the loop over
+                            // `injectedState` and `injectedLookahead`.
+                            continue;
+                        }
+                        if (wantedEndState < 0) {
+                            wantedEndState = s;
+                            wantedLastAcceptingPosition = lastAcceptingPosition;
+                            for (int l = RBBIDataWrapper.ACCEPTING_UNCONDITIONAL + 1;
+                                    l <= fLASlotsInUse;
+                                    ++l) {
+                                if (lookaheadPositions[l] != LOOKAHEAD_NOT_SET
+                                        && lookaheadPositions[l] != BEFORE_PAIR
+                                        && lookaheadPositions[l] != 0) {
+                                    wantedLookaheadsInPair[l] = lookaheadPositions[i];
+                                } else {
+                                    wantedLookaheadsInPair[l] = LOOKAHEAD_NOT_SET;
+                                }
+                            }
+                        } else {
+                            if (wantedEndState != s) {
+                                // We can get out of the pair on different states depending on the
+                                // initial configuration.
+                                continue trySymbolPairs;
+                            }
+                            if (wantedLastAcceptingPosition != lastAcceptingPosition) {
+                                continue trySymbolPairs;
+                            }
+                        }
+                        // A lookahead some distance before the pair (set to BEFORE_PAIR) means we
+                        // will come back to the pair in a different configuration if it matches, a
+                        // lookahead at position 0 means we get back to the pair on the start state
+                        // if it matches; either way, this is covered by other iterations of the
+                        // loop over injected states and lookaheads.
+                        // For lookaheads at position 1 (in the middle of the pair) and 2 (after the
+                        // pair), these have two ways of being safe: either they are always set, or
+                        // it does not matter if they are set, because if they match we come back
+                        // with the same state.
+                        for (int l = RBBIDataWrapper.ACCEPTING_UNCONDITIONAL + 1;
+                                l <= fLASlotsInUse;
+                                ++l) {
+                            if (lookaheadPositions[l] == BEFORE_PAIR
+                                    || lookaheadPositions[l] == 0
+                                    || lookaheadPositions[l] == wantedLookaheadsInPair[l]) {
+                                continue;
+                            }
+                            if (lookaheadPositions[l] == 2 || wantedLookaheadsInPair[l] == 2) {
+                                // A lookahead after the pair means we will come back to the end of
+                                // the pair on the start state if it matches, so in order for the
+                                // pair to be  safe if that lookahead is not consistently set, we
+                                // must have left it on the start state.
+                                if (wantedEndState != START_STATE) {
+                                    continue trySymbolPairs;
+                                }
+                            }
+                            if (lookaheadPositions[l] == 1 || wantedLookaheadsInPair[l] == 1) {
+                                // If a lookahead in the middle of the pair matches, we will come
+                                // back to c2 on the start state.
+                                mustCheckConsistentWithStartC2 = true;
+                            }
                         }
                     }
                 }
-                if (wantedEndState == endState) {
-                    safePairs.append((char) c1);
-                    safePairs.append((char) c2);
-                    // System.out.printf("(%d, %d) ", c1, c2);
+                if (mustCheckConsistentWithStartC2) {
+                    final RBBIStateDescriptor startDescriptor = fDStates.get(START_STATE);
+                    final var c2State = startDescriptor.fDtran[c2];
+                    if (c2State != wantedEndState) {
+                        continue trySymbolPairs;
+                    }
+                    final RBBIStateDescriptor c2StateDescriptor = fDStates.get(c2State);
+                    // In a segmentation algorithm, any single symbol transitions to an
+                    // accepting state from the start state (a single character is a
+                    // possible segment), so we know c2State is accepting.
+                    assert (c2StateDescriptor.fAccepting
+                            == RBBIDataWrapper.ACCEPTING_UNCONDITIONAL);
+                    if (wantedLastAcceptingPosition != 2) {
+                        continue trySymbolPairs;
+                    }
+                    // If that in turn sets a lookahead, we have a lookahead after the
+                    // pair.  If we consistently have that the pair is safe.  Otherwise, if we match
+                    // that lookahead, we end up on the start state.
+                    for (int l = RBBIDataWrapper.ACCEPTING_UNCONDITIONAL + 1;
+                            l <= fLASlotsInUse;
+                            ++l) {
+                        if (((wantedLookaheadsInPair[l] == 2)
+                                        != (c2StateDescriptor.fLookAhead == l))
+                                && wantedEndState != START_STATE) {
+                            continue trySymbolPairs;
+                        }
+                    }
                 }
+                safePairs.append((char) c1);
+                safePairs.append((char) c2);
             }
-            // System.out.printf("\n");
         }
 
         // Populate the initial safe table.

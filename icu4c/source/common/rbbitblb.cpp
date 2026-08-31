@@ -1772,8 +1772,15 @@ void RBBITableBuilder::buildSafeReverseTable(UErrorCode &status) {
     // 1. Identify pairs of character classes that are "safe." Safe means that boundaries
     // following the pair do not depend on context or state before the pair. To test
     // whether a pair is safe, run it through the main forward state table, starting
-    // from each state. If the final state is the same, no matter what the starting state,
-    // the pair is safe.
+    // from each possible configuration. If the final configuration is the same, no matter what the
+    // starting configuration, the pair is safe.
+    // Note that the configuration includes not only the state, but also the last accepting position
+    // and the lookaheads.  Some differences in final lookaheads can be ignored when it can be shown
+    // that they do not affect breaks after the pair: this happens when we come back out of the pair
+    // with a matching configuration when the lookahead matches.
+    // TODO(egg): It is possible for pairs to be safe even if the outgoing states differ depending
+    // on the state before the pair; this would require a more thorough analysis to handle, probably
+    // in the style of what happens in minimizeStates.
     //
     // 2. Build a state table that recognizes the safe pairs. It's similar to their
     // forward table, with a column for each input character [class], and a row for
@@ -1797,31 +1804,200 @@ void RBBITableBuilder::buildSafeReverseTable(UErrorCode &status) {
 
     int32_t numCharClasses = fRB->fSetBuilder->getNumCharCategories();
     int32_t numStates = fDStates->size();
-
-    for (int32_t c1=0; c1<numCharClasses; ++c1) {
-        for (int32_t c2=0; c2 < numCharClasses; ++c2) {
+    // The elements at indices 0 and ACCEPTING_UNCONDITIONAL (1) are never used.
+    const auto lookaheadPositions =
+        prv::make_unique_for_overwrite<int8_t[]>(fLASlotsInUse + 1, status);
+    const auto wantedLookaheadsInPair =
+        prv::make_unique_for_overwrite<int8_t[]>(fLASlotsInUse + 1, status);
+    if (U_FAILURE(status)) {
+        return;
+    }
+    // Same as in rbbi.cpp.
+    // TODO(egg): Maybe this should move to rbbidata.h like ACCEPTING_UNCONDITIONAL?
+    constexpr int32_t START_STATE = 1;
+    // Index -2 is used to signify a text position before the pair (c1, c2).
+    constexpr int32_t BEFORE_PAIR = -2;
+    // In lookaheadPositions, index -1 is used to signify that the lookahead has not been set.
+    constexpr int8_t LOOKAHEAD_NOT_SET = -1;
+    for (int32_t c1 = 1; c1 < numCharClasses; ++c1) {
+        if (fRB->fSetBuilder->getFirstChar(c1) < 0) {
+          continue;
+        }
+        for (int32_t c2 = 1; c2 < numCharClasses; ++c2) {
+            if (fRB->fSetBuilder->getFirstChar(c2) < 0) {
+                continue;
+            }
             int32_t wantedEndState = -1;
-            int32_t endState = 0;
-            for (int32_t startState = 1; startState < numStates; ++startState) {
-                RBBIStateDescriptor *startStateD = static_cast<RBBIStateDescriptor *>(fDStates->elementAt(startState));
-                int32_t s2 = startStateD->fDtran->elementAti(c1);
-                RBBIStateDescriptor *s2StateD = static_cast<RBBIStateDescriptor *>(fDStates->elementAt(s2));
-                endState = s2StateD->fDtran->elementAti(c2);
-                if (wantedEndState < 0) {
-                    wantedEndState = endState;
-                } else {
-                    if (wantedEndState != endState) {
-                        break;
+            int32_t wantedLastAcceptingPosition;
+            bool mustCheckConsistentWithStartC2 = false;
+            const int32_t text[2] = {c1, c2};
+            for (int32_t injectedState = START_STATE; injectedState < numStates; ++injectedState) {
+                for (int32_t injectedLookahead = ACCEPTING_UNCONDITIONAL;
+                     injectedLookahead <= fLASlotsInUse; ++injectedLookahead) {
+                    int32_t lastBreak = BEFORE_PAIR;
+                    int32_t lastAcceptingPosition = BEFORE_PAIR;
+                    uprv_memset(lookaheadPositions.get(), LOOKAHEAD_NOT_SET, fLASlotsInUse + 1);
+                    if (injectedLookahead != ACCEPTING_UNCONDITIONAL) {
+                        lookaheadPositions[injectedLookahead] = BEFORE_PAIR;
+                    }
+                    {
+                        const RBBIStateDescriptor &injectedStateDescriptor =
+                            *static_cast<RBBIStateDescriptor *>(fDStates->elementAt(injectedState));
+                        if (injectedStateDescriptor.fAccepting == ACCEPTING_UNCONDITIONAL) {
+                            lastAcceptingPosition = 0;
+                        } else if (static_cast<int32_t>(injectedStateDescriptor.fAccepting) ==
+                                   injectedLookahead) {
+                            continue;
+                        }
+                        if (injectedStateDescriptor.fLookAhead != 0) {
+                            lookaheadPositions[injectedStateDescriptor.fLookAhead] = 0;
+                        }
+                    }
+                    int32_t s = injectedState;
+                    int32_t i = 0;
+                    goto dfaStep;
+                    // Loop Run_DFA in L2/26-135, without the termination condition (we do not need
+                    // to simulate the end of text).
+                    for (;;) {
+                        s = START_STATE;
+                        uprv_memset(lookaheadPositions.get(), LOOKAHEAD_NOT_SET, fLASlotsInUse + 1);
+                        i = lastBreak;
+                        // Loop Find_Next_Break in L2/26-135.
+                        for (;;) {
+                        dfaStep:
+                            if (i == BEFORE_PAIR || i == 2) {
+                                goto inspectFinalState;
+                            }
+                            const int32_t symbolAhead = text[i];
+                            ++i;
+                            const RBBIStateDescriptor *sDescriptor =
+                                static_cast<RBBIStateDescriptor *>(fDStates->elementAt(s));
+                            if (sDescriptor->fDtran->elementAti(symbolAhead) != 0) {
+                                s = sDescriptor->fDtran->elementAti(symbolAhead);
+                                sDescriptor =
+                                    static_cast<RBBIStateDescriptor *>(fDStates->elementAt(s));
+                            } else {
+                                if (lastBreak != BEFORE_PAIR &&
+                                    lastAcceptingPosition == lastBreak) {
+                                    // The pair (c1, c2) puts us in an infinite loop from the
+                                    // current configuration, presumably because some one-character
+                                    // strings are not in the language recognized by the rules).
+                                    // This should never happen for a segmentation algorithm.  The
+                                    // RBBI implementation forcefully advances the iterator in that
+                                    // case; let’s just say the pair is unsafe and move on.
+                                    goto nextSymbolPair;
+                                }
+                                lastBreak = lastAcceptingPosition;
+                                break;
+                            }
+
+                            if (sDescriptor->fAccepting == ACCEPTING_UNCONDITIONAL) {
+                                lastAcceptingPosition = i;
+                            } else if (sDescriptor->fAccepting > ACCEPTING_UNCONDITIONAL &&
+                                       lookaheadPositions[sDescriptor->fAccepting] !=
+                                           LOOKAHEAD_NOT_SET) {
+                                lastBreak = lookaheadPositions[sDescriptor->fAccepting];
+                                break;
+                            }
+                            if (sDescriptor->fLookAhead != 0) {
+                                lookaheadPositions[sDescriptor->fLookAhead] = i;
+                            }
+                        }
+                    }
+                inspectFinalState:
+                    if (i == BEFORE_PAIR) {
+                        // Starting on `injectedState` with `injectedLookahead` set, with the pair
+                        // (c1, c2) ahead, the state machine finds a break before the pair; it will
+                        // thus come back to the pair in a different configuration, which is covered
+                        // by some other iteration of the loop over `injectedState` and
+                        // `injectedLookahead`.
+                        continue;
+                    }
+                    if (wantedEndState < 0) {
+                        wantedEndState = s;
+                        wantedLastAcceptingPosition = lastAcceptingPosition;
+                        for (int32_t l = ACCEPTING_UNCONDITIONAL + 1; l <= fLASlotsInUse; ++l) {
+                            if (lookaheadPositions[l] != LOOKAHEAD_NOT_SET &&
+                                lookaheadPositions[l] != BEFORE_PAIR &&
+                                lookaheadPositions[l] != 0) {
+                                wantedLookaheadsInPair[l] = lookaheadPositions[i];
+                            } else {
+                                wantedLookaheadsInPair[l] = LOOKAHEAD_NOT_SET;
+                            }
+                        }
+                    } else {
+                        if (wantedEndState != s) {
+                            // We can get out of the pair on different states depending on the
+                            // initial configuration.
+                            goto nextSymbolPair;
+                        }
+                        if (wantedLastAcceptingPosition != lastAcceptingPosition) {
+                            goto nextSymbolPair;
+                        }
+                    }
+                    // A lookahead some distance before the pair (set to BEFORE_PAIR) means we
+                    // will come back to the pair in a different configuration if it matches, a
+                    // lookahead at position 0 means we get back to the pair on the start state
+                    // if it matches; either way, this is covered by other iterations of the
+                    // loop over injected states and lookaheads.
+                    // For lookaheads at position 1 (in the middle of the pair) and 2 (after the
+                    // pair), these have two ways of being safe: either they are always set, or it
+                    // does not matter if they are set, because if they match we come back with the
+                    // same state.
+                    for (int32_t l = ACCEPTING_UNCONDITIONAL + 1; l <= fLASlotsInUse; ++l) {
+                        if (lookaheadPositions[l] == BEFORE_PAIR || lookaheadPositions[l] == 0 ||
+                            lookaheadPositions[l] == wantedLookaheadsInPair[l]) {
+                            continue;
+                        }
+                        if (lookaheadPositions[l] == 2 || wantedLookaheadsInPair[l] == 2) {
+                            // A lookahead after the pair means we will come back to the end of the
+                            // pair on the start state if it matches, so in order for the pair to be
+                            // safe if that lookahead is not consistently set, we must have left it
+                            // on the start state.
+                            if (wantedEndState != START_STATE) {
+                                goto nextSymbolPair;
+                            }
+                        }
+                        if (lookaheadPositions[l] == 1 || wantedLookaheadsInPair[l] == 1) {
+                            // If a lookahead in the middle of the pair matches, we will come back
+                            // to c2 on the start state.
+                            mustCheckConsistentWithStartC2 = true;
+                        }
                     }
                 }
             }
-            if (wantedEndState == endState) {
-                safePairs.append(static_cast<char16_t>(c1));
-                safePairs.append(static_cast<char16_t>(c2));
-                // printf("(%d, %d) ", c1, c2);
+            if (mustCheckConsistentWithStartC2) {
+                const RBBIStateDescriptor& startDescriptor =
+                    *static_cast<RBBIStateDescriptor *>(fDStates->elementAt(START_STATE));
+                const auto c2State = startDescriptor.fDtran->elementAti(c2);
+                if (c2State != wantedEndState) {
+                    goto nextSymbolPair;
+                }
+                const RBBIStateDescriptor& c2StateDescriptor =
+                    *static_cast<RBBIStateDescriptor *>(fDStates->elementAt(c2State));
+                // In a segmentation algorithm, any single symbol transitions to an
+                // accepting state from the start state (a single character is a
+                // possible segment), so we know c2State is accepting.
+                U_ASSERT(c2StateDescriptor.fAccepting == ACCEPTING_UNCONDITIONAL);
+                if (wantedLastAcceptingPosition != 2) {
+                    goto nextSymbolPair;
+                }
+                // If that in turn sets a lookahead, we have a lookahead after the
+                // pair.  If we consistently have that the pair is safe.  Otherwise, if we match
+                // that lookahead, we end up on the start state.
+                for (int32_t l = ACCEPTING_UNCONDITIONAL + 1; l <= fLASlotsInUse; ++l) {
+                    if (((wantedLookaheadsInPair[l] == 2) !=
+                         (static_cast<int32_t>(c2StateDescriptor.fLookAhead) == l)) &&
+                        wantedEndState != START_STATE) {
+                        goto nextSymbolPair;
+                    }
+                }
             }
+            safePairs.append(static_cast<char16_t>(c1));
+            safePairs.append(static_cast<char16_t>(c2));
+        nextSymbolPair:
+            continue;
         }
-        // printf("\n");
     }
 
     // Populate the initial safe table.

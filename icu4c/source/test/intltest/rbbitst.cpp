@@ -81,6 +81,22 @@
                     __FILE__, __LINE__, msg, index, fRuleFileName, engineState.c_str()); \
 }
 
+namespace {
+
+std::string characterName(const UChar32 cp, UErrorCode &status) {
+    char nameBuffer[256];
+    memset(nameBuffer, 0, sizeof(nameBuffer));
+    u_charName(cp, U_UNICODE_CHAR_NAME, nameBuffer, sizeof(nameBuffer), &status);
+    return nameBuffer;
+}
+
+const char *shortLB(const UChar32 cp) {
+    return u_getPropertyValueName(UCHAR_LINE_BREAK, u_getIntPropertyValue(cp, UCHAR_LINE_BREAK),
+                                  U_SHORT_PROPERTY_NAME);
+}
+
+} // namespace
+
 //---------------------------------------------
 // runIndexedTest
 //---------------------------------------------
@@ -3836,13 +3852,11 @@ void RBBITest::TestReverse(std::unique_ptr<RuleBasedBreakIterator>bi) {
 }
 
 // Regression test for ICU-23478: make sure normal text contains lots of safe positions.
-// NOTE: For now ICU-23478 is open and this test merely records the extent of the disaster (OK for
-// ideographic text, catastrophic elsewhere).
 void RBBITest::TestSafePairDensity() {
     IcuTestErrorCode status(*this, "TestSafePairDensity");
     auto showPairAt = [&status](const UnicodeString &text, int32_t i) {
         UnicodeString result;
-        char nameBuffer[256];
+        UnicodeString classes;
         if (i < 0) {
             result += u"(sot)";
             i = 0;
@@ -3850,9 +3864,8 @@ void RBBITest::TestSafePairDensity() {
             UChar32 first = text.char32At(i);
             result += toHex(first, 4);
             result += " ";
-            memset(nameBuffer, 0, sizeof(nameBuffer));
-            u_charName(first, U_UNICODE_CHAR_NAME, nameBuffer, sizeof(nameBuffer), status);
-            result += nameBuffer;
+            result += characterName(first, status).c_str();
+            classes += shortLB(first);
             i += U16_LENGTH(first);
         }
         result += ", ";
@@ -3862,10 +3875,13 @@ void RBBITest::TestSafePairDensity() {
             UChar32 second = text.char32At(i);
             result += toHex(second, 4);
             result += " ";
-            memset(nameBuffer, 0, sizeof(nameBuffer));
-            u_charName(second, U_UNICODE_CHAR_NAME, nameBuffer, sizeof(nameBuffer), status);
-            result += nameBuffer;
+            result += characterName(second, status).c_str();
+            classes += " ";
+            classes += shortLB(second);
         }
+        result += " (";
+        result += classes;
+        result += ")";
         std::string utf8Result;
         result.toUTF8String(utf8Result);
         return utf8Result;
@@ -3882,10 +3898,13 @@ void RBBITest::TestSafePairDensity() {
         for (int32_t i = 0;; i = alphabeticText.moveIndex32(i, 1)) {
             const int32_t safePrevious = lb->handleSafePrevious(i);
             int32_t expectedSafePrevious;
+            // All pairs are safe.
             if (i == 0) {
                 expectedSafePrevious = -1;
-            } else {
+            } else if (i == 1) {
                 expectedSafePrevious = 0;
+            } else {
+                expectedSafePrevious = i - 2;
             }
             if (safePrevious != expectedSafePrevious) {
                 errln("alphabetic handleSafePrevious(%d)=%d; expected pair %s, actual pair %s", i,
@@ -3904,21 +3923,13 @@ void RBBITest::TestSafePairDensity() {
         for (int32_t i = 0;; i = ideographicText.moveIndex32(i, 1)) {
             const int32_t safePrevious = lb->handleSafePrevious(i);
             int32_t expectedSafePrevious;
+            // All pairs are safe.
             if (i == 0) {
                 expectedSafePrevious = -1;
             } else if (i == 1) {
                 expectedSafePrevious = 0;
             } else {
-                for (expectedSafePrevious = ideographicText.moveIndex32(i, -2);;
-                     expectedSafePrevious = ideographicText.moveIndex32(expectedSafePrevious, -1)) {
-                    const auto pairBehind = ideographicText.tempSubString(expectedSafePrevious, 2);
-                    if (pairBehind.charAt(0) == u'「' || pairBehind.charAt(1) == u'，' ||
-                        pairBehind.charAt(1) == u'：' || pairBehind.charAt(1) == u'？' ||
-                        pairBehind.charAt(1) == u'」') {
-                        continue;
-                    }
-                    break;
-                }
+                expectedSafePrevious = i - 2;
             }
             if (safePrevious != expectedSafePrevious) {
                 errln("ideographic handleSafePrevious(%d)=%d; expected pair %s, actual pair %s", i,
@@ -3935,6 +3946,8 @@ void RBBITest::TestSafePairDensity() {
         // https://archive.org/details/InscriptionsOfAsoka.NewEditionByE.Hultzsch/page/n349/mode/2up.
         // The first aksara 𑀧𑁆𑀭𑀺 (pri) has two consonants joined by a virama.
         const UnicodeString aksaraText = u"𑀧𑁆𑀭𑀺𑀬𑀤𑀲𑀺𑀮𑀸𑀚𑀸𑀫𑀸𑀕𑀥𑁂𑀲𑀁𑀖𑀅𑀪𑀺𑀯𑀸𑀤𑁂𑀢𑀽𑀦𑀁𑀆𑀳𑀸𑀅𑀧𑀸𑀩𑀸𑀥𑀢𑀁𑀘𑀨𑀸𑀲𑀼𑀯𑀺𑀳𑀸𑀮𑀢𑀁𑀘𑀸";
+        constexpr auto expectedSafePositions =
+            std::array{102, 84, 78, 78, 68, 62, 40, 38, 28, 10, 8, 2, 0};
         lb->setText(aksaraText);
         for (int32_t i = 0;; i = aksaraText.moveIndex32(i, 1)) {
             const int32_t safePrevious = lb->handleSafePrevious(i);
@@ -3942,7 +3955,13 @@ void RBBITest::TestSafePairDensity() {
             if (i < 2) {
                 expectedSafePrevious = -1;
             } else {
-                expectedSafePrevious = 0;
+                expectedSafePrevious = aksaraText.moveIndex32(i, -2);
+                for (const int32_t j : expectedSafePositions) {
+                    if (j <= expectedSafePrevious) {
+                        expectedSafePrevious = j;
+                        break;
+                    }
+                }
             }
             if (safePrevious != expectedSafePrevious) {
                 errln("aksara handleSafePrevious(%d)=%d; expected pair %s, actual pair %s", i,
@@ -3950,6 +3969,53 @@ void RBBITest::TestSafePairDensity() {
                       showPairAt(aksaraText, safePrevious).c_str());
             }
             if (i == aksaraText.length()) {
+                break;
+            }
+        }
+    }
+    {
+        // A line from the Rigveda, book 8, hymn 67, first half of verse 9,
+        //     मा नो मृचा रिपूणां वृजिनानामविष्यवः ।
+        //     mā nō mr̥cā ripūṇāṁ vr̥jinānāmaviṣyavaḥ.
+        // transliterated to Brahmi, stripping spaces.  This is reasonable text (not attested in
+        // Brahmi, but it is actual Sanskrit written in a script that makes sense for Sanskrit),
+        // which at the same time is remarkable in having a long string of lb=AK consonants
+        // separated by lb=CM vowels or other marks, namely 𑀫𑀸𑀦𑁄𑀫𑀾𑀘𑀸𑀭𑀺𑀧𑀽𑀡𑀸𑀁𑀯𑀾𑀚𑀺𑀦𑀸𑀦𑀸𑀫 at UTF-16 indices
+        // [0, 48[, in transliteration:
+        //     मा नो मृचा रिपूणां वृजिनानाम
+        //     mā nō mr̥cā ripūṇāṁ vr̥jinānāma
+        // If safe pair detection considers both AK CM and CM AK unsafe, which a naïve
+        // implementation might (because AK AK leads to a different state from AK, so that AK AK VF
+        // can be glued together), this causes severe backtracking.  Note that AK CM should be safe:
+        // AK AK CM [^VF] breaks after the first AK and revisits the pair from the start state, and
+        // AK CM VF ends up in the same state as AK AK CM VF.  However, determining this requires a
+        // proper equivalence analysis (probably similar to the one used in the state minimization
+        // algorithm), as opposed to checking for identical states.
+        const UnicodeString aksaraTextWithDenseCM = u"𑀫𑀸𑀦𑁄𑀫𑀾𑀘𑀸𑀭𑀺𑀧𑀽𑀡𑀸𑀁𑀯𑀾𑀚𑀺𑀦𑀸𑀦𑀸𑀫𑀯𑀺𑀱𑁆𑀬𑀯𑀂𑁇";
+        constexpr auto expectedSafePositions = std::array{60, 56, 54, 52, 46, 0};
+        lb->setText(aksaraTextWithDenseCM);
+        for (int32_t i = 0;; i = aksaraTextWithDenseCM.moveIndex32(i, 1)) {
+            const int32_t safePrevious = lb->handleSafePrevious(i);
+            int32_t expectedSafePrevious;
+            if (i < 2) {
+                expectedSafePrevious = -1;
+            } else {
+                expectedSafePrevious = aksaraTextWithDenseCM.moveIndex32(i, -2);
+                for (const int32_t j : expectedSafePositions) {
+                    if (j <= expectedSafePrevious) {
+                        expectedSafePrevious = j;
+                        break;
+                    }
+                }
+            }
+            if (safePrevious != expectedSafePrevious) {
+                errln("aksara CM handleSafePrevious(%d)=%d; expected pair %s, actual "
+                      "pair %s",
+                      i, safePrevious,
+                      showPairAt(aksaraTextWithDenseCM, expectedSafePrevious).c_str(),
+                      showPairAt(aksaraTextWithDenseCM, safePrevious).c_str());
+            }
+            if (i == aksaraTextWithDenseCM.length()) {
                 break;
             }
         }

@@ -12,6 +12,7 @@ import com.ibm.icu.dev.test.CoreTestFmwk;
 import com.ibm.icu.dev.test.lang.UnicodeSetTest.ShakespeareanSymbolTable;
 import com.ibm.icu.impl.RBBIDataWrapper;
 import com.ibm.icu.lang.UCharacter;
+import com.ibm.icu.lang.UProperty;
 import com.ibm.icu.text.BreakIterator;
 import com.ibm.icu.text.RuleBasedBreakIterator;
 import com.ibm.icu.text.UnicodeSet;
@@ -1045,8 +1046,16 @@ public class RBBITest extends CoreTestFmwk {
         assertEquals("Wrong number of breaks found", 2, breaksFound);
     }
 
+    private String shortLB(int cp) {
+        return UCharacter.getPropertyValueName(
+                UProperty.LINE_BREAK,
+                UCharacter.getIntPropertyValue(cp, UProperty.LINE_BREAK),
+                UProperty.NameChoice.SHORT);
+    }
+
     private String showPairAt(String text, int i) {
         final var result = new StringBuilder();
+        final var classes = new StringBuilder();
         if (i < 0) {
             result.append("(sot)");
             i = 0;
@@ -1055,7 +1064,8 @@ public class RBBITest extends CoreTestFmwk {
             result.append(hex(first));
             result.append(" ");
             result.append(UCharacter.getName(first));
-            i += UCharacter.isBMP(first) ? 1 : 2;
+            classes.append(shortLB(first));
+            i += Character.charCount(first);
         }
         result.append(", ");
         if (i >= text.length()) {
@@ -1065,14 +1075,16 @@ public class RBBITest extends CoreTestFmwk {
             result.append(hex(second));
             result.append(" ");
             result.append(UCharacter.getName(second));
+            classes.append(" ");
+            classes.append(shortLB(second));
         }
+        result.append(" (");
+        result.append(classes);
+        result.append(")");
         return result.toString();
     }
 
-    /* Regression test for ICU-23478: make sure normal text contains lots of safe positions.
-     * NOTE: For now ICU-23478 is open and this test merely records the extent of the disaster (OK
-     * for ideographic text, catastrophic elsewhere).
-     */
+    /* Regression test for ICU-23478: make sure normal text contains lots of safe positions. */
     @Test
     public void TestSafePairDensity() {
         final var lb = (RuleBasedBreakIterator) BreakIterator.getLineInstance();
@@ -1086,10 +1098,13 @@ public class RBBITest extends CoreTestFmwk {
             for (int i = 0; ; i += Character.charCount(alphabeticText.codePointAt(i))) {
                 final int safePrevious = lb.handleSafePrevious(i);
                 int expectedSafePrevious;
+                // All pairs are safe.
                 if (i == 0) {
                     expectedSafePrevious = -1;
-                } else {
+                } else if (i == 1) {
                     expectedSafePrevious = 0;
+                } else {
+                    expectedSafePrevious = i - 2;
                 }
                 if (safePrevious != expectedSafePrevious) {
                     errln(
@@ -1113,24 +1128,13 @@ public class RBBITest extends CoreTestFmwk {
             for (int i = 0; ; i += Character.charCount(ideographicText.codePointAt(i))) {
                 final int safePrevious = lb.handleSafePrevious(i);
                 int expectedSafePrevious;
+                // All pairs are safe.
                 if (i == 0) {
                     expectedSafePrevious = -1;
                 } else if (i == 1) {
                     expectedSafePrevious = 0;
                 } else {
-                    for (expectedSafePrevious = i - 2; ; --expectedSafePrevious) {
-                        final var pairBehind =
-                                ideographicText.substring(
-                                        expectedSafePrevious, expectedSafePrevious + 2);
-                        if (pairBehind.charAt(0) == '「'
-                                || pairBehind.charAt(1) == '，'
-                                || pairBehind.charAt(1) == '：'
-                                || pairBehind.charAt(1) == '？'
-                                || pairBehind.charAt(1) == '」') {
-                            continue;
-                        }
-                        break;
-                    }
+                    expectedSafePrevious = i - 2;
                 }
                 if (safePrevious != expectedSafePrevious) {
                     errln(
@@ -1154,6 +1158,7 @@ public class RBBITest extends CoreTestFmwk {
             // The first aksara 𑀧𑁆𑀭𑀺 (pri) has two consonants joined by a virama.
             final String aksaraText =
                     "𑀧𑁆𑀭𑀺𑀬𑀤𑀲𑀺𑀮𑀸𑀚𑀸𑀫𑀸𑀕𑀥𑁂𑀲𑀁𑀖𑀅𑀪𑀺𑀯𑀸𑀤𑁂𑀢𑀽𑀦𑀁𑀆𑀳𑀸𑀅𑀧𑀸𑀩𑀸𑀥𑀢𑀁𑀘𑀨𑀸𑀲𑀼𑀯𑀺𑀳𑀸𑀮𑀢𑀁𑀘𑀸";
+            final int[] expectedSafePositions = {102, 84, 78, 78, 68, 62, 40, 38, 28, 10, 8, 2, 0};
             lb.setText(aksaraText);
             for (int i = 0; ; i += Character.charCount(aksaraText.codePointAt(i))) {
                 final int safePrevious = lb.handleSafePrevious(i);
@@ -1161,11 +1166,18 @@ public class RBBITest extends CoreTestFmwk {
                 if (i < 2) {
                     expectedSafePrevious = -1;
                 } else {
-                    expectedSafePrevious = 0;
+                    expectedSafePrevious =
+                            Math.max(0, i - 4); // All SMP, move two code points back.
+                    for (final int j : expectedSafePositions) {
+                        if (j <= expectedSafePrevious) {
+                            expectedSafePrevious = j;
+                            break;
+                        }
+                    }
                 }
                 if (safePrevious != expectedSafePrevious) {
                     errln(
-                            "alphabetic handleSafePrevious("
+                            "aksara handleSafePrevious("
                                     + i
                                     + ")="
                                     + safePrevious
@@ -1175,6 +1187,65 @@ public class RBBITest extends CoreTestFmwk {
                                     + showPairAt(aksaraText, safePrevious));
                 }
                 if (i == aksaraText.length()) {
+                    break;
+                }
+            }
+        }
+        {
+            // A line from the Rigveda, book 8, hymn 67, first half of verse 9,
+            //     मा नो मृचा रिपूणां वृजिनानामविष्यवः ।
+            //     mā nō mr̥cā ripūṇāṁ vr̥jinānāmaviṣyavaḥ.
+            // transliterated to Brahmi, stripping spaces.  This is reasonable text (not attested in
+            // Brahmi, but it is actual Sanskrit written in a script that makes sense for Sanskrit),
+            // which at the same time is remarkable in having a long string of lb=AK consonants
+            // separated by lb=CM vowels or other marks, namely
+            // 𑀫𑀸𑀦𑁄𑀫𑀾𑀘𑀸𑀭𑀺𑀧𑀽𑀡𑀸𑀁𑀯𑀾𑀚𑀺𑀦𑀸𑀦𑀸𑀫 at UTF-16 indices
+            // [0, 48[, in transliteration:
+            //     मा नो मृचा रिपूणां वृजिनानाम
+            //     mā nō mr̥cā ripūṇāṁ vr̥jinānāma
+            // If safe pair detection considers both AK CM and CM AK unsafe, which a naïve
+            // implementation might (because AK AK leads to a different state from AK, so that AK AK
+            // VF
+            // can be glued together), this causes severe backtracking.  Note that AK CM should be
+            // safe:
+            // AK AK CM [^VF] breaks after the first AK and revisits the pair from the start state,
+            // and
+            // AK CM VF ends up in the same state as AK AK CM VF.  However, determining this
+            // requires a
+            // proper equivalence analysis (probably similar to the one used in the state
+            // minimization
+            // algorithm), as opposed to checking for identical states.
+            final String aksaraTextWithDenseCM =
+                    "𑀫𑀸𑀦𑁄𑀫𑀾𑀘𑀸𑀭𑀺𑀧𑀽𑀡𑀸𑀁𑀯𑀾𑀚𑀺𑀦𑀸𑀦𑀸𑀫𑀯𑀺𑀱𑁆𑀬𑀯𑀂𑁇";
+            final int[] expectedSafePositions = {60, 56, 54, 52, 46, 0};
+            lb.setText(aksaraTextWithDenseCM);
+            for (int i = 0; ; i += Character.charCount(aksaraTextWithDenseCM.codePointAt(i))) {
+                final int safePrevious = lb.handleSafePrevious(i);
+                int expectedSafePrevious;
+                if (i < 2) {
+                    expectedSafePrevious = -1;
+                } else {
+                    expectedSafePrevious =
+                            Math.max(0, i - 4); // All SMP, move two code points back.
+                    for (final int j : expectedSafePositions) {
+                        if (j <= expectedSafePrevious) {
+                            expectedSafePrevious = j;
+                            break;
+                        }
+                    }
+                }
+                if (safePrevious != expectedSafePrevious) {
+                    errln(
+                            "aksara CM handleSafePrevious("
+                                    + i
+                                    + ")="
+                                    + safePrevious
+                                    + "; expected pair "
+                                    + showPairAt(aksaraTextWithDenseCM, expectedSafePrevious)
+                                    + ", actual pair "
+                                    + showPairAt(aksaraTextWithDenseCM, safePrevious));
+                }
+                if (i == aksaraTextWithDenseCM.length()) {
                     break;
                 }
             }
